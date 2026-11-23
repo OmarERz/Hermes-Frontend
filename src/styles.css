@@ -1,0 +1,303 @@
+@import './app/componentes/layout-principal/layout-principal.css';
+@import './app/rutas/Agentes/control-agente.css';
+@import './app/rutas/Stack-tecnologico/stack-tecnologico.css';
+@import './app/rutas/Activos/activos.css';
+@import './app/rutas/Configuracion-agente/configuracion-agente.css';
+@import './app/rutas/Historial-agente/historial-agente.css';
+@import './app/rutas/Recomendaciones-agente/recomendaciones-agente.css';
+@import './app/rutas/Revision-humana/revision-humana.css';
+@import './app/rutas/Feeds-inteligencia/feeds-inteligencia.css';
+
+:root {
+  --font-size-increase: 2.67px;
+  --background-dark-neon:
+    radial-gradient(ellipse at 8% 18%, rgba(116, 23, 121, .32), transparent 38%),
+    radial-gradient(ellipse at 86% 82%, rgba(198, 27, 167, .18), transparent 34%),
+    linear-gradient(122deg, #14071f 0%, #260a38 43%, #4b1264 76%, #260a38 100%);
+  --background-light-lavender: linear-gradient(135deg, #fff 0%, #f6f2fc 38%, #ece2f7 75%, #f4e3f4 100%);
+  --page-background: var(--background-dark-neon);
+  color-scheme: dark;
+  --canvas: #150c21;
+  --sidebar: #230f39;
+  --surface: #2c1940;
+  --surface-raised: #37204c;
+  --surface-soft: #261538;
+  --text-primary: #fbf6ff;
+  --text-secondary: #ddcfe9;
+  --text-muted: #b7a5c8;
+  --border: rgba(217, 168, 255, .24);
+  --accent: #ff009d;
+  --accent-violet: #a537ff;
+  --accent-lilac: #d9a8ff;
+  --accent-wash: rgba(255, 0, 157, .13);
+  --violet-wash: rgba(165, 55, 255, .13);
+  --gridline: rgba(217, 168, 255, .16);
+  --success-bg: rgba(43, 203, 119, .16);
+  --success-text: #95f0b8;
+  --warning-bg: rgba(255, 180, 63, .16);
+  --warning-text: #ffd18d;
+  --danger-bg: rgba(255, 54, 113, .16);
+  --danger-text: #ff9dbb;
+  --shadow-card: 0 10px 28px rgba(3, 0, 14, .26), 0 0 18px rgba(165, 55, 255, .08);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  color: var(--text-primary);
+  background: var(--canvas);
+}
+
+html, body { min-height: 100%; margin: 0; background: var(--canvas); }
+body { font-family: inherit; font-size: calc(16px + var(--font-size-increase)); font-weight: 400; color: var(--text-primary); }
+.app-shell { background: var(--page-background); }
+.app-shell[data-theme="dark"] { background: var(--page-background); color: var(--text-primary); }
+button, input, select, textarea { font: inherit; }
+h1 { font-weight: 700; }
+h2, h3 { font-weight: 600; }
+
+.app-shell[data-theme="light"] {
+  color-scheme: light;
+  --page-background: var(--background-light-lavender);
+  --canvas: #f7f4fb;
+  --sidebar: #fff;
+  --surface: #fff;
+  --surface-raised: #f3edf8;
+  --surface-soft: #fbf8fd;
+  --text-primary: #28153a;
+  --text-secondary: #302936;
+  --text-muted: #6c6179;
+  --border: #e5dced;
+  --accent: #ed079b;
+  --accent-violet: #8d20b8;
+  --accent-lilac: #d9a8ff;
+  --accent-wash: #fce6f8;
+  --violet-wash: #f7eafb;
+  --gridline: #e9e6ef;
+  --success-bg: #dcf9e5;
+  --success-text: #08753d;
+  --warning-bg: #fff0dd;
+  --warning-text: #96540a;
+  --danger-bg: #ffe4f2;
+  --danger-text: #ce1767;
+  --shadow-card: 0 3px 10px #3510440a;
+}
+
+.app-shell[data-theme="dark"] .workspace,
+.app-shell[data-theme="dark"] .page-content,
+.app-shell[data-theme="light"] .workspace,
+.app-shell[data-theme="light"] .page-content { background: transparent; color: var(--text-primary); }
+.app-shell[data-theme="dark"] .user-copy small,
+.app-shell[data-theme="dark"] .agent-view,
+.app-shell[data-theme="dark"] .stack-view,
+.app-shell[data-theme="dark"] .assets-view { color: var(--text-primary); }
+.app-shell[data-theme="dark"] :is(.agent-view,.stack-view,.assets-view) :is(h1,h2,h3,strong,th) { color: var(--text-primary); }
+.app-shell[data-theme="dark"] :is(.agent-view,.stack-view,.assets-view) :is(p,small,td,.tool-row,.queue-stats span,.table-panel footer,.table-tools,.inventory>header,.context>div) { color: var(--text-secondary); }
+.app-shell[data-theme="dark"] :is(.agent-view,.stack-view,.assets-view) :is(.panel,.chart-card,.metric,.summary-grid article,.stat-card) { border-color: var(--border); background: var(--surface); box-shadow: var(--shadow-card); }
+.app-shell[data-theme="dark"] :is(.agent-view,.stack-view,.assets-view) :is(.page-heading h1,.performance-heading h2,.panel-title h2,.panel h2,.chart-card h3,.inventory-title h2,.distribution h2,.context h2) { color: var(--text-primary); }
+.app-shell[data-theme="dark"] :is(.agent-view,.stack-view,.assets-view) :is(.page-heading p,.performance-heading p,.agent-summary p,.agent-facts small,.permission small,.health-breakdown span,.findings p,.stat-card small) { color: var(--text-secondary); }
+
+.app-shell[data-theme="dark"] .agent-view .heading-icon,
+.app-shell[data-theme="dark"] .agent-view .robot,
+.app-shell[data-theme="dark"] .assets-view .heading-icon,
+.app-shell[data-theme="dark"] .assets-view .stat-card>span,
+.app-shell[data-theme="dark"] .stack-view .heading-icon,
+.app-shell[data-theme="dark"] .stack-view .summary-icon { background: var(--accent-wash); color: var(--accent); }
+.app-shell[data-theme="dark"] .agent-view .agent-summary,
+.app-shell[data-theme="dark"] .agent-view .tool-row,
+.app-shell[data-theme="dark"] .agent-view .permission,
+.app-shell[data-theme="dark"] .agent-view .agent-facts>div,
+.app-shell[data-theme="dark"] .stack-view td,
+.app-shell[data-theme="dark"] .assets-view td,
+.app-shell[data-theme="dark"] .assets-view .distribution-row,
+.app-shell[data-theme="dark"] .assets-view .context>div { border-color: var(--border); }
+.app-shell[data-theme="dark"] .agent-view .action,
+.app-shell[data-theme="dark"] .assets-view .action-row button,
+.app-shell[data-theme="dark"] .assets-view .select-filter,
+.app-shell[data-theme="dark"] .assets-view .asset-search,
+.app-shell[data-theme="dark"] .assets-view .more-filter,
+.app-shell[data-theme="dark"] .assets-view .inventory>header button,
+.app-shell[data-theme="dark"] .assets-view .inventory footer select,
+.app-shell[data-theme="dark"] .stack-view .export-button,
+.app-shell[data-theme="dark"] .stack-view .table-tools select,
+.app-shell[data-theme="dark"] .stack-view .pagination button,
+.app-shell[data-theme="dark"] .assets-view .pagination button { border-color: var(--border); background: var(--surface-raised); color: var(--text-primary); }
+.app-shell[data-theme="dark"] .agent-view .action.primary,
+.app-shell[data-theme="dark"] .assets-view .primary-action { border-color: transparent; background: var(--accent); color: #fff; box-shadow: 0 0 18px rgba(255,0,157,.2); }
+.app-shell[data-theme="dark"] .agent-view .action.outline { border-color: var(--accent-violet); background: transparent; color: var(--accent-lilac); }
+.app-shell[data-theme="dark"] .agent-view .switch.on { background: var(--accent); }
+.app-shell[data-theme="dark"] .agent-view .pill,
+.app-shell[data-theme="dark"] .agent-view .metric em,
+.app-shell[data-theme="dark"] .agent-view .queue-number em,
+.app-shell[data-theme="dark"] .stack-view .health-pill,
+.app-shell[data-theme="dark"] .stack-view .score,
+.app-shell[data-theme="dark"] .assets-view .status:not(.maintenance):not(.available) { background: var(--success-bg); color: var(--success-text); }
+.app-shell[data-theme="dark"] .agent-view .pill.paused,
+.app-shell[data-theme="dark"] .assets-view .status.maintenance { background: var(--warning-bg); color: var(--warning-text); }
+.app-shell[data-theme="dark"] .assets-view .status.available,
+.app-shell[data-theme="dark"] .assets-view .type-chip { background: var(--violet-wash); color: var(--accent-lilac); }
+.app-shell[data-theme="dark"] .agent-view .progress,
+.app-shell[data-theme="dark"] .agent-view .progress i,
+.app-shell[data-theme="dark"] .agent-view .switch i { background-color: var(--accent); }
+.app-shell[data-theme="dark"] .agent-view .progress { background: var(--violet-wash); }
+.app-shell[data-theme="dark"] .agent-view .switch:not(.on) { background: #554366; }
+.app-shell[data-theme="dark"] .agent-view .trend-chart h3 em { background: var(--success-bg); color: var(--success-text); }
+.app-shell[data-theme="dark"] .stack-view .summary-grid em:not(.risk) { background: var(--success-bg); color: var(--success-text); }
+.app-shell[data-theme="dark"] .stack-view .summary-grid em.risk,
+.app-shell[data-theme="dark"] .assets-view .stat-card em.risk { background: var(--danger-bg); color: var(--danger-text); }
+.app-shell[data-theme="dark"] .stack-view .health-breakdown>div>i { background: #49345e; }
+.app-shell[data-theme="dark"] .stack-view .table-panel th,
+.app-shell[data-theme="dark"] .assets-view .inventory th { background: var(--surface-raised); color: var(--text-primary); }
+.app-shell[data-theme="dark"] .stack-view .table-panel td,
+.app-shell[data-theme="dark"] .assets-view .inventory td { color: var(--text-secondary); }
+.app-shell[data-theme="dark"] .stack-view .table-tools select,
+.app-shell[data-theme="dark"] .assets-view select,
+.app-shell[data-theme="dark"] .assets-view input { color: var(--text-primary); }
+.app-shell[data-theme="dark"] .stack-view .table-panel td:first-child strong,
+.app-shell[data-theme="dark"] .assets-view .inventory td strong { color: var(--text-primary); }
+.app-shell[data-theme="dark"] .stack-view .pagination button.selected,
+.app-shell[data-theme="dark"] .assets-view .pagination button.selected { border-color: var(--accent); background: var(--accent); color: #fff; }
+.app-shell[data-theme="dark"] .stack-view .quadrant-chart { border-color: var(--border); background:linear-gradient(135deg,rgba(255,0,157,.08),rgba(54,24,77,.55) 50%,rgba(165,55,255,.08) 50%,rgba(41,19,63,.8)); }
+.app-shell[data-theme="dark"] .stack-view .quadrant-chart:before,
+.app-shell[data-theme="dark"] .stack-view .quadrant-chart:after { border-color: rgba(217,168,255,.48); }
+.app-shell[data-theme="dark"] .stack-view .axis-y,.app-shell[data-theme="dark"] .stack-view .axis-x { color: var(--text-secondary); }
+.app-shell[data-theme="dark"] .stack-view .zone.evaluate { background: rgba(255,0,157,.2); color: #ff9bd3; }
+.app-shell[data-theme="dark"] .stack-view .zone.maintain { background: rgba(43,203,119,.17); color: #9af1ba; }
+.app-shell[data-theme="dark"] .stack-view .zone.rationalize { background: rgba(255,168,58,.18); color: #ffd18d; }
+.app-shell[data-theme="dark"] .stack-view .zone.optimize { background: rgba(165,55,255,.2); color: #d9a8ff; }
+.app-shell[data-theme="dark"] .stack-view .findings>div { border-color: var(--border); }
+.app-shell[data-theme="dark"] .assets-view .distribution-row>svg,
+.app-shell[data-theme="dark"] .assets-view .distribution-row .percent,
+.app-shell[data-theme="dark"] .assets-view .context>div>strong,
+.app-shell[data-theme="dark"] .assets-view .business p { background: var(--surface-raised); color: var(--text-primary); }
+.app-shell[data-theme="dark"] .assets-view .distribution-row>i { background: #49345e; }
+.app-shell[data-theme="dark"] .assets-view .distribution-row>i em { background: var(--accent); }
+.app-shell[data-theme="dark"] .assets-view .context>div>strong.high { background: var(--danger-bg); color: var(--danger-text); }
+.app-shell[data-theme="dark"] .agent-view .metric-label { color: var(--text-secondary); }
+.app-shell[data-theme="dark"] .agent-view .queue-stats b { color: var(--text-primary); }
+.app-shell[data-theme="dark"] .agent-view .tool-icon,
+.app-shell[data-theme="dark"] .stack-view .tech-icon,
+.app-shell[data-theme="dark"] .stack-view .health-breakdown>div>svg,
+.app-shell[data-theme="dark"] .assets-view .distribution-row>svg { color: var(--accent-lilac); }
+.app-shell[data-theme="dark"] :is(.agent-view,.stack-view,.assets-view) :is(button,input,select):focus-visible { outline:2px solid var(--accent-lilac); outline-offset:2px; }
+
+.app-shell[data-theme="light"] .theme-toggle { background: #f2e4fb; color: #52146b; }
+
+/* Paleta de texto secundaria para el tema claro; los colores semánticos se mantienen aparte. */
+.app-shell[data-theme="light"] :is(.welcome-description,.home-card-copy small,.home-metric small,.data-origin,.agent-view .page-heading p,.agent-view .performance-heading p,.agent-view .agent-summary p,.agent-view .agent-facts small,.agent-view .ticket-kpis small,.agent-view .ticket-empty,.agent-view .metric-label,.agent-view .queue-stats span,.stack-view .summary-grid small,.stack-view .health-breakdown span,.stack-view .table-tools,.stack-view .evaluation-state span,.stack-view .axis-y,.stack-view .axis-x,.stack-view .quadrant>strong,.stack-view .findings p,.assets-view .page-heading p,.assets-view .stat-card small,.assets-view .inventory>header,.assets-view .inventory td:not(:has(.status)),.assets-view .filters label,.assets-view .distribution-row>span strong,.assets-view .distribution-row>span small,.assets-view .state-copy small,.assets-view .state-footnote,.agent-history-view .filters label,.agent-history-view .empty,.agent-history-view .detail-modal dt,.recommendations-view .score-note,.recommendations-view .ticket-option small,.recommendations-view .proposal-heading small,.recommendations-view .before-after small,.recommendations-view .analysis-grid p,.recommendations-view .judge-reason p,.recommendations-view .empty-state,.recommendations-view .detail-empty p,.agent-config-view .summary-copy small,.agent-config-view .config-card>header p,.agent-config-view .tool-copy small,.agent-config-view .small-note,.human-review-view .review-context-copy span,.human-review-view .proposal-states dt,.human-review-view .judge-values dt,.human-review-view .proposal-rationale p,.human-review-view .judge-rationale p,.human-review-view .review-audit p,.profile-dropdown-identity small,.profile-dropdown .auth-unavailable) { color:#302936; }
+.app-shell[data-theme="light"] .logout-button:disabled { color:#514662; }
+
+/* Contraste compartido para las pantallas de supervisión y configuración. */
+.app-shell[data-theme="dark"] :is(.agent-view,.stack-view,.assets-view,.agent-config-view,.agent-history-view,.recommendations-view,.human-review-view) {
+  --ink: var(--text-primary);
+  --line: var(--border);
+  color: var(--text-primary);
+}
+.app-shell[data-theme="dark"] :is(.agent-config-view,.agent-history-view,.recommendations-view,.human-review-view) :is(h1,h2,h3,h4,strong,th) { color:var(--text-primary); }
+.app-shell[data-theme="dark"] :is(.agent-config-view,.agent-history-view,.recommendations-view,.human-review-view) :is(p,small,label,td,dt,.small-note,.score-note,.empty,.demo-note,.proposal-heading small,.before-after small) { color:var(--text-secondary); }
+.app-shell[data-theme="dark"] :is(.agent-config-view,.agent-history-view,.recommendations-view,.human-review-view) :is(.config-card,.history-panel,.ticket-group,.proposal-card,.review-panel,.audit-card,.table-panel,.detail-modal,.confirm-modal,.review-modal) { border-color:var(--border); background:var(--surface); color:var(--text-primary); box-shadow:var(--shadow-card); }
+.app-shell[data-theme="dark"] :is(.agent-config-view,.agent-history-view,.recommendations-view,.human-review-view) :is(input,select,textarea,td button,.cancel-button) { border-color:var(--border); background:var(--surface-raised); color:var(--text-primary); }
+.app-shell[data-theme="dark"] :is(.agent-config-view,.agent-history-view,.recommendations-view,.human-review-view) :is(th,.change-list article,.before-after,.comparison,.analysis-grid section,.judge-reason,.reason) { background:var(--surface-soft); }
+.app-shell[data-theme="dark"] :is(.agent-config-view,.agent-history-view,.recommendations-view,.human-review-view) :is(.connection-notice,.source-badge,.decision-chip,.history-panel h2 span,.ticket-group>header span) { border-color:var(--border); background:var(--violet-wash); color:var(--accent-lilac); }
+.app-shell[data-theme="dark"] .agent-view .ticket-kpis>div { border-color:var(--border); background:var(--surface-soft); }
+.app-shell[data-theme="dark"] .agent-view .ticket-kpis small,.app-shell[data-theme="dark"] .agent-view .ticket-empty { color:var(--text-secondary); }
+.app-shell[data-theme="dark"] .agent-view .ticket-kpis strong { color:var(--text-primary); }
+.app-shell[data-theme="dark"] :is(.agent-history-view,.recommendations-view,.human-review-view) :is(td,th) { border-color:var(--border); }
+.app-shell[data-theme="dark"] :is(.agent-history-view,.recommendations-view,.human-review-view) .table-scroll { scrollbar-color:#72518e var(--surface-soft); }
+.app-shell[data-theme="dark"] :is(.agent-config-view,.agent-history-view,.recommendations-view,.human-review-view) :is(button,a):focus-visible { outline:2px solid var(--accent-lilac); outline-offset:2px; }
+.app-shell[data-theme="dark"] :is(.agent-view .agent-sections a,.human-review-view .row-actions .flag-button) { border:1px solid rgba(165,55,255,.58); background:var(--surface-raised); color:var(--accent-lilac); transition:color .16s ease,border-color .16s ease,background-color .16s ease,box-shadow .16s ease; }
+.app-shell[data-theme="dark"] :is(.agent-view .agent-sections a,.human-review-view .row-actions .flag-button):hover { border-color:var(--accent); background:var(--accent-wash); color:#ffd6f2; box-shadow:0 0 10px rgba(255,0,157,.12); }
+.app-shell[data-theme="dark"] .agent-config-view .secondary-link { color:var(--accent-lilac); }
+.app-shell[data-theme="dark"] .agent-config-view .secondary-link:hover { color:#ffd6f2; }
+.app-shell[data-theme="dark"] .agent-view .ticket-empty { color:var(--text-secondary); }
+.app-shell[data-theme="dark"] :is(.agent-view,.stack-view,.assets-view) .source-badge { border-color:var(--border); background:var(--violet-wash); color:var(--accent-lilac); }
+.app-shell[data-theme="dark"] .agent-view .source-badge.real-source { background:var(--surface-soft); color:var(--text-secondary); }
+.human-review-view .row-actions .flag-button.is-marked { display:inline-flex; align-items:center; gap:4px; border-color:#addcbb; background:#eef8f0; color:#176b35; cursor:default; opacity:1; }
+.human-review-view .row-actions .flag-button.is-marked svg { width:13px; height:13px; stroke-width:2.5; }
+.app-shell[data-theme="dark"] .human-review-view .row-actions .flag-button.is-marked { border-color:rgba(165,55,255,.58); background:var(--violet-wash); color:var(--accent-lilac); }
+
+.app-shell[data-theme="dark"] app-registrar-activo { color:var(--text-primary); }
+.app-shell[data-theme="dark"] app-registrar-activo .bloque { border-color:var(--border); background:var(--surface); color:var(--text-primary); box-shadow:var(--shadow-card); }
+.app-shell[data-theme="dark"] app-registrar-activo :is(.form-heading h1,.bloque h2,.resumen p strong) { color:var(--text-primary); }
+.app-shell[data-theme="dark"] app-registrar-activo :is(.form-heading p,.pagina label,.resumen p) { color:var(--text-secondary); }
+.app-shell[data-theme="dark"] app-registrar-activo :is(input,select,textarea,.botones button) { border-color:var(--border); background:var(--surface-raised); color:var(--text-primary); }
+.app-shell[data-theme="dark"] app-registrar-activo .botones button.principal { border-color:var(--accent); background:var(--accent); color:#fff; }
+.app-shell[data-theme="dark"] app-registrar-activo :is(input,select,textarea,button):focus-visible { outline-color:var(--accent-lilac); }
+
+.app-shell[data-theme="dark"] :is(.stack-view,.assets-view,.agent-history-view,.human-review-view) .table-scroll {
+  scrollbar-color:#72518e var(--surface-soft);
+  scrollbar-width:thin;
+}
+.app-shell[data-theme="dark"] :is(.stack-view,.assets-view,.agent-history-view,.human-review-view) .table-scroll:focus-visible {
+  outline:2px solid var(--accent-lilac);
+  outline-offset:2px;
+}
+
+:is(.stack-view,.assets-view,.agent-history-view,.human-review-view) .table-scroll {
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+}
+
+@media(max-width:560px) {
+  .page-content { overflow-x:clip; }
+}
+
+.app-shell .page-content :is(.panel,.chart-card,.metric,.summary-grid article,.stat-card,.history-panel,.review-panel,.audit-card,.config-card,.proposal-card,.ticket-group,.table-panel,.bloque) {
+  border-radius:16px;
+  box-shadow:var(--shadow-card);
+}
+.app-shell .page-content :is(h1,h2,h3) { text-wrap:balance; }
+.app-shell .page-content :is(button,input,select,textarea) { border-radius:10px; }
+.app-shell .page-content :is(button,input,select,textarea) { transition:border-color .18s ease,background-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease; }
+.app-shell .page-content :is(button,a):focus-visible,
+.app-shell .page-content :is(input,select,textarea):focus-visible { outline:2px solid var(--accent-violet); outline-offset:2px; }
+.app-shell .page-content button:not(:disabled):hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(165,55,255,.16); }
+.app-shell .page-content button:disabled { cursor:not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .page-content :is(button,input,select,textarea) { transition:none; }
+  .app-shell .page-content button:not(:disabled):hover { transform:none; }
+}
+
+.pantalla{background:radial-gradient(ellipse at 20% 10%,rgba(165,55,255,.18),transparent 38%),#12091f;color:#f8efff}
+.pantalla .tarjeta{border:1px solid rgba(217,168,255,.2);background:#29133f;color:#f8efff;box-shadow:0 24px 70px rgba(0,0,0,.45),0 0 32px rgba(165,55,255,.12)}
+.pantalla .logo{background:rgba(255,0,157,.16);color:#ff55bd}.pantalla .logo svg{width:30px;height:30px;stroke-width:2.2}
+.pantalla .marca h1,.pantalla h2{color:#f8efff}.pantalla .sub,.pantalla .marca p,.pantalla .demo{color:#c3b1d5}.pantalla label{color:#e5d8ef}
+.pantalla .campo input{border-color:rgba(217,168,255,.28);background:#1d1030;color:#f8efff;caret-color:#ff009d}
+.pantalla .campo input:focus,.pantalla .campo input:valid{border-color:#ff009d;background:#211132;box-shadow:0 0 0 3px rgba(255,0,157,.12)}
+.pantalla .campo label{color:#d0c0df}.pantalla .campo .icono{width:17px;height:17px;fill:none;stroke:#d9a8ff;stroke-width:1.8}
+.pantalla .campo .ojo{color:#e2a2ff}.pantalla .error,.pantalla .error-general{color:#ff9dbb}.pantalla .error-general{background:rgba(255,54,113,.14)}
+.pantalla .user-profile{background:#ff009d;box-shadow:0 6px 22px rgba(255,0,157,.2)}
+.pantalla .user-profile:hover,.pantalla .user-profile:focus-visible{background:#dc0088;box-shadow:0 0 18px rgba(255,0,157,.36)}
+.pantalla .user-profile-inner{background:#321849;color:#fff}.pantalla .user-profile-inner svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2}
+
+/* Retira solo los bordes decorativos de resúmenes informativos; se conserva el box model. */
+.app-shell[data-theme] .welcome-view :is(.home-link-card,.home-metrics),
+.app-shell[data-theme] .agent-view :is(.metric,.agent-status,.ticket-overview),
+.app-shell[data-theme] .agent-view .ticket-kpis>div,
+.app-shell[data-theme] .agent-history-view .detail-panel,
+.app-shell[data-theme] .recommendations-view :is(.ticket-list,.recommendation-detail,.ticket-group,.proposal-card,.analysis-grid section,.judge-reason,.recommendation-scores,.recommendation-score-grid article,.judge-opinion-list article,.empty-state),
+.app-shell[data-theme] .stack-view :is(.summary-grid article,.evaluation-panel,.status-panel,.license-panel),
+.app-shell[data-theme] .assets-view .stat-card,
+.app-shell[data-theme] .agent-config-view :is(.config-summary,.config-panel,.config-card) {
+  border-color: transparent;
+}
+
+.app-shell[data-theme] .welcome-view .home-link-card:hover { border-color: transparent; }
+
+/* Estilos del desplegable anclado al perfil de la sidebar: superficie oscura en ambos temas. */
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown{position:absolute;top:auto;right:0;bottom:calc(100% + 8px);left:0;z-index:60;width:100%;max-width:100%;box-sizing:border-box;padding:12px;border:1px solid rgba(217,168,255,.38);border-radius:14px;background:rgba(33,13,56,.98);color:#fbf5ff;box-shadow:0 16px 34px rgba(8,2,18,.42),0 0 16px rgba(165,55,255,.12)}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown:focus-visible{outline:2px solid #ff8ee0;outline-offset:2px}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity{display:flex;align-items:center;gap:11px;min-width:0;padding:3px 4px 11px}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity>.avatar{width:40px;height:40px;flex:none}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity>span:last-child{display:grid;gap:2px;min-width:0;overflow:hidden}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity strong,.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity strong{color:#fbf5ff;font-size:calc((13px) + var(--font-size-increase))}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity small{color:#d9c8e8;font-size:calc((11px) + var(--font-size-increase))}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-divider{height:1px;margin:0 0 8px;background:rgba(217,168,255,.24)}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .auth-unavailable{color:#ead8f5}
+.app-shell .profile-menu.sidebar-profile-menu.opens-up .auth-unavailable[role="alert"]{color:#ffc4dc}
+.app-shell .welcome-view .home-card-arrow{transition:color .2s ease,background-color .2s ease,border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.app-shell .welcome-view .home-card-arrow svg{transition:color .2s ease,transform .2s ease}
+.app-shell .welcome-view .home-link-card:hover .home-card-arrow,.app-shell .welcome-view .home-link-card:focus-visible .home-card-arrow{border-color:var(--accent);background:var(--accent-wash);color:var(--accent);box-shadow:0 0 14px rgba(237,7,155,.18)}
+.app-shell .welcome-view .home-link-card:hover .home-card-arrow svg,.app-shell .welcome-view .home-link-card:focus-visible .home-card-arrow svg{color:var(--accent);transform:translateX(2px)}
+.app-shell .welcome-view .home-link-card:active .home-card-arrow{transform:scale(.96);box-shadow:0 0 6px rgba(237,7,155,.12)}
+@media(prefers-reduced-motion:reduce){.app-shell .welcome-view .home-card-arrow,.app-shell .welcome-view .home-card-arrow svg{transition:none}.app-shell .welcome-view .home-card-arrow:hover svg,.app-shell .welcome-view .home-link-card:focus-visible .home-card-arrow svg,.app-shell .welcome-view .home-link-card:active .home-card-arrow{transform:none}}

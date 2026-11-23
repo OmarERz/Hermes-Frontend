@@ -1,0 +1,62 @@
+<section class="assign-stack-view">
+  <header class="assign-heading">
+    <span>Hermes Control / Stack tecnológico</span>
+    <h1>Asignar tecnologías a activos</h1>
+    <p>Selecciona un activo y vincula las tecnologías registradas en el catálogo empresarial.</p>
+  </header>
+
+  @if (!tecnologias().length) {
+    <section class="assign-panel empty-catalog" role="status">
+      <h2>Catálogo vacío</h2>
+      <p>Aún no hay tecnologías registradas. Agrega tecnologías al catálogo para poder asignarlas a tus activos.</p>
+      <a routerLink="/stack-tecnologico">Ir al catálogo de tecnologías</a>
+    </section>
+  } @else {
+    <section class="assign-panel">
+      <h2>{{ activoId ? 'Modificar asignación' : 'Nueva asignación' }}</h2>
+      <label>Activo registrado
+        <select [(ngModel)]="activoId" name="activo" (ngModelChange)="seleccionarActivo()" required>
+          <option value="">Selecciona un activo</option>
+          @for (activo of activos; track activo.id) {
+            <option [value]="activo.id">{{ activo.nombre }} · {{ activo.id }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="technology-picker">
+        <label for="buscar-tecnologia">Buscar tecnología</label>
+        <input id="buscar-tecnologia" type="search" [(ngModel)]="busquedaTecnologia" name="buscarTecnologia" placeholder="Nombre o categoría">
+        <div class="technology-options" role="group" aria-label="Tecnologías del catálogo">
+          @for (tecnologia of tecnologiasFiltradas; track tecnologia.id) {
+            <label class="technology-option">
+              <input type="checkbox" [checked]="seleccionadas.includes(tecnologia.id)" (change)="alternarTecnologia(tecnologia.id, $any($event.target).checked)">
+              <span><strong>{{ tecnologia.nombre }}</strong><small>{{ tecnologia.categoria }} · {{ tecnologia.version }} · {{ tecnologia.estado }}</small></span>
+            </label>
+          } @empty {
+            <p class="picker-empty">No hay tecnologías que coincidan con la búsqueda.</p>
+          }
+        </div>
+        <small>{{ seleccionadas.length }} tecnología(s) seleccionada(s)</small>
+      </div>
+
+      @if (error) { <p class="assign-error" role="alert">{{ error }}</p> }
+      @if (mensaje) { <p class="assign-success" role="status">{{ mensaje }}</p> }
+      <button type="button" (click)="guardar()" [disabled]="!activos.length">Guardar asignación</button>
+      <button type="button" class="cancel-assignment" (click)="cancelar()">Cancelar</button>
+      @if (!activos.length) { <p class="picker-empty">Registra un activo antes de asignar tecnologías.</p> }
+    </section>
+  }
+
+  <section class="assign-panel assignments-list">
+    <h2>Asignaciones registradas</h2>
+    @for (asignacion of asignaciones; track asignacion.activo?.id) {
+      <article>
+        <div><strong>{{ asignacion.activo?.nombre }}</strong><span>{{ asignacion.activo?.id }}</span></div>
+        <p>{{ asignacion.tecnologias.join(', ') || 'Sin tecnologías asignadas' }}</p>
+        <button type="button" (click)="modificarAsignacion(asignacion.activoId)">Modificar</button>
+      </article>
+    } @empty {
+      <p>Aún no hay asignaciones guardadas.</p>
+    }
+  </section>
+</section>

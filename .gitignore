@@ -9,7 +9,6 @@
 
 # Node modules and dependency files
 /node_modules/
-/package-lock.json
 /yarn.lock
 
 # Environment files
@@ -26,3 +25,18 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Local Firebase web config (copy src/environments/firebase.example.ts to firebase.ts)
+/src/environments/firebase.ts
+
+# Firebase CLI and editor leftovers
+firebase-debug.log*
+.firebase/
+.vscode/mcp.json
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+.DS_Store

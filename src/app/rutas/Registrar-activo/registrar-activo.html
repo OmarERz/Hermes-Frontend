@@ -1,0 +1,94 @@
+<header class="form-heading"><div><span>Hermes Control / Activos</span><h1>Registrar activo</h1><p>Ingresa la información del activo de TI de la empresa.</p></div></header>
+
+<form class="pagina" (ngSubmit)="registrar()">
+  @if (errorRegistro) { <p role="alert">{{ errorRegistro }}</p> }
+  <div class="columna-principal">
+
+    <section class="bloque">
+      <h2>Información general</h2>
+      <div class="grid">
+        <label>Nombre del activo *
+          <input name="nombre" [(ngModel)]="activo.nombre" placeholder="Ej. Estación de trabajo FIN-001" required>
+        </label>
+        <label>Tipo de activo *
+          <select name="tipo" [(ngModel)]="activo.tipo">
+            @for (t of tipos; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </label>
+        <label>Código / ID *
+          <input name="codigo" [(ngModel)]="activo.codigo" required>
+        </label>
+        <label>Estado
+          <select name="estado" [(ngModel)]="activo.estado">
+            @for (e of estados; track e) {
+              <option [value]="e">{{ e }}</option>
+            }
+          </select>
+        </label>
+        <label>Propietario *
+          <input name="propietario" [(ngModel)]="activo.propietario" placeholder="Nombre del responsable" required>
+        </label>
+        <label>Área / Departamento
+          <input name="area" [(ngModel)]="activo.area" placeholder="Ej. Finanzas">
+        </label>
+      </div>
+      <label>Ubicación (opcional)
+        <input name="ubicacion" [(ngModel)]="activo.ubicacion" placeholder="Ej. Oficina 308, Sede Central">
+      </label>
+    </section>
+
+    <section class="bloque">
+      <h2>Hardware</h2>
+      <div class="grid">
+        <label>CPU *
+          <input name="cpu" [(ngModel)]="activo.cpu" placeholder="Ej. Intel Core i7-13700">
+        </label>
+        <label>GPU *
+          <input name="gpu" [(ngModel)]="activo.gpu" placeholder="Ej. NVIDIA RTX 4060">
+        </label>
+        <label>Memoria RAM (GB) *
+          <input name="ram" type="number" [(ngModel)]="activo.ram">
+        </label>
+        <label>Almacenamiento (TB) *
+          <input name="almacenamiento" type="number" [(ngModel)]="activo.almacenamiento">
+        </label>
+      </div>
+    </section>
+
+    <section class="bloque">
+      <h2>Software</h2>
+      <div class="grid">
+        <label>Sistema operativo *
+          <input name="sistema" [(ngModel)]="activo.sistema">
+        </label>
+        <label>Versión
+          <input name="version" [(ngModel)]="activo.version">
+        </label>
+      </div>
+    </section>
+
+    <section class="bloque">
+      <h2>Descripción / Observaciones</h2>
+      <textarea name="descripcion" [(ngModel)]="activo.descripcion" rows="3"></textarea>
+    </section>
+  </div>
+
+  <aside class="resumen bloque">
+    <h2>Resumen del activo</h2>
+    <p><strong>Tipo:</strong> {{ activo.tipo }}</p>
+    <p><strong>Propietario:</strong> {{ activo.propietario || '—' }}</p>
+    <p><strong>Estado:</strong> {{ activo.estado }}</p>
+    <p><strong>CPU:</strong> {{ activo.cpu || '—' }}</p>
+    <p><strong>GPU:</strong> {{ activo.gpu || '—' }}</p>
+    <p><strong>RAM:</strong> {{ activo.ram }} GB</p>
+    <p><strong>Almacenamiento:</strong> {{ activo.almacenamiento }} TB</p>
+    <p><strong>Sistema operativo:</strong> {{ activo.sistema || '—' }}</p>
+
+    <div class="botones">
+      <button type="button" (click)="cancelar()">Cancelar</button>
+      <button type="submit" class="principal" [disabled]="guardando">{{ guardando ? 'Guardando...' : 'Registrar activo' }}</button>
+    </div>
+  </aside>
+</form>

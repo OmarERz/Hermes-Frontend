@@ -1,0 +1,69 @@
+<main class="feeds-page" aria-labelledby="feeds-title">
+  <header class="feeds-header">
+    <div class="heading-copy">
+      <div class="title-line"><svg lucideRss aria-hidden="true"></svg><h1 id="feeds-title">Feeds de inteligencia</h1></div>
+      <p>Conecta y administra feeds de amenazas y vulnerabilidades para enriquecer la detección, el análisis y la respuesta en tus operaciones de ciberseguridad.</p>
+    </div>
+    <section class="feed-stats" aria-label="Indicadores de feeds">
+      <article class="stat-card"><svg lucideLayers aria-hidden="true"></svg><div><strong>{{ totalFeeds() ?? '—' }}</strong><span>Feeds totales</span></div></article>
+      <article class="stat-card active-stat"><svg lucideCircleCheck aria-hidden="true"></svg><div><strong>{{ totalActivos() ?? '—' }}</strong><span>Activos</span></div></article>
+      <article class="stat-card inactive-stat"><svg lucideCirclePause aria-hidden="true"></svg><div><strong>{{ totalInactivos() ?? '—' }}</strong><span>Inactivos</span></div></article>
+      <article class="stat-card sync-stat"><svg lucideRefreshCw aria-hidden="true"></svg><div><strong>{{ totalSincronizados24h() ?? 'No disponible' }}</strong><span>Sincronizados · últimas 24 h</span></div></article>
+    </section>
+  </header>
+
+  @if (servicio.integracionPendiente()) {
+    <p class="integration-note" role="status"><svg lucideSignal aria-hidden="true"></svg> Integración pendiente · el backend aún no publica un contrato de feeds. No se muestran datos de demostración en modo real.</p>
+  } @else {
+    <p class="demo-note" role="status">Datos de demostración · fuentes y frecuencias de ejemplo; no representan conexiones activas ni sincronizaciones reales.</p>
+  }
+
+  <div class="feed-filters" role="group" aria-label="Filtrar categoría de feeds">
+    <button type="button" [attr.aria-pressed]="categoria() === 'Amenazas'" [class.selected]="categoria() === 'Amenazas'" (click)="seleccionarCategoria('Amenazas')"><svg lucideShield aria-hidden="true"></svg>Amenazas <span>{{ amenazas() ?? '—' }}</span></button>
+    <button type="button" [attr.aria-pressed]="categoria() === 'Vulnerabilidades'" [class.selected]="categoria() === 'Vulnerabilidades'" (click)="seleccionarCategoria('Vulnerabilidades')"><svg lucideLayers aria-hidden="true"></svg>Vulnerabilidades <span>{{ vulnerabilidades() ?? '—' }}</span></button>
+  </div>
+
+  <section class="carousel-section" aria-label="Carrusel de feeds" (pointerdown)="iniciarArrastre($event)" (pointermove)="actualizarArrastre($event)" (pointerup)="finalizarArrastre($event)" (pointercancel)="finalizarArrastre($event)" (wheel)="desplazarConRueda($event)">
+    <img class="holographic-globe" src="/assets/hermes-intelligence-globe.png" alt="" aria-hidden="true" loading="lazy">
+    <div class="carousel-stage">
+      @for (tarjeta of tarjetasCarrusel(); track tarjeta.indiceVirtual) {
+          <article class="carousel-card" [attr.data-offset]="tarjeta.posicion" [class.center-card]="tarjeta.posicion === 0" [class.side-card]="tarjeta.posicion !== 0">
+            <button class="feed-card-select" type="button" [attr.aria-pressed]="tarjeta.posicion === 0" [attr.aria-label]="'Seleccionar feed ' + tarjeta.feed.nombre" (click)="seleccionarPosicion(tarjeta.feed.id, tarjeta.indiceVirtual)">
+              <span class="feed-brand" aria-hidden="true">{{ tarjeta.feed.nombre.slice(0, 2) }}</span>
+              <span class="feed-card-heading"><strong>{{ tarjeta.feed.nombre }}</strong><span class="category-chip">{{ tarjeta.feed.tipo }}</span></span>
+              <span class="feed-description">{{ tarjeta.feed.descripcion }}</span>
+              <span class="feed-provider"><small>Proveedor</small><strong>{{ tarjeta.feed.proveedor }}</strong></span>
+              @if (tarjeta.posicion === 0) { <span class="feed-sync-state">Sin datos de sincronización</span> }
+              <span class="feed-demo-tag">{{ servicio.modo() === 'demo' ? 'Ejemplo' : 'Integración pendiente' }}</span>
+            </button>
+            <label class="feed-toggle" [attr.aria-label]="(tarjeta.feed.activo ? 'Desactivar ' : 'Activar ') + tarjeta.feed.nombre">
+              <input type="checkbox" role="switch" [checked]="tarjeta.feed.activo" [disabled]="servicio.modo() !== 'demo'" (click)="$event.stopPropagation()" (change)="alternarFeed(tarjeta.feed, $event)">
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">{{ tarjeta.feed.activo ? 'Activo' : 'Inactivo' }}</span>
+            </label>
+          </article>
+      }
+      @if (servicio.integracionPendiente()) {
+        <div class="empty-carousel"><svg lucideSignal aria-hidden="true"></svg><strong>Integración pendiente</strong><span>Los feeds aparecerán aquí cuando el backend publique la consulta autorizada.</span></div>
+      }
+      @if (!servicio.integracionPendiente() && !feedsFiltrados().length) {
+        <div class="empty-carousel"><svg lucideLayers aria-hidden="true"></svg><strong>No hay feeds en esta categoría</strong><span>Los registros disponibles se mostrarán aquí.</span></div>
+      }
+    </div>
+  </section>
+
+  <section class="feed-details" aria-live="polite" aria-labelledby="feed-details-title">
+    <header><svg lucideLayers aria-hidden="true"></svg><h2 id="feed-details-title">Detalles del feed{{ feedSeleccionado() ? ': ' + feedSeleccionado()!.nombre : '' }}</h2></header>
+    @if (feedSeleccionado(); as feed) {
+      <div class="details-grid">
+        <div class="detail-row"><svg lucideShield aria-hidden="true"></svg><strong>Proveedor</strong><span>{{ feed.proveedor || 'No disponible' }}</span></div>
+        <div class="detail-row"><svg lucideRefreshCw aria-hidden="true"></svg><strong>Frecuencia</strong><span>{{ feed.frecuenciaActualizacion || 'No disponible' }}</span></div>
+        <div class="detail-row"><svg lucideLayers aria-hidden="true"></svg><strong>Cobertura</strong><span>{{ feed.cobertura || 'No disponible' }}</span></div>
+        <div class="detail-row"><svg lucideSignal aria-hidden="true"></svg><strong>Enfoque de severidad</strong><span>{{ feed.severidad || 'No disponible' }}</span></div>
+      </div>
+      @if (servicio.modo() === 'demo') { <small class="detail-disclaimer">Valores ilustrativos de demostración; no proceden de una conexión activa.</small> }
+    } @else {
+      <p class="details-empty">{{ servicio.integracionPendiente() ? 'Los detalles estarán disponibles cuando exista una API de feeds confirmada.' : 'Selecciona un feed para consultar sus detalles.' }}</p>
+    }
+  </section>
+</main>
