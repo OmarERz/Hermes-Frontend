@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "mi-primera-pagina": {
+    "hermes-front": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -25,15 +25,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.css"],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "security": {
-              "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "styles": ["src/styles.css"]
           },
           "configurations": {
             "production": {
@@ -63,10 +55,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "mi-primera-pagina:build:production"
+              "buildTarget": "hermes-front:build:production"
             },
             "development": {
-              "buildTarget": "mi-primera-pagina:build:development"
+              "buildTarget": "hermes-front:build:development"
             }
           },
           "defaultConfiguration": "development"

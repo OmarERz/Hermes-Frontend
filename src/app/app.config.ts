@@ -4,7 +4,6 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 
 import { routes } from './app.routes';
 import { firebaseConfig } from '../environments/firebase';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
@@ -14,8 +13,6 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withFetch()),
-    provideClientHydration(withEventReplay()),
-
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
 
     provideAuth(() => getAuth()),
