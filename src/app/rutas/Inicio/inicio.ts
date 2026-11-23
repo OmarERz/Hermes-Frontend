@@ -1,6 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideActivity, LucideArrowRight, LucideBot, LucideFileClock, LucideLayers, LucideMonitor, LucideSlidersHorizontal } from '@lucide/angular';
+import {
+  LucideActivity,
+  LucideArrowRight,
+  LucideBot,
+  LucideFileClock,
+  LucideLayers,
+  LucideMonitor,
+  LucideSlidersHorizontal,
+} from '@lucide/angular';
 import { CatalogoTecnologias } from '../../servicios/catalogo-tecnologias';
 import { InventarioActivos } from '../../servicios/inventario-activos';
 import { OrigenDashboard } from '../../servicios/origen-dashboard';
@@ -9,9 +17,18 @@ import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
 
 @Component({
   selector: 'app-inicio',
-  imports: [RouterLink, LucideActivity, LucideArrowRight, LucideBot, LucideFileClock, LucideLayers, LucideMonitor, LucideSlidersHorizontal],
+  imports: [
+    RouterLink,
+    LucideActivity,
+    LucideArrowRight,
+    LucideBot,
+    LucideFileClock,
+    LucideLayers,
+    LucideMonitor,
+    LucideSlidersHorizontal,
+  ],
   templateUrl: './inicio.html',
-  styleUrl: './inicio.css'
+  styleUrl: './inicio.css',
 })
 export class Inicio implements OnInit {
   readonly origen = inject(OrigenDashboard);
@@ -20,10 +37,13 @@ export class Inicio implements OnInit {
   private readonly inventario = inject(InventarioActivos);
   private readonly supervision = inject(SupervisionAgentes);
   ngOnInit(): void {
-    if (this.origen.modo() === 'real') this.inventario.cargar().subscribe({ error: () => undefined });
+    if (this.origen.modo() === 'real')
+      this.inventario.cargar().subscribe({ error: () => undefined });
   }
 
-  get demo(): boolean { return this.origen.modo() === 'demo'; }
+  get demo(): boolean {
+    return this.origen.modo() === 'demo';
+  }
   /** Prefiere el nombre visible de Firebase y usa el email como alternativa legible. */
   get nombreSaludo(): string {
     const usuario = this.sesion.usuarioFirebase();
@@ -40,6 +60,10 @@ export class Inicio implements OnInit {
     const total = this.demo ? this.origen.activos.length : this.inventario.activos.length;
     return total > 0 ? total : null;
   }
-  get totalTickets(): number | null { return this.demo ? this.supervision.tickets.length : null; }
-  get tasaExito(): number | null { return this.demo ? this.origen.agentes.tasaExito : null; }
+  get totalTickets(): number | null {
+    return this.demo ? this.supervision.tickets.length : null;
+  }
+  get tasaExito(): number | null {
+    return this.demo ? this.origen.agentes.tasaExito : null;
+  }
 }

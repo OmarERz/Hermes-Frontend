@@ -45,19 +45,19 @@ export class InventarioActivos {
   cargar(): Observable<ActivoInventario[]> {
     if (!API_CONFIG.usarApi) return of(this.activos);
     return this.http.get<ActivoInventario[]>(this.endpoint).pipe(
-      tap(activos => this.activos = activos),
-      catchError(error => {
+      tap((activos) => (this.activos = activos)),
+      catchError((error) => {
         this.activos = [];
         return throwError(() => error);
-      })
+      }),
     );
   }
 
   agregar(datos: DatosNuevoActivo): Observable<ActivoInventario> {
     if (API_CONFIG.usarApi) {
-      return this.http.post<ActivoInventario>(this.endpoint, datos).pipe(
-        tap(activo => this.activos.unshift(activo))
-      );
+      return this.http
+        .post<ActivoInventario>(this.endpoint, datos)
+        .pipe(tap((activo) => this.activos.unshift(activo)));
     }
 
     const activo: ActivoInventario = {
@@ -72,7 +72,7 @@ export class InventarioActivos {
       sistema: datos.version ? `${datos.sistema} ${datos.version}` : datos.sistema,
       propietario: datos.propietario || 'Sin asignar',
       area: datos.area || 'Sin area',
-      estado: datos.estado
+      estado: datos.estado,
     };
     this.activos.unshift(activo);
     return of(activo);
@@ -80,11 +80,15 @@ export class InventarioActivos {
 
   asignarPropietario(id: string, propietario: string): Observable<ActivoInventario> {
     const solicitud = API_CONFIG.usarApi
-      ? this.http.patch<ActivoInventario>(`${this.endpoint}/${encodeURIComponent(id)}`, { propietario })
-      : of(this.activos.find(activo => activo.id === id)!);
+      ? this.http.patch<ActivoInventario>(`${this.endpoint}/${encodeURIComponent(id)}`, {
+          propietario,
+        })
+      : of(this.activos.find((activo) => activo.id === id)!);
 
-    return solicitud.pipe(tap(activo => {
-      activo.propietario = propietario;
-    }));
+    return solicitud.pipe(
+      tap((activo) => {
+        activo.propietario = propietario;
+      }),
+    );
   }
 }

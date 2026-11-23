@@ -1,91 +1,288 @@
-<dialog #dialogElement class="review-modal" aria-labelledby="human-review-title" aria-modal="true" (cancel)="cerrarConEscape($event)" (close)="notificarCierre()">
+<dialog
+  #dialogElement
+  class="review-modal"
+  aria-labelledby="human-review-title"
+  aria-modal="true"
+  (cancel)="cerrarConEscape($event)"
+  (close)="notificarCierre()"
+>
   <header class="review-modal-header">
-    <div class="review-title-group"><svg lucideUserRoundCheck aria-hidden="true"></svg><div><h2 id="human-review-title">Revisión humana</h2><p>Revisa las propuestas y registra una decisión para el caso seleccionado.</p></div></div>
-    <button type="button" class="review-close" aria-label="Cerrar revisión humana" (click)="cerrar()"><svg lucideX aria-hidden="true"></svg></button>
+    <div class="review-title-group">
+      <svg lucideUserRoundCheck aria-hidden="true"></svg>
+      <div>
+        <h2 id="human-review-title">Revisión humana</h2>
+        <p>Revisa las propuestas y registra una decisión para el caso seleccionado.</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="review-close"
+      aria-label="Cerrar revisión humana"
+      (click)="cerrar()"
+    >
+      <svg lucideX aria-hidden="true"></svg>
+    </button>
   </header>
 
   @if (origen.modo() === 'demo') {
-    <p class="review-demo-note" role="status">Datos de demostración · los cambios se guardan temporalmente en memoria.</p>
+    <p class="review-demo-note" role="status">
+      Datos de demostración · los cambios se guardan temporalmente en memoria.
+    </p>
   } @else {
-    <p class="review-unavailable-note" role="status">No hay API HITL conectada. No es posible guardar una decisión real.</p>
+    <p class="review-unavailable-note" role="status">
+      No hay API HITL conectada. No es posible guardar una decisión real.
+    </p>
   }
 
   <section class="review-case-context" aria-label="Caso seleccionado">
     <span class="review-context-icon"><svg lucideBot aria-hidden="true"></svg></span>
-    <div class="review-context-copy"><strong>{{ ticketId }}</strong><span>{{ seleccionada?.evaluacion?.opinionesJuez?.length ? 'Juez ' + numeroJuezSeleccionado : seleccionada?.agente ?? 'Selecciona una propuesta para revisar' }}@if (seleccionada) { · {{ seleccionada.id }}@if (seleccionada.cveId) { · {{ seleccionada.cveId }} } }</span></div>
+    <div class="review-context-copy">
+      <strong>{{ ticketId }}</strong
+      ><span
+        >{{
+          seleccionada?.evaluacion?.opinionesJuez?.length
+            ? 'Juez ' + numeroJuezSeleccionado
+            : (seleccionada?.agente ?? 'Selecciona una propuesta para revisar')
+        }}
+        @if (seleccionada) {
+          · {{ seleccionada.id }}
+          @if (seleccionada.cveId) {
+            · {{ seleccionada.cveId }}
+          }
+        }
+      </span>
+    </div>
     <span class="review-status-badge">{{ seleccionada?.estadoRevision ?? 'Sin seleccionar' }}</span>
   </section>
 
   @if (ticketsEnDesacuerdo) {
-    <p class="review-conflict-note"><svg lucideGitCompareArrows aria-hidden="true"></svg> Hay propuestas en desacuerdo. Se conservan ambas para compararlas; elige cuál revisar antes de guardar.</p>
+    <p class="review-conflict-note">
+      <svg lucideGitCompareArrows aria-hidden="true"></svg> Hay propuestas en desacuerdo. Se
+      conservan ambas para compararlas; elige cuál revisar antes de guardar.
+    </p>
   }
 
-  <section class="review-comparison" aria-label="Propuestas de los jueces y evaluación seleccionada">
+  <section
+    class="review-comparison"
+    aria-label="Propuestas de los jueces y evaluación seleccionada"
+  >
     <article class="review-comparison-card agent-proposals">
       <h3><svg lucideBot aria-hidden="true"></svg> Propuestas de los jueces</h3>
       @for (revision of revisionesTicket; track revision.id; let i = $index) {
-        <button type="button" class="review-agent-proposal" [class.agent-evaluation]="!revision.evaluacion?.opinionesJuez?.length" [class.judge-evaluation]="!!revision.evaluacion?.opinionesJuez?.length" [class.selected]="seleccionada?.id === revision.id" [attr.aria-pressed]="seleccionada?.id === revision.id" (click)="abrir(revision)">
-          <header><span><strong>{{ revision.evaluacion?.opinionesJuez?.length ? 'Juez ' + (i + 1) : revision.agente }}</strong><small>{{ ticketId }} · {{ revision.id }}</small></span>@if (revision.decisionJuez === 'En desacuerdo') { <span class="disagreement-badge">En desacuerdo</span> }</header>
+        <button
+          type="button"
+          class="review-agent-proposal"
+          [class.agent-evaluation]="!revision.evaluacion?.opinionesJuez?.length"
+          [class.judge-evaluation]="!!revision.evaluacion?.opinionesJuez?.length"
+          [class.selected]="seleccionada?.id === revision.id"
+          [attr.aria-pressed]="seleccionada?.id === revision.id"
+          (click)="abrir(revision)"
+        >
+          <header>
+            <span
+              ><strong>{{
+                revision.evaluacion?.opinionesJuez?.length ? 'Juez ' + (i + 1) : revision.agente
+              }}</strong
+              ><small>{{ ticketId }} · {{ revision.id }}</small></span
+            >
+            @if (revision.decisionJuez === 'En desacuerdo') {
+              <span class="disagreement-badge">En desacuerdo</span>
+            }
+          </header>
           <small class="proposal-review-status">{{ revision.estadoRevision }}</small>
-          <dl class="proposal-states"><div><dt>Estado anterior</dt><dd>{{ revision.estadoAnterior }}</dd></div><div><dt>Estado propuesto</dt><dd>{{ revision.estadoPropuesto }}</dd></div></dl>
-          <dl class="proposal-states"><div><dt>Puntaje anterior</dt><dd>{{ mostrarPuntaje(revision.puntajeAnterior) }}</dd></div><div><dt>Puntaje del juez</dt><dd>{{ mostrarPuntaje(puntajeDelJuez(revision)) }}</dd></div></dl>
+          <dl class="proposal-states">
+            <div>
+              <dt>Estado anterior</dt>
+              <dd>{{ revision.estadoAnterior }}</dd>
+            </div>
+            <div>
+              <dt>Estado propuesto</dt>
+              <dd>{{ revision.estadoPropuesto }}</dd>
+            </div>
+          </dl>
+          <dl class="proposal-states">
+            <div>
+              <dt>Puntaje anterior</dt>
+              <dd>{{ mostrarPuntaje(revision.puntajeAnterior) }}</dd>
+            </div>
+            <div>
+              <dt>Puntaje del juez</dt>
+              <dd>{{ mostrarPuntaje(puntajeDelJuez(revision)) }}</dd>
+            </div>
+          </dl>
         </button>
       } @empty {
-        <div class="review-empty"><svg lucideGitCompareArrows aria-hidden="true"></svg><p>No hay propuestas disponibles para este ticket en el origen de datos actual.</p></div>
+        <div class="review-empty">
+          <svg lucideGitCompareArrows aria-hidden="true"></svg>
+          <p>No hay propuestas disponibles para este ticket en el origen de datos actual.</p>
+        </div>
       }
     </article>
 
     <article class="review-comparison-card judge-criterion">
-      <h3><svg lucideScale aria-hidden="true"></svg> {{ seleccionada?.evaluacion?.opinionesJuez?.length ? 'Evaluación del Juez ' + numeroJuezSeleccionado : 'Evaluación del agente juez' }}</h3>
+      <h3>
+        <svg lucideScale aria-hidden="true"></svg>
+        {{
+          seleccionada?.evaluacion?.opinionesJuez?.length
+            ? 'Evaluación del Juez ' + numeroJuezSeleccionado
+            : 'Evaluación del agente juez'
+        }}
+      </h3>
       @if (seleccionada) {
         <section class="score-stages" aria-label="Puntajes por etapa">
-          <article><small>Puntaje original</small><strong>{{ mostrarPuntaje(puntajesSeleccionados?.puntajeOriginal) }}</strong><span>{{ puntajesSeleccionados?.escala ?? 'Escala no informada' }}</span></article>
-          <article><small>Puntaje del motor determinista</small><strong>{{ mostrarPuntaje(puntajesSeleccionados?.puntajeDeterminista) }}</strong><span>{{ puntajesSeleccionados?.escala ?? 'Escala no informada' }}</span></article>
-          <article><small>Puntaje del juez</small><strong>{{ mostrarPuntaje(opinionesJuezSeleccionadas[0]?.puntaje) }}</strong><span>{{ opinionesJuezSeleccionadas[0]?.escala ?? 'Escala no informada' }}</span></article>
+          <article>
+            <small>Puntaje original</small
+            ><strong>{{ mostrarPuntaje(puntajesSeleccionados?.puntajeOriginal) }}</strong
+            ><span>{{ puntajesSeleccionados?.escala ?? 'Escala no informada' }}</span>
+          </article>
+          <article>
+            <small>Puntaje del motor determinista</small
+            ><strong>{{ mostrarPuntaje(puntajesSeleccionados?.puntajeDeterminista) }}</strong
+            ><span>{{ puntajesSeleccionados?.escala ?? 'Escala no informada' }}</span>
+          </article>
+          <article>
+            <small>Puntaje del juez</small
+            ><strong>{{ mostrarPuntaje(opinionesJuezSeleccionadas[0]?.puntaje) }}</strong
+            ><span>{{ opinionesJuezSeleccionadas[0]?.escala ?? 'Escala no informada' }}</span>
+          </article>
         </section>
-        <p class="score-footnote">Los puntajes heredados de demostración no se convierten ni se identifican como CVSS.</p>
+        <p class="score-footnote">
+          Los puntajes heredados de demostración no se convierten ni se identifican como CVSS.
+        </p>
         @if (opinionesJuezSeleccionadas.length) {
-          <section class="judge-rationale"><h4>Opinión del juez</h4><p><span class="judge-decision-badge" [class.agreement]="opinionSeleccionada.toLowerCase().includes('acuerdo') && !opinionSeleccionada.toLowerCase().includes('desacuerdo')">{{ opinionSeleccionada }}</span></p></section>
-          <section class="judge-rationale"><h4>Análisis</h4><p>{{ opinionesJuezSeleccionadas[0].analisis ?? 'No disponible' }}</p></section>
-          <section class="judge-rationale"><h4>Justificación</h4><p>{{ opinionesJuezSeleccionadas[0].justificacion ?? 'No disponible' }}</p></section>
+          <section class="judge-rationale">
+            <h4>Opinión del juez</h4>
+            <p>
+              <span
+                class="judge-decision-badge"
+                [class.agreement]="
+                  opinionSeleccionada.toLowerCase().includes('acuerdo') &&
+                  !opinionSeleccionada.toLowerCase().includes('desacuerdo')
+                "
+                >{{ opinionSeleccionada }}</span
+              >
+            </p>
+          </section>
+          <section class="judge-rationale">
+            <h4>Análisis</h4>
+            <p>{{ opinionesJuezSeleccionadas[0].analisis ?? 'No disponible' }}</p>
+          </section>
+          <section class="judge-rationale">
+            <h4>Justificación</h4>
+            <p>{{ opinionesJuezSeleccionadas[0].justificacion ?? 'No disponible' }}</p>
+          </section>
         } @else {
           <div class="judge-empty"><p>No hay opiniones de juez disponibles para este caso.</p></div>
         }
-        @if (seleccionada.motivoRevision) { <section class="judge-rationale"><h4>Razón de revisión o desacuerdo</h4><p>{{ seleccionada.motivoRevision }}</p></section> }
+        @if (seleccionada.motivoRevision) {
+          <section class="judge-rationale">
+            <h4>Razón de revisión o desacuerdo</h4>
+            <p>{{ seleccionada.motivoRevision }}</p>
+          </section>
+        }
         @if (seleccionada.historial.length) {
-          <details class="review-audit"><summary>Historial de revisión · {{ seleccionada.historial.length }}</summary>
-            @for (evento of seleccionada.historial; track $index) { <p><strong>{{ evento.estado }}</strong> · {{ evento.decision }} · {{ evento.actor }} · {{ evento.fecha }}@if (evento.puntaje !== undefined) { · Puntaje humano: {{ evento.puntaje }} }@if (evento.comentario) { · {{ evento.comentario }} }</p> }
+          <details class="review-audit">
+            <summary>Historial de revisión · {{ seleccionada.historial.length }}</summary>
+            @for (evento of seleccionada.historial; track $index) {
+              <p>
+                <strong>{{ evento.estado }}</strong> · {{ evento.decision }} · {{ evento.actor }} ·
+                {{ evento.fecha }}
+                @if (evento.puntaje !== undefined) {
+                  · Puntaje humano: {{ evento.puntaje }}
+                }
+                @if (evento.comentario) {
+                  · {{ evento.comentario }}
+                }
+              </p>
+            }
           </details>
         }
       } @else {
-        <div class="judge-empty"><p>Selecciona una propuesta para consultar las evaluaciones disponibles.</p></div>
+        <div class="judge-empty">
+          <p>Selecciona una propuesta para consultar las evaluaciones disponibles.</p>
+        </div>
       }
     </article>
   </section>
 
   <section class="human-decision" aria-labelledby="human-decision-title">
     <h3 id="human-decision-title"><svg lucideCheck aria-hidden="true"></svg> Decisión humana</h3>
-    <fieldset><legend>Selecciona una acci&#243;n</legend>
+    <fieldset>
+      <legend>Selecciona una acci&#243;n</legend>
       @for (opcion of acciones; track opcion.valor; let i = $index) {
-        <label class="decision-option" [class.selected]="accion === opcion.valor" [for]="'decision-' + ticketId + '-' + i"><input type="radio" [id]="'decision-' + ticketId + '-' + i" [name]="'decision-humana-' + ticketId" [value]="opcion.valor" [(ngModel)]="accion" [disabled]="origen.modo() !== 'demo' || !seleccionada">{{ opcion.etiqueta }}</label>
+        <label
+          class="decision-option"
+          [class.selected]="accion === opcion.valor"
+          [for]="'decision-' + ticketId + '-' + i"
+          ><input
+            type="radio"
+            [id]="'decision-' + ticketId + '-' + i"
+            [name]="'decision-humana-' + ticketId"
+            [value]="opcion.valor"
+            [(ngModel)]="accion"
+            [disabled]="origen.modo() !== 'demo' || !seleccionada"
+          />{{ opcion.etiqueta }}</label
+        >
       }
     </fieldset>
     @if (accion === 'assign-score') {
-      <label class="review-input-label">Nuevo puntaje<input type="number" step="any" [(ngModel)]="puntajeNuevo" aria-describedby="review-score-note" [disabled]="origen.modo() !== 'demo'"></label>
-      <p id="review-score-note" class="review-footnote">El rango y la precisi&#243;n deben confirmarse con el backend; este valor solo representa la decisi&#243;n humana.</p>
-      @if (puntajeNuevo === null) { <p class="review-footnote">Escribe un puntaje para guardar esta decisi&#243;n.</p> }
-      @else if (!puntajeNuevoValido) { <p class="review-footnote">El puntaje debe ser un n&#250;mero finito.</p> }
+      <label class="review-input-label"
+        >Nuevo puntaje<input
+          type="number"
+          step="any"
+          [(ngModel)]="puntajeNuevo"
+          aria-describedby="review-score-note"
+          [disabled]="origen.modo() !== 'demo'"
+      /></label>
+      <p id="review-score-note" class="review-footnote">
+        El rango y la precisi&#243;n deben confirmarse con el backend; este valor solo representa la
+        decisi&#243;n humana.
+      </p>
+      @if (puntajeNuevo === null) {
+        <p class="review-footnote">Escribe un puntaje para guardar esta decisi&#243;n.</p>
+      } @else if (!puntajeNuevoValido) {
+        <p class="review-footnote">El puntaje debe ser un n&#250;mero finito.</p>
+      }
     }
     @if (accion === 'accept-original-score') {
       @if (puntajeOriginalSeleccionado !== null) {
-        <p class="review-score-diff">Puntaje original que se aceptar&#225;: {{ puntajeOriginalSeleccionado }}</p>
+        <p class="review-score-diff">
+          Puntaje original que se aceptar&#225;: {{ puntajeOriginalSeleccionado }}
+        </p>
       } @else {
-        <p class="review-error" role="alert">El puntaje original no est&#225; disponible para esta evaluaci&#243;n.</p>
+        <p class="review-error" role="alert">
+          El puntaje original no est&#225; disponible para esta evaluaci&#243;n.
+        </p>
       }
     }
-    <label class="review-input-label review-comments"><span><svg lucideMessageSquareText aria-hidden="true"></svg> Comentarios opcionales</span><textarea [(ngModel)]="comentario" rows="3" maxlength="1000" placeholder="Agrega un comentario sobre tu decisión (opcional)..." [disabled]="origen.modo() !== 'demo'"></textarea></label>
-    @if (error) { <p class="review-error" role="alert">{{ error }}</p> }
+    <label class="review-input-label review-comments"
+      ><span><svg lucideMessageSquareText aria-hidden="true"></svg> Comentarios opcionales</span
+      ><textarea
+        [(ngModel)]="comentario"
+        rows="3"
+        maxlength="1000"
+        placeholder="Agrega un comentario sobre tu decisión (opcional)..."
+        [disabled]="origen.modo() !== 'demo'"
+      ></textarea>
+    </label>
+    @if (error) {
+      <p class="review-error" role="alert">{{ error }}</p>
+    }
   </section>
 
-  <footer class="review-modal-actions"><button type="button" class="review-cancel" (click)="cerrar()">Cancelar</button><button type="button" class="review-save" (click)="confirmar()" [disabled]="origen.modo() !== 'demo' || !seleccionada || (accion === 'accept-original-score' && puntajeOriginalSeleccionado === null)">Guardar decisión</button></footer>
+  <footer class="review-modal-actions">
+    <button type="button" class="review-cancel" (click)="cerrar()">Cancelar</button
+    ><button
+      type="button"
+      class="review-save"
+      (click)="confirmar()"
+      [disabled]="
+        origen.modo() !== 'demo' ||
+        !seleccionada ||
+        (accion === 'accept-original-score' && puntajeOriginalSeleccionado === null)
+      "
+    >
+      Guardar decisión
+    </button>
+  </footer>
 </dialog>

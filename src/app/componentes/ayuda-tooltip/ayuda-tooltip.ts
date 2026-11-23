@@ -5,7 +5,7 @@ import { LucideCircleHelp } from '@lucide/angular';
   selector: 'app-ayuda-tooltip',
   imports: [LucideCircleHelp],
   templateUrl: './ayuda-tooltip.html',
-  styleUrl: './ayuda-tooltip.css'
+  styleUrl: './ayuda-tooltip.css',
 })
 export class AyudaTooltip {
   @Input({ required: true }) texto = '';

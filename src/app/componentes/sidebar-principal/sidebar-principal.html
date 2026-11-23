@@ -1,20 +1,34 @@
 <aside class="sidebar">
   <a class="brand" routerLink="/agentes" aria-label="Hermes Control, inicio">
-    <img class="brand-mark" src="/assets/hermes-winged-boot.png" alt="" aria-hidden="true">
+    <img class="brand-mark" src="/assets/hermes-winged-boot.png" alt="" aria-hidden="true" />
     <span>Hermes Control</span>
   </a>
 
   <nav class="main-nav" aria-label="Navegación principal">
     @for (item of navegacion; track item.etiqueta) {
-      <a [routerLink]="item.ruta" [routerLinkActive]="item.seccion ? 'route-active' : 'active'" [routerLinkActiveOptions]="{ exact: true }" [class.active]="item.seccion === seccionActiva()" [class.disabled]="!item.habilitada" [attr.aria-disabled]="!item.habilitada" [attr.aria-label]="item.etiqueta" [attr.tabindex]="item.habilitada ? 0 : -1">
+      <a
+        [routerLink]="item.ruta"
+        [routerLinkActive]="item.seccion ? 'route-active' : 'active'"
+        [routerLinkActiveOptions]="{ exact: true }"
+        [class.active]="item.seccion === seccionActiva()"
+        [class.disabled]="!item.habilitada"
+        [attr.aria-disabled]="!item.habilitada"
+        [attr.aria-label]="item.etiqueta"
+        [attr.tabindex]="item.habilitada ? 0 : -1"
+      >
         <svg [lucideIcon]="item.icono" [size]="20" class="nav-icon" aria-hidden="true"></svg>
         <span>{{ item.etiqueta }}</span>
       </a>
     }
   </nav>
 
-  <label class="sidebar-data-source"><span>Origen de datos</span>
-    <select [ngModel]="origen.modo()" (ngModelChange)="cambiarOrigen($event)" aria-label="Origen de datos">
+  <label class="sidebar-data-source"
+    ><span>Origen de datos</span>
+    <select
+      [ngModel]="origen.modo()"
+      (ngModelChange)="cambiarOrigen($event)"
+      aria-label="Origen de datos"
+    >
       <option value="real">Datos reales</option>
       <option value="demo">Datos de demostración</option>
     </select>

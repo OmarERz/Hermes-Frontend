@@ -1,4 +1,21 @@
-<span class="tooltip-wrap" (mouseenter)="visible = true" (mouseleave)="visible = false" (focusin)="visible = true" (focusout)="visible = false">
-  <button class="tooltip-button" type="button" [attr.aria-label]="'Ayuda: ' + texto" [attr.aria-expanded]="visible" (click)="visible = !visible" (keydown.escape)="visible = false"><svg lucideCircleHelp aria-hidden="true"></svg></button>
-  @if (visible) { <span class="tooltip-content" role="tooltip">{{ texto }}</span> }
+<span
+  class="tooltip-wrap"
+  (mouseenter)="visible = true"
+  (mouseleave)="visible = false"
+  (focusin)="visible = true"
+  (focusout)="visible = false"
+>
+  <button
+    class="tooltip-button"
+    type="button"
+    [attr.aria-label]="'Ayuda: ' + texto"
+    [attr.aria-expanded]="visible"
+    (click)="visible = !visible"
+    (keydown.escape)="visible = false"
+  >
+    <svg lucideCircleHelp aria-hidden="true"></svg>
+  </button>
+  @if (visible) {
+    <span class="tooltip-content" role="tooltip">{{ texto }}</span>
+  }
 </span>

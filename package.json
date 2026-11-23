@@ -1,16 +1,24 @@
 {
   "name": "mi-primera-pagina",
   "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": "^22.12.0"
+  },
+  "packageManager": "npm@10.9.4",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "test": "ng test --watch=false",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "verify": "npm run lint && npm run format:check && npm run test && npm run build",
+    "audit": "npm audit --omit=dev --audit-level=high",
     "serve:ssr:mi-primera-pagina": "node dist/mi-primera-pagina/server/server.mjs"
   },
-  "private": true,
-  "packageManager": "npm@10.9.4",
   "dependencies": {
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",
@@ -24,19 +32,26 @@
     "@lucide/angular": "^1.73.0",
     "echarts": "^6.1.0",
     "express": "^5.1.0",
+    "firebase": "^12.18.0",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0",
-    "firebase": "^12.18.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@angular/build": "^21.2.29",
     "@angular/cli": "^21.2.29",
     "@angular/compiler-cli": "^21.2.0",
+    "@eslint/js": "9.39.5",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
+    "angular-eslint": "21.4.0",
+    "eslint": "9.39.5",
     "jsdom": "^28.0.0",
-    "prettier": "^3.8.1",
+    "prettier": "3.9.10",
     "typescript": "~5.9.2",
+    "typescript-eslint": "8.72.2",
     "vitest": "^4.0.8"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.7"
   }
 }

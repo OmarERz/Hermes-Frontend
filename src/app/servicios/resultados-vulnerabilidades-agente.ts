@@ -18,8 +18,16 @@ export interface VulnerabilidadClasificada {
   priority: PrioridadVulnerabilidad;
   analysisId: string;
   justification: string;
-  technicalSeverity: { cvssScore: number | null; cvssVersion: string | null; source: string | null };
-  knownExploitation: { status: EstadoExplotacionConocida; source: string | null; checkedAt: string | null };
+  technicalSeverity: {
+    cvssScore: number | null;
+    cvssVersion: string | null;
+    source: string | null;
+  };
+  knownExploitation: {
+    status: EstadoExplotacionConocida;
+    source: string | null;
+    checkedAt: string | null;
+  };
   findings: HallazgoVulnerabilidadActivo[];
 }
 

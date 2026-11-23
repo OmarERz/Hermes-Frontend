@@ -9,7 +9,7 @@ import { CatalogoTecnologias, TecnologiaEmpresa } from '../../servicios/catalogo
   selector: 'app-asignar-stack',
   imports: [FormsModule, RouterLink],
   templateUrl: './asignar-stack.html',
-  styleUrl: './asignar-stack.css'
+  styleUrl: './asignar-stack.css',
 })
 export class AsignarStack implements OnInit {
   private readonly inventario = inject(InventarioActivos);
@@ -18,7 +18,9 @@ export class AsignarStack implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   readonly tecnologias = this.catalogo.tecnologias;
-  get activos(): ActivoInventario[] { return this.inventario.activos; }
+  get activos(): ActivoInventario[] {
+    return this.inventario.activos;
+  }
   activoId = '';
   seleccionadas: string[] = [];
   busquedaTecnologia = '';
@@ -27,14 +29,16 @@ export class AsignarStack implements OnInit {
 
   ngOnInit(): void {
     this.inventario.cargar().subscribe({
-      error: () => this.error = 'No se pudo cargar la lista de activos.'
+      error: () => (this.error = 'No se pudo cargar la lista de activos.'),
     });
   }
 
   get tecnologiasFiltradas(): TecnologiaEmpresa[] {
     const texto = this.busquedaTecnologia.trim().toLocaleLowerCase();
-    return this.tecnologias().filter(tecnologia =>
-      !texto || `${tecnologia.nombre} ${tecnologia.categoria}`.toLocaleLowerCase().includes(texto)
+    return this.tecnologias().filter(
+      (tecnologia) =>
+        !texto ||
+        `${tecnologia.nombre} ${tecnologia.categoria}`.toLocaleLowerCase().includes(texto),
     );
   }
 
@@ -52,7 +56,7 @@ export class AsignarStack implements OnInit {
   alternarTecnologia(id: string, seleccionada: boolean): void {
     this.seleccionadas = seleccionada
       ? [...new Set([...this.seleccionadas, id])]
-      : this.seleccionadas.filter(actual => actual !== id);
+      : this.seleccionadas.filter((actual) => actual !== id);
   }
 
   guardar(): void {
@@ -68,18 +72,21 @@ export class AsignarStack implements OnInit {
     }
   }
 
-  cancelar(): void { void this.router.navigate(['/stack-tecnologico'], { fragment: 'catalogo' }); }
+  cancelar(): void {
+    void this.router.navigate(['/stack-tecnologico'], { fragment: 'catalogo' });
+  }
 
   get asignaciones() {
-    return this.asignacionesStack.listar()
-      .map(asignacion => ({
+    return this.asignacionesStack
+      .listar()
+      .map((asignacion) => ({
         activoId: asignacion.activoId,
-        activo: this.activos.find(activo => activo.id === asignacion.activoId),
+        activo: this.activos.find((activo) => activo.id === asignacion.activoId),
         tecnologiaIds: asignacion.tecnologiaIds,
         tecnologias: asignacion.tecnologiaIds
-          .map(id => this.tecnologias().find(tecnologia => tecnologia.id === id)?.nombre)
-          .filter((nombre): nombre is string => !!nombre)
+          .map((id) => this.tecnologias().find((tecnologia) => tecnologia.id === id)?.nombre)
+          .filter((nombre): nombre is string => !!nombre),
       }))
-      .filter(asignacion => asignacion.activo);
+      .filter((asignacion) => asignacion.activo);
   }
 }

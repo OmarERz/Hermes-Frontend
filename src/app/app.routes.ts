@@ -25,15 +25,33 @@ export const routes: Routes = [
       { path: 'inicio', component: Inicio },
       { path: 'agentes', component: ControlAgente, data: seccionSidebarAgentes },
       { path: 'configuracion-agente', component: ConfiguracionAgente },
-      { path: 'feeds', loadComponent: () => import('./rutas/Feeds-inteligencia/feeds-inteligencia').then(modulo => modulo.FeedsInteligencia) },
+      {
+        path: 'feeds',
+        loadComponent: () =>
+          import('./rutas/Feeds-inteligencia/feeds-inteligencia').then(
+            (modulo) => modulo.FeedsInteligencia,
+          ),
+      },
       { path: 'historial-agente', component: HistorialAgente, data: seccionSidebarAgentes },
-      { path: 'recomendaciones-agente', component: RecomendacionesAgente, data: seccionSidebarAgentes },
-      { path: 'revision-humana', redirectTo: snapshot => inject(Router).createUrlTree(['/recomendaciones-agente'], { queryParams: snapshot.queryParams, fragment: snapshot.fragment ?? undefined }), pathMatch: 'full' },
+      {
+        path: 'recomendaciones-agente',
+        component: RecomendacionesAgente,
+        data: seccionSidebarAgentes,
+      },
+      {
+        path: 'revision-humana',
+        redirectTo: (snapshot) =>
+          inject(Router).createUrlTree(['/recomendaciones-agente'], {
+            queryParams: snapshot.queryParams,
+            fragment: snapshot.fragment ?? undefined,
+          }),
+        pathMatch: 'full',
+      },
       { path: 'stack-tecnologico', component: StackTecnologico },
       { path: 'activos', component: Activos },
       { path: 'registrar-activo', redirectTo: 'activos', pathMatch: 'full' },
-      { path: 'asignar-stack', redirectTo: 'stack-tecnologico', pathMatch: 'full' }
-    ]
+      { path: 'asignar-stack', redirectTo: 'stack-tecnologico', pathMatch: 'full' },
+    ],
   },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'login' },
 ];

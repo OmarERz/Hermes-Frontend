@@ -9,22 +9,72 @@ describe('FeedsInteligencia carrusel', () => {
 
   beforeEach(async () => {
     feeds = signal<FeedInteligencia[]>([
-      { id: 'otx', nombre: 'AlienVault OTX', tipo: 'Amenazas', descripcion: 'Amenazas de ejemplo', proveedor: 'OTX', activo: true, frecuenciaActualizacion: null, ultimaSincronizacion: null, estadoSincronizacion: null, cobertura: null, severidad: null },
-      { id: 'abuse', nombre: 'AbuseIPDB', tipo: 'Amenazas', descripcion: 'Amenazas de ejemplo', proveedor: 'AbuseIPDB', activo: true, frecuenciaActualizacion: null, ultimaSincronizacion: null, estadoSincronizacion: null, cobertura: null, severidad: null },
-      { id: 'misp', nombre: 'MISP', tipo: 'Amenazas', descripcion: 'Amenazas de ejemplo', proveedor: 'MISP', activo: false, frecuenciaActualizacion: null, ultimaSincronizacion: null, estadoSincronizacion: null, cobertura: null, severidad: null },
-      { id: 'cisa', nombre: 'CISA KEV', tipo: 'Vulnerabilidades', descripcion: 'Vulnerabilidades de ejemplo', proveedor: 'CISA', activo: true, frecuenciaActualizacion: null, ultimaSincronizacion: null, estadoSincronizacion: null, cobertura: null, severidad: null }
+      {
+        id: 'otx',
+        nombre: 'AlienVault OTX',
+        tipo: 'Amenazas',
+        descripcion: 'Amenazas de ejemplo',
+        proveedor: 'OTX',
+        activo: true,
+        frecuenciaActualizacion: null,
+        ultimaSincronizacion: null,
+        estadoSincronizacion: null,
+        cobertura: null,
+        severidad: null,
+      },
+      {
+        id: 'abuse',
+        nombre: 'AbuseIPDB',
+        tipo: 'Amenazas',
+        descripcion: 'Amenazas de ejemplo',
+        proveedor: 'AbuseIPDB',
+        activo: true,
+        frecuenciaActualizacion: null,
+        ultimaSincronizacion: null,
+        estadoSincronizacion: null,
+        cobertura: null,
+        severidad: null,
+      },
+      {
+        id: 'misp',
+        nombre: 'MISP',
+        tipo: 'Amenazas',
+        descripcion: 'Amenazas de ejemplo',
+        proveedor: 'MISP',
+        activo: false,
+        frecuenciaActualizacion: null,
+        ultimaSincronizacion: null,
+        estadoSincronizacion: null,
+        cobertura: null,
+        severidad: null,
+      },
+      {
+        id: 'cisa',
+        nombre: 'CISA KEV',
+        tipo: 'Vulnerabilidades',
+        descripcion: 'Vulnerabilidades de ejemplo',
+        proveedor: 'CISA',
+        activo: true,
+        frecuenciaActualizacion: null,
+        ultimaSincronizacion: null,
+        estadoSincronizacion: null,
+        cobertura: null,
+        severidad: null,
+      },
     ]);
     await TestBed.configureTestingModule({
       imports: [FeedsInteligencia],
-      providers: [{
-        provide: FeedsInteligenciaServicio,
-        useValue: {
-          feeds,
-          modo: signal<'demo' | 'real'>('demo'),
-          integracionPendiente: signal(false),
-          cambiarEstadoDemo: vi.fn()
-        }
-      }]
+      providers: [
+        {
+          provide: FeedsInteligenciaServicio,
+          useValue: {
+            feeds,
+            modo: signal<'demo' | 'real'>('demo'),
+            integracionPendiente: signal(false),
+            cambiarEstadoDemo: vi.fn(),
+          },
+        },
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(FeedsInteligencia);
     fixture.detectChanges();
@@ -39,18 +89,22 @@ describe('FeedsInteligencia carrusel', () => {
     section.querySelector('.feed-card-select')?.dispatchEvent(pointerDown);
 
     expect(captura).not.toHaveBeenCalled();
-    const abuseCard = [...fixture.nativeElement.querySelectorAll('.feed-card-select')]
-      .find(button => button.textContent?.includes('AbuseIPDB')) as HTMLButtonElement;
+    const abuseCard = [...fixture.nativeElement.querySelectorAll('.feed-card-select')].find(
+      (button) => button.textContent?.includes('AbuseIPDB'),
+    ) as HTMLButtonElement;
     abuseCard.click();
     fixture.detectChanges();
 
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('abuse');
-    expect(fixture.nativeElement.querySelector('#feed-details-title')?.textContent).toContain('AbuseIPDB');
+    expect(fixture.nativeElement.querySelector('#feed-details-title')?.textContent).toContain(
+      'AbuseIPDB',
+    );
   });
 
   it('selecciona vecinos laterales sin cambiar su estado de activación', () => {
-    const mispCard = [...fixture.nativeElement.querySelectorAll('.feed-card-select')]
-      .find(button => button.textContent?.includes('MISP')) as HTMLButtonElement;
+    const mispCard = [...fixture.nativeElement.querySelectorAll('.feed-card-select')].find(
+      (button) => button.textContent?.includes('MISP'),
+    ) as HTMLButtonElement;
     mispCard.click();
     fixture.detectChanges();
 
@@ -59,25 +113,29 @@ describe('FeedsInteligencia carrusel', () => {
   });
 
   it('conserva navegación circular y filtros para listas dinámicas', () => {
-    const mispCard = [...fixture.nativeElement.querySelectorAll('.feed-card-select')]
-      .find(button => button.textContent?.includes('MISP')) as HTMLButtonElement;
+    const mispCard = [...fixture.nativeElement.querySelectorAll('.feed-card-select')].find(
+      (button) => button.textContent?.includes('MISP'),
+    ) as HTMLButtonElement;
     mispCard.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('misp');
     fixture.componentInstance.seleccionarCategoria('Amenazas');
     fixture.detectChanges();
-    const abuseCard = [...fixture.nativeElement.querySelectorAll('.feed-card-select')]
-      .find(button => button.textContent?.includes('AbuseIPDB')) as HTMLButtonElement;
+    const abuseCard = [...fixture.nativeElement.querySelectorAll('.feed-card-select')].find(
+      (button) => button.textContent?.includes('AbuseIPDB'),
+    ) as HTMLButtonElement;
     abuseCard.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('abuse');
-    const wrapToFirst = [...fixture.nativeElement.querySelectorAll('.feed-card-select')]
-      .find(button => button.textContent?.includes('MISP')) as HTMLButtonElement;
+    const wrapToFirst = [...fixture.nativeElement.querySelectorAll('.feed-card-select')].find(
+      (button) => button.textContent?.includes('MISP'),
+    ) as HTMLButtonElement;
     wrapToFirst.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('misp');
-    const returnToFirst = [...fixture.nativeElement.querySelectorAll('.feed-card-select')]
-      .find(button => button.textContent?.includes('AlienVault OTX')) as HTMLButtonElement;
+    const returnToFirst = [...fixture.nativeElement.querySelectorAll('.feed-card-select')].find(
+      (button) => button.textContent?.includes('AlienVault OTX'),
+    ) as HTMLButtonElement;
     returnToFirst.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('otx');
@@ -105,12 +163,14 @@ describe('FeedsInteligencia carrusel', () => {
     fixture.componentInstance.seleccionarCategoria('Vulnerabilidades');
     feeds.set([feedsOriginales[3]]);
     fixture.detectChanges();
-    expect(fixture.componentInstance.tarjetasCarrusel().map(tarjeta => tarjeta.feed.id)).toEqual(['cisa']);
+    expect(fixture.componentInstance.tarjetasCarrusel().map((tarjeta) => tarjeta.feed.id)).toEqual([
+      'cisa',
+    ]);
 
     fixture.componentInstance.seleccionarCategoria('Amenazas');
     feeds.set([feedsOriginales[0], feedsOriginales[2]]);
     fixture.detectChanges();
-    const ids = fixture.componentInstance.tarjetasCarrusel().map(tarjeta => tarjeta.feed.id);
+    const ids = fixture.componentInstance.tarjetasCarrusel().map((tarjeta) => tarjeta.feed.id);
     expect(ids).toHaveLength(2);
     expect(new Set(ids).size).toBe(2);
     fixture.componentInstance.mover(1);

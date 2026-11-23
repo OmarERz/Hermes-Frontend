@@ -8,7 +8,7 @@ import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
   selector: 'app-login',
   imports: [ReactiveFormsModule, LucideLockKeyhole, LucideMail, LucideUserRound],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class Login {
   private fb = inject(FormBuilder);
@@ -17,7 +17,7 @@ export class Login {
 
   form = this.fb.nonNullable.group({
     correo: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
+    password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   verPassword = signal(false);
@@ -48,12 +48,17 @@ export class Login {
 
   /** Traduce errores comunes de Firebase sin revelar si una cuenta está registrada. */
   private mensajeErrorAutenticacion(error: unknown): string {
-    const codigo = error && typeof error === 'object' && 'code' in error && typeof error.code === 'string'
-      ? error.code
-      : '';
-    if (codigo === 'auth/network-request-failed') return 'No fue posible conectar con el servicio. Revisa tu conexión e inténtalo de nuevo.';
-    if (codigo === 'auth/too-many-requests') return 'Se realizaron demasiados intentos. Espera un momento e inténtalo de nuevo.';
-    if (['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(codigo)) {
+    const codigo =
+      error && typeof error === 'object' && 'code' in error && typeof error.code === 'string'
+        ? error.code
+        : '';
+    if (codigo === 'auth/network-request-failed')
+      return 'No fue posible conectar con el servicio. Revisa tu conexión e inténtalo de nuevo.';
+    if (codigo === 'auth/too-many-requests')
+      return 'Se realizaron demasiados intentos. Espera un momento e inténtalo de nuevo.';
+    if (
+      ['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(codigo)
+    ) {
       return 'Correo o contraseña incorrectos.';
     }
     return 'No se pudo iniciar sesión. Verifica tus datos e inténtalo de nuevo.';

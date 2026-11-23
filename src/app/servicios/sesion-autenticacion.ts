@@ -9,7 +9,7 @@ export type TipoSesion = 'verificando' | 'firebase' | 'sin-sesion';
 export class SesionAutenticacion {
   private readonly auth = inject(Auth);
   private resolverInicializacion!: () => void;
-  private readonly inicializacion = new Promise<void>(resolve => {
+  private readonly inicializacion = new Promise<void>((resolve) => {
     this.resolverInicializacion = resolve;
   });
 
@@ -17,17 +17,19 @@ export class SesionAutenticacion {
   readonly usuarioFirebase = signal<User | null>(null);
 
   constructor() {
-    authState(this.auth).pipe(takeUntilDestroyed()).subscribe({
-      next: usuario => {
-        this.usuarioFirebase.set(usuario);
-        this.tipo.set(usuario ? 'firebase' : 'sin-sesion');
-        this.resolverInicializacion();
-      },
-      error: () => {
-        if (this.tipo() === 'verificando') this.tipo.set('sin-sesion');
-        this.resolverInicializacion();
-      }
-    });
+    authState(this.auth)
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (usuario) => {
+          this.usuarioFirebase.set(usuario);
+          this.tipo.set(usuario ? 'firebase' : 'sin-sesion');
+          this.resolverInicializacion();
+        },
+        error: () => {
+          if (this.tipo() === 'verificando') this.tipo.set('sin-sesion');
+          this.resolverInicializacion();
+        },
+      });
   }
 
   /** Espera a que Firebase restaure la sesión persistida antes de autorizar una ruta. */

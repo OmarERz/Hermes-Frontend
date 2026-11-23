@@ -1,4 +1,12 @@
-import { Component, ElementRef, HostListener, inject, Input, signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  inject,
+  Input,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { LucideChevronDown, LucideLogOut } from '@lucide/angular';
 import { Router } from '@angular/router';
 import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
@@ -7,7 +15,7 @@ import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
   selector: 'app-menu-perfil',
   imports: [LucideChevronDown, LucideLogOut],
   templateUrl: './menu-perfil.html',
-  styleUrl: './menu-perfil.css'
+  styleUrl: './menu-perfil.css',
 })
 export class MenuPerfil {
   private readonly elemento = inject(ElementRef<HTMLElement>);
@@ -46,7 +54,8 @@ export class MenuPerfil {
 
   /** Alterna el menú y coloca el foco dentro al abrirlo. */
   alternarMenu(): void {
-    this.menuAbierto ? this.cerrarMenu() : this.abrirMenu();
+    if (this.menuAbierto) this.cerrarMenu();
+    else this.abrirMenu();
   }
 
   /** Abre el menú al usar las flechas desde el botón y conserva el foco accesible. */
@@ -71,7 +80,10 @@ export class MenuPerfil {
   @HostListener('document:click', ['$event'])
   cerrarAlHacerClicFuera(evento: MouseEvent): void {
     const destino = evento.target;
-    if (this.menuAbierto && !(destino instanceof Node && this.elemento.nativeElement.contains(destino))) {
+    if (
+      this.menuAbierto &&
+      !(destino instanceof Node && this.elemento.nativeElement.contains(destino))
+    ) {
       this.cerrarMenu();
     }
   }

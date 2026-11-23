@@ -1,6 +1,7 @@
 import { afterNextRender, Injectable, signal } from '@angular/core';
 
-export type CategoriaTecnologia = 'Frontend' | 'Backend' | 'Base de datos' | 'Infraestructura' | 'Analítica/IA' | 'Otra';
+export type CategoriaTecnologia =
+  'Frontend' | 'Backend' | 'Base de datos' | 'Infraestructura' | 'Analítica/IA' | 'Otra';
 export type EstadoTecnologia = 'En uso' | 'En evaluación' | 'Descontinuada';
 export type LicenciaTecnologia = 'Open source' | 'Comercial' | 'Otra';
 
@@ -27,21 +28,25 @@ export class CatalogoTecnologias {
 
   guardar(datos: DatosTecnologia, id?: string): void {
     const registro: TecnologiaEmpresa = { ...datos, id: id ?? this.nuevoId() };
-    this.tecnologias.update(actuales => id
-      ? actuales.map(tecnologia => tecnologia.id === id ? registro : tecnologia)
-      : [...actuales, registro]);
+    this.tecnologias.update((actuales) =>
+      id
+        ? actuales.map((tecnologia) => (tecnologia.id === id ? registro : tecnologia))
+        : [...actuales, registro],
+    );
     this.persistir();
   }
 
   eliminar(id: string): void {
-    this.tecnologias.update(actuales => actuales.filter(tecnologia => tecnologia.id !== id));
+    this.tecnologias.update((actuales) => actuales.filter((tecnologia) => tecnologia.id !== id));
     this.persistir();
   }
 
   existeDuplicada(nombre: string, excluirId?: string): boolean {
     const normalizado = nombre.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
-    return this.tecnologias().some(tecnologia =>
-      tecnologia.id !== excluirId && tecnologia.nombre.trim().replace(/\s+/g, ' ').toLocaleLowerCase() === normalizado
+    return this.tecnologias().some(
+      (tecnologia) =>
+        tecnologia.id !== excluirId &&
+        tecnologia.nombre.trim().replace(/\s+/g, ' ').toLocaleLowerCase() === normalizado,
     );
   }
 
@@ -51,9 +56,15 @@ export class CatalogoTecnologias {
       if (!valor) return;
       const datos: unknown = JSON.parse(valor);
       if (Array.isArray(datos)) {
-        this.tecnologias.set(datos.filter((item): item is TecnologiaEmpresa =>
-          !!item && typeof item === 'object' && typeof item.id === 'string' && typeof item.nombre === 'string'
-        ));
+        this.tecnologias.set(
+          datos.filter(
+            (item): item is TecnologiaEmpresa =>
+              !!item &&
+              typeof item === 'object' &&
+              typeof item.id === 'string' &&
+              typeof item.nombre === 'string',
+          ),
+        );
       }
     } catch {
       this.tecnologias.set([]);
@@ -69,6 +80,9 @@ export class CatalogoTecnologias {
   }
 
   private nuevoId(): string {
-    return globalThis.crypto?.randomUUID?.() ?? `tec-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    return (
+      globalThis.crypto?.randomUUID?.() ??
+      `tec-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    );
   }
 }

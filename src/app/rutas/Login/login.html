@@ -2,16 +2,22 @@
   <div class="login-layout">
     <section class="brand-panel" aria-label="Hermes Control">
       <div class="brand-lockup">
-        <img class="brand-mark" src="/assets/hermes-winged-boot.png" alt="" aria-hidden="true">
+        <img class="brand-mark" src="/assets/hermes-winged-boot.png" alt="" aria-hidden="true" />
         <span>Hermes <strong>Control</strong></span>
       </div>
       <p class="brand-description">Plataforma de operación tecnológica con agentes de IA</p>
-      <img class="login-robot" src="/assets/hermes-login-robot.png" alt="" aria-hidden="true" fetchpriority="high">
+      <img
+        class="login-robot"
+        src="/assets/hermes-login-robot.png"
+        alt=""
+        aria-hidden="true"
+        fetchpriority="high"
+      />
     </section>
 
     <section class="form-panel" aria-labelledby="login-title">
       <div class="form-brand" aria-hidden="true">
-        <img class="brand-mark" src="/assets/hermes-winged-boot.png" alt="">
+        <img class="brand-mark" src="/assets/hermes-winged-boot.png" alt="" />
         <span>Hermes <strong>Control</strong></span>
       </div>
 
@@ -22,35 +28,70 @@
         </header>
 
         <div class="field-group">
-          <label class="field-label" for="correo"><svg lucideMail aria-hidden="true"></svg>Correo</label>
-          <input id="correo" type="email" formControlName="correo" required autocomplete="username"
-                 placeholder="nombre@empresa.com"
-                 [class.invalido]="form.controls.correo.touched && form.controls.correo.invalid"
-                 [attr.aria-invalid]="form.controls.correo.touched && form.controls.correo.invalid"
-                 [attr.aria-describedby]="form.controls.correo.touched && form.controls.correo.invalid ? 'correo-error' : null">
+          <label class="field-label" for="correo"
+            ><svg lucideMail aria-hidden="true"></svg>Correo</label
+          >
+          <input
+            id="correo"
+            type="email"
+            formControlName="correo"
+            required
+            autocomplete="username"
+            placeholder="nombre@empresa.com"
+            [class.invalido]="form.controls.correo.touched && form.controls.correo.invalid"
+            [attr.aria-invalid]="form.controls.correo.touched && form.controls.correo.invalid"
+            [attr.aria-describedby]="
+              form.controls.correo.touched && form.controls.correo.invalid ? 'correo-error' : null
+            "
+          />
           @if (form.controls.correo.touched && form.controls.correo.invalid) {
             <small id="correo-error" class="field-error">
-              @if (form.controls.correo.hasError('required')) { Escribe tu correo } @else { El correo no es válido }
+              @if (form.controls.correo.hasError('required')) {
+                Escribe tu correo
+              } @else {
+                El correo no es válido
+              }
             </small>
           }
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="password"><svg lucideLockKeyhole aria-hidden="true"></svg>Contraseña</label>
+          <label class="field-label" for="password"
+            ><svg lucideLockKeyhole aria-hidden="true"></svg>Contraseña</label
+          >
           <div class="password-field">
-            <input id="password" [type]="verPassword() ? 'text' : 'password'" formControlName="password" required
-                   autocomplete="current-password" placeholder="Ingresa tu contraseña"
-                   [class.invalido]="form.controls.password.touched && form.controls.password.invalid"
-                   [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid"
-                   [attr.aria-describedby]="form.controls.password.touched && form.controls.password.invalid ? 'password-error' : null">
-            <button type="button" class="password-toggle" (click)="verPassword.set(!verPassword())"
-                    [attr.aria-pressed]="verPassword()" [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            <input
+              id="password"
+              [type]="verPassword() ? 'text' : 'password'"
+              formControlName="password"
+              required
+              autocomplete="current-password"
+              placeholder="Ingresa tu contraseña"
+              [class.invalido]="form.controls.password.touched && form.controls.password.invalid"
+              [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid"
+              [attr.aria-describedby]="
+                form.controls.password.touched && form.controls.password.invalid
+                  ? 'password-error'
+                  : null
+              "
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="verPassword.set(!verPassword())"
+              [attr.aria-pressed]="verPassword()"
+              [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
               {{ verPassword() ? 'Ocultar' : 'Mostrar' }}
             </button>
           </div>
           @if (form.controls.password.touched && form.controls.password.invalid) {
             <small id="password-error" class="field-error">
-              @if (form.controls.password.hasError('required')) { Escribe tu contraseña } @else { Debe tener al menos 6 caracteres }
+              @if (form.controls.password.hasError('required')) {
+                Escribe tu contraseña
+              } @else {
+                Debe tener al menos 6 caracteres
+              }
             </small>
           }
         </div>
@@ -59,7 +100,12 @@
           <p class="error-general" role="alert">{{ error() }}</p>
         }
 
-        <button type="submit" class="login-button" [disabled]="cargando()" aria-label="Iniciar sesión">
+        <button
+          type="submit"
+          class="login-button"
+          [disabled]="cargando()"
+          aria-label="Iniciar sesión"
+        >
           <svg lucideUserRound aria-hidden="true"></svg>
           <span>{{ cargando() ? 'Entrando...' : 'Entrar' }}</span>
         </button>

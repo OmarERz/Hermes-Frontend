@@ -14,10 +14,10 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withFetch()),
-    provideClientHydration(withEventReplay()), 
+    provideClientHydration(withEventReplay()),
 
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
 
     provideAuth(() => getAuth()),
-  ]
+  ],
 };

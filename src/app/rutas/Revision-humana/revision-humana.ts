@@ -1,16 +1,51 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, inject, Input, OnInit, Output, PLATFORM_ID, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output,
+  PLATFORM_ID,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { isPlatformBrowser } from '@angular/common';
-import { LucideBot, LucideCheck, LucideGitCompareArrows, LucideMessageSquareText, LucideScale, LucideUserRoundCheck, LucideX } from '@lucide/angular';
-import { EstadoRevisionDemo, obtenerOpinionesJuez, proyectarPuntajesRevision, RevisionDemo, SupervisionAgentes } from '../../servicios/supervision-agentes';
+import {
+  LucideBot,
+  LucideCheck,
+  LucideGitCompareArrows,
+  LucideMessageSquareText,
+  LucideScale,
+  LucideUserRoundCheck,
+  LucideX,
+} from '@lucide/angular';
+import {
+  EstadoRevisionDemo,
+  obtenerOpinionesJuez,
+  proyectarPuntajesRevision,
+  RevisionDemo,
+  SupervisionAgentes,
+} from '../../servicios/supervision-agentes';
 import { OrigenDashboard } from '../../servicios/origen-dashboard';
 
-type AccionHumana = 'accept-recommendation' | 'assign-score' | 'accept-original-score' | 'reject-recommendation';
+type AccionHumana =
+  'accept-recommendation' | 'assign-score' | 'accept-original-score' | 'reject-recommendation';
 
 @Component({
   selector: 'app-revision-humana',
-  imports: [FormsModule, LucideBot, LucideCheck, LucideGitCompareArrows, LucideMessageSquareText, LucideScale, LucideUserRoundCheck, LucideX],
-  templateUrl: './revision-humana.html'
+  imports: [
+    FormsModule,
+    LucideBot,
+    LucideCheck,
+    LucideGitCompareArrows,
+    LucideMessageSquareText,
+    LucideScale,
+    LucideUserRoundCheck,
+    LucideX,
+  ],
+  templateUrl: './revision-humana.html',
 })
 export class RevisionHumana implements OnInit, AfterViewInit {
   @Input({ required: true }) ticketId = '';
@@ -27,7 +62,7 @@ export class RevisionHumana implements OnInit, AfterViewInit {
     { valor: 'accept-recommendation', etiqueta: 'Aceptar recomendaci\u00f3n' },
     { valor: 'assign-score', etiqueta: 'Asignar puntaje' },
     { valor: 'accept-original-score', etiqueta: 'Aceptar puntaje original' },
-    { valor: 'reject-recommendation', etiqueta: 'Rechazar recomendaci\u00f3n' }
+    { valor: 'reject-recommendation', etiqueta: 'Rechazar recomendaci\u00f3n' },
   ];
   seleccionada: RevisionDemo | null = null;
   accion: AccionHumana | '' = '';
@@ -36,7 +71,9 @@ export class RevisionHumana implements OnInit, AfterViewInit {
   error = '';
 
   ngOnInit(): void {
-    const objetivo = this.revisionesTicket.find(item => item.id === this.recomendacionId) ?? this.revisionesTicket[0];
+    const objetivo =
+      this.revisionesTicket.find((item) => item.id === this.recomendacionId) ??
+      this.revisionesTicket[0];
     if (objetivo) this.abrir(objetivo);
   }
 
@@ -47,11 +84,21 @@ export class RevisionHumana implements OnInit, AfterViewInit {
     else dialogo.setAttribute('open', '');
   }
 
-  get revisiones(): RevisionDemo[] { return this.origen.modo() === 'demo' ? this.supervision.revisiones() : []; }
-  get revisionesTicket(): RevisionDemo[] { return this.revisiones.filter(item => item.ticketId === this.ticketId); }
-  get ticketsEnDesacuerdo(): boolean { return this.revisionesTicket.some(item => item.decisionJuez === 'En desacuerdo'); }
-  get responsables(): string[] { return [...new Set(this.supervision.tickets.map(ticket => ticket.responsable))]; }
-  get puntajesSeleccionados() { return this.seleccionada ? proyectarPuntajesRevision(this.seleccionada) : null; }
+  get revisiones(): RevisionDemo[] {
+    return this.origen.modo() === 'demo' ? this.supervision.revisiones() : [];
+  }
+  get revisionesTicket(): RevisionDemo[] {
+    return this.revisiones.filter((item) => item.ticketId === this.ticketId);
+  }
+  get ticketsEnDesacuerdo(): boolean {
+    return this.revisionesTicket.some((item) => item.decisionJuez === 'En desacuerdo');
+  }
+  get responsables(): string[] {
+    return [...new Set(this.supervision.tickets.map((ticket) => ticket.responsable))];
+  }
+  get puntajesSeleccionados() {
+    return this.seleccionada ? proyectarPuntajesRevision(this.seleccionada) : null;
+  }
   /** Devuelve solo el puntaje original explícito de la evaluación activa; cero permanece válido. */
   get puntajeOriginalSeleccionado(): number | null {
     const puntaje = this.seleccionada?.evaluacion?.puntajeOriginal;
@@ -61,14 +108,24 @@ export class RevisionHumana implements OnInit, AfterViewInit {
   get puntajeNuevoValido(): boolean {
     return this.puntajeNuevo !== null && Number.isFinite(this.puntajeNuevo);
   }
-  get opinionesJuezSeleccionadas() { return this.seleccionada ? obtenerOpinionesJuez(this.seleccionada, this.origen.modo() === 'demo') : []; }
+  get opinionesJuezSeleccionadas() {
+    return this.seleccionada
+      ? obtenerOpinionesJuez(this.seleccionada, this.origen.modo() === 'demo')
+      : [];
+  }
   get numeroJuezSeleccionado(): number {
-    return this.seleccionada ? this.revisionesTicket.findIndex(item => item.id === this.seleccionada?.id) + 1 : 0;
+    return this.seleccionada
+      ? this.revisionesTicket.findIndex((item) => item.id === this.seleccionada?.id) + 1
+      : 0;
   }
 
   /** Identifica el estado legible de la opinión asociada a la propuesta activa. */
   get opinionSeleccionada(): string {
-    return this.opinionesJuezSeleccionadas[0]?.opinion ?? this.opinionesJuezSeleccionadas[0]?.estado ?? 'No disponible';
+    return (
+      this.opinionesJuezSeleccionadas[0]?.opinion ??
+      this.opinionesJuezSeleccionadas[0]?.estado ??
+      'No disponible'
+    );
   }
 
   /** Conserva el cero como puntaje válido y presenta aparte la ausencia de información. */
@@ -88,7 +145,13 @@ export class RevisionHumana implements OnInit, AfterViewInit {
 
   abrir(revision: RevisionDemo): void {
     if (this.origen.modo() !== 'demo') return;
-    if (this.seleccionada?.id !== revision.id && this.hayCambiosSinGuardar && this.enNavegador && !window.confirm('Hay cambios sin guardar. ¿Descartarlos para cambiar de propuesta?')) return;
+    if (
+      this.seleccionada?.id !== revision.id &&
+      this.hayCambiosSinGuardar &&
+      this.enNavegador &&
+      !window.confirm('Hay cambios sin guardar. ¿Descartarlos para cambiar de propuesta?')
+    )
+      return;
     this.seleccionada = revision;
     this.accion = '';
     this.puntajeNuevo = null;
@@ -97,7 +160,12 @@ export class RevisionHumana implements OnInit, AfterViewInit {
   }
 
   cerrar(): void {
-    if (this.hayCambiosSinGuardar && this.enNavegador && !window.confirm('Hay una decisión sin guardar. ¿Cerrar y descartar los cambios?')) return;
+    if (
+      this.hayCambiosSinGuardar &&
+      this.enNavegador &&
+      !window.confirm('Hay una decisión sin guardar. ¿Cerrar y descartar los cambios?')
+    )
+      return;
     this.dialog?.nativeElement.close();
   }
 
@@ -106,13 +174,21 @@ export class RevisionHumana implements OnInit, AfterViewInit {
     this.cerrar();
   }
 
-  notificarCierre(): void { this.closed.emit(); }
+  notificarCierre(): void {
+    this.closed.emit();
+  }
 
   /** Valida y registra la decisión de la evaluación seleccionada solo en modo demostración. */
   confirmar(): void {
     const actual = this.seleccionada;
-    if (!actual || this.origen.modo() !== 'demo' || !this.accion) { this.error = 'Selecciona una acción.'; return; }
-    if (this.accion === 'assign-score' && (this.puntajeNuevo === null || !Number.isFinite(this.puntajeNuevo))) {
+    if (!actual || this.origen.modo() !== 'demo' || !this.accion) {
+      this.error = 'Selecciona una acción.';
+      return;
+    }
+    if (
+      this.accion === 'assign-score' &&
+      (this.puntajeNuevo === null || !Number.isFinite(this.puntajeNuevo))
+    ) {
       this.error = 'Escribe un nuevo puntaje numérico y finito.';
       return;
     }
@@ -120,17 +196,40 @@ export class RevisionHumana implements OnInit, AfterViewInit {
       this.error = 'El puntaje original no está disponible para esta evaluación.';
       return;
     }
-    const puntajeHumano = this.accion === 'assign-score'
-      ? { tipo: 'asignado' as const, valor: this.puntajeNuevo as number }
-      : this.accion === 'accept-original-score'
-        ? { tipo: 'puntaje-original-aceptado' as const, valor: this.puntajeOriginalSeleccionado as number }
-        : undefined;
-    const decision = this.acciones.find(opcion => opcion.valor === this.accion)?.etiqueta ?? this.accion;
+    const puntajeHumano =
+      this.accion === 'assign-score'
+        ? { tipo: 'asignado' as const, valor: this.puntajeNuevo as number }
+        : this.accion === 'accept-original-score'
+          ? {
+              tipo: 'puntaje-original-aceptado' as const,
+              valor: this.puntajeOriginalSeleccionado as number,
+            }
+          : undefined;
+    const decision =
+      this.acciones.find((opcion) => opcion.valor === this.accion)?.etiqueta ?? this.accion;
     const resumenPuntaje = puntajeHumano ? ` Puntaje: ${puntajeHumano.valor}.` : '';
-    if (this.enNavegador && !window.confirm(`La decisión «${decision}» se guardará únicamente en los datos de demostración en memoria para ${actual.ticketId} · evaluación ${actual.id}.${resumenPuntaje} No se modificará un caso real. ¿Continuar?`)) return;
-    const estado: EstadoRevisionDemo = this.accion === 'accept-recommendation' || this.accion === 'reject-recommendation' ? 'Resuelto' : 'Revisado por humano';
-    this.supervision.actualizarRevisionDemo(actual.id, estado, this.accion, this.comentario.trim(), puntajeHumano, decision);
-    this.saved.emit(`Decisión demostrativa registrada en memoria para ${actual.ticketId} · evaluación ${actual.id}; no se envió ni cambió el caso real.`);
+    if (
+      this.enNavegador &&
+      !window.confirm(
+        `La decisión «${decision}» se guardará únicamente en los datos de demostración en memoria para ${actual.ticketId} · evaluación ${actual.id}.${resumenPuntaje} No se modificará un caso real. ¿Continuar?`,
+      )
+    )
+      return;
+    const estado: EstadoRevisionDemo =
+      this.accion === 'accept-recommendation' || this.accion === 'reject-recommendation'
+        ? 'Resuelto'
+        : 'Revisado por humano';
+    this.supervision.actualizarRevisionDemo(
+      actual.id,
+      estado,
+      this.accion,
+      this.comentario.trim(),
+      puntajeHumano,
+      decision,
+    );
+    this.saved.emit(
+      `Decisión demostrativa registrada en memoria para ${actual.ticketId} · evaluación ${actual.id}; no se envió ni cambió el caso real.`,
+    );
     this.dialog?.nativeElement.close('saved');
   }
 }

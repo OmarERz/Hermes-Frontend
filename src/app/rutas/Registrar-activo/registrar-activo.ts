@@ -7,7 +7,7 @@ import { InventarioActivos } from '../../servicios/inventario-activos';
   selector: 'app-registrar-activo',
   imports: [FormsModule],
   templateUrl: './registrar-activo.html',
-  styleUrl: './registrar-activo.css'
+  styleUrl: './registrar-activo.css',
 })
 export class RegistrarActivo {
   private router = inject(Router);
@@ -26,7 +26,7 @@ export class RegistrarActivo {
     almacenamiento: 1,
     sistema: 'Windows 11 Pro',
     version: '23H2',
-    descripcion: ''
+    descripcion: '',
   };
 
   tipos = ['Computadora', 'Monitor', 'Impresora', 'Equipo de red'];
@@ -41,10 +41,13 @@ export class RegistrarActivo {
       next: () => this.router.navigate(['/activos']),
       error: () => {
         this.guardando = false;
-        this.errorRegistro = 'No se pudo registrar el activo. Revisa los datos o la conexión con el servidor.';
-      }
+        this.errorRegistro =
+          'No se pudo registrar el activo. Revisa los datos o la conexión con el servidor.';
+      },
     });
   }
 
-  cancelar() { this.router.navigate(['/activos']); }
+  cancelar() {
+    this.router.navigate(['/activos']);
+  }
 }

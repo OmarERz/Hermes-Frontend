@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-tarjeta',
-  templateUrl: './tarjeta.html'
+  templateUrl: './tarjeta.html',
 })
 export class Tarjeta {
   nombre = 'José Miguel';

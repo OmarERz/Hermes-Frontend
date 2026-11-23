@@ -9,7 +9,7 @@ import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegaci
 @Component({
   selector: 'app-historial-agente',
   imports: [FormsModule, BannerPagina, NavegacionAgentes, LucideClock, LucideListFilter],
-  templateUrl: './historial-agente.html'
+  templateUrl: './historial-agente.html',
 })
 export class HistorialAgente {
   readonly origen = inject(OrigenDashboard);
@@ -22,19 +22,30 @@ export class HistorialAgente {
   estado = '';
   tipo = '';
   seleccionada: EjecucionDemo | null = null;
-  get registros(): EjecucionDemo[] { return this.origen.modo() === 'demo' ? this.supervision.ejecuciones : []; }
-  get agentes(): string[] { return [...new Set(this.registros.map(item => item.agente))]; }
-  get tickets(): string[] { return [...new Set(this.registros.map(item => item.ticketId))]; }
-  get estados(): string[] { return [...new Set(this.registros.map(item => item.estadoFinal))]; }
-  get tipos(): string[] { return [...new Set(this.registros.map(item => item.tipo))]; }
+  get registros(): EjecucionDemo[] {
+    return this.origen.modo() === 'demo' ? this.supervision.ejecuciones : [];
+  }
+  get agentes(): string[] {
+    return [...new Set(this.registros.map((item) => item.agente))];
+  }
+  get tickets(): string[] {
+    return [...new Set(this.registros.map((item) => item.ticketId))];
+  }
+  get estados(): string[] {
+    return [...new Set(this.registros.map((item) => item.estadoFinal))];
+  }
+  get tipos(): string[] {
+    return [...new Set(this.registros.map((item) => item.tipo))];
+  }
   get filtrados(): EjecucionDemo[] {
-    return this.registros.filter(item =>
-      (!this.desde || item.fecha.slice(0, 10) >= this.desde) &&
-      (!this.hasta || item.fecha.slice(0, 10) <= this.hasta) &&
-      (!this.agente || item.agente === this.agente) &&
-      (!this.ticket || item.ticketId === this.ticket) &&
-      (!this.estado || item.estadoFinal === this.estado) &&
-      (!this.tipo || item.tipo === this.tipo)
+    return this.registros.filter(
+      (item) =>
+        (!this.desde || item.fecha.slice(0, 10) >= this.desde) &&
+        (!this.hasta || item.fecha.slice(0, 10) <= this.hasta) &&
+        (!this.agente || item.agente === this.agente) &&
+        (!this.ticket || item.ticketId === this.ticket) &&
+        (!this.estado || item.estadoFinal === this.estado) &&
+        (!this.tipo || item.tipo === this.tipo),
     );
   }
 }

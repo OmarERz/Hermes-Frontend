@@ -1,41 +1,193 @@
 <div class="recommendations-view">
-  <app-banner-pagina titulo="Recomendaciones del agente juez" descripcion="Compara propuestas, análisis, justificaciones y decisiones para cada caso." [icono]="iconoBanner" />
+  <app-banner-pagina
+    titulo="Recomendaciones del agente juez"
+    descripcion="Compara propuestas, análisis, justificaciones y decisiones para cada caso."
+    [icono]="iconoBanner"
+  />
   <app-navegacion-agentes />
-  @if (origen.modo() === 'demo') { <p class="source-badge">Datos de demostración · propuestas y decisiones ficticias en memoria</p> }
-  @else { <div class="connection-notice">No hay API de recomendaciones ni agente juez conectado. No existen propuestas reales para mostrar.</div> }
-  @if (mensajeRevision) { <p class="review-saved-message" role="status">{{ mensajeRevision }}</p> }
-  <p class="score-note">Los puntajes de esta vista son ejemplos genéricos. CVSS se integrará desde el dato generado por el agente cuando se conozcan su versión y contrato; esta pantalla no calcula CVSS.</p>
+  @if (origen.modo() === 'demo') {
+    <p class="source-badge">Datos de demostración · propuestas y decisiones ficticias en memoria</p>
+  } @else {
+    <div class="connection-notice">
+      No hay API de recomendaciones ni agente juez conectado. No existen propuestas reales para
+      mostrar.
+    </div>
+  }
+  @if (mensajeRevision) {
+    <p class="review-saved-message" role="status">{{ mensajeRevision }}</p>
+  }
+  <p class="score-note">
+    Los puntajes de esta vista son ejemplos genéricos. CVSS se integrará desde el dato generado por
+    el agente cuando se conozcan su versión y contrato; esta pantalla no calcula CVSS.
+  </p>
 
   <div class="recommendation-workspace">
     <aside class="ticket-list" aria-label="Tickets con recomendaciones">
-      <header><h2>Casos</h2><span>{{ ticketsUnicos.length }}</span></header>
-      <label class="ticket-filter">Estado<select [value]="filtroEstado" (change)="filtroEstado = $any($event.target).value"><option value="">Todos los estados</option>@for (estado of estadosRevision; track estado) { <option [value]="estado">{{ estado }}</option> }</select></label>
+      <header>
+        <h2>Casos</h2>
+        <span>{{ ticketsUnicos.length }}</span>
+      </header>
+      <label class="ticket-filter"
+        >Estado<select [value]="filtroEstado" (change)="filtroEstado = $any($event.target).value">
+          <option value="">Todos los estados</option>
+          @for (estado of estadosRevision; track estado) {
+            <option [value]="estado">{{ estado }}</option>
+          }
+        </select></label
+      >
       @for (ticketId of ticketsFiltrados; track ticketId) {
-        <button type="button" class="ticket-option" [class.active]="ticketActivo === ticketId" [attr.aria-pressed]="ticketActivo === ticketId" (click)="seleccionarTicket(ticketId)">
-          <span><strong>{{ ticketId }}</strong><small>{{ agentesPorTicket(ticketId) }}</small><small>{{ estadoPorTicket(ticketId) }} · {{ porTicket(ticketId).length }} propuesta(s)</small></span>
-          @if (ticketsEnConflicto.has(ticketId)) { <span class="conflict-chip">Desacuerdo</span> }
+        <button
+          type="button"
+          class="ticket-option"
+          [class.active]="ticketActivo === ticketId"
+          [attr.aria-pressed]="ticketActivo === ticketId"
+          (click)="seleccionarTicket(ticketId)"
+        >
+          <span
+            ><strong>{{ ticketId }}</strong
+            ><small>{{ agentesPorTicket(ticketId) }}</small
+            ><small
+              >{{ estadoPorTicket(ticketId) }} ·
+              {{ porTicket(ticketId).length }} propuesta(s)</small
+            ></span
+          >
+          @if (ticketsEnConflicto.has(ticketId)) {
+            <span class="conflict-chip">Desacuerdo</span>
+          }
         </button>
-      } @empty { <p class="empty-state">{{ origen.modo() === 'demo' ? 'No hay recomendaciones demostrativas.' : 'Aún no hay recomendaciones reales.' }}</p> }
+      } @empty {
+        <p class="empty-state">
+          {{
+            origen.modo() === 'demo'
+              ? 'No hay recomendaciones demostrativas.'
+              : 'Aún no hay recomendaciones reales.'
+          }}
+        </p>
+      }
     </aside>
 
     <section class="recommendation-detail" aria-live="polite">
       @if (ticketActivo) {
-        <header class="detail-heading"><div><small>Ticket seleccionado</small><h2>{{ ticketActivo }}</h2></div><button #reviewButton type="button" class="review-open-button" (click)="abrirRevisionHumana()" [disabled]="origen.modo() !== 'demo'">Abrir revisión humana</button></header>
-        @if (ticketsEnConflicto.has(ticketActivo)) { <section class="conflict-banner"><svg lucideScale aria-hidden="true"></svg><div><strong>Desacuerdo entre agentes</strong><p>Se conservan todas las propuestas; no se eligió una automáticamente.</p></div></section> }
+        <header class="detail-heading">
+          <div>
+            <small>Ticket seleccionado</small>
+            <h2>{{ ticketActivo }}</h2>
+          </div>
+          <button
+            #reviewButton
+            type="button"
+            class="review-open-button"
+            (click)="abrirRevisionHumana()"
+            [disabled]="origen.modo() !== 'demo'"
+          >
+            Abrir revisión humana
+          </button>
+        </header>
+        @if (ticketsEnConflicto.has(ticketActivo)) {
+          <section class="conflict-banner">
+            <svg lucideScale aria-hidden="true"></svg>
+            <div>
+              <strong>Desacuerdo entre agentes</strong>
+              <p>Se conservan todas las propuestas; no se eligió una automáticamente.</p>
+            </div>
+          </section>
+        }
         <div class="proposal-list">
           @for (propuesta of propuestasActivas; track propuesta.id) {
-            <article class="proposal-card"><div class="proposal-heading"><div><small>{{ propuesta.id }} · {{ propuesta.agente }}</small><h3>{{ propuesta.estadoPropuesto }}</h3></div><span class="decision-chip">{{ propuesta.decisionJuez }}</span></div>
-              <div class="before-after"><div><small>Estado anterior</small><strong>{{ propuesta.estadoAnterior }}</strong><small>Puntaje demo (no CVSS)</small><strong>{{ propuesta.puntajeAnterior }}</strong></div><svg lucideGitCompareArrows aria-hidden="true"></svg><div class="proposed"><small>Estado propuesto</small><strong>{{ propuesta.estadoPropuesto }}</strong><small>Puntaje demo (no CVSS)</small><strong>{{ propuesta.puntajePropuesto }}</strong></div></div>
-              <section class="recommendation-scores" aria-label="Puntajes disponibles por etapa"><h4>Puntajes por etapa</h4><div class="recommendation-score-grid"><article><small>Original</small><strong>{{ mostrarPuntaje(puntajes(propuesta).puntajeOriginal) }}</strong></article><article><small>Agente determinista</small><strong>{{ mostrarPuntaje(puntajes(propuesta).puntajeDeterminista) }}</strong></article>@for (juez of opinionesJuezExplicitas(propuesta); track juez.id; let i = $index) { <article><small>Juez {{ i + 1 }}</small><strong>{{ mostrarPuntaje(juez.puntaje) }}</strong></article> }</div><p>Los puntajes por etapa solo se muestran cuando están identificados explícitamente; no se asume escala CVSS.</p></section>
-              <div class="analysis-grid"><section><h4>Análisis realizado</h4><p>{{ propuesta.analisis }}</p></section><section><h4>Justificación</h4><p>{{ propuesta.justificacion }}</p></section></div>
-              <div class="judge-reason"><strong>Opinión / decisión del juez</strong><p>{{ propuesta.motivoDecision }}</p><span>Estado final: {{ propuesta.decisionHumana || propuesta.decisionJuez }}</span>@if (opinionesJuezExplicitas(propuesta).length) { <div class="judge-opinion-list">@for (juez of opinionesJuezExplicitas(propuesta); track juez.id; let i = $index) { <article><strong>Juez {{ i + 1 }} · {{ juez.estado ?? 'Estado no informado' }}</strong><p>{{ juez.opinion ?? 'Opinión no disponible' }}</p><p>{{ juez.justificacion ?? 'Justificación no disponible' }}</p></article> }</div> }</div>
+            <article class="proposal-card">
+              <div class="proposal-heading">
+                <div>
+                  <small>{{ propuesta.id }} · {{ propuesta.agente }}</small>
+                  <h3>{{ propuesta.estadoPropuesto }}</h3>
+                </div>
+                <span class="decision-chip">{{ propuesta.decisionJuez }}</span>
+              </div>
+              <div class="before-after">
+                <div>
+                  <small>Estado anterior</small><strong>{{ propuesta.estadoAnterior }}</strong
+                  ><small>Puntaje demo (no CVSS)</small
+                  ><strong>{{ propuesta.puntajeAnterior }}</strong>
+                </div>
+                <svg lucideGitCompareArrows aria-hidden="true"></svg>
+                <div class="proposed">
+                  <small>Estado propuesto</small><strong>{{ propuesta.estadoPropuesto }}</strong
+                  ><small>Puntaje demo (no CVSS)</small
+                  ><strong>{{ propuesta.puntajePropuesto }}</strong>
+                </div>
+              </div>
+              <section class="recommendation-scores" aria-label="Puntajes disponibles por etapa">
+                <h4>Puntajes por etapa</h4>
+                <div class="recommendation-score-grid">
+                  <article>
+                    <small>Original</small
+                    ><strong>{{ mostrarPuntaje(puntajes(propuesta).puntajeOriginal) }}</strong>
+                  </article>
+                  <article>
+                    <small>Agente determinista</small
+                    ><strong>{{ mostrarPuntaje(puntajes(propuesta).puntajeDeterminista) }}</strong>
+                  </article>
+                  @for (juez of opinionesJuezExplicitas(propuesta); track juez.id; let i = $index) {
+                    <article>
+                      <small>Juez {{ i + 1 }}</small
+                      ><strong>{{ mostrarPuntaje(juez.puntaje) }}</strong>
+                    </article>
+                  }
+                </div>
+                <p>
+                  Los puntajes por etapa solo se muestran cuando están identificados explícitamente;
+                  no se asume escala CVSS.
+                </p>
+              </section>
+              <div class="analysis-grid">
+                <section>
+                  <h4>Análisis realizado</h4>
+                  <p>{{ propuesta.analisis }}</p>
+                </section>
+                <section>
+                  <h4>Justificación</h4>
+                  <p>{{ propuesta.justificacion }}</p>
+                </section>
+              </div>
+              <div class="judge-reason">
+                <strong>Opinión / decisión del juez</strong>
+                <p>{{ propuesta.motivoDecision }}</p>
+                <span>Estado final: {{ propuesta.decisionHumana || propuesta.decisionJuez }}</span>
+                @if (opinionesJuezExplicitas(propuesta).length) {
+                  <div class="judge-opinion-list">
+                    @for (
+                      juez of opinionesJuezExplicitas(propuesta);
+                      track juez.id;
+                      let i = $index
+                    ) {
+                      <article>
+                        <strong
+                          >Juez {{ i + 1 }} · {{ juez.estado ?? 'Estado no informado' }}</strong
+                        >
+                        <p>{{ juez.opinion ?? 'Opinión no disponible' }}</p>
+                        <p>{{ juez.justificacion ?? 'Justificación no disponible' }}</p>
+                      </article>
+                    }
+                  </div>
+                }
+              </div>
             </article>
           }
         </div>
-      } @else { <div class="detail-empty"><svg lucideGitCompareArrows aria-hidden="true"></svg><h2>Detalle de recomendaciones</h2><p>Selecciona un ticket para revisar sus propuestas y decisiones.</p></div> }
+      } @else {
+        <div class="detail-empty">
+          <svg lucideGitCompareArrows aria-hidden="true"></svg>
+          <h2>Detalle de recomendaciones</h2>
+          <p>Selecciona un ticket para revisar sus propuestas y decisiones.</p>
+        </div>
+      }
     </section>
   </div>
   @if (revisionAbierta && ticketActivo) {
-    <app-revision-humana [ticketId]="ticketActivo" [recomendacionId]="revisionActivaId" (closed)="cerrarRevisionHumana()" (saved)="registrarDecision($event)" />
+    <app-revision-humana
+      [ticketId]="ticketActivo"
+      [recomendacionId]="revisionActivaId"
+      (closed)="cerrarRevisionHumana()"
+      (saved)="registrarDecision($event)"
+    />
   }
 </div>

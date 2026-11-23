@@ -9,14 +9,14 @@ import {
   OnDestroy,
   PLATFORM_ID,
   SimpleChanges,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import type { EChartsCoreOption, EChartsType } from 'echarts/core';
 
 @Component({
   selector: 'app-grafico-dashboard',
   templateUrl: './grafico-dashboard.html',
-  styleUrl: './grafico-dashboard.css'
+  styleUrl: './grafico-dashboard.css',
 })
 export class GraficoDashboard implements AfterViewInit, OnChanges, OnDestroy {
   @Input({ required: true }) option!: EChartsCoreOption;
@@ -52,7 +52,7 @@ export class GraficoDashboard implements AfterViewInit, OnChanges, OnDestroy {
       import('echarts/core'),
       import('echarts/charts'),
       import('echarts/components'),
-      import('echarts/renderers')
+      import('echarts/renderers'),
     ]);
     if (this.destroyed || !this.chartHost) return;
 
@@ -66,7 +66,7 @@ export class GraficoDashboard implements AfterViewInit, OnChanges, OnDestroy {
       components.LegendComponent,
       components.TitleComponent,
       components.TooltipComponent,
-      renderers.SVGRenderer
+      renderers.SVGRenderer,
     ]);
     this.chart = core.init(this.chartHost.nativeElement, undefined, { renderer: 'svg' });
     this.actualizarGrafica();
@@ -81,7 +81,8 @@ export class GraficoDashboard implements AfterViewInit, OnChanges, OnDestroy {
 
   private actualizarGrafica() {
     if (!this.chart || !this.chartHost) return;
-    const isDark = this.chartHost.nativeElement.closest('[data-theme]')?.getAttribute('data-theme') === 'dark';
+    const isDark =
+      this.chartHost.nativeElement.closest('[data-theme]')?.getAttribute('data-theme') === 'dark';
     const darkPalette: Record<string, string> = {
       '#321044': '#f8efff',
       '#51465e': '#c7b6d8',
@@ -89,30 +90,59 @@ export class GraficoDashboard implements AfterViewInit, OnChanges, OnDestroy {
       '#d9d5e3': 'rgba(217,168,255,.28)',
       '#e8e5ef': 'rgba(217,168,255,.18)',
       '#d4cfdf': 'rgba(217,168,255,.32)',
-      '#fff': '#29133f'
+      '#fff': '#29133f',
     };
     const lightTextPalette: Record<string, string> = { '#51465e': '#302936' };
-    const themedOption = this.transformarPaleta(this.option, isDark ? darkPalette : lightTextPalette) as Record<string, unknown>;
+    const themedOption = this.transformarPaleta(
+      this.option,
+      isDark ? darkPalette : lightTextPalette,
+    ) as Record<string, unknown>;
     const textColor = isDark ? '#f8efff' : '#302936';
     const tooltipDefaults = {
       backgroundColor: isDark ? '#321849' : '#ffffff',
       borderColor: isDark ? 'rgba(217,168,255,.3)' : '#ddd4e5',
-      textStyle: { color: textColor, fontSize: 13.67 }
+      textStyle: { color: textColor, fontSize: 13.67 },
     };
-    const tooltip = { ...tooltipDefaults, ...(themedOption['tooltip'] as object ?? {}), textStyle: { ...tooltipDefaults.textStyle, ...((themedOption['tooltip'] as { textStyle?: object } | undefined)?.textStyle ?? {}) } };
+    const tooltip = {
+      ...tooltipDefaults,
+      ...((themedOption['tooltip'] as object) ?? {}),
+      textStyle: {
+        ...tooltipDefaults.textStyle,
+        ...((themedOption['tooltip'] as { textStyle?: object } | undefined)?.textStyle ?? {}),
+      },
+    };
     const withReadableLabels = this.aplicarColorTexto(themedOption, textColor);
-    this.chart.setOption({ ...withReadableLabels, textStyle: { color: textColor, ...((withReadableLabels['textStyle'] as object | undefined) ?? {}) }, tooltip } as EChartsCoreOption, { notMerge: true });
+    this.chart.setOption(
+      {
+        ...withReadableLabels,
+        textStyle: {
+          color: textColor,
+          ...((withReadableLabels['textStyle'] as object | undefined) ?? {}),
+        },
+        tooltip,
+      } as EChartsCoreOption,
+      { notMerge: true },
+    );
   }
 
-  private aplicarColorTexto(value: Record<string, unknown>, color: string): Record<string, unknown> {
+  private aplicarColorTexto(
+    value: Record<string, unknown>,
+    color: string,
+  ): Record<string, unknown> {
     const output: Record<string, unknown> = {};
     for (const [key, item] of Object.entries(value)) {
-      if (Array.isArray(item)) output[key] = item.map(entry => entry && typeof entry === 'object' ? this.aplicarColorTexto(entry as Record<string, unknown>, color) : entry);
+      if (Array.isArray(item))
+        output[key] = item.map((entry) =>
+          entry && typeof entry === 'object'
+            ? this.aplicarColorTexto(entry as Record<string, unknown>, color)
+            : entry,
+        );
       else if (item && typeof item === 'object') {
         const nested = this.aplicarColorTexto(item as Record<string, unknown>, color);
         if (['axisLabel', 'textStyle', 'label', 'subtextStyle'].includes(key)) {
           if (nested['color'] === undefined) nested['color'] = color;
-          if (typeof nested['fontSize'] === 'number' && nested['fontSize'] < 11) nested['fontSize'] = 11;
+          if (typeof nested['fontSize'] === 'number' && nested['fontSize'] < 11)
+            nested['fontSize'] = 11;
         }
         output[key] = nested;
       } else output[key] = item;
@@ -122,9 +152,11 @@ export class GraficoDashboard implements AfterViewInit, OnChanges, OnDestroy {
 
   private transformarPaleta(value: unknown, palette: Record<string, string>): unknown {
     if (typeof value === 'string') return palette[value.toLowerCase()] ?? value;
-    if (Array.isArray(value)) return value.map(item => this.transformarPaleta(item, palette));
+    if (Array.isArray(value)) return value.map((item) => this.transformarPaleta(item, palette));
     if (value && typeof value === 'object') {
-      return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, this.transformarPaleta(item, palette)]));
+      return Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [key, this.transformarPaleta(item, palette)]),
+      );
     }
     return value;
   }
