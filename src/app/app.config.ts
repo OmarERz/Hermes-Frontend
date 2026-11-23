@@ -8,7 +8,6 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
-import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,8 +18,6 @@ export const appConfig: ApplicationConfig = {
 
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
 
-    // 3. Servicios que activaste (Authentication y Firestore)
     provideAuth(() => getAuth()),
-    provideFirestore(() => getFirestore()),
   ]
 };
