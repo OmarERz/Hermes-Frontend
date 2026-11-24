@@ -9,20 +9,23 @@ import { ConfiguracionAgente } from './rutas/Configuracion-agente/configuracion-
 import { HistorialAgente } from './rutas/Historial-agente/historial-agente';
 import { RecomendacionesAgente } from './rutas/Recomendaciones-agente/recomendaciones-agente';
 import { Inicio } from './rutas/Inicio/inicio';
-import { authGuard } from './core/auth/auth.guards';
+import { authGuard, guestGuard, roleGuard } from './core/auth/auth.guards';
+import { ForbiddenPage } from './features/forbidden/forbidden-page';
 
 const seccionSidebarAgentes = { sidebarSection: 'agentes' };
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'login', component: Login },
+  { path: 'login', component: Login, canActivate: [guestGuard] },
   {
     path: '',
     component: LayoutPrincipal,
     canActivate: [authGuard],
-    canActivateChild: [authGuard],
+    // Each child declares its minimum role in data.minRole (reader when absent), as in the backend ROUTE_ROLES.
+    canActivateChild: [roleGuard],
     children: [
       { path: 'inicio', component: Inicio },
+      { path: 'sin-permiso', component: ForbiddenPage },
       { path: 'agentes', component: ControlAgente, data: seccionSidebarAgentes },
       { path: 'configuracion-agente', component: ConfiguracionAgente },
       {

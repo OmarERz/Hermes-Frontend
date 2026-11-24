@@ -22,7 +22,8 @@ export class Login {
 
   verPassword = signal(false);
   cargando = signal(false);
-  error = signal('');
+  /** Starts with the reason of the last session end (expired, inactive user, backend unreachable). */
+  error = signal(this.sesion.notice());
 
   /** Valida el formulario, autentica con Firebase y navega solo tras una respuesta válida. */
   async entrar(): Promise<void> {
@@ -37,8 +38,10 @@ export class Login {
     const { correo, password } = this.form.getRawValue();
 
     try {
-      await this.sesion.signIn(correo.trim(), password);
-      await this.router.navigate(['/inicio']);
+      const status = await this.sesion.signIn(correo.trim(), password);
+      if (status === 'ready') await this.router.navigate(['/inicio']);
+      else
+        this.error.set(this.sesion.notice() || 'No se pudo cargar tu perfil. Inténtalo de nuevo.');
     } catch (error) {
       this.error.set(this.mensajeErrorAutenticacion(error));
     } finally {

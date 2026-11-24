@@ -46,10 +46,12 @@ export class Inicio implements OnInit {
   }
   /** Prefiere el nombre visible de Firebase y usa el email como alternativa legible. */
   get nombreSaludo(): string {
+    const perfil = this.sesion.profile();
     const usuario = this.sesion.user();
-    const nombreVisible = usuario?.displayName?.trim();
+    const nombreVisible = perfil?.display_name?.trim() || usuario?.displayName?.trim();
     if (nombreVisible) return nombreVisible;
-    return usuario?.email?.split('@', 1)[0].trim() || 'Usuario';
+    const correo = perfil?.email ?? usuario?.email;
+    return correo?.split('@', 1)[0].trim() || 'Usuario';
   }
   get totalTecnologias(): number | null {
     if (this.demo) return this.origen.tecnologias.length;

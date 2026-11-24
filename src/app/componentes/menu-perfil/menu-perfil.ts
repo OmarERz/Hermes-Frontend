@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { LucideChevronDown, LucideLogOut } from '@lucide/angular';
 import { Router } from '@angular/router';
+import { ROLE_LABELS } from '../../core/auth/roles';
 import { SessionService } from '../../core/auth/session.service';
 
 @Component({
@@ -31,10 +32,17 @@ export class MenuPerfil {
   @ViewChild('trigger') private trigger?: ElementRef<HTMLButtonElement>;
   @ViewChild('panel') private panel?: ElementRef<HTMLElement>;
 
+  /** Name from GET /api/me (display name, else the e-mail user part) and the effective role. */
   get usuario(): { iniciales: string; nombre: string; rol: string } {
-    const correo = this.sesion.user()?.email;
-    const nombre = correo?.split('@', 1)[0].trim() || 'Usuario';
-    return { iniciales: nombre.slice(0, 2).toUpperCase(), nombre, rol: 'Cuenta empresarial' };
+    const perfil = this.sesion.profile();
+    const correo = perfil?.email ?? this.sesion.user()?.email;
+    const nombre = perfil?.display_name?.trim() || correo?.split('@', 1)[0].trim() || 'Usuario';
+    const rol = this.sesion.role();
+    return {
+      iniciales: nombre.slice(0, 2).toUpperCase(),
+      nombre,
+      rol: rol ? `Rol: ${ROLE_LABELS[rol]}` : 'Sin rol',
+    };
   }
 
   /** Cierra la sesión activa y vuelve al Login sin mostrar errores internos del proveedor. */

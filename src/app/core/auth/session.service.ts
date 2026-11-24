@@ -1,36 +1,55 @@
-import { DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import type { User } from 'firebase/auth';
+import { toApiError } from '../api/api-error';
+import type { CurrentUser, Role } from '../api/api-types';
+import { HermesApi } from '../api/hermes-api';
+import { AuthEvents } from './auth-events';
 import { FirebaseAuthService } from './firebase-auth.service';
+import { roleAtLeast } from './roles';
 
-export type SessionStatus = 'initializing' | 'signed-out' | 'signed-in';
+/**
+ * - initializing: Firebase is restoring the persisted session.
+ * - loading-profile: signed in to Firebase; waiting for GET /api/me.
+ * - ready: signed in, with the effective role from the backend.
+ * - signed-out: no session (or it ended: see `notice`).
+ */
+export type SessionStatus = 'initializing' | 'loading-profile' | 'ready' | 'signed-out';
 
-/** Session state of the app: the Firebase user, as signals. */
+export const SESSION_EXPIRED_MESSAGE = 'Tu sesión expiró o fue revocada. Inicia sesión de nuevo.';
+
+/**
+ * Session of the app, as signals: the Firebase user plus the profile and **effective role** from `GET /api/me`
+ * (the lower of the token claim and the backend copy, FRONTEND.md §2). The role is never read from the token.
+ */
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   private readonly firebase = inject(FirebaseAuthService);
+  private readonly api = inject(HermesApi);
+  private readonly router = inject(Router);
 
   readonly status = signal<SessionStatus>('initializing');
   readonly user = signal<User | null>(null);
+  readonly profile = signal<CurrentUser | null>(null);
+  readonly role = computed<Role | null>(() => this.profile()?.role ?? null);
+  /** Why the last session ended (shown by the login screen); empty when the person signed out. */
+  readonly notice = signal('');
 
-  private resolveInitialized!: () => void;
-  private readonly initialized = new Promise<void>(
-    (resolve) => (this.resolveInitialized = resolve),
-  );
+  private waiters: ((status: SessionStatus) => void)[] = [];
+  private profileRequest = 0;
 
   constructor() {
     const stop = this.firebase.watchUser(
-      (user) => {
-        this.user.set(user);
-        this.status.set(user ? 'signed-in' : 'signed-out');
-        this.resolveInitialized();
-      },
-      () => {
-        this.user.set(null);
-        this.status.set('signed-out');
-        this.resolveInitialized();
-      },
+      (user) => this.onUser(user),
+      () => this.onUser(null),
     );
-    inject(DestroyRef).onDestroy(stop);
+    const expired = inject(AuthEvents).sessionExpired.subscribe(() => {
+      void this.end(SESSION_EXPIRED_MESSAGE).then(() => this.router.navigate(['/login']));
+    });
+    inject(DestroyRef).onDestroy(() => {
+      stop();
+      expired.unsubscribe();
+    });
   }
 
   /** False when the app has no Firebase web config (the login screen explains it). */
@@ -38,23 +57,84 @@ export class SessionService {
     return this.firebase.configured;
   }
 
-  /** Waits until Firebase restores the persisted session, then reports the status. */
-  async ready(): Promise<SessionStatus> {
-    await this.initialized;
-    return this.status();
+  /** True when the effective role reaches `minimum` (reader < analyst < admin). */
+  hasRole(minimum: Role): boolean {
+    return this.status() === 'ready' && roleAtLeast(this.role(), minimum);
   }
 
-  async signIn(email: string, password: string): Promise<void> {
+  /** Resolves once the session settles: `ready` (profile loaded) or `signed-out`. */
+  ready(): Promise<SessionStatus> {
+    const status = this.status();
+    if (status === 'ready' || status === 'signed-out') return Promise.resolve(status);
+    return new Promise((resolve) => this.waiters.push(resolve));
+  }
+
+  /**
+   * Signs in with Firebase and loads the profile. Firebase errors are thrown (the login screen translates
+   * them); a profile failure ends the session and resolves `signed-out` with the reason in `notice`.
+   */
+  async signIn(email: string, password: string): Promise<SessionStatus> {
     await this.ready();
+    this.notice.set('');
     const user = await this.firebase.signIn(email, password);
-    this.user.set(user);
-    this.status.set('signed-in');
+    this.onUser(user);
+    return this.ready();
   }
 
   async signOut(): Promise<void> {
-    await this.ready();
-    await this.firebase.signOut();
+    this.notice.set('');
+    await this.end('');
+  }
+
+  private onUser(user: User | null): void {
+    const status = this.status();
+    if (
+      user &&
+      this.user()?.uid === user.uid &&
+      (status === 'loading-profile' || status === 'ready')
+    ) {
+      return;
+    }
+    this.user.set(user);
+    this.profile.set(null);
+    if (!user) {
+      this.profileRequest++;
+      this.settle('signed-out');
+      return;
+    }
+    this.status.set('loading-profile');
+    const request = ++this.profileRequest;
+    this.api.getCurrentUser().subscribe({
+      next: (profile) => {
+        if (request !== this.profileRequest) return;
+        this.profile.set(profile);
+        this.settle('ready');
+      },
+      error: (error: unknown) => {
+        if (request !== this.profileRequest) return;
+        void this.end(toApiError(error).message);
+      },
+    });
+  }
+
+  /** Ends the session: forgets the profile, signs out of Firebase and keeps the reason for the login. */
+  private async end(reason: string): Promise<void> {
+    this.profileRequest++;
+    if (reason) this.notice.set(reason);
+    this.profile.set(null);
     this.user.set(null);
-    this.status.set('signed-out');
+    this.settle('signed-out');
+    try {
+      await this.firebase.signOut();
+    } catch {
+      // The local session is already gone; Firebase clears its own copy on the next start.
+    }
+  }
+
+  private settle(status: 'ready' | 'signed-out'): void {
+    this.status.set(status);
+    const waiters = this.waiters;
+    this.waiters = [];
+    for (const resolve of waiters) resolve(status);
   }
 }
