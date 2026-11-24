@@ -110,4 +110,35 @@ describe('VulnerabilitiesService', () => {
     request.flush({ view: 'criticality', bands: null, next_cursor: null });
     await expect(result).resolves.toEqual({ items: [], nextCursor: null });
   });
+
+  it('reads the detail and the score history by id', async () => {
+    const detail = firstValueFrom(service.getDetail('g-1'));
+    backend.expectOne('http://127.0.0.1:8000/api/vulnerabilities/g-1').flush({ group_id: 'g-1' });
+    await expect(detail).resolves.toMatchObject({ group_id: 'g-1' });
+    const history = firstValueFrom(service.getHistory('f-1'));
+    backend.expectOne('http://127.0.0.1:8000/api/findings/f-1/history').flush([]);
+    await expect(history).resolves.toEqual([]);
+  });
+
+  it('takes the waterfall from the latest assessment of the group', async () => {
+    const result = firstValueFrom(service.getLatestBreakdown('g-1', 'SRV-01'));
+    const recommendations = backend.expectOne((req) => req.url.endsWith('/api/recommendations'));
+    expect(recommendations.request.params.get('group_id')).toBe('g-1');
+    expect(recommendations.request.params.get('limit')).toBe('1');
+    recommendations.flush({ items: [{ assessment_id: 'a-9' }], next_cursor: null });
+    const breakdown = backend.expectOne((req) =>
+      req.url.endsWith('/api/assessments/a-9/breakdown'),
+    );
+    expect(breakdown.request.params.get('ci_id')).toBe('SRV-01');
+    breakdown.flush({ assessment_id: 'a-9', raw: 50, final: 60, waterfall: { P: 10 } });
+    await expect(result).resolves.toMatchObject({ assessment_id: 'a-9', final: 60 });
+  });
+
+  it('has no waterfall when the group has no assessment yet', async () => {
+    const result = firstValueFrom(service.getLatestBreakdown('g-1', 'SRV-01'));
+    backend
+      .expectOne((req) => req.url.endsWith('/api/recommendations'))
+      .flush({ items: [], next_cursor: null });
+    await expect(result).resolves.toBeNull();
+  });
 });

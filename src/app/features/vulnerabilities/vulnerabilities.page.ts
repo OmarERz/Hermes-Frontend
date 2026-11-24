@@ -92,7 +92,7 @@ function groupRow(group: VulnerabilityGroup, key: string): GroupTableRow {
     LucideTriangleAlert,
   ],
   templateUrl: './vulnerabilities-page.html',
-  styleUrl: './vulnerabilities-page.css',
+  styleUrls: ['./vulnerability-chips.css', './vulnerabilities-page.css'],
 })
 export class VulnerabilitiesPage {
   private readonly service = inject(VulnerabilitiesService);
