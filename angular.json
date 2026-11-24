@@ -76,7 +76,20 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runnerConfig": "vitest.config.ts",
+            "coverageInclude": ["src/app/**/*.ts"],
+            "coverageExclude": [
+              "src/app/**/*.spec.ts",
+              "src/app/**/*.d.ts",
+              "src/app/testing/**",
+              "src/app/rutas/**",
+              "src/app/servicios/**",
+              "src/app/componentes/**"
+            ],
+            "coverageReporters": [["text", { "skipFull": true }], "text-summary", "json-summary"]
+          }
         }
       }
     }

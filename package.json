@@ -12,12 +12,13 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
+    "test:coverage": "ng test --watch=false --coverage",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "api:generate": "openapi-typescript openapi/openapi.json -o src/app/core/api/schema.d.ts",
     "api:check": "openapi-typescript openapi/openapi.json -o src/app/core/api/schema.d.ts --check",
-    "verify": "npm run api:check && npm run lint && npm run format:check && npm run test && npm run build",
+    "verify": "npm run api:check && npm run lint && npm run format:check && npm run test:coverage && npm run build",
     "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
@@ -40,6 +41,7 @@
     "@angular/compiler-cli": "^21.2.0",
     "@eslint/js": "9.39.5",
     "@types/node": "^20.17.19",
+    "@vitest/coverage-v8": "4.1.12",
     "angular-eslint": "21.4.0",
     "eslint": "9.39.5",
     "jsdom": "^28.0.0",
