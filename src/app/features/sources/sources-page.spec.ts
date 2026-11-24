@@ -350,4 +350,60 @@ describe('SourcesPage', () => {
       'Boletín nuevo se agregó con nivel N4 e inactiva.',
     );
   });
+
+  it('moves the carousel with a swipe or a horizontal wheel, and ignores small moves', async () => {
+    const { page } = await render();
+    const selected = () => page.carousel.selected()?.id;
+    const stage = { hasPointerCapture: vi.fn(() => false), setPointerCapture: vi.fn() };
+    const pointer = (clientX: number, extra: Record<string, unknown> = {}) =>
+      ({
+        pointerId: 1,
+        clientX,
+        target: null,
+        currentTarget: stage,
+        ...extra,
+      }) as unknown as PointerEvent;
+    expect(selected()).toBe('kev');
+
+    page.startDrag(pointer(300));
+    page.updateDrag(pointer(290));
+    expect(stage.setPointerCapture).not.toHaveBeenCalled();
+    page.updateDrag(pointer(200));
+    expect(stage.setPointerCapture).toHaveBeenCalledWith(1);
+    page.endDrag(pointer(200));
+    expect(selected()).toBe('nvd');
+    // The click that ends a swipe does not select the card under the pointer.
+    page.selectCard('thn', 4);
+    expect(selected()).toBe('nvd');
+
+    page.startDrag(pointer(300));
+    page.endDrag(pointer(280));
+    expect(selected()).toBe('nvd');
+    page.startDrag(pointer(300));
+    page.updateDrag(pointer(100, { pointerId: 2 }));
+    page.endDrag(pointer(500, { pointerId: 2 }));
+    expect(selected()).toBe('nvd');
+    page.endDrag(pointer(400));
+    expect(selected()).toBe('kev');
+    page.endDrag(pointer(100));
+    expect(selected()).toBe('kev');
+
+    const toggle = document.createElement('label');
+    toggle.className = 'feed-toggle';
+    page.startDrag(pointer(300, { target: toggle }));
+    page.endDrag(pointer(100));
+    expect(selected()).toBe('kev');
+
+    const wheel = (deltaX: number, deltaY: number) =>
+      ({ deltaX, deltaY, preventDefault: vi.fn() }) as unknown as WheelEvent;
+    const sideways = wheel(40, 5);
+    page.wheel(sideways);
+    expect(sideways.preventDefault).toHaveBeenCalled();
+    expect(selected()).toBe('nvd');
+    page.wheel(wheel(5, 0));
+    page.wheel(wheel(20, 60));
+    expect(selected()).toBe('nvd');
+    page.wheel(wheel(-40, 0));
+    expect(selected()).toBe('kev');
+  });
 });
