@@ -222,4 +222,44 @@ describe('VulnerabilitiesPage', () => {
     expect(bands).toEqual(['Crítica 4 grupos en total', 'Baja 9 grupos en total']);
     expect(element.querySelectorAll('tbody tr:not(.band-row)').length).toBe(1);
   });
+
+  it('applies each filter from the first page and clears them all', async () => {
+    const service = new FakeService();
+    const { fixture } = await render(service);
+    const page = fixture.componentInstance;
+    page.setStatus('new');
+    page.setExposed('false');
+    page.setInKev('true');
+    expect(service.listGroups).toHaveBeenLastCalledWith(
+      { band: null, status: 'new', in_kev: true, exposed: false },
+      null,
+      25,
+    );
+    expect(page.hasFilters()).toBe(true);
+    page.clearFilters();
+    expect(service.listGroups).toHaveBeenLastCalledWith(
+      { band: null, status: null, in_kev: null, exposed: null },
+      null,
+      25,
+    );
+    expect(service.levelCounts).toHaveBeenLastCalledWith({
+      band: null,
+      status: null,
+      in_kev: null,
+      exposed: null,
+    });
+  });
+
+  it('reloads the current view from the first page with a new page size', async () => {
+    const service = new FakeService();
+    const { fixture } = await render(service, '/vulnerabilidades?vista=activo');
+    fixture.componentInstance.setPageSize(50);
+    expect(service.listAssets).toHaveBeenLastCalledWith(
+      { band: null, status: null, in_kev: null, exposed: null },
+      null,
+      50,
+    );
+    fixture.componentInstance.setView('asset');
+    expect(service.listAssets).toHaveBeenCalledTimes(2);
+  });
 });

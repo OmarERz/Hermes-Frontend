@@ -81,4 +81,23 @@ describe('chart options', () => {
       ['Base', [70]],
     ]);
   });
+
+  it('labels totals with their value and steps with their sign', () => {
+    const steps = waterfallSteps({
+      assessment_id: 'a1',
+      raw: 50,
+      final: 45,
+      waterfall: { judge: -5 },
+    });
+    const option = waterfallChart(steps) as {
+      tooltip: { formatter: (items: { dataIndex: number }[]) => string };
+      series: { label?: { formatter: (item: { dataIndex: number }) => string } }[];
+    };
+    expect(option.tooltip.formatter([{ dataIndex: 0 }])).toBe('Crudo (100 × S): 50');
+    expect(option.tooltip.formatter([{ dataIndex: 1 }])).toBe('Ajuste del juez: −5');
+    expect(option.tooltip.formatter([])).toBe('Crudo (100 × S): 50');
+    const label = option.series[1].label?.formatter;
+    expect(label?.({ dataIndex: 1 })).toBe('−5');
+    expect(label?.({ dataIndex: 2 })).toBe('45');
+  });
 });

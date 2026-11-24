@@ -120,4 +120,33 @@ describe('ComparisonPage', () => {
     expect(service.summary).toHaveBeenCalledTimes(2);
     expect(element.querySelectorAll('.stat-card').length).toBe(4);
   });
+
+  it('keeps funnel stages it does not know and fills missing matrix cells with zero', async () => {
+    const service = new FakeService();
+    service.summary.mockReturnValue(
+      of({
+        ...SUMMARY,
+        reclassification_matrix: { critical: { critical: 2 } },
+        funnel: { raw: 0, new_stage: 0 },
+      }),
+    );
+    const { element } = await render(service);
+    const stages = Array.from(element.querySelectorAll('.funnel li .funnel-label')).map((label) =>
+      label.textContent?.trim(),
+    );
+    expect(stages).toEqual(['Hallazgos (crudo)', 'new_stage']);
+    const firstRow = Array.from(
+      element.querySelectorAll('.matrix tbody tr')[0].querySelectorAll('td'),
+    );
+    expect(firstRow.map((td) => td.textContent?.trim())).toEqual(['2', '0', '0', '0']);
+  });
+
+  it('says when there are no findings yet', async () => {
+    const service = new FakeService();
+    service.rows.mockReturnValue(of({ items: [], nextCursor: null }));
+    const { element } = await render(service);
+    expect(element.querySelector('.inventory')?.textContent).toContain(
+      'Aún no hay hallazgos evaluados.',
+    );
+  });
 });
