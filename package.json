@@ -19,7 +19,8 @@
     "api:generate": "openapi-typescript openapi/openapi.json -o src/app/core/api/schema.d.ts",
     "api:check": "openapi-typescript openapi/openapi.json -o src/app/core/api/schema.d.ts --check",
     "verify": "npm run api:check && npm run lint && npm run format:check && npm run test:coverage && npm run build",
-    "audit": "npm audit --omit=dev --audit-level=high"
+    "audit": "npm audit --omit=dev --audit-level=high",
+    "semgrep": "bash scripts/semgrep.sh"
   },
   "dependencies": {
     "@angular/common": "^21.2.0",
