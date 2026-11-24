@@ -152,7 +152,7 @@ describe('FeedbackDialog', () => {
     const { element, pick, click } = await render(service);
     await pick('Aceptar puntaje original');
     expect(element.querySelector('.review-score-diff')?.textContent).toContain(
-      'puntaje base 74 (nivel Media)',
+      'puntaje base 74 (nivel Media, según los niveles vigentes de la configuración)',
     );
     await click('.review-save');
     expect(sentBody(service)).toEqual({
@@ -245,6 +245,54 @@ describe('FeedbackDialog', () => {
     second.element.querySelector('dialog')?.dispatchEvent(escape);
     await second.fixture.whenStable();
     expect(escape.defaultPrevented).toBe(true);
+    expect(second.closed).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens again when the browser closes it mid-save, and closes once the save settles', async () => {
+    const service = new FakeService();
+    const pending = new Subject<FeedbackResult>();
+    service.send.mockReturnValueOnce(pending);
+    const { element, fixture, pick, click, saved, closed } = await render(service);
+    await pick('Relevante');
+    await click('.review-save');
+    const dialog = element.querySelector('dialog') as HTMLDialogElement;
+    dialog.removeAttribute('open');
+    dialog.dispatchEvent(new Event('close'));
+    await fixture.whenStable();
+    expect(dialog.hasAttribute('open')).toBe(true);
+    expect(closed).not.toHaveBeenCalled();
+
+    pending.next(RESULT);
+    await fixture.whenStable();
+    expect(saved).toHaveBeenCalledWith(RESULT);
+    expect(closed).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks before the browser discards a draft, and closes at once without one', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const service = new FakeService();
+    const first = await render(service);
+    const nativeClose = async (target: typeof first) => {
+      const dialog = target.element.querySelector('dialog') as HTMLDialogElement;
+      dialog.removeAttribute('open');
+      dialog.dispatchEvent(new Event('close'));
+      await target.fixture.whenStable();
+      return dialog;
+    };
+    await nativeClose(first);
+    expect(confirm).not.toHaveBeenCalled();
+    expect(first.closed).toHaveBeenCalledTimes(1);
+    TestBed.resetTestingModule();
+
+    const second = await render(service);
+    await second.pick('Investigando');
+    const dialog = await nativeClose(second);
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(dialog.hasAttribute('open')).toBe(true);
+    expect(second.closed).not.toHaveBeenCalled();
+
+    confirm.mockReturnValue(true);
+    await nativeClose(second);
     expect(second.closed).toHaveBeenCalledTimes(1);
   });
 

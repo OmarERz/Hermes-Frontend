@@ -5,7 +5,7 @@
   aria-labelledby="feedback-dialog-title"
   aria-modal="true"
   (cancel)="onCancel($event)"
-  (close)="finish()"
+  (close)="onNativeClose()"
 >
   <header class="review-modal-header">
     <div class="review-title-group">
@@ -121,7 +121,7 @@
       } @else {
         <p class="review-score-diff">
           Se enviará como «Prioridad incorrecta» con el puntaje base {{ rec.base }} (nivel
-          {{ original.level }}).
+          {{ original.level }}, según los niveles vigentes de la configuración).
         </p>
       }
     }

@@ -9,7 +9,7 @@ import { SessionService } from '../../core/auth/session.service';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
-import { formatDateTime, LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
+import { LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
 import type { FeedbackResult, Recommendation } from './feedback';
 import { FeedbackDialog } from './feedback-dialog';
 import { filterPage, groupByVulnerability, type RecommendationGroup } from './grouping';
@@ -163,10 +163,6 @@ export class RecommendationsPage {
   /** Newest evaluation of a case, for its summary line. */
   latestOf(group: RecommendationGroup): Recommendation {
     return group.items[0];
-  }
-
-  formatDate(iso: string): string {
-    return formatDateTime(iso);
   }
 
   openFeedback(recommendation: Recommendation): void {

@@ -129,12 +129,7 @@ export class FeedbackDialog {
 
   constructor() {
     this.bands.run(this.service.levelBands());
-    afterNextRender(() => {
-      const dialog = this.dialog()?.nativeElement;
-      if (!dialog || dialog.open) return;
-      if (typeof dialog.showModal === 'function') dialog.showModal();
-      else dialog.setAttribute('open', '');
-    });
+    afterNextRender(() => this.show());
     inject(DestroyRef).onDestroy(() => {
       this.bands.cancel();
       this.sendSubscription?.unsubscribe();
@@ -202,12 +197,35 @@ export class FeedbackDialog {
     this.close();
   }
 
-  /** Emits `closed` once, whether the dialog closes from a button, from Escape or from the browser. */
+  /**
+   * The browser closed the modal on its own (it may skip the cancelable `cancel` event, for example on a second
+   * Escape): the same rules as `close()` apply, so it opens again while saving or when the person keeps the draft.
+   */
+  onNativeClose(): void {
+    if (this.done) return;
+    if (
+      this.sending() ||
+      (this.dirty() && !window.confirm('Hay un feedback sin guardar. ¿Cerrar y descartarlo?'))
+    ) {
+      this.show();
+      return;
+    }
+    this.finish();
+  }
+
+  /** Emits `closed` once, after a save or a confirmed close. */
   finish(): void {
     if (this.done) return;
     this.done = true;
     const dialog = this.dialog()?.nativeElement;
     if (dialog?.open && typeof dialog.close === 'function') dialog.close();
     this.closed.emit();
+  }
+
+  private show(): void {
+    const dialog = this.dialog()?.nativeElement;
+    if (!dialog || dialog.open) return;
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
   }
 }
