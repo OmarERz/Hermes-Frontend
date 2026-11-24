@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { authGuard, guestGuard, roleGuard } from './core/auth/auth.guards';
+import { MIN_ROLE } from './core/auth/roles';
 
 const seccionSidebarAgentes = { sidebarSection: 'agentes' };
 
@@ -76,6 +77,14 @@ export const routes: Routes = [
         path: 'stack-tecnologico',
         loadComponent: () =>
           import('./rutas/Stack-tecnologico/stack-tecnologico').then((m) => m.StackTecnologico),
+      },
+      {
+        path: 'vulnerabilidades',
+        data: { [MIN_ROLE]: 'reader' },
+        loadComponent: () =>
+          import('./features/vulnerabilities/vulnerabilities-page').then(
+            (m) => m.VulnerabilitiesPage,
+          ),
       },
       {
         path: 'activos',

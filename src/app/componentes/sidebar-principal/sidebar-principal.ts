@@ -9,6 +9,7 @@ import {
   LucideLayers,
   LucideMonitor,
   LucideRss,
+  LucideShieldAlert,
   LucideSlidersHorizontal,
 } from '@lucide/angular';
 import { MenuPerfil } from '../menu-perfil/menu-perfil';
@@ -53,6 +54,13 @@ export class SidebarPrincipal {
       etiqueta: 'Stack Tecnológico',
       icono: LucideLayers,
       ruta: '/stack-tecnologico',
+      activa: true,
+      habilitada: true,
+    },
+    {
+      etiqueta: 'Vulnerabilidades',
+      icono: LucideShieldAlert,
+      ruta: '/vulnerabilidades',
       activa: true,
       habilitada: true,
     },

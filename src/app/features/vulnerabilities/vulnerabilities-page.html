@@ -1,0 +1,186 @@
+<div class="assets-view vulnerabilities-view">
+  <app-banner-pagina
+    titulo="Vulnerabilidades"
+    descripcion="Vulnerabilidades de los activos agrupadas por CVE y producto, con su urgencia final."
+    [icono]="bannerIcon"
+  />
+
+  <section class="stats-grid" aria-label="Vulnerabilidades por nivel">
+    @for (level of levels; track level) {
+      <article class="stat-card">
+        <span [class]="'level-icon level-' + level"
+          ><svg lucideTriangleAlert aria-hidden="true"></svg
+        ></span>
+        <small>{{ levelLabels[level] }}</small>
+        @if (levelCount(level); as count) {
+          <strong>{{ count }}</strong>
+        } @else if (counts.status() === 'error') {
+          <strong class="unknown">Sin datos</strong>
+        } @else if (counts.loading()) {
+          <strong class="unknown">Cargando…</strong>
+        } @else {
+          <strong>0</strong>
+        }
+      </article>
+    }
+  </section>
+
+  <section class="filters" aria-label="Filtros">
+    <label class="select-filter"
+      ><svg lucideFunnel aria-hidden="true"></svg>
+      <select [ngModel]="band()" (ngModelChange)="setBand($event)" aria-label="Nivel">
+        <option value="">Todos los niveles</option>
+        @for (level of levels; track level) {
+          <option [value]="level">{{ levelLabels[level] }}</option>
+        }
+      </select>
+      <svg lucideChevronDown aria-hidden="true"></svg>
+    </label>
+    <label class="select-filter"
+      ><svg lucideLayers aria-hidden="true"></svg>
+      <select [ngModel]="status()" (ngModelChange)="setStatus($event)" aria-label="Estado">
+        <option value="">Todos los estados</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ statusLabels[status] }}</option>
+        }
+      </select>
+      <svg lucideChevronDown aria-hidden="true"></svg>
+    </label>
+    <label class="select-filter"
+      ><svg lucideFlame aria-hidden="true"></svg>
+      <select [ngModel]="inKev()" (ngModelChange)="setInKev($event)" aria-label="Catálogo KEV">
+        <option value="">KEV: todas</option>
+        <option value="true">Solo en KEV</option>
+        <option value="false">Fuera de KEV</option>
+      </select>
+      <svg lucideChevronDown aria-hidden="true"></svg>
+    </label>
+    <label class="select-filter"
+      ><svg lucideGlobe aria-hidden="true"></svg>
+      <select
+        [ngModel]="exposed()"
+        (ngModelChange)="setExposed($event)"
+        aria-label="Exposición a internet"
+      >
+        <option value="">Exposición: todas</option>
+        <option value="true">Expuestas a internet</option>
+        <option value="false">No expuestas</option>
+      </select>
+      <svg lucideChevronDown aria-hidden="true"></svg>
+    </label>
+    @if (hasFilters()) {
+      <button type="button" class="more-filter" (click)="clearFilters()">Quitar filtros</button>
+    }
+    <button type="button" class="more-filter" (click)="refresh()">
+      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+    </button>
+  </section>
+
+  <section class="panel inventory" aria-labelledby="vulnerabilities-title">
+    <header>
+      <div class="inventory-title">
+        <svg lucideTriangleAlert aria-hidden="true"></svg>
+        <h2 id="vulnerabilities-title">Vulnerabilidades por grupo</h2>
+      </div>
+      <span>Página {{ pager.pageIndex() + 1 }} · {{ rows().length }} grupos</span>
+    </header>
+
+    @if (tableState(); as state) {
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando vulnerabilidades…"
+        [emptyText]="
+          hasFilters()
+            ? 'No hay vulnerabilidades que coincidan con los filtros.'
+            : 'Aún no hay vulnerabilidades registradas.'
+        "
+        [error]="pager.state.error()"
+        (retry)="pager.reload()"
+      />
+    } @else {
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Vulnerabilidades; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">CVE</th>
+              <th scope="col">Producto</th>
+              <th scope="col">Nivel</th>
+              <th scope="col">Puntaje final</th>
+              <th scope="col">Activos</th>
+              <th scope="col">KEV</th>
+              <th scope="col">Expuesta</th>
+              <th scope="col">Clasificación</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Custodios</th>
+              <th scope="col">Tickets</th>
+              <th scope="col">Última vez vista</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.group_id) {
+              <tr>
+                <td>
+                  <strong>{{ row.cve }}</strong>
+                </td>
+                <td>{{ row.product }}</td>
+                <td>
+                  <span [class]="'level-chip level-' + row.level">{{ row.levelLabel }}</span>
+                </td>
+                <td class="numeric">{{ row.final }}</td>
+                <td class="numeric">{{ row.ci_count }}</td>
+                <td>{{ row.in_kev ? 'Sí' : 'No' }}</td>
+                <td>{{ row.exposed ? 'Sí' : 'No' }}</td>
+                <td>
+                  <span class="type-chip">{{ row.classificationLabel }}</span>
+                </td>
+                <td>
+                  <span class="status">{{ row.statusLabel }}</span>
+                </td>
+                <td>{{ row.custodianList }}</td>
+                <td class="numeric">{{ row.tickets.length }}</td>
+                <td>{{ row.lastSeen }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <footer>
+      <label
+        >Filas por página
+        <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+          @for (size of pageSizes; track size) {
+            <option [ngValue]="size">{{ size }}</option>
+          }
+        </select>
+      </label>
+      <div class="pagination">
+        <button
+          type="button"
+          [disabled]="!pager.hasPrevious() || pager.state.loading()"
+          (click)="pager.previous()"
+          aria-label="Página anterior"
+        >
+          <svg lucideArrowLeft aria-hidden="true"></svg>
+        </button>
+        <button type="button" class="selected" aria-current="page">
+          {{ pager.pageIndex() + 1 }}
+        </button>
+        <button
+          type="button"
+          [disabled]="!pager.hasNext()"
+          (click)="pager.next()"
+          aria-label="Página siguiente"
+        >
+          <svg lucideArrowRight aria-hidden="true"></svg>
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>
