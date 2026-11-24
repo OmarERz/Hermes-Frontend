@@ -3,7 +3,7 @@ import { map, Observable } from 'rxjs';
 import type { ListVulnerabilitiesQuery, VulnerabilityGroup } from '../../core/api/api-types';
 import { HermesApi } from '../../core/api/hermes-api';
 import type { CursorPage } from '../../shared/cursor-pager';
-import { LEVELS, type Level } from './vulnerability-labels';
+import { LEVELS, type Level } from '../../shared/labels';
 
 /** Filters of the grouped view (FRO-10) that the screen offers. */
 export type VulnerabilityFilters = Pick<

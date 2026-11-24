@@ -3,11 +3,10 @@ import { FormsModule } from '@angular/forms';
 import { LucideActivity, LucideClock, LucideListFilter } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { EjecucionDemo, SupervisionAgentes } from '../../servicios/supervision-agentes';
-import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegacion-agentes';
 
 @Component({
   selector: 'app-historial-agente',
-  imports: [FormsModule, BannerPagina, NavegacionAgentes, LucideClock, LucideListFilter],
+  imports: [FormsModule, BannerPagina, LucideClock, LucideListFilter],
   templateUrl: './historial-agente.html',
 })
 export class HistorialAgente {

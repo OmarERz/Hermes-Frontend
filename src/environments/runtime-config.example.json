@@ -8,5 +8,6 @@
     "messagingSenderId": "REPLACE_ME",
     "appId": "REPLACE_ME"
   },
-  "authEmulatorUrl": null
+  "authEmulatorUrl": null,
+  "itopBaseUrl": "http://127.0.0.1:8080"
 }

@@ -9,7 +9,6 @@ import {
 } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AyudaTooltip } from '../../componentes/ayuda-tooltip/ayuda-tooltip';
-import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegacion-agentes';
 
 /**
  * Agent control screen. Its metrics, charts and ticket counters have no backend route yet, so it shows the
@@ -19,7 +18,6 @@ import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegaci
   selector: 'app-control-agente',
   imports: [
     BannerPagina,
-    NavegacionAgentes,
     AyudaTooltip,
     LucideActivity,
     LucideBot,

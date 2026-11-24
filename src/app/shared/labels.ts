@@ -1,4 +1,4 @@
-import type { VulnerabilityGroup } from '../../core/api/api-types';
+import type { VulnerabilityGroup } from '../core/api/api-types';
 
 export type Level = VulnerabilityGroup['level'];
 export type FindingStatus = VulnerabilityGroup['status'];

@@ -10,4 +10,5 @@ export const environment: AppConfig = {
   apiBaseUrl: '',
   firebase: null,
   authEmulatorUrl: null,
+  itopBaseUrl: null,
 };

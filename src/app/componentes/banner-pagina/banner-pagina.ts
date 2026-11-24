@@ -1,9 +1,10 @@
 import { Component, Input } from '@angular/core';
 import { LucideDynamicIcon, LucideIconInput } from '@lucide/angular';
+import { SectionTabs } from '../../shared/section-tabs';
 
 @Component({
   selector: 'app-banner-pagina',
-  imports: [LucideDynamicIcon],
+  imports: [LucideDynamicIcon, SectionTabs],
   templateUrl: './banner-pagina.html',
 })
 export class BannerPagina {
