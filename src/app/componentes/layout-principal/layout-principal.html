@@ -1,0 +1,16 @@
+<div class="app-shell" [attr.data-theme]="tema">
+  <app-sidebar-principal />
+
+  <div class="workspace">
+    <button
+      class="theme-toggle"
+      type="button"
+      (click)="alternarTema()"
+      [attr.aria-label]="tema === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+      [attr.aria-pressed]="tema === 'dark'"
+    >
+      <svg [lucideIcon]="tema === 'dark' ? iconoSol : iconoLuna" aria-hidden="true"></svg>
+    </button>
+    <main class="page-content"><router-outlet /></main>
+  </div>
+</div>

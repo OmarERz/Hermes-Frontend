@@ -1,0 +1,59 @@
+<div
+  class="profile-menu"
+  [class.sidebar-profile-menu]="ubicacion === 'arriba'"
+  [class.opens-up]="ubicacion === 'arriba'"
+>
+  <button
+    #trigger
+    class="profile-trigger"
+    type="button"
+    (click)="alternarMenu()"
+    (keydown)="abrirConTeclado($event)"
+    [attr.aria-expanded]="menuAbierto"
+    aria-haspopup="true"
+    [attr.aria-controls]="menuId"
+    [attr.aria-label]="menuAbierto ? 'Cerrar menú del perfil' : 'Abrir menú del perfil'"
+  >
+    <span class="avatar" aria-hidden="true">{{ usuario.iniciales }}</span>
+    <span class="profile-copy"
+      ><strong>{{ usuario.nombre }}</strong
+      ><small>{{ usuario.rol }}</small></span
+    >
+    <svg lucideChevronDown class="profile-chevron" aria-hidden="true"></svg>
+  </button>
+  @if (menuAbierto) {
+    <section
+      #panel
+      class="profile-dropdown"
+      [id]="menuId"
+      role="group"
+      aria-label="Menú del perfil"
+      tabindex="-1"
+      (keydown)="manejarTecladoPanel($event)"
+    >
+      <div class="profile-dropdown-identity">
+        <span class="avatar" aria-hidden="true">{{ usuario.iniciales }}</span>
+        <span
+          ><strong>{{ usuario.nombre }}</strong
+          ><small>{{ usuario.rol }}</small></span
+        >
+      </div>
+      <div class="profile-divider" role="separator"></div>
+      <button
+        class="logout-button"
+        type="button"
+        [disabled]="cerrandoSesion() || sesion.tipo() === 'verificando'"
+        (click)="cerrarSesion()"
+        [attr.aria-busy]="cerrandoSesion()"
+      >
+        <svg lucideLogOut aria-hidden="true"></svg><span>Cerrar sesión</span>
+      </button>
+      @if (cerrandoSesion()) {
+        <p class="auth-unavailable" role="status">Cerrando sesión…</p>
+      }
+      @if (errorCierre()) {
+        <p class="auth-unavailable" role="alert">{{ errorCierre() }}</p>
+      }
+    </section>
+  }
+</div>

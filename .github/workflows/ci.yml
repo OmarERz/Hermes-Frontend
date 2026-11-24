@@ -1,0 +1,35 @@
+name: CI
+
+# Pull requests into develop or main only; pushes do not run it (Actions minutes are limited).
+on:
+  pull_request:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # The prototype imports a local, git-ignored Firebase web config; a clean checkout uses the example.
+      - name: Placeholder Firebase web config
+        run: test -f src/environments/firebase.ts || cp src/environments/firebase.example.ts src/environments/firebase.ts
+      # Lifecycle scripts of dependencies are not run; the build only needs the esbuild binary package.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Lint, format check, unit tests and build
+        run: npm run verify

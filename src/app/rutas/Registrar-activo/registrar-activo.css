@@ -1,0 +1,148 @@
+:host {
+  display: block;
+  color: var(--text-primary, #28153a);
+}
+.pagina,
+.pagina * {
+  box-sizing: border-box;
+}
+.form-heading {
+  margin: 0 0 18px;
+}
+.form-heading span {
+  color: var(--accent, #861798);
+  font-size: calc((12px) + var(--font-size-increase));
+  font-weight: 700;
+}
+.form-heading h1 {
+  margin: 5px 0;
+  color: var(--text-primary, #351044);
+  font-size: calc((30px) + var(--font-size-increase));
+  letter-spacing: -1px;
+}
+.form-heading p {
+  margin: 0;
+  color: var(--text-secondary, #514662);
+  font-size: calc((14px) + var(--font-size-increase));
+}
+.pagina {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(260px, 0.8fr);
+  gap: 14px;
+  align-items: start;
+}
+.bloque {
+  margin-bottom: 13px;
+  padding: 17px;
+  border: 1px solid var(--border, #e4e3ee);
+  border-radius: 15px;
+  background: var(--surface, #fff);
+  color: var(--text-primary, #28153a);
+  box-shadow: var(--shadow-card, 0 3px 9px #35104408);
+}
+.bloque h2 {
+  margin: 0 0 14px;
+  color: var(--text-primary, #321044);
+  font-size: calc((17px) + var(--font-size-increase));
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+.pagina label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: var(--text-secondary, #493b56);
+  font-size: calc((12px) + var(--font-size-increase));
+  font-weight: 700;
+}
+.pagina input,
+.pagina select,
+.pagina textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid var(--border, #dedbe7);
+  border-radius: 8px;
+  background: var(--surface-raised, #fff);
+  color: var(--text-primary, #352344);
+  font: inherit;
+  font-size: calc((13px) + var(--font-size-increase));
+}
+.pagina input::placeholder,
+.pagina textarea::placeholder {
+  color: var(--text-muted, #6c6179);
+  opacity: 1;
+}
+.pagina textarea {
+  resize: vertical;
+}
+.resumen {
+  position: sticky;
+  top: 18px;
+}
+.resumen p {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border, #efedf3);
+  color: var(--text-secondary, #54495f);
+  font-size: calc((12px) + var(--font-size-increase));
+}
+.resumen p strong {
+  color: var(--text-primary, #352044);
+}
+.botones {
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+}
+.botones button {
+  flex: 1;
+  min-height: 40px;
+  padding: 7px 10px;
+  border: 1px solid var(--border, #dedbe7);
+  border-radius: 8px;
+  background: var(--surface-raised, #fff);
+  color: var(--text-primary, #39254a);
+  font: inherit;
+  font-size: calc((12px) + var(--font-size-increase));
+  font-weight: 700;
+  cursor: pointer;
+}
+.botones button.principal {
+  border-color: var(--accent, #df078f);
+  background: linear-gradient(100deg, #ef079d, #d90089);
+  color: #fff;
+}
+.pagina :is(input, select, textarea, button):focus-visible {
+  outline: 2px solid var(--accent-violet, #8d20b8);
+  outline-offset: 2px;
+}
+.pagina button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+@media (max-width: 760px) {
+  .pagina {
+    grid-template-columns: 1fr;
+  }
+  .resumen {
+    position: static;
+  }
+  .form-heading h1 {
+    font-size: calc((25px) + var(--font-size-increase));
+  }
+}
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .bloque {
+    padding: 13px;
+  }
+}

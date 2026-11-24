@@ -1,0 +1,178 @@
+<div class="agent-history-view">
+  <app-banner-pagina
+    titulo="Historial del agente"
+    descripcion="Consulta ejecuciones, recomendaciones, decisiones y cambios de configuración."
+    [icono]="iconoBanner"
+  />
+  <app-navegacion-agentes />
+  @if (origen.modo() === 'demo') {
+    <p class="source-badge">
+      Datos de demostración · registros de ejemplo en memoria; no constituyen auditoría real
+    </p>
+  } @else {
+    <div class="connection-notice">
+      No hay API ni almacenamiento histórico conectado. El historial real requiere registros
+      inmutables del backend.
+    </div>
+  }
+
+  <div class="history-layout">
+    <div class="history-list-column">
+      <section class="history-panel">
+        <header>
+          <h2><svg lucideListFilter aria-hidden="true"></svg> Filtros</h2>
+        </header>
+        <div class="filters">
+          <label>Desde<input type="date" [(ngModel)]="desde" /></label
+          ><label>Hasta<input type="date" [(ngModel)]="hasta" /></label>
+          <label
+            >Agente<select [(ngModel)]="agente">
+              <option value="">Todos</option>
+              @for (item of agentes; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select></label
+          >
+          <label
+            >Ticket<select [(ngModel)]="ticket">
+              <option value="">Todos</option>
+              @for (item of tickets; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select></label
+          >
+          <label
+            >Estado final<select [(ngModel)]="estado">
+              <option value="">Todos</option>
+              @for (item of estados; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select></label
+          >
+          <label
+            >Tipo de evento<select [(ngModel)]="tipo">
+              <option value="">Todos</option>
+              @for (item of tipos; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select></label
+          >
+        </div>
+      </section>
+      <section class="history-panel table-panel">
+        <header>
+          <h2>
+            <svg lucideClock aria-hidden="true"></svg> Eventos <span>{{ filtrados.length }}</span>
+          </h2>
+        </header>
+        <div
+          class="table-scroll"
+          role="region"
+          aria-label="Historial de ejecuciones; desplazamiento horizontal"
+          tabindex="0"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha y hora</th>
+                <th>Agente</th>
+                <th>Ticket</th>
+                <th>Acción</th>
+                <th>Estado inicial</th>
+                <th>Estado final</th>
+                <th>Resultado</th>
+                <th>Duración</th>
+                <th>Evento</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (registro of filtrados; track registro.id) {
+                <tr [class.is-selected]="seleccionada?.id === registro.id">
+                  <td>{{ registro.id }}</td>
+                  <td>{{ registro.fecha }}</td>
+                  <td>{{ registro.agente }}</td>
+                  <td>{{ registro.ticketId }}</td>
+                  <td>{{ registro.accion }}</td>
+                  <td>{{ registro.estadoInicial }}</td>
+                  <td>{{ registro.estadoFinal }}</td>
+                  <td>{{ registro.resultado }}</td>
+                  <td>{{ registro.duracionSegundos }} s</td>
+                  <td>{{ registro.tipo }}</td>
+                  <td>
+                    <button
+                      type="button"
+                      [attr.aria-pressed]="seleccionada?.id === registro.id"
+                      (click)="seleccionada = registro"
+                    >
+                      Detalle
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="11" class="empty">
+                    {{
+                      origen.modo() === 'demo'
+                        ? 'No hay eventos de demostración para esos filtros.'
+                        : 'Aún no hay historial real disponible.'
+                    }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <aside class="history-panel detail-panel" aria-live="polite">
+      @if (seleccionada) {
+        <header>
+          <h2>Detalle · {{ seleccionada.id }}</h2>
+          <button type="button" (click)="seleccionada = null" aria-label="Limpiar detalle">
+            ×
+          </button>
+        </header>
+        <dl>
+          <dt>Ticket</dt>
+          <dd>{{ seleccionada.ticketId }}</dd>
+          <dt>Agente responsable</dt>
+          <dd>{{ seleccionada.agente }}</dd>
+          <dt>Fecha y hora</dt>
+          <dd>{{ seleccionada.fecha }}</dd>
+          <dt>Acción realizada</dt>
+          <dd>{{ seleccionada.accion }}</dd>
+          <dt>Estado inicial</dt>
+          <dd>{{ seleccionada.estadoInicial }}</dd>
+          <dt>Estado final</dt>
+          <dd>{{ seleccionada.estadoFinal }}</dd>
+          <dt>Resultado</dt>
+          <dd>{{ seleccionada.resultado }}</dd>
+          @if (seleccionada.actor) {
+            <dt>Quién registró</dt>
+            <dd>{{ seleccionada.actor }}</dd>
+          }
+          <dt>Herramientas usadas</dt>
+          <dd>{{ seleccionada.herramientas.join(', ') || 'No aplica' }}</dd>
+          <dt>Recomendación</dt>
+          <dd>{{ seleccionada.recomendacionId }}</dd>
+          <dt>Decisión del agente juez</dt>
+          <dd>{{ seleccionada.decisionJuez }}</dd>
+          <dt>Intervención humana</dt>
+          <dd>{{ seleccionada.intervencionHumana }}</dd>
+          <dt>Error</dt>
+          <dd>{{ seleccionada.error }}</dd>
+        </dl>
+        <p class="demo-note">Registro demostrativo no auditable.</p>
+      } @else {
+        <div class="detail-empty">
+          <svg lucideClock aria-hidden="true"></svg>
+          <h2>Detalle de ejecución</h2>
+          <p>Selecciona un evento del listado para consultar sus datos.</p>
+        </div>
+      }
+    </aside>
+  </div>
+</div>

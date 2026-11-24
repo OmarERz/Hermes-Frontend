@@ -1,0 +1,280 @@
+﻿<div class="assets-view">
+  <app-banner-pagina
+    titulo="Activos"
+    descripcion="Gestiona el hardware, los activos vinculados a software y su propiedad en la empresa."
+    [icono]="iconoBanner"
+  />
+  @if (origen.modo() === 'demo') {
+    <p class="source-badge">Datos de demostración · inventario de ejemplo</p>
+  }
+
+  <div class="dashboard-grid">
+    <main class="main-column">
+      <section class="stats-grid">
+        <article class="stat-card">
+          <span><svg lucideLayers aria-hidden="true"></svg></span><small>Total de activos</small
+          ><strong>{{ totalActivos }}</strong>
+        </article>
+        <article class="stat-card">
+          <span class="warning"><svg lucideTriangleAlert aria-hidden="true"></svg></span
+          ><small>Activos críticos</small><strong class="unknown">Sin evaluar</strong>
+        </article>
+        <article class="stat-card">
+          <span><svg lucideUsers aria-hidden="true"></svg></span
+          ><small>Propietarios asignados</small><strong>{{ propietariosAsignados }}</strong>
+        </article>
+        <article class="stat-card">
+          <span><svg lucideZap aria-hidden="true"></svg></span><small>Incidencias</small
+          ><strong class="unknown">Sin evaluar</strong>
+        </article>
+      </section>
+      <div class="action-row">
+        @if (origen.modo() === 'real') {
+          <button type="button" (click)="abrirAsignacion()">
+            <svg lucideUsers aria-hidden="true"></svg> Asignar propietario
+          </button>
+        }
+        <button type="button" (click)="mostrarInventario = !mostrarInventario">
+          <svg lucideLayers aria-hidden="true"></svg>
+          {{ mostrarInventario ? 'Ocultar inventario' : 'Ver inventario' }}
+        </button>
+      </div>
+      @if (mensajeAsignacion && !mostrarModalAsignacion) {
+        <p role="status">{{ mensajeAsignacion }}</p>
+      }
+      @if (mostrarModalAsignacion) {
+        <section
+          class="owner-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="owner-dialog-title"
+        >
+          <div class="owner-dialog-card">
+            <h2 id="owner-dialog-title">Asignar propietario</h2>
+            <label
+              >Activo
+              <select [(ngModel)]="activoSeleccionado" (ngModelChange)="seleccionarActivo($event)">
+                @for (activo of activos; track activo.id) {
+                  <option [value]="activo.id">{{ activo.nombre }} · {{ activo.id }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Nombre del propietario
+              <input
+                [(ngModel)]="nuevoPropietario"
+                placeholder="Escribe el nombre del responsable"
+              />
+            </label>
+            @if (mensajeAsignacion) {
+              <p role="alert">{{ mensajeAsignacion }}</p>
+            }
+            <div class="owner-dialog-actions">
+              <button type="button" (click)="mostrarModalAsignacion = false">Cancelar</button>
+              <button type="button" class="primary-action" (click)="guardarPropietario()">
+                Guardar
+              </button>
+            </div>
+          </div>
+        </section>
+      }
+      <section class="filters">
+        <label class="asset-search"
+          ><svg lucideSearch aria-hidden="true"></svg
+          ><input
+            type="search"
+            [(ngModel)]="busqueda"
+            (ngModelChange)="reiniciarPagina()"
+            placeholder="Buscar por ID, nombre, propietario o área…" /></label
+        ><label class="select-filter"
+          ><svg lucideFunnel aria-hidden="true"></svg
+          ><select [(ngModel)]="tipoFiltro" (ngModelChange)="reiniciarPagina()">
+            <option>Todos</option>
+            <option>Computadora</option>
+            <option>Servidor</option>
+            <option>ASIC</option>
+            <option>Almacenamiento</option>
+            <option>Monitor</option>
+            <option>Equipo de red</option></select
+          ><svg lucideChevronDown aria-hidden="true"></svg></label
+        ><label class="select-filter"
+          ><svg lucideLayers aria-hidden="true"></svg
+          ><select [(ngModel)]="estadoFiltro" (ngModelChange)="reiniciarPagina()">
+            <option>Todos</option>
+            <option>En uso</option>
+            <option>Mantenimiento</option>
+            <option>Disponible</option></select
+          ><svg lucideChevronDown aria-hidden="true"></svg></label
+        ><button class="more-filter">
+          <svg lucideSlidersHorizontal aria-hidden="true"></svg> Más filtros
+          <svg lucideChevronDown aria-hidden="true"></svg>
+        </button>
+      </section>
+      <section class="panel inventory" [hidden]="!mostrarInventario">
+        <header>
+          <div class="inventory-title">
+            <svg lucideLayers aria-hidden="true"></svg>
+            <h2>Inventario de activos</h2>
+          </div>
+          <span>Mostrando {{ activosVisibles.length }} de {{ filtrados.length }} activos</span
+          ><button>
+            <svg lucideCalendar aria-hidden="true"></svg> Última actualización
+            <svg lucideChevronDown aria-hidden="true"></svg>
+          </button>
+        </header>
+        @if (origen.modo() === 'real' && cargando) {
+          <p class="empty">Cargando inventario...</p>
+        }
+        @if (origen.modo() === 'real' && errorCarga) {
+          <p class="empty" role="alert">
+            {{ errorCarga }} Selecciona Datos de demostración para explorar el dashboard.
+          </p>
+        }
+        @if (origen.modo() === 'real' && !cargando && !errorCarga && !totalActivos) {
+          <p class="empty">Aún no hay activos registrados.</p>
+        }
+        <div
+          class="table-scroll"
+          role="region"
+          aria-label="Inventario de activos; desplazamiento horizontal"
+          tabindex="0"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th>ID del activo</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>CPU</th>
+                <th>GPU</th>
+                <th>RAM</th>
+                <th>Almacenamiento</th>
+                <th>Sistema operativo</th>
+                <th>Propietario</th>
+                <th>Área</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (activo of activosVisibles; track activo.id) {
+                <tr>
+                  <td>{{ activo.id }}</td>
+                  <td>
+                    <strong>{{ activo.nombre }}</strong
+                    ><small>{{ activo.subtitulo }}</small>
+                  </td>
+                  <td>
+                    <span class="type-chip">{{ activo.tipo }}</span>
+                  </td>
+                  <td>{{ activo.cpu }}</td>
+                  <td>{{ activo.gpu }}</td>
+                  <td>{{ activo.ram }}</td>
+                  <td>{{ activo.almacenamiento }}</td>
+                  <td>{{ activo.sistema }}</td>
+                  <td>{{ activo.propietario }}</td>
+                  <td>{{ activo.area }}</td>
+                  <td>
+                    <span
+                      class="status"
+                      [class.maintenance]="activo.estado === 'Mantenimiento'"
+                      [class.available]="activo.estado === 'Disponible'"
+                      ><svg
+                        [lucideIcon]="iconoEstado(activo.estado)"
+                        [size]="13"
+                        aria-hidden="true"
+                      ></svg
+                      >{{ activo.estado }}</span
+                    >
+                  </td>
+                  <td><svg lucideEllipsisVertical class="row-more" aria-hidden="true"></svg></td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="12" class="empty">No hay activos que coincidan con los filtros.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <footer>
+          <label
+            >Filas por página
+            <select [(ngModel)]="filasPorPagina" (ngModelChange)="reiniciarPagina()">
+              <option [ngValue]="5">5</option>
+              <option [ngValue]="10">10</option>
+            </select></label
+          >
+          <div class="pagination">
+            <button
+              [disabled]="pagina === 1"
+              (click)="pagina = pagina - 1"
+              aria-label="Página anterior"
+            >
+              <svg lucideArrowLeft aria-hidden="true"></svg></button
+            ><button class="selected">{{ pagina }}</button
+            ><button
+              [disabled]="pagina === totalPaginas"
+              (click)="pagina = pagina + 1"
+              aria-label="Página siguiente"
+            >
+              <svg lucideArrowRight aria-hidden="true"></svg></button
+            ><span>de {{ totalPaginas }}</span>
+          </div>
+        </footer>
+      </section>
+    </main>
+    <aside class="right-column">
+      <article class="panel distribution">
+        <h2><svg lucideLayers aria-hidden="true"></svg> Distribución por tipo de activo</h2>
+        @for (item of distribucion; track item.nombre) {
+          <div class="distribution-row">
+            <svg
+              [lucideIcon]="item.icono"
+              [size]="20"
+              class="distribution-icon"
+              aria-hidden="true"
+            ></svg
+            ><span
+              ><strong>{{ item.nombre }}</strong
+              ><small>{{ item.total }}</small></span
+            ><i><em [style.width.%]="item.porcentaje"></em></i
+            ><strong class="percent">{{ item.porcentaje }} %</strong>
+          </div>
+        } @empty {
+          <p class="empty">Aún no hay información para distribuir.</p>
+        }
+      </article>
+      <article class="panel distribution asset-state-panel">
+        <h2><svg lucideActivity aria-hidden="true"></svg> Estado de los activos</h2>
+        @for (item of distribucionEstado; track item.estado) {
+          <div
+            class="state-row"
+            [class.in-use]="item.estado === 'En uso'"
+            [class.maintenance]="item.estado === 'Mantenimiento'"
+            [class.available]="item.estado === 'Disponible'"
+          >
+            <span class="state-icon"
+              ><svg [lucideIcon]="item.icono" [size]="22" aria-hidden="true"></svg
+            ></span>
+            <div class="state-copy">
+              <strong>{{ item.estado }}</strong
+              ><small>{{ item.porcentaje }} % del total</small
+              ><span
+                class="state-progress"
+                role="progressbar"
+                [attr.aria-label]="'Activos en estado ' + item.estado"
+                [attr.aria-valuenow]="item.porcentaje"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                ><span [style.width.%]="item.porcentaje"></span
+              ></span>
+            </div>
+            <strong class="state-count">{{ item.total }}</strong>
+          </div>
+        }
+        <p class="state-footnote">Porcentaje respecto al inventario completo.</p>
+      </article>
+    </aside>
+  </div>
+</div>

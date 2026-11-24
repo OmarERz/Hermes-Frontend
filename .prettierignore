@@ -1,0 +1,7 @@
+dist/
+out-tsc/
+coverage/
+.angular/
+tmp/
+package-lock.json
+documentación/
