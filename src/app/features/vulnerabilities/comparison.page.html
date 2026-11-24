@@ -1,0 +1,199 @@
+<div class="assets-view comparison-view">
+  <app-banner-pagina
+    titulo="Comparación"
+    descripcion="Lo que diría un escáner con solo CVSS frente a la urgencia final de Hermes."
+    [icono]="bannerIcon"
+  />
+
+  @if (summaryState(); as state) {
+    <section class="panel">
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando la comparación…"
+        [error]="summary.error()"
+        (retry)="reload()"
+      />
+    </section>
+  } @else if (summary.value(); as data) {
+    <section class="stats-grid" aria-label="Indicadores">
+      <article class="stat-card indicator">
+        <small>Reclasificados</small>
+        <strong>{{ data.reclassified_percent }} %</strong>
+        <em class="note">Hallazgos que cambiaron de nivel</em>
+      </article>
+      <article class="stat-card indicator">
+        <small>Críticos ocultos</small>
+        <strong>{{ data.hidden_criticals }}</strong>
+        <em class="note">CVSS menor a 7.0 y final de 75 o más</em>
+      </article>
+      <article class="stat-card indicator">
+        <small>Ruido evitado</small>
+        <strong>{{ data.avoided_noise }}</strong>
+        <em class="note">CVSS de 9.0 o más y final menor a 50</em>
+      </article>
+      <article class="stat-card indicator">
+        <small>Correlación de rangos</small>
+        <strong>{{ data.rank_correlation }}</strong>
+        <em class="note">τ-b de Kendall entre el orden por CVSS y el final</em>
+      </article>
+    </section>
+
+    <div class="comparison-grid">
+      <section class="panel" aria-labelledby="matrix-title">
+        <h2 id="matrix-title">Matriz de reclasificación</h2>
+        <p class="hint">
+          Filas: nivel por CVSS. Columnas: nivel de Hermes. Los niveles se comparan por nombre, cada
+          uno con su escala.
+        </p>
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th scope="col"><span class="visually-hidden">Nivel por CVSS</span></th>
+              @for (level of levels; track level) {
+                <th scope="col">
+                  <span [class]="'level-chip level-' + level">{{ levelLabels[level] }}</span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of matrix(); track row.from) {
+              <tr>
+                <th scope="row">
+                  <span [class]="'level-chip level-' + row.from">{{ levelLabels[row.from] }}</span>
+                </th>
+                @for (cell of row.cells; track cell.to) {
+                  <td
+                    class="numeric"
+                    [class]="'cell-' + cell.change"
+                    [attr.aria-label]="
+                      cell.count +
+                      ' de ' +
+                      levelLabels[row.from] +
+                      ' por CVSS a ' +
+                      levelLabels[cell.to] +
+                      ' en Hermes'
+                    "
+                  >
+                    {{ cell.count }}
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+        <p class="legend">
+          <span class="swatch cell-up"></span> Hermes sube la urgencia
+          <span class="swatch cell-down"></span> Hermes la baja
+          <span class="swatch cell-same"></span> Sin cambio
+        </p>
+      </section>
+
+      <section class="panel" aria-labelledby="funnel-title">
+        <h2 id="funnel-title">Embudo</h2>
+        <p class="hint">Cuántos hallazgos quedan en cada etapa del análisis.</p>
+        <ol class="funnel">
+          @for (stage of funnel(); track stage.key) {
+            <li>
+              <span class="funnel-label">{{ stage.label }}</span>
+              <span class="funnel-bar" aria-hidden="true"
+                ><span [style.width.%]="stage.percent"></span
+              ></span>
+              <strong class="numeric">{{ stage.count }}</strong>
+            </li>
+          }
+        </ol>
+      </section>
+    </div>
+  }
+
+  <section class="panel inventory" aria-labelledby="rows-title">
+    <header>
+      <div class="inventory-title">
+        <h2 id="rows-title">Hallazgos: crudo frente a final</h2>
+      </div>
+      <span>Página {{ pager.pageIndex() + 1 }}</span>
+    </header>
+    @if (tableState(); as state) {
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando los hallazgos…"
+        emptyText="Aún no hay hallazgos evaluados."
+        [error]="pager.state.error()"
+        (retry)="pager.reload()"
+      />
+    } @else {
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Comparación por hallazgo; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">CVE</th>
+              <th scope="col">Producto</th>
+              <th scope="col">Activo</th>
+              <th scope="col">CVSS</th>
+              <th scope="col">Crudo</th>
+              <th scope="col">Base</th>
+              <th scope="col">Juez</th>
+              <th scope="col">Final</th>
+              <th scope="col">Δ</th>
+              <th scope="col">Causa principal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of pager.items(); track row.cve + row.ci_id) {
+              <tr>
+                <td>
+                  <strong>{{ row.cve }}</strong>
+                </td>
+                <td>{{ row.product }}</td>
+                <td>{{ row.ci_id }}</td>
+                <td class="numeric">{{ row.cvss ?? 'Sin CVSS' }}</td>
+                <td class="numeric">{{ row.raw }}</td>
+                <td class="numeric">{{ row.base }}</td>
+                <td class="numeric">{{ signed(row.judge_adjustment) }}</td>
+                <td class="numeric">{{ row.final }}</td>
+                <td
+                  class="numeric delta"
+                  [class.delta-up]="row.delta > 0"
+                  [class.delta-down]="row.delta < 0"
+                >
+                  {{ signed(row.delta) }}
+                </td>
+                <td>{{ row.main_cause }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <footer>
+      <span></span>
+      <div class="pagination">
+        <button
+          type="button"
+          [disabled]="!pager.hasPrevious() || pager.state.loading()"
+          (click)="pager.previous()"
+          aria-label="Página anterior"
+        >
+          <svg lucideArrowLeft aria-hidden="true"></svg>
+        </button>
+        <button type="button" class="selected" aria-current="page">
+          {{ pager.pageIndex() + 1 }}
+        </button>
+        <button
+          type="button"
+          [disabled]="!pager.hasNext()"
+          (click)="pager.next()"
+          aria-label="Página siguiente"
+        >
+          <svg lucideArrowRight aria-hidden="true"></svg>
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>
