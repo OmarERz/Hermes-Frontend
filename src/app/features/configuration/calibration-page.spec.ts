@@ -87,7 +87,7 @@ describe('CalibrationPage', () => {
     const { element } = await render('reader');
     const summary = element.querySelector('.config-summary') as HTMLElement;
     expect(summary.textContent).toContain('Supervisada');
-    expect(summary.textContent).toContain('±0.10');
+    expect(summary.textContent).toContain('±10 %');
     expect(summary.textContent).toContain('2 semanas');
     expect(element.querySelector('.mode-note a')?.getAttribute('href')).toBe('/parametros');
   });
@@ -98,7 +98,7 @@ describe('CalibrationPage', () => {
     const { element } = await render('reader', api);
     const summary = element.querySelector('.config-summary') as HTMLElement;
     expect(summary.textContent).toContain('Autónoma');
-    expect(summary.textContent).toContain('±—');
+    expect(summary.querySelectorAll('strong')[1].textContent?.trim()).toBe('—');
   });
 
   it('lists the proposals with evidence, before and after, and the replay', async () => {
@@ -169,7 +169,7 @@ describe('CalibrationPage', () => {
     expect(api.approve).not.toHaveBeenCalled();
   });
 
-  it('keeps the dialog with the reason when the proposal no longer applies', async () => {
+  it('closes the dialog and says why when the proposal no longer applies', async () => {
     const api = new FakeConfigApi();
     api.approve.mockReturnValue(
       throwError(
@@ -185,9 +185,12 @@ describe('CalibrationPage', () => {
     await click(`[aria-label="Aprobar: ${WEIGHTS.summary}"]`);
     button('Confirmar cambios')?.click();
     await fixture.whenStable();
-    expect(element.querySelector('.dialog-error')?.textContent).toContain('ya no aplica');
+    expect(element.querySelector('[role="dialog"]')).toBeNull();
+    expect(element.querySelector('.proposals-problem')?.textContent).toContain('ya no aplica');
     expect(api.proposals).toHaveBeenCalledTimes(2);
-    expect(button('Confirmar cambios')?.disabled).toBe(false);
+
+    await click(`[aria-label="Rechazar: ${WEIGHTS.summary}"]`);
+    expect(element.querySelector('.proposals-problem')).toBeNull();
   });
 
   it('does not read the list again on a failure that is not about the proposal', async () => {

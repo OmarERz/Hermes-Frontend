@@ -74,7 +74,7 @@ export class ConfigVersions {
       {
         name: 'Configuración vigente',
         before: `Versión ${current}`,
-        after: `Versión ${current + 1}, con los valores de la versión ${target.version}`,
+        after: `Una versión nueva con los valores de la versión ${target.version}`,
         impact:
           'Si la fórmula cambia, se recalculan las puntuaciones base sin llamar al juez (corrida de recálculo).',
       },
@@ -115,6 +115,13 @@ export class ConfigVersions {
         this.restoring.set(false);
         this.target.set(null);
         this.store.accept(document);
+        if (document.version === current) {
+          // Same values as the current version: the API creates nothing, so the draft is still valid.
+          this.notice.set(
+            `La versión ${target.version} tiene los mismos valores que la vigente: no se creó una versión nueva.`,
+          );
+          return;
+        }
         this.notice.set(
           `Se restauró la versión ${target.version} como la versión ${document.version}.`,
         );

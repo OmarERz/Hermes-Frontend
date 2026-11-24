@@ -40,7 +40,7 @@ const SAVED_FORMULA =
  * (`expected_version`, API-03); a 409 offers to reload instead of overwriting.
  */
 export class ConfigEditor {
-  private readonly store: ConfigStore;
+  private readonly store = inject(ConfigStore);
   private readonly api = inject(ConfigApi);
   private readonly session = inject(SessionService);
   private saveSubscription: Subscription | null = null;
@@ -176,11 +176,7 @@ export class ConfigEditor {
     return rows;
   });
 
-  constructor(
-    private readonly options: ConfigEditorOptions,
-    store?: ConfigStore,
-  ) {
-    this.store = store ?? inject(ConfigStore);
+  constructor(private readonly options: ConfigEditorOptions) {
     inject(DestroyRef).onDestroy(() => {
       this.simulation.cancel();
       this.saveSubscription?.unsubscribe();

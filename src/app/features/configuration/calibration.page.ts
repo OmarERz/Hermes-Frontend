@@ -76,7 +76,13 @@ export class CalibrationPage {
   readonly mode = computed(() =>
     this.store.values()['mode4_autonomous'] === 'true' ? 'Autónoma' : 'Supervisada',
   );
-  readonly weeklyLimit = computed(() => this.store.values()['mode4.weekly_limit'] ?? '—');
+  /** `mode4.weekly_limit` is relative (the weight times 1 ± limit, docs/07 §10): 0.10 reads ±10 %. */
+  readonly weeklyLimit = computed(() => {
+    const raw = this.store.values()['mode4.weekly_limit'];
+    if (raw === undefined || raw.trim() === '') return '—';
+    const share = Number(raw);
+    return Number.isFinite(share) ? `±${Number((share * 100).toFixed(2))} %` : raw;
+  });
   readonly cooldownWeeks = computed(() => this.store.values()['mode4.cooldown_weeks'] ?? '—');
 
   readonly pager = new CursorPager<CalibrationProposal>((cursor) =>
@@ -104,6 +110,8 @@ export class CalibrationPage {
   readonly deciding = signal(false);
   readonly decideError = signal<ApiError | null>(null);
   readonly notice = signal('');
+  /** Why the last decision could not apply (already decided, or what it changes moved). */
+  readonly problem = signal('');
   readonly dialogTitle = computed(() =>
     this.target()?.action === 'approve' ? 'Aprobar la propuesta' : 'Rechazar la propuesta',
   );
@@ -137,6 +145,7 @@ export class CalibrationPage {
 
   ask(proposal: CalibrationProposal, action: Decision): void {
     this.notice.set('');
+    this.problem.set('');
     this.decideError.set(null);
     this.target.set({ proposal, action });
   }
@@ -171,9 +180,15 @@ export class CalibrationPage {
       error: (error: unknown) => {
         const failure = toApiError(error);
         this.deciding.set(false);
+        if (failure.status === 404 || failure.status === 409) {
+          // Someone decided it already, or what it changes moved: confirming again would fail the same way, so
+          // close the dialog, say why and show the proposal as it is now.
+          this.target.set(null);
+          this.problem.set(failure.message);
+          this.pager.reload();
+          return;
+        }
         this.decideError.set(failure);
-        // Someone decided it already, or what it changes moved: show the proposal as it is now.
-        if (failure.status === 404 || failure.status === 409) this.pager.reload();
       },
     });
   }

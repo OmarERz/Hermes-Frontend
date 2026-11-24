@@ -81,7 +81,11 @@ export class ConfigField {
   }
 
   emit(event: Event): void {
-    this.valueChange.emit((event.target as HTMLInputElement | HTMLSelectElement).value);
+    const target = event.target as HTMLInputElement | HTMLSelectElement;
+    // A number field reports '' while its text is not a number yet ('0.' on the way to '0.35'): emitting it would
+    // clear the draft, and the binding would then wipe what the person is typing.
+    if (target.validity?.badInput) return;
+    this.valueChange.emit(target.value);
   }
 
   toggle(event: Event): void {

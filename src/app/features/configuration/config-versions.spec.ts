@@ -93,7 +93,7 @@ describe('ConfigVersions', () => {
     await fixture.whenStable();
     const dialog = element.querySelector('[role="dialog"]') as HTMLElement;
     expect(dialog.textContent).toContain('Restaurar la versión 6');
-    expect(dialog.textContent).toContain('Versión 8, con los valores de la versión 6');
+    expect(dialog.textContent).toContain('Una versión nueva con los valores de la versión 6');
 
     button('Confirmar cambios')?.click();
     await fixture.whenStable();
@@ -103,6 +103,21 @@ describe('ConfigVersions', () => {
     expect(fixture.componentInstance.restored).toBe(8);
     expect(fixture.componentInstance.store.version()).toBe(8);
     expect(api.versions).toHaveBeenCalledTimes(2);
+  });
+
+  it('says so when the restored version had the current values', async () => {
+    const api = new FakeConfigApi();
+    api.restore.mockReturnValue(of(configDocument(7)));
+    const { fixture, element, button } = await render('admin', api);
+    (element.querySelector('[aria-label="Restaurar la versión 6"]') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    button('Confirmar cambios')?.click();
+    await fixture.whenStable();
+    expect(element.textContent).toContain(
+      'La versión 6 tiene los mismos valores que la vigente: no se creó una versión nueva.',
+    );
+    expect(fixture.componentInstance.restored).toBeNull();
+    expect(element.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('cancels a restore without calling the API', async () => {

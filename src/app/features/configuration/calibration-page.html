@@ -16,7 +16,8 @@
       <article>
         <span class="summary-icon"><svg lucideGauge aria-hidden="true"></svg></span>
         <span class="summary-copy"
-          ><small>Límite semanal por peso</small><strong>±{{ weeklyLimit() }}</strong></span
+          ><small>Cambio máximo de un peso por semana</small
+          ><strong>{{ weeklyLimit() }}</strong></span
         >
       </article>
       <article>
@@ -45,6 +46,9 @@
     </header>
     @if (notice()) {
       <p class="proposals-notice" role="status">{{ notice() }}</p>
+    }
+    @if (problem()) {
+      <p class="proposals-problem" role="alert">{{ problem() }}</p>
     }
     @if (state(); as view) {
       <app-async-state

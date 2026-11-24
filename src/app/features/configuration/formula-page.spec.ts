@@ -113,6 +113,25 @@ describe('FormulaPage', () => {
     expect(button('Simular')?.disabled).toBe(false);
   });
 
+  it('keeps the draft while a decimal is half typed', async () => {
+    const { fixture, element, type } = await render('admin');
+    await type('weights.S', '0.35');
+    const input = element.querySelector('#cfg-weights-S') as HTMLInputElement;
+    // What a browser reports for '0.' in a number field: no value and a bad input.
+    const validity = { badInput: true };
+    Object.defineProperty(input, 'validity', { value: validity });
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.editor.value('weights.S')).toBe('0.35');
+
+    // Clearing the field is a real edit.
+    validity.badInput = false;
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.editor.value('weights.S')).toBe('');
+  });
+
   it('marks a value out of range before calling the API', async () => {
     const { element, button, type } = await render('admin');
     await type('formula.kev_exposed_floor', '70');

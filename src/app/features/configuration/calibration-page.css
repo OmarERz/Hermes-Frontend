@@ -8,6 +8,13 @@
   margin: 0 0 10px;
   color: var(--success-text);
 }
+.proposals-problem {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
 .proposal-list {
   display: grid;
   gap: 10px;
