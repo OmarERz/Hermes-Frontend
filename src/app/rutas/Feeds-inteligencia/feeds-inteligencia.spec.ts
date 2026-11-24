@@ -2,12 +2,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { FeedsInteligencia } from './feeds-inteligencia';
 import { FeedInteligencia, FeedsInteligenciaServicio } from '../../servicios/feeds-inteligencia';
+import { SessionService } from '../../core/auth/session.service';
 
 describe('FeedsInteligencia carrusel', () => {
   let fixture: ComponentFixture<FeedsInteligencia>;
   let feeds: ReturnType<typeof signal<FeedInteligencia[]>>;
 
+  let canToggle: boolean;
+
   beforeEach(async () => {
+    canToggle = true;
     feeds = signal<FeedInteligencia[]>([
       {
         id: 'otx',
@@ -65,13 +69,13 @@ describe('FeedsInteligencia carrusel', () => {
     await TestBed.configureTestingModule({
       imports: [FeedsInteligencia],
       providers: [
+        { provide: SessionService, useValue: { hasRole: () => canToggle } },
         {
           provide: FeedsInteligenciaServicio,
           useValue: {
             feeds,
-            modo: signal<'demo' | 'real'>('demo'),
             integracionPendiente: signal(false),
-            cambiarEstadoDemo: vi.fn(),
+            setFeedActive: vi.fn(),
           },
         },
       ],
@@ -109,7 +113,7 @@ describe('FeedsInteligencia carrusel', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('misp');
-    expect(fixture.componentInstance.servicio.cambiarEstadoDemo).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.servicio.setFeedActive).not.toHaveBeenCalled();
   });
 
   it('conserva navegación circular y filtros para listas dinámicas', () => {
@@ -144,13 +148,22 @@ describe('FeedsInteligencia carrusel', () => {
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('cisa');
   });
 
+  it('shows the feed state without the switch to a role that cannot change sources', () => {
+    canToggle = false;
+    fixture.componentRef.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('input[role="switch"]')).toBeNull();
+    expect(element.querySelector('.toggle-label')?.textContent?.trim()).toMatch(/Activo|Inactivo/);
+  });
+
   it('permite activar el switch sin seleccionar otra tarjeta', () => {
     const toggle = fixture.nativeElement.querySelector('.feed-toggle input') as HTMLInputElement;
     toggle.click();
     fixture.detectChanges();
 
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('otx');
-    expect(fixture.componentInstance.servicio.cambiarEstadoDemo).toHaveBeenCalledWith('misp', true);
+    expect(fixture.componentInstance.servicio.setFeedActive).toHaveBeenCalledWith('misp', true);
   });
 
   it('maneja listas vacías, de un feed y de dos feeds sin duplicar tarjetas', () => {

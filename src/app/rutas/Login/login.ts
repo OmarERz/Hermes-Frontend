@@ -2,7 +2,9 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideLockKeyhole, LucideMail, LucideUserRound } from '@lucide/angular';
-import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
+import { SessionService } from '../../core/auth/session.service';
+
+const PROFILE_ERROR_MESSAGE = 'No se pudo cargar tu perfil. Inténtalo de nuevo.';
 
 @Component({
   selector: 'app-login',
@@ -13,7 +15,7 @@ import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
 export class Login {
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  private readonly sesion = inject(SesionAutenticacion);
+  readonly sesion = inject(SessionService);
 
   form = this.fb.nonNullable.group({
     correo: ['', [Validators.required, Validators.email]],
@@ -22,7 +24,8 @@ export class Login {
 
   verPassword = signal(false);
   cargando = signal(false);
-  error = signal('');
+  /** Starts with the reason of the last session end (expired, inactive user, backend unreachable). */
+  error = signal(this.sesion.notice());
 
   /** Valida el formulario, autentica con Firebase y navega solo tras una respuesta válida. */
   async entrar(): Promise<void> {
@@ -37,10 +40,24 @@ export class Login {
     const { correo, password } = this.form.getRawValue();
 
     try {
-      await this.sesion.iniciarSesionFirebase(correo.trim(), password);
-      await this.router.navigate(['/inicio']);
+      const status = await this.sesion.signIn(correo.trim(), password);
+      if (status === 'ready') await this.router.navigate(['/inicio']);
+      else this.error.set(this.sesion.notice() || PROFILE_ERROR_MESSAGE);
     } catch (error) {
       this.error.set(this.mensajeErrorAutenticacion(error));
+    } finally {
+      this.cargando.set(false);
+    }
+  }
+
+  /** After a transient GET /api/me failure, asks for the profile again with the current Firebase session. */
+  async retryProfile(): Promise<void> {
+    this.cargando.set(true);
+    this.error.set('');
+    try {
+      const status = await this.sesion.retryProfile();
+      if (status === 'ready') await this.router.navigate(['/inicio']);
+      else this.error.set(this.sesion.notice() || PROFILE_ERROR_MESSAGE);
     } finally {
       this.cargando.set(false);
     }

@@ -167,73 +167,6 @@
     background: var(--surface-raised, #fff);
     color: var(--text-primary, #51465e);
   }
-  .modal-backdrop {
-    position: fixed;
-    z-index: 1000;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 18px;
-    background: #16091fbb;
-  }
-  .confirm-modal {
-    display: grid;
-    gap: 12px;
-    width: min(100%, 560px);
-    max-height: min(88vh, 760px);
-    overflow: auto;
-    padding: 20px;
-    border: 1px solid #d8b0ea;
-    border-radius: 15px;
-    background: var(--surface, #fff);
-    color: var(--text-primary, #321044);
-    box-shadow: 0 20px 70px #0005;
-  }
-  .confirm-modal h2 {
-    font-size: calc((18px) + var(--font-size-increase));
-  }
-  .confirm-modal > p {
-    color: #655a6e;
-    font-size: calc((12px) + var(--font-size-increase));
-  }
-  .change-list {
-    display: grid;
-    gap: 9px;
-  }
-  .change-list article {
-    padding: 12px;
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    background: var(--surface-soft, #faf8fc);
-  }
-  .change-list h3 {
-    font-size: calc((13px) + var(--font-size-increase));
-  }
-  .change-list article > div {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin: 9px 0;
-    color: #675b70;
-    font-size: calc((11px) + var(--font-size-increase));
-  }
-  .change-list article > div strong {
-    display: block;
-    margin-top: 3px;
-    color: var(--text-primary, #321044);
-    font-size: calc((13px) + var(--font-size-increase));
-  }
-  .change-list article p {
-    color: #655a6e;
-    font-size: calc((11px) + var(--font-size-increase));
-    line-height: 1.4;
-  }
-  .confirm-modal footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 4px;
-  }
 }
 @media (max-width: 650px) {
   .agent-config-view .config-grid {
@@ -245,9 +178,6 @@
   }
   .agent-config-view .save-row p {
     min-height: 16px;
-  }
-  .agent-config-view .change-list article > div {
-    grid-template-columns: 1fr;
   }
 }
 .app-shell[data-theme='dark'] .agent-config-view .config-card {

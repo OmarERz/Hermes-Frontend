@@ -498,67 +498,6 @@ app-menu-perfil.sidebar-profile {
   margin-top: auto;
 }
 
-.sidebar-data-source {
-  display: grid;
-  gap: 5px;
-  margin: 18px 4px 12px;
-  padding: 0 6px;
-  color: #e8d9f5;
-  font-size: calc(10px + var(--font-size-increase));
-  font-weight: 700;
-}
-.sidebar-data-source select {
-  width: 100%;
-  min-width: 0;
-  min-height: 40px;
-  padding: 0 9px;
-  border: 1px solid rgba(217, 168, 255, 0.3);
-  border-radius: 9px;
-  background: #321849;
-  color: #f8efff;
-  font: inherit;
-  font-size: calc(12px + var(--font-size-increase));
-}
-.sidebar-data-source {
-  color: #f4e8ff;
-}
-.sidebar-data-source select {
-  border-color: #795093;
-  background: #351a4b;
-  color: #fff;
-}
-.sidebar-data-source select option {
-  background: #351a4b;
-  color: #fff;
-}
-.sidebar-data-source select:hover {
-  border-color: #a879c2;
-}
-.sidebar-data-source select:focus-visible {
-  border-color: #d9a8ff;
-  outline: 2px solid #d9a8ff;
-  outline-offset: 2px;
-}
-.sidebar-data-source select:disabled {
-  border-color: #795093;
-  background: #351a4b;
-  color: #d3c4df;
-  opacity: 0.78;
-}
-@media (max-width: 850px) {
-  .sidebar-data-source {
-    margin: 14px 0 10px;
-    padding: 0;
-  }
-  .sidebar-data-source > span {
-    display: none;
-  }
-  .sidebar-data-source select {
-    width: 58px;
-    padding: 0 2px;
-    font-size: calc(9px + var(--font-size-increase));
-  }
-}
 @media (max-width: 560px) {
   .app-shell {
     padding-bottom: 113px;
@@ -567,31 +506,12 @@ app-menu-perfil.sidebar-profile {
     height: 112px;
     padding: 5px 7px 4px;
   }
-  .sidebar-data-source {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 8px;
-    width: min(100%, 360px);
-    margin: 0 auto 3px;
-    padding: 0 6px;
-    font-size: calc(9px + var(--font-size-increase));
-  }
-  .sidebar-data-source > span {
-    display: block;
-  }
-  .sidebar-data-source select {
-    width: 100%;
-    min-height: 34px;
-    padding: 0 8px;
-    font-size: calc(11px + var(--font-size-increase));
-  }
   .main-nav {
     height: 55px;
   }
 }
 @media (max-width: 560px) {
   .main-nav {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }

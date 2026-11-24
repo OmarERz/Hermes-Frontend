@@ -6,7 +6,14 @@ import angular from 'angular-eslint';
 
 export default defineConfig([
   {
-    ignores: ['dist/', 'out-tsc/', 'coverage/', '.angular/', 'tmp/'],
+    ignores: [
+      'dist/',
+      'out-tsc/',
+      'coverage/',
+      '.angular/',
+      'tmp/',
+      'src/app/core/api/schema.d.ts',
+    ],
   },
   {
     files: ['**/*.ts'],

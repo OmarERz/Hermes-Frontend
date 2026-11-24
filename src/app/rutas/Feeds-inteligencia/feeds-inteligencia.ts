@@ -13,6 +13,8 @@ import {
   FeedsInteligenciaServicio,
   TipoFeedInteligencia,
 } from '../../servicios/feeds-inteligencia';
+import { ACTION_ROLES } from '../../core/auth/roles';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-feeds-inteligencia',
@@ -28,6 +30,9 @@ import {
   templateUrl: './feeds-inteligencia.html',
 })
 export class FeedsInteligencia {
+  /** Turning a source on or off is PATCH /api/sources/{id}: analyst or admin only. */
+  readonly sourceToggleRole = ACTION_ROLES.toggleSource;
+  readonly sesion = inject(SessionService);
   readonly servicio = inject(FeedsInteligenciaServicio);
   readonly categoria = signal<TipoFeedInteligencia>('Amenazas');
   private readonly indiceCarrusel = signal(0);
@@ -130,10 +135,10 @@ export class FeedsInteligencia {
     this.indiceCarrusel.update((indice) => indice + direccion);
   }
 
-  /** Alterna solo el feed indicado y delega al servicio, que bloquea el modo real. */
+  /** Toggles only this feed; the service refuses it while the integration is pending. */
   alternarFeed(feed: FeedInteligencia, evento: Event): void {
     evento.stopPropagation();
-    this.servicio.cambiarEstadoDemo(feed.id, !feed.activo);
+    this.servicio.setFeedActive(feed.id, !feed.activo);
   }
 
   /** Registra el inicio del gesto sin capturar el puntero para preservar el clic de las tarjetas. */

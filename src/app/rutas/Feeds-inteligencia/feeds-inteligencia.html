@@ -42,17 +42,10 @@
     </section>
   </header>
 
-  @if (servicio.integracionPendiente()) {
-    <p class="integration-note" role="status">
-      <svg lucideSignal aria-hidden="true"></svg> Integración pendiente · el backend aún no publica
-      un contrato de feeds. No se muestran datos de demostración en modo real.
-    </p>
-  } @else {
-    <p class="demo-note" role="status">
-      Datos de demostración · fuentes y frecuencias de ejemplo; no representan conexiones activas ni
-      sincronizaciones reales.
-    </p>
-  }
+  <p class="integration-note" role="status">
+    <svg lucideSignal aria-hidden="true"></svg> Integración pendiente · el backend aún no publica un
+    contrato de feeds.
+  </p>
 
   <div class="feed-filters" role="group" aria-label="Filtrar categoría de feeds">
     <button
@@ -117,27 +110,31 @@
             @if (tarjeta.posicion === 0) {
               <span class="feed-sync-state">Sin datos de sincronización</span>
             }
-            <span class="feed-demo-tag">{{
-              servicio.modo() === 'demo' ? 'Ejemplo' : 'Integración pendiente'
-            }}</span>
+            <span class="feed-demo-tag">Integración pendiente</span>
           </button>
-          <label
-            class="feed-toggle"
-            [attr.aria-label]="
-              (tarjeta.feed.activo ? 'Desactivar ' : 'Activar ') + tarjeta.feed.nombre
-            "
-          >
-            <input
-              type="checkbox"
-              role="switch"
-              [checked]="tarjeta.feed.activo"
-              [disabled]="servicio.modo() !== 'demo'"
-              (click)="$event.stopPropagation()"
-              (change)="alternarFeed(tarjeta.feed, $event)"
-            />
-            <span class="toggle-track" aria-hidden="true"></span>
-            <span class="toggle-label">{{ tarjeta.feed.activo ? 'Activo' : 'Inactivo' }}</span>
-          </label>
+          @if (sesion.hasRole(sourceToggleRole)) {
+            <label
+              class="feed-toggle"
+              [attr.aria-label]="
+                (tarjeta.feed.activo ? 'Desactivar ' : 'Activar ') + tarjeta.feed.nombre
+              "
+            >
+              <input
+                type="checkbox"
+                role="switch"
+                [checked]="tarjeta.feed.activo"
+                [disabled]="servicio.integracionPendiente()"
+                (click)="$event.stopPropagation()"
+                (change)="alternarFeed(tarjeta.feed, $event)"
+              />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">{{ tarjeta.feed.activo ? 'Activo' : 'Inactivo' }}</span>
+            </label>
+          } @else {
+            <span class="feed-toggle toggle-label">{{
+              tarjeta.feed.activo ? 'Activo' : 'Inactivo'
+            }}</span>
+          }
         </article>
       }
       @if (servicio.integracionPendiente()) {
@@ -181,11 +178,6 @@
           ><span>{{ feed.severidad || 'No disponible' }}</span>
         </div>
       </div>
-      @if (servicio.modo() === 'demo') {
-        <small class="detail-disclaimer"
-          >Valores ilustrativos de demostración; no proceden de una conexión activa.</small
-        >
-      }
     } @else {
       <p class="details-empty">
         {{

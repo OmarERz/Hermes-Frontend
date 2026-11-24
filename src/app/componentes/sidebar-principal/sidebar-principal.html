@@ -22,17 +22,5 @@
     }
   </nav>
 
-  <label class="sidebar-data-source"
-    ><span>Origen de datos</span>
-    <select
-      [ngModel]="origen.modo()"
-      (ngModelChange)="cambiarOrigen($event)"
-      aria-label="Origen de datos"
-    >
-      <option value="real">Datos reales</option>
-      <option value="demo">Datos de demostración</option>
-    </select>
-  </label>
-
   <app-menu-perfil class="sidebar-profile" ubicacion="arriba" menuId="sidebar-profile-dropdown" />
 </aside>

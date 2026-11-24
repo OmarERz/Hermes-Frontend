@@ -1,5 +1,4 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import {
@@ -10,20 +9,19 @@ import {
   LucideLayers,
   LucideMonitor,
   LucideRss,
+  LucideShieldAlert,
   LucideSlidersHorizontal,
 } from '@lucide/angular';
 import { MenuPerfil } from '../menu-perfil/menu-perfil';
 import { filter } from 'rxjs';
-import { ModoDashboard, OrigenDashboard } from '../../servicios/origen-dashboard';
 
 @Component({
   selector: 'app-sidebar-principal',
-  imports: [FormsModule, RouterLink, RouterLinkActive, LucideDynamicIcon, MenuPerfil],
+  imports: [RouterLink, RouterLinkActive, LucideDynamicIcon, MenuPerfil],
   templateUrl: './sidebar-principal.html',
 })
 export class SidebarPrincipal {
   private readonly router = inject(Router);
-  readonly origen = inject(OrigenDashboard);
   readonly seccionActiva = signal<string | null>(this.leerSeccionActual());
 
   constructor() {
@@ -59,6 +57,13 @@ export class SidebarPrincipal {
       activa: true,
       habilitada: true,
     },
+    {
+      etiqueta: 'Vulnerabilidades',
+      icono: LucideShieldAlert,
+      ruta: '/vulnerabilidades',
+      activa: true,
+      habilitada: true,
+    },
     { etiqueta: 'Activos', icono: LucideMonitor, ruta: '/activos', activa: true, habilitada: true },
     { etiqueta: 'Feeds', icono: LucideRss, ruta: '/feeds', activa: true, habilitada: true },
     {
@@ -69,11 +74,6 @@ export class SidebarPrincipal {
       habilitada: true,
     },
   ];
-
-  /** Cambia el origen de datos sin alterar la sesión Firebase autenticada. */
-  cambiarOrigen(modo: ModoDashboard): void {
-    this.origen.cambiarModo(modo);
-  }
 
   private leerSeccionActual(): string | null {
     let ruta = this.router.routerState.snapshot.root;

@@ -1,5 +1,5 @@
 {
-  "name": "mi-primera-pagina",
+  "name": "hermes-front",
   "version": "0.0.0",
   "private": true,
   "engines": {
@@ -15,23 +15,21 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "npm run lint && npm run format:check && npm run test && npm run build",
-    "audit": "npm audit --omit=dev --audit-level=high",
-    "serve:ssr:mi-primera-pagina": "node dist/mi-primera-pagina/server/server.mjs"
+    "api:generate": "openapi-typescript openapi/openapi.json -o src/app/core/api/schema.d.ts",
+    "api:check": "openapi-typescript openapi/openapi.json -o src/app/core/api/schema.d.ts --check",
+    "verify": "npm run api:check && npm run lint && npm run format:check && npm run test && npm run build",
+    "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",
     "@angular/core": "^21.2.0",
-    "@angular/fire": "^21.0.0",
     "@angular/forms": "^21.2.0",
     "@angular/platform-browser": "^21.2.0",
-    "@angular/platform-server": "^21.2.0",
     "@angular/router": "^21.2.0",
-    "@angular/ssr": "^21.2.29",
+    "@fontsource/inter": "5.3.0",
     "@lucide/angular": "^1.73.0",
     "echarts": "^6.1.0",
-    "express": "^5.1.0",
     "firebase": "^12.18.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
@@ -41,11 +39,11 @@
     "@angular/cli": "^21.2.29",
     "@angular/compiler-cli": "^21.2.0",
     "@eslint/js": "9.39.5",
-    "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
     "angular-eslint": "21.4.0",
     "eslint": "9.39.5",
     "jsdom": "^28.0.0",
+    "openapi-typescript": "7.9.1",
     "prettier": "3.9.10",
     "typescript": "~5.9.2",
     "typescript-eslint": "8.72.2",

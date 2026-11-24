@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideActivity, LucideClock, LucideListFilter } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
-import { OrigenDashboard } from '../../servicios/origen-dashboard';
 import { EjecucionDemo, SupervisionAgentes } from '../../servicios/supervision-agentes';
 import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegacion-agentes';
 
@@ -12,7 +11,6 @@ import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegaci
   templateUrl: './historial-agente.html',
 })
 export class HistorialAgente {
-  readonly origen = inject(OrigenDashboard);
   private readonly supervision = inject(SupervisionAgentes);
   readonly iconoBanner = LucideActivity;
   desde = '';
@@ -23,7 +21,7 @@ export class HistorialAgente {
   tipo = '';
   seleccionada: EjecucionDemo | null = null;
   get registros(): EjecucionDemo[] {
-    return this.origen.modo() === 'demo' ? this.supervision.ejecuciones : [];
+    return this.supervision.ejecuciones;
   }
   get agentes(): string[] {
     return [...new Set(this.registros.map((item) => item.agente))];

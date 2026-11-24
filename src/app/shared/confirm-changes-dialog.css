@@ -1,0 +1,102 @@
+.modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: #16091fbb;
+}
+.confirm-modal {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 560px);
+  max-height: min(88vh, 760px);
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid var(--border, #d8b0ea);
+  border-radius: 15px;
+  background: var(--surface, #fff);
+  color: var(--text-primary, #321044);
+  box-shadow: 0 20px 70px #0005;
+}
+.confirm-modal h2 {
+  margin: 0;
+  font-size: calc(18px + var(--font-size-increase, 0px));
+}
+.confirm-modal > p {
+  margin: 0;
+  color: var(--text-muted, #655a6e);
+  font-size: calc(12px + var(--font-size-increase, 0px));
+}
+.change-list {
+  display: grid;
+  gap: 9px;
+}
+.change-list article {
+  padding: 12px;
+  border: 1px solid var(--border, #e4e3ee);
+  border-radius: 9px;
+  background: var(--surface-soft, #faf8fc);
+}
+.change-list h3 {
+  margin: 0;
+  font-size: calc(13px + var(--font-size-increase, 0px));
+}
+.change-list article > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 9px 0;
+  color: var(--text-secondary, #675b70);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+}
+.change-list strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-primary, #321044);
+  font-size: calc(13px + var(--font-size-increase, 0px));
+}
+.change-list article p {
+  margin: 0;
+  color: var(--text-muted, #655a6e);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+}
+.dialog-error {
+  color: var(--danger-text, #b91c1c);
+}
+footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.save-button,
+.cancel-button {
+  min-height: 39px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #e9089b;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cancel-button {
+  border: 1px solid var(--border, #e4e3ee);
+  background: var(--surface-raised, #fff);
+  color: var(--text-primary, #51465e);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+button:focus-visible {
+  outline: 2px solid var(--accent, #ff009d);
+  outline-offset: 3px;
+}
+@media (max-width: 650px) {
+  .change-list article > div {
+    grid-template-columns: 1fr;
+  }
+}

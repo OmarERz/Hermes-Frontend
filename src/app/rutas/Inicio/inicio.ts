@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   LucideActivity,
@@ -11,9 +11,7 @@ import {
 } from '@lucide/angular';
 import { CatalogoTecnologias } from '../../servicios/catalogo-tecnologias';
 import { InventarioActivos } from '../../servicios/inventario-activos';
-import { OrigenDashboard } from '../../servicios/origen-dashboard';
-import { SupervisionAgentes } from '../../servicios/supervision-agentes';
-import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-inicio',
@@ -30,40 +28,28 @@ import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
   templateUrl: './inicio.html',
   styleUrl: './inicio.css',
 })
-export class Inicio implements OnInit {
-  readonly origen = inject(OrigenDashboard);
-  private readonly sesion = inject(SesionAutenticacion);
+export class Inicio {
+  private readonly sesion = inject(SessionService);
   private readonly catalogo = inject(CatalogoTecnologias);
   private readonly inventario = inject(InventarioActivos);
-  private readonly supervision = inject(SupervisionAgentes);
-  ngOnInit(): void {
-    if (this.origen.modo() === 'real')
-      this.inventario.cargar().subscribe({ error: () => undefined });
-  }
-
-  get demo(): boolean {
-    return this.origen.modo() === 'demo';
-  }
-  /** Prefiere el nombre visible de Firebase y usa el email como alternativa legible. */
+  /** Display name from GET /api/me (else from Firebase), or the user part of the e-mail. */
   get nombreSaludo(): string {
-    const usuario = this.sesion.usuarioFirebase();
-    const nombreVisible = usuario?.displayName?.trim();
-    if (nombreVisible) return nombreVisible;
-    return usuario?.email?.split('@', 1)[0].trim() || 'Usuario';
+    const profile = this.sesion.profile();
+    const user = this.sesion.user();
+    const displayName = profile?.display_name?.trim() || user?.displayName?.trim();
+    if (displayName) return displayName;
+    const email = profile?.email ?? user?.email;
+    return email?.split('@', 1)[0].trim() || 'Usuario';
   }
   get totalTecnologias(): number | null {
-    if (this.demo) return this.origen.tecnologias.length;
     const total = this.catalogo.tecnologias().length;
     return total > 0 ? total : null;
   }
   get totalActivos(): number | null {
-    const total = this.demo ? this.origen.activos.length : this.inventario.activos.length;
+    const total = this.inventario.activos.length;
     return total > 0 ? total : null;
   }
-  get totalTickets(): number | null {
-    return this.demo ? this.supervision.tickets.length : null;
-  }
-  get tasaExito(): number | null {
-    return this.demo ? this.origen.agentes.tasaExito : null;
-  }
+  /** No backend route yet: the start screen shows "Sin datos". */
+  readonly totalTickets: number | null = null;
+  readonly tasaExito: number | null = null;
 }

@@ -2,7 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LucideGitCompareArrows, LucideScale } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
-import { OrigenDashboard } from '../../servicios/origen-dashboard';
 import {
   proyectarPuntajesRevision,
   RevisionDemo,
@@ -10,14 +9,27 @@ import {
 } from '../../servicios/supervision-agentes';
 import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegacion-agentes';
 import { RevisionHumana } from '../Revision-humana/revision-humana';
+import { IfRoleDirective } from '../../core/auth/if-role.directive';
+import { ACTION_ROLES } from '../../core/auth/roles';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-recomendaciones-agente',
-  imports: [BannerPagina, NavegacionAgentes, LucideGitCompareArrows, LucideScale, RevisionHumana],
+  imports: [
+    BannerPagina,
+    NavegacionAgentes,
+    LucideGitCompareArrows,
+    LucideScale,
+    RevisionHumana,
+    IfRoleDirective,
+  ],
   templateUrl: './recomendaciones-agente.html',
 })
 export class RecomendacionesAgente implements OnInit {
-  readonly origen = inject(OrigenDashboard);
+  /** The human review becomes feedback (POST /api/feedback): analyst or admin only. */
+  readonly feedbackRole = ACTION_ROLES.giveFeedback;
+  /** A deep link (?recomendacionId, ?id, ?ticketId) must not open the review for a lower role either. */
+  readonly sesion = inject(SessionService);
   private readonly supervision = inject(SupervisionAgentes);
   private readonly route = inject(ActivatedRoute);
   readonly iconoBanner = LucideGitCompareArrows;
@@ -28,7 +40,7 @@ export class RecomendacionesAgente implements OnInit {
   mensajeRevision = '';
 
   get recomendaciones() {
-    return this.origen.modo() === 'demo' ? this.supervision.revisiones() : [];
+    return this.supervision.revisiones();
   }
   get ticketsEnConflicto() {
     return new Set(

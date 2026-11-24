@@ -1,7 +1,5 @@
-﻿import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, of, tap, throwError } from 'rxjs';
-import { API_CONFIG } from '../config/api.config';
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
 
 export interface ActivoInventario {
   id: string;
@@ -35,31 +33,20 @@ export interface DatosNuevoActivo {
   descripcion: string;
 }
 
+/**
+ * In-memory asset inventory of the prototype screens (Activos, Registrar activo). The backend has no assets
+ * write route yet (D-087: the user decides which prototype features get one), so nothing is sent anywhere and
+ * the list starts empty on every load.
+ */
 @Injectable({ providedIn: 'root' })
 export class InventarioActivos {
-  private http = inject(HttpClient);
-  private readonly endpoint = `${API_CONFIG.baseUrl}/activos`;
-
   activos: ActivoInventario[] = [];
 
   cargar(): Observable<ActivoInventario[]> {
-    if (!API_CONFIG.usarApi) return of(this.activos);
-    return this.http.get<ActivoInventario[]>(this.endpoint).pipe(
-      tap((activos) => (this.activos = activos)),
-      catchError((error) => {
-        this.activos = [];
-        return throwError(() => error);
-      }),
-    );
+    return of(this.activos);
   }
 
   agregar(datos: DatosNuevoActivo): Observable<ActivoInventario> {
-    if (API_CONFIG.usarApi) {
-      return this.http
-        .post<ActivoInventario>(this.endpoint, datos)
-        .pipe(tap((activo) => this.activos.unshift(activo)));
-    }
-
     const activo: ActivoInventario = {
       id: datos.codigo || `ACT-${Date.now().toString().slice(-5)}`,
       nombre: datos.nombre || 'Activo nuevo',
@@ -78,17 +65,9 @@ export class InventarioActivos {
     return of(activo);
   }
 
-  asignarPropietario(id: string, propietario: string): Observable<ActivoInventario> {
-    const solicitud = API_CONFIG.usarApi
-      ? this.http.patch<ActivoInventario>(`${this.endpoint}/${encodeURIComponent(id)}`, {
-          propietario,
-        })
-      : of(this.activos.find((activo) => activo.id === id)!);
-
-    return solicitud.pipe(
-      tap((activo) => {
-        activo.propietario = propietario;
-      }),
-    );
+  asignarPropietario(id: string, propietario: string): Observable<ActivoInventario | undefined> {
+    const activo = this.activos.find((item) => item.id === id);
+    if (activo) activo.propietario = propietario;
+    return of(activo);
   }
 }

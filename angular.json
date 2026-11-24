@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "mi-primera-pagina": {
+    "hermes-front": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -25,15 +25,13 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.css"],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "security": {
-              "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "styles": [
+              "@fontsource/inter/latin-400.css",
+              "@fontsource/inter/latin-500.css",
+              "@fontsource/inter/latin-600.css",
+              "@fontsource/inter/latin-700.css",
+              "src/styles.css"
+            ]
           },
           "configurations": {
             "production": {
@@ -49,7 +47,13 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,
@@ -63,10 +67,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "mi-primera-pagina:build:production"
+              "buildTarget": "hermes-front:build:production"
             },
             "development": {
-              "buildTarget": "mi-primera-pagina:build:development"
+              "buildTarget": "hermes-front:build:development"
             }
           },
           "defaultConfiguration": "development"

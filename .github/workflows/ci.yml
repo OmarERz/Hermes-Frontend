@@ -25,9 +25,6 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      # The prototype imports a local, git-ignored Firebase web config; a clean checkout uses the example.
-      - name: Placeholder Firebase web config
-        run: test -f src/environments/firebase.ts || cp src/environments/firebase.example.ts src/environments/firebase.ts
       # Lifecycle scripts of dependencies are not run; the build only needs the esbuild binary package.
       - name: Install dependencies
         run: npm ci --ignore-scripts

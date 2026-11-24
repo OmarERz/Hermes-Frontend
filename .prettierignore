@@ -5,3 +5,5 @@ coverage/
 tmp/
 package-lock.json
 documentación/
+openapi/
+src/app/core/api/schema.d.ts

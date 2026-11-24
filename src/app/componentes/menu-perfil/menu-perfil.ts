@@ -9,7 +9,8 @@ import {
 } from '@angular/core';
 import { LucideChevronDown, LucideLogOut } from '@lucide/angular';
 import { Router } from '@angular/router';
-import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
+import { ROLE_LABELS } from '../../core/auth/roles';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-menu-perfil',
@@ -20,7 +21,7 @@ import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
 export class MenuPerfil {
   private readonly elemento = inject(ElementRef<HTMLElement>);
   private readonly router = inject(Router);
-  readonly sesion = inject(SesionAutenticacion);
+  readonly sesion = inject(SessionService);
   @Input() ubicacion: 'arriba' | 'abajo' = 'abajo';
   @Input() menuId = 'profile-dropdown';
 
@@ -31,10 +32,17 @@ export class MenuPerfil {
   @ViewChild('trigger') private trigger?: ElementRef<HTMLButtonElement>;
   @ViewChild('panel') private panel?: ElementRef<HTMLElement>;
 
-  get usuario(): { iniciales: string; nombre: string; rol: string } {
-    const correo = this.sesion.usuarioFirebase()?.email;
-    const nombre = correo?.split('@', 1)[0].trim() || 'Usuario';
-    return { iniciales: nombre.slice(0, 2).toUpperCase(), nombre, rol: 'Cuenta empresarial' };
+  /** Name from GET /api/me (display name, else the e-mail user part) and the effective role. */
+  get usuario(): { initials: string; name: string; role: string } {
+    const profile = this.sesion.profile();
+    const email = profile?.email ?? this.sesion.user()?.email;
+    const name = profile?.display_name?.trim() || email?.split('@', 1)[0].trim() || 'Usuario';
+    const role = this.sesion.role();
+    return {
+      initials: name.slice(0, 2).toUpperCase(),
+      name,
+      role: role ? `Rol: ${ROLE_LABELS[role]}` : 'Sin rol',
+    };
   }
 
   /** Cierra la sesión activa y vuelve al Login sin mostrar errores internos del proveedor. */
@@ -42,7 +50,7 @@ export class MenuPerfil {
     this.cerrandoSesion.set(true);
     this.errorCierre.set('');
     try {
-      await this.sesion.cerrarSesion();
+      await this.sesion.signOut();
       this.menuAbierto = false;
       await this.router.navigate(['/login']);
     } catch {

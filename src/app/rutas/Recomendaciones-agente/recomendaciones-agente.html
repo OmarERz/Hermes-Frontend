@@ -5,14 +5,11 @@
     [icono]="iconoBanner"
   />
   <app-navegacion-agentes />
-  @if (origen.modo() === 'demo') {
-    <p class="source-badge">Datos de demostración · propuestas y decisiones ficticias en memoria</p>
-  } @else {
-    <div class="connection-notice">
-      No hay API de recomendaciones ni agente juez conectado. No existen propuestas reales para
-      mostrar.
-    </div>
-  }
+  <div class="connection-notice">
+    No hay API de recomendaciones ni agente juez conectado. No existen propuestas reales para
+    mostrar.
+  </div>
+
   @if (mensajeRevision) {
     <p class="review-saved-message" role="status">{{ mensajeRevision }}</p>
   }
@@ -56,13 +53,7 @@
           }
         </button>
       } @empty {
-        <p class="empty-state">
-          {{
-            origen.modo() === 'demo'
-              ? 'No hay recomendaciones demostrativas.'
-              : 'Aún no hay recomendaciones reales.'
-          }}
-        </p>
+        <p class="empty-state">Aún no hay recomendaciones reales.</p>
       }
     </aside>
 
@@ -74,11 +65,12 @@
             <h2>{{ ticketActivo }}</h2>
           </div>
           <button
+            *appIfRole="feedbackRole"
             #reviewButton
             type="button"
             class="review-open-button"
             (click)="abrirRevisionHumana()"
-            [disabled]="origen.modo() !== 'demo'"
+            disabled
           >
             Abrir revisión humana
           </button>
@@ -105,14 +97,12 @@
               <div class="before-after">
                 <div>
                   <small>Estado anterior</small><strong>{{ propuesta.estadoAnterior }}</strong
-                  ><small>Puntaje demo (no CVSS)</small
-                  ><strong>{{ propuesta.puntajeAnterior }}</strong>
+                  ><small>Puntaje (no CVSS)</small><strong>{{ propuesta.puntajeAnterior }}</strong>
                 </div>
                 <svg lucideGitCompareArrows aria-hidden="true"></svg>
                 <div class="proposed">
                   <small>Estado propuesto</small><strong>{{ propuesta.estadoPropuesto }}</strong
-                  ><small>Puntaje demo (no CVSS)</small
-                  ><strong>{{ propuesta.puntajePropuesto }}</strong>
+                  ><small>Puntaje (no CVSS)</small><strong>{{ propuesta.puntajePropuesto }}</strong>
                 </div>
               </div>
               <section class="recommendation-scores" aria-label="Puntajes disponibles por etapa">
@@ -182,7 +172,7 @@
       }
     </section>
   </div>
-  @if (revisionAbierta && ticketActivo) {
+  @if (revisionAbierta && ticketActivo && sesion.hasRole(feedbackRole)) {
     <app-revision-humana
       [ticketId]="ticketActivo"
       [recomendacionId]="revisionActivaId"

@@ -1,0 +1,12 @@
+{
+  "apiBaseUrl": "http://127.0.0.1:8000",
+  "firebase": {
+    "apiKey": "REPLACE_ME",
+    "authDomain": "hermes-pass-sec.firebaseapp.com",
+    "projectId": "hermes-pass-sec",
+    "storageBucket": "hermes-pass-sec.firebasestorage.app",
+    "messagingSenderId": "REPLACE_ME",
+    "appId": "REPLACE_ME"
+  },
+  "authEmulatorUrl": null
+}

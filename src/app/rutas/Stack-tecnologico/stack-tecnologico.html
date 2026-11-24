@@ -4,9 +4,6 @@
     descripcion="Administra el catálogo de tecnologías utilizado por tu empresa."
     [icono]="iconoBanner"
   />
-  @if (origen.modo() === 'demo') {
-    <p class="source-badge">Datos de demostración · catálogo de ejemplo</p>
-  }
 
   <section class="summary-grid" aria-label="Resumen del catálogo">
     <article>
@@ -119,9 +116,7 @@
                   {{
                     total()
                       ? 'No hay tecnologías en esta categoría.'
-                      : origen.modo() === 'demo'
-                        ? 'No hay datos de demostración disponibles.'
-                        : 'Aún no hay tecnologías registradas.'
+                      : 'Aún no hay tecnologías registradas.'
                   }}
                 </td>
               </tr>
@@ -210,8 +205,7 @@
         </p>
       } @else {
         <p class="empty-state chart-empty">
-          No hay evaluaciones reales registradas para esta visualización. Cambia a datos de
-          demostración para consultar el ejemplo.
+          No hay evaluaciones reales registradas para esta visualización.
         </p>
       }
     </article>
