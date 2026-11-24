@@ -16,13 +16,15 @@ import {
   LucideWrench,
 } from '@lucide/angular';
 import { AyudaTooltip } from '../../componentes/ayuda-tooltip/ayuda-tooltip';
-import { OrigenDashboard } from '../../servicios/origen-dashboard';
 import {
   ParametrosPersonalizadosDemo,
   PerfilConservador,
   SupervisionAgentes,
 } from '../../servicios/supervision-agentes';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
+
+const SIN_BACKEND =
+  'Pendiente de conectar con el backend: los cambios todavía no se pueden guardar.';
 
 @Component({
   selector: 'app-configuracion-agente',
@@ -39,7 +41,6 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
   templateUrl: './configuracion-agente.html',
 })
 export class ConfiguracionAgente {
-  readonly origen = inject(OrigenDashboard);
   readonly supervision = inject(SupervisionAgentes);
   readonly iconoBanner = LucideSlidersHorizontal;
   readonly perfiles = [
@@ -96,13 +97,9 @@ export class ConfiguracionAgente {
   modalAbierto = false;
   mensaje = '';
 
-  get perfilActualResumen(): string {
-    return this.origen.modo() === 'demo' ? this.perfilBorrador : 'Sin datos';
-  }
-  get herramientasActivasResumen(): string {
-    if (this.origen.modo() !== 'demo') return 'Sin datos';
-    return `${this.herramientasBorrador.filter((item) => item.habilitada).length} de ${this.herramientasBorrador.length}`;
-  }
+  /** The agent configuration has no backend route yet: the summary shows "Sin datos" and saving is off. */
+  readonly perfilActualResumen = 'Sin datos';
+  readonly herramientasActivasResumen = 'Sin datos';
   readonly estadoIntegracion = 'Integración pendiente';
 
   iconoHerramienta(nombre: string) {
@@ -127,7 +124,7 @@ export class ConfiguracionAgente {
         nombre: 'Nivel conservador',
         anterior: this.supervision.perfil(),
         nuevo: this.perfilBorrador,
-        impacto: 'Vista previa del perfil. No modifica el comportamiento de un agente real.',
+        impacto: 'Pendiente de conectar con el backend.',
       });
     const parametrosActuales = this.supervision.parametrosPersonalizados();
     const parametros = [
@@ -143,7 +140,7 @@ export class ConfiguracionAgente {
           nombre: parametro.nombre,
           anterior: `${anterior}%`,
           nuevo: `${nuevo}%`,
-          impacto: 'Valor de demostración; no se envía al agente ni modifica reglas de ejecución.',
+          impacto: 'Pendiente de conectar con el backend.',
         });
     }
     for (const herramienta of this.herramientasBorrador) {
@@ -155,21 +152,14 @@ export class ConfiguracionAgente {
           nombre: `Herramienta: ${herramienta.nombre}`,
           anterior: anterior ? 'Habilitada' : 'Deshabilitada',
           nuevo: herramienta.habilitada ? 'Habilitada' : 'Deshabilitada',
-          impacto:
-            'Solo cambia la vista de demostración; no concede permisos ni llama a servicios.',
+          impacto: 'Pendiente de conectar con el backend.',
         });
     }
     return resultado;
   }
 
   prepararGuardado(): void {
-    this.mensaje = '';
-    if (this.origen.modo() !== 'demo') return;
-    if (!this.cambios.length) {
-      this.mensaje = 'No hay cambios pendientes.';
-      return;
-    }
-    this.modalAbierto = true;
+    this.mensaje = SIN_BACKEND;
   }
 
   /** Actualiza un porcentaje del borrador y rechaza valores fuera de 0 a 100 o no enteros. */
@@ -186,16 +176,8 @@ export class ConfiguracionAgente {
   }
 
   confirmar(): void {
-    if (!this.modalAbierto || this.origen.modo() !== 'demo') return;
-    const cambios = this.cambios;
-    this.supervision.guardarPerfilDemo(this.perfilBorrador);
-    this.supervision.guardarParametrosPersonalizadosDemo(this.parametrosPersonalizadosBorrador);
-    for (const herramienta of this.herramientasBorrador)
-      this.supervision.cambiarHerramientaDemo(herramienta.nombre, herramienta.habilitada);
-    this.supervision.registrarCambioConfiguracionDemo(cambios);
     this.modalAbierto = false;
-    this.mensaje =
-      'Cambios de demostración aplicados en memoria. No se guardaron ni enviaron al agente.';
+    this.mensaje = SIN_BACKEND;
   }
 
   cancelar(): void {

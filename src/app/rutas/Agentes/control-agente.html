@@ -5,149 +5,26 @@
     [icono]="iconoBanner"
   />
   <app-navegacion-agentes />
-  @if (demo) {
-    <p class="source-badge">Datos de demostración · métricas de ejemplo</p>
-  } @else {
-    <p class="source-badge real-source">Datos reales · métricas de agentes aún no conectadas</p>
-  }
+  <p class="source-badge real-source">Datos reales · métricas de agentes aún no conectadas</p>
 
   <section class="panel performance">
     <div class="performance-heading">
       <svg lucideChartColumn class="heading-icon small" aria-hidden="true"></svg>
       <div>
         <h2>Funcionamiento del agente</h2>
-        <p>
-          {{
-            demo
-              ? 'Tendencias demostrativas de los últimos 7 días.'
-              : 'Sin métricas reales; conecta la API de agentes para habilitar tendencias.'
-          }}
-        </p>
+        <p>Sin métricas reales; conecta la API de agentes para habilitar tendencias.</p>
       </div>
     </div>
-    @if (demo) {
-      <div class="metric-grid">
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideCircleCheck class="green" aria-hidden="true"></svg> Tasa de éxito de
-            ejecución
-            <app-ayuda-tooltip texto="Porcentaje de ejecuciones completadas correctamente."
-          /></span>
-          <div>
-            <strong>{{ datosDemo.tasaExito }} %</strong>
-          </div>
-        </article>
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideLayers aria-hidden="true"></svg> Tareas completadas
-            <app-ayuda-tooltip
-              texto="Número de tareas finalizadas durante el periodo seleccionado."
-          /></span>
-          <div>
-            <strong>{{ datosDemo.tareasCompletadas }}</strong>
-          </div>
-        </article>
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideZap aria-hidden="true"></svg> Tiempo promedio de respuesta
-            <app-ayuda-tooltip
-              texto="Tiempo promedio necesario para completar la operación medida."
-          /></span>
-          <div>
-            <strong>{{ datosDemo.respuestaSegundos }} s</strong>
-          </div>
-        </article>
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideActivity aria-hidden="true"></svg> Disponibilidad
-            <app-ayuda-tooltip
-              texto="Porcentaje de tiempo en que el agente estuvo disponible en el periodo."
-          /></span>
-          <div>
-            <strong>{{ datosDemo.disponibilidad }} %</strong>
-          </div>
-        </article>
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideTriangleAlert aria-hidden="true"></svg> Incidentes detectados</span
-          >
-          <div>
-            <strong>{{ datosDemo.incidentes }}</strong>
-          </div>
-        </article>
-      </div>
-      <div class="charts-grid">
-        <article class="chart-card trend-chart">
-          <h3>
-            <svg lucideChartNoAxesCombined aria-hidden="true"></svg> Tareas completadas (tendencia)
-          </h3>
-          <app-grafico-dashboard
-            class="echart"
-            [option]="trendChart"
-            label="Tendencia demostrativa de tareas completadas en los últimos siete días"
-          ></app-grafico-dashboard>
-        </article>
-        <article class="chart-card agent-chart">
-          <h3><svg lucideActivity aria-hidden="true"></svg> Desempeño del agente</h3>
-          <app-grafico-dashboard
-            class="echart"
-            [option]="performanceChart"
-            label="Tasa de éxito y tiempo de respuesta del agente"
-          ></app-grafico-dashboard>
-        </article>
-        <article class="chart-card success-chart">
-          <h3><svg lucideLayers aria-hidden="true"></svg> Tasa de éxito de ejecución</h3>
-          <app-grafico-dashboard
-            class="echart"
-            [option]="successChart"
-            [label]="'Tasa de éxito de ejecución, ' + datosDemo.tasaExito + ' por ciento'"
-          ></app-grafico-dashboard>
-        </article>
-        <article class="chart-card usage-chart">
-          <h3><svg lucideChartColumn aria-hidden="true"></svg> Uso de herramientas</h3>
-          <app-grafico-dashboard
-            class="echart"
-            [option]="toolsChart"
-            label="Distribución porcentual del uso de herramientas"
-          ></app-grafico-dashboard>
-        </article>
-        <article class="chart-card queue-chart">
-          <h3>
-            <svg lucideLayers aria-hidden="true"></svg> Procesos
-            <app-ayuda-tooltip texto="Proceso: ejecución de un flujo de trabajo del agente." />
-          </h3>
-          <div class="queue-number">
-            <strong>{{ datosDemo.enProceso }}</strong> en ejecución
-          </div>
-          <div class="queue-stats">
-            <span
-              ><b>{{ datosDemo.enProceso }}</b
-              >En ejecución</span
-            ><span
-              ><b>{{ datosDemo.completadosHoy }}</b
-              >Completados (hoy)</span
-            ><span
-              ><b>{{ datosDemo.enCola }}</b
-              >En cola</span
-            >
-          </div>
-        </article>
-      </div>
-    } @else {
-      <p class="no-agent-data">
-        No hay métricas reales disponibles. Conecta la API de agentes o selecciona Datos de
-        demostración para visualizar ejemplos.
-      </p>
-    }
+    <p class="no-agent-data">
+      No hay métricas disponibles; la pantalla está pendiente de conectarse con el backend.
+    </p>
   </section>
 
   <div class="top-grid">
     <article class="panel agent-status">
       <div class="panel-title">
         <h2><svg lucideLayers class="pink" aria-hidden="true"></svg> Estado del agente</h2>
-        <span class="pill" [class.paused]="!demo"
-          ><i></i>{{ demo ? datosDemo.estado : 'Sin datos' }}</span
-        >
+        <span class="pill paused"><i></i>Sin datos</span>
       </div>
       <div class="agent-summary">
         <div class="robot"><svg lucideBot aria-hidden="true"></svg></div>
@@ -159,19 +36,19 @@
       <div class="agent-facts">
         <div>
           <svg lucideLayers aria-hidden="true"></svg><small>Modo actual</small
-          ><strong>{{ demo ? datosDemo.modoOperacion : 'Sin información' }}</strong>
+          ><strong>Sin información</strong>
         </div>
         <div>
           <svg lucideCpu aria-hidden="true"></svg><small>Modelo / Motor</small
-          ><strong>{{ demo ? datosDemo.motor : 'Sin información' }}</strong>
+          ><strong>Sin información</strong>
         </div>
         <div>
           <svg lucideClock aria-hidden="true"></svg><small>Última ejecución</small
-          ><strong>{{ demo ? datosDemo.ultimaEjecucion : 'Sin información' }}</strong>
+          ><strong>Sin información</strong>
         </div>
         <div>
           <svg lucideActivity aria-hidden="true"></svg><small>Uptime</small
-          ><strong>{{ demo ? datosDemo.disponibilidad + ' %' : 'Sin información' }}</strong>
+          ><strong>Sin información</strong>
         </div>
       </div>
     </article>
@@ -183,62 +60,7 @@
           texto="Los tickets se cuentan una sola vez por identificador; ejecuciones asociadas son métricas separadas."
         />
       </h2>
-      @if (demo) {
-        <div class="ticket-kpis">
-          <div>
-            <small
-              >Total recibidos
-              <app-ayuda-tooltip
-                texto="Número de identificadores de ticket únicos recibidos." /></small
-            ><strong>{{ metricasTickets.recibidos }}</strong>
-          </div>
-          <div>
-            <small
-              >Completados <app-ayuda-tooltip texto="Tickets únicos en estado completado." /></small
-            ><strong>{{ metricasTickets.completados }}</strong>
-          </div>
-          <div>
-            <small
-              >Pendientes
-              <app-ayuda-tooltip texto="Tickets únicos pendientes, sin ejecución activa." /></small
-            ><strong>{{ metricasTickets.pendientes }}</strong>
-          </div>
-          <div>
-            <small
-              >En ejecución
-              <app-ayuda-tooltip texto="Tickets únicos con un proceso activo." /></small
-            ><strong>{{ metricasTickets.ejecucion }}</strong>
-          </div>
-          <div>
-            <small>Rechazados</small><strong>{{ metricasTickets.rechazados }}</strong>
-          </div>
-          <div>
-            <small
-              >Escalados a humanos
-              <app-ayuda-tooltip texto="Tickets marcados para intervención humana." /></small
-            ><strong>{{ metricasTickets.escalados }}</strong>
-          </div>
-          <div>
-            <small>Reasignados</small><strong>{{ metricasTickets.reasignados }}</strong>
-          </div>
-          <div>
-            <small
-              >Resolución promedio
-              <app-ayuda-tooltip
-                texto="Promedio de minutos registrado solo en tickets completados." /></small
-            ><strong>{{ metricasTickets.minutosResolucion ?? '—' }} min</strong>
-          </div>
-          <div>
-            <small
-              >Porcentaje resuelto
-              <app-ayuda-tooltip
-                texto="Tickets únicos completados dividido por tickets únicos recibidos." /></small
-            ><strong>{{ metricasTickets.porcentajeResueltos }} %</strong>
-          </div>
-        </div>
-      } @else {
-        <p class="ticket-empty">No hay métricas reales de tickets disponibles.</p>
-      }
+      <p class="ticket-empty">No hay métricas reales de tickets disponibles.</p>
     </article>
   </div>
 </div>

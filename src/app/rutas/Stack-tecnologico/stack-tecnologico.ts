@@ -18,13 +18,10 @@ import {
   EstadoTecnologia,
   LicenciaTecnologia,
   TecnologiaEmpresa,
+  CATEGORIAS_TECNOLOGIA,
+  ESTADOS_TECNOLOGIA,
+  LICENCIAS_TECNOLOGIA,
 } from '../../servicios/catalogo-tecnologias';
-import {
-  CATEGORIAS_DASHBOARD,
-  ESTADOS_DASHBOARD,
-  LICENCIAS_DASHBOARD,
-  OrigenDashboard,
-} from '../../servicios/origen-dashboard';
 import type { PrioridadVulnerabilidad } from '../../servicios/resultados-vulnerabilidades-agente';
 import { ResultadosVulnerabilidadesAgente } from '../../servicios/resultados-vulnerabilidades-agente';
 
@@ -46,15 +43,14 @@ import { ResultadosVulnerabilidadesAgente } from '../../servicios/resultados-vul
 })
 export class StackTecnologico {
   private readonly catalogo = inject(CatalogoTecnologias);
-  readonly origen = inject(OrigenDashboard);
   private readonly resultadosVulnerabilidades = inject(ResultadosVulnerabilidadesAgente);
   readonly iconoBanner = LucideLayers;
-  readonly categorias: CategoriaTecnologia[] = CATEGORIAS_DASHBOARD;
-  readonly estados: EstadoTecnologia[] = ESTADOS_DASHBOARD;
-  readonly licencias: LicenciaTecnologia[] = LICENCIAS_DASHBOARD;
+  readonly categorias: CategoriaTecnologia[] = CATEGORIAS_TECNOLOGIA;
+  readonly estados: EstadoTecnologia[] = ESTADOS_TECNOLOGIA;
+  readonly licencias: LicenciaTecnologia[] = LICENCIAS_TECNOLOGIA;
   readonly tecnologiasReales = this.catalogo.tecnologias;
   get tecnologias() {
-    return this.origen.modo() === 'demo' ? this.origen.tecnologias : this.tecnologiasReales();
+    return this.tecnologiasReales();
   }
   readonly total = computed(() => this.tecnologias.length);
   readonly openSource = computed(
@@ -78,13 +74,6 @@ export class StackTecnologico {
     { valor: 'medium', etiqueta: 'Medias', color: '#ca8a04' },
     { valor: 'low', etiqueta: 'Bajas', color: '#16a34a' },
   ];
-  private readonly conteosDemoVulnerabilidades: Readonly<Record<PrioridadVulnerabilidad, number>> =
-    {
-      critical: 3,
-      high: 6,
-      medium: 9,
-      low: 4,
-    };
   animarCambioGrafica = false;
   readonly opcionesGraficas = [
     { valor: 'categoria', titulo: 'Tecnologías por categoría' },
@@ -103,38 +92,34 @@ export class StackTecnologico {
   }
 
   get vulnerabilidadesClasificadas() {
-    return this.origen.modo() === 'real'
-      ? (this.resultadosVulnerabilidades.resultado()?.vulnerabilities ?? [])
-      : [];
+    return this.resultadosVulnerabilidades.resultado()?.vulnerabilities ?? [];
   }
 
   get conteosVulnerabilidades() {
-    const esDemo = this.origen.modo() === 'demo';
-    const vulnerabilidadesReales = esDemo ? [] : this.vulnerabilidadesClasificadas;
+    const vulnerabilidades = this.vulnerabilidadesClasificadas;
     return this.prioridadesVulnerabilidad.map((prioridad) => ({
       ...prioridad,
-      cantidad: esDemo
-        ? this.conteosDemoVulnerabilidades[prioridad.valor]
-        : vulnerabilidadesReales.filter(
-            (vulnerabilidad) => vulnerabilidad.priority === prioridad.valor,
-          ).length,
+      cantidad: vulnerabilidades.filter(
+        (vulnerabilidad) => vulnerabilidad.priority === prioridad.valor,
+      ).length,
     }));
   }
 
   get graficaDisponible(): boolean {
     if (this.graficaSeleccionada === 'categoria') return this.total() > 0;
     if (this.graficaSeleccionada === 'vulnerabilidades')
-      return this.origen.modo() === 'demo' || this.vulnerabilidadesClasificadas.length > 0;
-    return this.origen.modo() === 'demo';
+      return this.vulnerabilidadesClasificadas.length > 0;
+    // Health, maturity, quality and business value have no data source yet.
+    return false;
   }
 
   get etiquetaGraficaSeleccionada(): string {
     const etiquetas: Record<typeof this.graficaSeleccionada, string> = {
       categoria: 'Cantidad de tecnologías registradas por categoría',
-      salud: 'Salud demostrativa del stack: 86 por ciento',
-      madurez: 'Madurez demostrativa por tecnología, escala de uno a cinco',
-      calidad: 'Calidad demostrativa por categoría',
-      negocio: 'Valor de negocio demostrativo por dimensión',
+      salud: 'Salud del stack',
+      madurez: 'Madurez por tecnología, escala de uno a cinco',
+      calidad: 'Calidad por categoría',
+      negocio: 'Valor de negocio por dimensión',
       vulnerabilidades: 'Vulnerabilidades únicas por prioridad clasificadas por el agente',
     };
     return etiquetas[this.graficaSeleccionada];
@@ -142,14 +127,6 @@ export class StackTecnologico {
 
   get opcionGraficaSeleccionada(): EChartsCoreOption {
     switch (this.graficaSeleccionada) {
-      case 'salud':
-        return this.demoHealthChart;
-      case 'madurez':
-        return this.demoMaturityChart;
-      case 'calidad':
-        return this.demoQualityChart;
-      case 'negocio':
-        return this.demoBusinessChart;
       case 'vulnerabilidades':
         return this.vulnerabilityPriorityChart;
       default:
@@ -213,57 +190,6 @@ export class StackTecnologico {
     };
   }
 
-  get demoHealthChart(): EChartsCoreOption {
-    return {
-      series: [
-        {
-          type: 'gauge',
-          min: 0,
-          max: 100,
-          progress: { show: true, width: 12, itemStyle: { color: '#ed079b' } },
-          axisLine: { lineStyle: { width: 12, color: [[1, '#eadcf2']] } },
-          axisTick: { show: false },
-          splitLine: { show: false },
-          axisLabel: { show: false },
-          pointer: { show: false },
-          detail: {
-            valueAnimation: false,
-            formatter: '{value}%',
-            color: '#321044',
-            fontSize: 29.67,
-            fontWeight: 700,
-            offsetCenter: [0, '10%'],
-          },
-          data: [{ value: this.origen.stack.salud }],
-        },
-      ],
-    };
-  }
-
-  get demoQualityChart(): EChartsCoreOption {
-    return this.demoBars(
-      this.origen.stack.calidad.map((item) => item.nombre),
-      this.origen.stack.calidad.map((item) => item.valor),
-      '%',
-      100,
-    );
-  }
-  get demoMaturityChart(): EChartsCoreOption {
-    return this.demoBars(
-      this.origen.stack.madurez.map((item) => item.nombre),
-      this.origen.stack.madurez.map((item) => item.valor),
-      '/5',
-      5,
-    );
-  }
-  get demoBusinessChart(): EChartsCoreOption {
-    return this.demoBars(
-      this.origen.stack.valorNegocio.map((item) => item.nombre),
-      this.origen.stack.valorNegocio.map((item) => item.valor),
-      ' pts',
-      100,
-    );
-  }
   get vulnerabilityPriorityChart(): EChartsCoreOption {
     const conteos = this.conteosVulnerabilidades;
     const maximo = Math.max(1, ...conteos.map((item) => item.cantidad));
@@ -295,37 +221,6 @@ export class StackTecnologico {
           barMaxWidth: 54,
           itemStyle: { borderRadius: [6, 6, 0, 0] },
           label: { show: true, position: 'top', fontSize: 14.67 },
-        },
-      ],
-    };
-  }
-  private demoBars(
-    categorias: string[],
-    valores: number[],
-    unidad: string,
-    maximo: number,
-  ): EChartsCoreOption {
-    return {
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'shadow' },
-        valueFormatter: (value: unknown) => `${value}${unidad}`,
-      },
-      grid: { left: 12, right: 12, top: 12, bottom: 38, containLabel: true },
-      xAxis: {
-        type: 'category',
-        data: categorias,
-        axisLabel: { interval: 0, rotate: 15, fontSize: 12.67 },
-        axisTick: { show: false },
-      },
-      yAxis: { type: 'value', min: 0, max: maximo, splitLine: { lineStyle: { color: '#e9e6ef' } } },
-      series: [
-        {
-          type: 'bar',
-          data: valores,
-          barMaxWidth: 34,
-          itemStyle: { color: '#d40794', borderRadius: [5, 5, 0, 0] },
-          label: { show: true, position: 'top', formatter: `{c}${unidad}`, fontSize: 12.67 },
         },
       ],
     };

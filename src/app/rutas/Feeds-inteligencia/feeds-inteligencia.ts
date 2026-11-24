@@ -130,10 +130,10 @@ export class FeedsInteligencia {
     this.indiceCarrusel.update((indice) => indice + direccion);
   }
 
-  /** Alterna solo el feed indicado y delega al servicio, que bloquea el modo real. */
+  /** Alterna solo el feed indicado y delega al servicio, que lo bloquea mientras falte la integración. */
   alternarFeed(feed: FeedInteligencia, evento: Event): void {
     evento.stopPropagation();
-    this.servicio.cambiarEstadoDemo(feed.id, !feed.activo);
+    this.servicio.cambiarEstado(feed.id, !feed.activo);
   }
 
   /** Registra el inicio del gesto sin capturar el puntero para preservar el clic de las tarjetas. */

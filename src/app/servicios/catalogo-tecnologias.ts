@@ -86,3 +86,14 @@ export class CatalogoTecnologias {
     );
   }
 }
+
+export const CATEGORIAS_TECNOLOGIA: CategoriaTecnologia[] = [
+  'Frontend',
+  'Backend',
+  'Base de datos',
+  'Infraestructura',
+  'Analítica/IA',
+  'Otra',
+];
+export const ESTADOS_TECNOLOGIA: EstadoTecnologia[] = ['En uso', 'En evaluación', 'Descontinuada'];
+export const LICENCIAS_TECNOLOGIA: LicenciaTecnologia[] = ['Open source', 'Comercial', 'Otra'];

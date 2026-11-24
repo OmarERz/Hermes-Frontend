@@ -24,15 +24,9 @@
     </button>
   </header>
 
-  @if (origen.modo() === 'demo') {
-    <p class="review-demo-note" role="status">
-      Datos de demostración · los cambios se guardan temporalmente en memoria.
-    </p>
-  } @else {
-    <p class="review-unavailable-note" role="status">
-      No hay API HITL conectada. No es posible guardar una decisión real.
-    </p>
-  }
+  <p class="review-unavailable-note" role="status">
+    No hay API HITL conectada. No es posible guardar una decisión real.
+  </p>
 
   <section class="review-case-context" aria-label="Caso seleccionado">
     <span class="review-context-icon"><svg lucideBot aria-hidden="true"></svg></span>
@@ -147,7 +141,7 @@
           </article>
         </section>
         <p class="score-footnote">
-          Los puntajes heredados de demostración no se convierten ni se identifican como CVSS.
+          Los puntajes heredados no se convierten ni se identifican como CVSS.
         </p>
         @if (opinionesJuezSeleccionadas.length) {
           <section class="judge-rationale">
@@ -220,7 +214,7 @@
             [name]="'decision-humana-' + ticketId"
             [value]="opcion.valor"
             [(ngModel)]="accion"
-            [disabled]="origen.modo() !== 'demo' || !seleccionada"
+            disabled
           />{{ opcion.etiqueta }}</label
         >
       }
@@ -232,7 +226,7 @@
           step="any"
           [(ngModel)]="puntajeNuevo"
           aria-describedby="review-score-note"
-          [disabled]="origen.modo() !== 'demo'"
+          disabled
       /></label>
       <p id="review-score-note" class="review-footnote">
         El rango y la precisi&#243;n deben confirmarse con el backend; este valor solo representa la
@@ -262,7 +256,7 @@
         rows="3"
         maxlength="1000"
         placeholder="Agrega un comentario sobre tu decisión (opcional)..."
-        [disabled]="origen.modo() !== 'demo'"
+        disabled
       ></textarea>
     </label>
     @if (error) {
@@ -272,16 +266,7 @@
 
   <footer class="review-modal-actions">
     <button type="button" class="review-cancel" (click)="cerrar()">Cancelar</button
-    ><button
-      type="button"
-      class="review-save"
-      (click)="confirmar()"
-      [disabled]="
-        origen.modo() !== 'demo' ||
-        !seleccionada ||
-        (accion === 'accept-original-score' && puntajeOriginalSeleccionado === null)
-      "
-    >
+    ><button type="button" class="review-save" (click)="confirmar()" disabled>
       Guardar decisión
     </button>
   </footer>

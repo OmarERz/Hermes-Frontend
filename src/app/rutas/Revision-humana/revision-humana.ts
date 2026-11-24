@@ -22,13 +22,11 @@ import {
   LucideX,
 } from '@lucide/angular';
 import {
-  EstadoRevisionDemo,
   obtenerOpinionesJuez,
   proyectarPuntajesRevision,
   RevisionDemo,
   SupervisionAgentes,
 } from '../../servicios/supervision-agentes';
-import { OrigenDashboard } from '../../servicios/origen-dashboard';
 
 type AccionHumana =
   'accept-recommendation' | 'assign-score' | 'accept-original-score' | 'reject-recommendation';
@@ -54,7 +52,6 @@ export class RevisionHumana implements OnInit, AfterViewInit {
   @Output() saved = new EventEmitter<string>();
   @ViewChild('dialogElement') private dialog?: ElementRef<HTMLDialogElement>;
 
-  readonly origen = inject(OrigenDashboard);
   readonly supervision = inject(SupervisionAgentes);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly enNavegador = isPlatformBrowser(this.platformId);
@@ -85,7 +82,7 @@ export class RevisionHumana implements OnInit, AfterViewInit {
   }
 
   get revisiones(): RevisionDemo[] {
-    return this.origen.modo() === 'demo' ? this.supervision.revisiones() : [];
+    return this.supervision.revisiones();
   }
   get revisionesTicket(): RevisionDemo[] {
     return this.revisiones.filter((item) => item.ticketId === this.ticketId);
@@ -109,9 +106,7 @@ export class RevisionHumana implements OnInit, AfterViewInit {
     return this.puntajeNuevo !== null && Number.isFinite(this.puntajeNuevo);
   }
   get opinionesJuezSeleccionadas() {
-    return this.seleccionada
-      ? obtenerOpinionesJuez(this.seleccionada, this.origen.modo() === 'demo')
-      : [];
+    return this.seleccionada ? obtenerOpinionesJuez(this.seleccionada) : [];
   }
   get numeroJuezSeleccionado(): number {
     return this.seleccionada
@@ -144,7 +139,6 @@ export class RevisionHumana implements OnInit, AfterViewInit {
   }
 
   abrir(revision: RevisionDemo): void {
-    if (this.origen.modo() !== 'demo') return;
     if (
       this.seleccionada?.id !== revision.id &&
       this.hayCambiosSinGuardar &&
@@ -178,58 +172,8 @@ export class RevisionHumana implements OnInit, AfterViewInit {
     this.closed.emit();
   }
 
-  /** Valida y registra la decisión de la evaluación seleccionada solo en modo demostración. */
+  /** The review decision has no backend route yet (it will go through POST /api/feedback). */
   confirmar(): void {
-    const actual = this.seleccionada;
-    if (!actual || this.origen.modo() !== 'demo' || !this.accion) {
-      this.error = 'Selecciona una acción.';
-      return;
-    }
-    if (
-      this.accion === 'assign-score' &&
-      (this.puntajeNuevo === null || !Number.isFinite(this.puntajeNuevo))
-    ) {
-      this.error = 'Escribe un nuevo puntaje numérico y finito.';
-      return;
-    }
-    if (this.accion === 'accept-original-score' && this.puntajeOriginalSeleccionado === null) {
-      this.error = 'El puntaje original no está disponible para esta evaluación.';
-      return;
-    }
-    const puntajeHumano =
-      this.accion === 'assign-score'
-        ? { tipo: 'asignado' as const, valor: this.puntajeNuevo as number }
-        : this.accion === 'accept-original-score'
-          ? {
-              tipo: 'puntaje-original-aceptado' as const,
-              valor: this.puntajeOriginalSeleccionado as number,
-            }
-          : undefined;
-    const decision =
-      this.acciones.find((opcion) => opcion.valor === this.accion)?.etiqueta ?? this.accion;
-    const resumenPuntaje = puntajeHumano ? ` Puntaje: ${puntajeHumano.valor}.` : '';
-    if (
-      this.enNavegador &&
-      !window.confirm(
-        `La decisión «${decision}» se guardará únicamente en los datos de demostración en memoria para ${actual.ticketId} · evaluación ${actual.id}.${resumenPuntaje} No se modificará un caso real. ¿Continuar?`,
-      )
-    )
-      return;
-    const estado: EstadoRevisionDemo =
-      this.accion === 'accept-recommendation' || this.accion === 'reject-recommendation'
-        ? 'Resuelto'
-        : 'Revisado por humano';
-    this.supervision.actualizarRevisionDemo(
-      actual.id,
-      estado,
-      this.accion,
-      this.comentario.trim(),
-      puntajeHumano,
-      decision,
-    );
-    this.saved.emit(
-      `Decisión demostrativa registrada en memoria para ${actual.ticketId} · evaluación ${actual.id}; no se envió ni cambió el caso real.`,
-    );
-    this.dialog?.nativeElement.close('saved');
+    this.error = 'Pendiente de conectar con el backend: la decisión todavía no se puede guardar.';
   }
 }

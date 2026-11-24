@@ -69,9 +69,8 @@ describe('FeedsInteligencia carrusel', () => {
           provide: FeedsInteligenciaServicio,
           useValue: {
             feeds,
-            modo: signal<'demo' | 'real'>('demo'),
             integracionPendiente: signal(false),
-            cambiarEstadoDemo: vi.fn(),
+            cambiarEstado: vi.fn(),
           },
         },
       ],
@@ -109,7 +108,7 @@ describe('FeedsInteligencia carrusel', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('misp');
-    expect(fixture.componentInstance.servicio.cambiarEstadoDemo).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.servicio.cambiarEstado).not.toHaveBeenCalled();
   });
 
   it('conserva navegación circular y filtros para listas dinámicas', () => {
@@ -150,7 +149,7 @@ describe('FeedsInteligencia carrusel', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('otx');
-    expect(fixture.componentInstance.servicio.cambiarEstadoDemo).toHaveBeenCalledWith('misp', true);
+    expect(fixture.componentInstance.servicio.cambiarEstado).toHaveBeenCalledWith('misp', true);
   });
 
   it('maneja listas vacías, de un feed y de dos feeds sin duplicar tarjetas', () => {

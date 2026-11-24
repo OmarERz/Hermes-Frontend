@@ -4,9 +4,6 @@
     descripcion="Gestiona el hardware, los activos vinculados a software y su propiedad en la empresa."
     [icono]="iconoBanner"
   />
-  @if (origen.modo() === 'demo') {
-    <p class="source-badge">Datos de demostración · inventario de ejemplo</p>
-  }
 
   <div class="dashboard-grid">
     <main class="main-column">
@@ -29,11 +26,10 @@
         </article>
       </section>
       <div class="action-row">
-        @if (origen.modo() === 'real') {
-          <button type="button" (click)="abrirAsignacion()">
-            <svg lucideUsers aria-hidden="true"></svg> Asignar propietario
-          </button>
-        }
+        <button type="button" (click)="abrirAsignacion()">
+          <svg lucideUsers aria-hidden="true"></svg> Asignar propietario
+        </button>
+
         <button type="button" (click)="mostrarInventario = !mostrarInventario">
           <svg lucideLayers aria-hidden="true"></svg>
           {{ mostrarInventario ? 'Ocultar inventario' : 'Ver inventario' }}
@@ -122,15 +118,15 @@
             <svg lucideChevronDown aria-hidden="true"></svg>
           </button>
         </header>
-        @if (origen.modo() === 'real' && cargando) {
+        @if (cargando) {
           <p class="empty">Cargando inventario...</p>
         }
-        @if (origen.modo() === 'real' && errorCarga) {
+        @if (errorCarga) {
           <p class="empty" role="alert">
-            {{ errorCarga }} Selecciona Datos de demostración para explorar el dashboard.
+            {{ errorCarga }}
           </p>
         }
-        @if (origen.modo() === 'real' && !cargando && !errorCarga && !totalActivos) {
+        @if (!cargando && !errorCarga && !totalActivos) {
           <p class="empty">Aún no hay activos registrados.</p>
         }
         <div

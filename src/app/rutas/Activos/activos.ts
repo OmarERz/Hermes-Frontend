@@ -1,7 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { InventarioActivos } from '../../servicios/inventario-activos';
-import { OrigenDashboard } from '../../servicios/origen-dashboard';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import {
   LucideActivity,
@@ -53,7 +52,6 @@ import {
 export class Activos implements OnInit {
   readonly iconoBanner = LucideMonitor;
   private inventario = inject(InventarioActivos);
-  readonly origen = inject(OrigenDashboard);
   busqueda = '';
   tipoFiltro = 'Todos';
   estadoFiltro = 'Todos';
@@ -67,7 +65,7 @@ export class Activos implements OnInit {
   nuevoPropietario = '';
   mensajeAsignacion = '';
   get activos() {
-    return this.origen.modo() === 'demo' ? this.origen.activos : this.inventario.activos;
+    return this.inventario.activos;
   }
   get totalActivos() {
     return this.activos.length;
@@ -179,7 +177,6 @@ export class Activos implements OnInit {
   }
 
   guardarPropietario() {
-    if (this.origen.modo() === 'demo') return;
     if (!this.activoSeleccionado || !this.nuevoPropietario.trim()) return;
     this.inventario
       .asignarPropietario(this.activoSeleccionado, this.nuevoPropietario.trim())

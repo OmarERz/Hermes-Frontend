@@ -5,16 +5,10 @@
     [icono]="iconoBanner"
   />
   <app-navegacion-agentes />
-  @if (origen.modo() === 'demo') {
-    <p class="source-badge">
-      Datos de demostración · registros de ejemplo en memoria; no constituyen auditoría real
-    </p>
-  } @else {
-    <div class="connection-notice">
-      No hay API ni almacenamiento histórico conectado. El historial real requiere registros
-      inmutables del backend.
-    </div>
-  }
+  <div class="connection-notice">
+    No hay API ni almacenamiento histórico conectado. El historial real requiere registros
+    inmutables del backend.
+  </div>
 
   <div class="history-layout">
     <div class="history-list-column">
@@ -112,13 +106,7 @@
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="11" class="empty">
-                    {{
-                      origen.modo() === 'demo'
-                        ? 'No hay eventos de demostración para esos filtros.'
-                        : 'Aún no hay historial real disponible.'
-                    }}
-                  </td>
+                  <td colspan="11" class="empty">Aún no hay historial real disponible.</td>
                 </tr>
               }
             </tbody>
@@ -165,7 +153,6 @@
           <dt>Error</dt>
           <dd>{{ seleccionada.error }}</dd>
         </dl>
-        <p class="demo-note">Registro demostrativo no auditable.</p>
       } @else {
         <div class="detail-empty">
           <svg lucideClock aria-hidden="true"></svg>

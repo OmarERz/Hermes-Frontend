@@ -2,7 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LucideGitCompareArrows, LucideScale } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
-import { OrigenDashboard } from '../../servicios/origen-dashboard';
 import {
   proyectarPuntajesRevision,
   RevisionDemo,
@@ -17,7 +16,6 @@ import { RevisionHumana } from '../Revision-humana/revision-humana';
   templateUrl: './recomendaciones-agente.html',
 })
 export class RecomendacionesAgente implements OnInit {
-  readonly origen = inject(OrigenDashboard);
   private readonly supervision = inject(SupervisionAgentes);
   private readonly route = inject(ActivatedRoute);
   readonly iconoBanner = LucideGitCompareArrows;
@@ -28,7 +26,7 @@ export class RecomendacionesAgente implements OnInit {
   mensajeRevision = '';
 
   get recomendaciones() {
-    return this.origen.modo() === 'demo' ? this.supervision.revisiones() : [];
+    return this.supervision.revisiones();
   }
   get ticketsEnConflicto() {
     return new Set(

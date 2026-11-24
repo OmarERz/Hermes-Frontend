@@ -4,16 +4,10 @@
     descripcion="Administra los parámetros disponibles y revisa su efecto antes de confirmar."
     [icono]="iconoBanner"
   />
-  @if (origen.modo() === 'demo') {
-    <p class="source-badge">
-      Demostración · los cambios solo viven en memoria y no alteran agentes reales
-    </p>
-  } @else {
-    <div class="connection-notice" role="status">
-      No hay API de configuración conectada. Los controles están en solo lectura hasta conocer los
-      parámetros y permisos admitidos por el backend.
-    </div>
-  }
+  <div class="connection-notice" role="status">
+    No hay API de configuración conectada. Los controles están en solo lectura hasta conocer los
+    parámetros y permisos admitidos por el backend.
+  </div>
 
   <section class="config-summary" aria-label="Resumen de configuración">
     <article>
@@ -53,22 +47,18 @@
               texto="Define el grado de autonomía y revisión permitido dentro de las políticas del sistema."
             />
           </h3>
-          <p>Elige un perfil de demostración. No asigna umbrales ni cambia reglas de seguridad.</p>
+          <p>Elige un perfil. No asigna umbrales ni cambia reglas de seguridad.</p>
         </div>
-        <fieldset class="profile-options" [disabled]="origen.modo() !== 'demo'">
+        <fieldset class="profile-options" disabled>
           <legend class="field-label">Perfil</legend>
           @for (perfil of perfiles; track perfil.valor) {
-            <label
-              class="profile-option"
-              [class.selected]="origen.modo() === 'demo' && perfilBorrador === perfil.valor"
-            >
+            <label class="profile-option">
               <span class="profile-option-heading"
                 ><input
                   type="radio"
                   name="perfil-agente"
                   [value]="perfil.valor"
-                  [checked]="origen.modo() === 'demo' && perfilBorrador === perfil.valor"
-                  [disabled]="origen.modo() !== 'demo'"
+                  disabled
                   (change)="perfilBorrador = perfil.valor" /><svg
                   [lucideIcon]="perfil.icono"
                   aria-hidden="true"
@@ -98,33 +88,19 @@
               texto="Integraciones que un agente puede utilizar si el backend las habilita."
             />
           </h2>
-          <p>Servicios disponibles en la demostración.</p>
+          <p>Servicios del agente.</p>
         </header>
         @for (herramienta of herramientasBorrador; track herramienta.nombre) {
           <label class="tool-setting"
             ><svg [lucideIcon]="iconoHerramienta(herramienta.nombre)" aria-hidden="true"></svg
             ><span class="tool-copy"
               ><strong>{{ herramienta.nombre }}</strong
-              ><small>{{
-                origen.modo() === 'demo'
-                  ? herramienta.habilitada
-                    ? 'Habilitada en demostración'
-                    : 'Deshabilitada en demostración'
-                  : 'Estado desconocido'
-              }}</small></span
+              ><small>Estado desconocido</small></span
             ><input
               class="tool-switch"
               type="checkbox"
-              [checked]="origen.modo() === 'demo' && herramienta.habilitada"
-              [disabled]="origen.modo() !== 'demo'"
-              [attr.aria-label]="
-                herramienta.nombre +
-                (origen.modo() === 'demo'
-                  ? herramienta.habilitada
-                    ? ', habilitada en demostración'
-                    : ', deshabilitada en demostración'
-                  : ', estado desconocido')
-              "
+              disabled
+              [attr.aria-label]="herramienta.nombre + ', estado desconocido'"
               (change)="herramienta.habilitada = $any($event.target).checked"
           /></label>
         }
@@ -144,15 +120,10 @@
               <p>Ajusta manualmente el comportamiento del agente.</p>
             </div>
           </header>
-          @if (origen.modo() === 'demo') {
-            <p id="personalized-config-note" class="custom-config-note">
-              Porcentajes de demostración: no modifican reglas ni agentes reales.
-            </p>
-          } @else {
-            <p id="personalized-config-note" class="custom-config-note" role="status">
-              Integración pendiente: el backend aún no proporciona estos parámetros.
-            </p>
-          }
+          <p id="personalized-config-note" class="custom-config-note" role="status">
+            Integración pendiente: el backend aún no proporciona estos parámetros.
+          </p>
+
           <small class="custom-config-safety-note"
             >Este perfil no cambia permisos, políticas ni requisitos obligatorios de revisión
             humana.</small
@@ -163,14 +134,7 @@
                 <div
                   class="custom-slider-meter"
                   role="img"
-                  [attr.aria-label]="
-                    origen.modo() === 'demo'
-                      ? parametro.nombre +
-                        ': ' +
-                        parametrosPersonalizadosBorrador[parametro.clave] +
-                        '%'
-                      : parametro.nombre + ': integración pendiente'
-                  "
+                  [attr.aria-label]="parametro.nombre + ': integración pendiente'"
                 >
                   <svg viewBox="0 0 100 100" aria-hidden="true">
                     <circle class="custom-meter-track" cx="50" cy="50" r="43" pathLength="100" />
@@ -180,19 +144,10 @@
                       cy="50"
                       r="43"
                       pathLength="100"
-                      [attr.stroke-dashoffset]="
-                        100 -
-                        (origen.modo() === 'demo'
-                          ? parametrosPersonalizadosBorrador[parametro.clave]
-                          : 0)
-                      "
+                      [attr.stroke-dashoffset]="100 - 0"
                     />
                   </svg>
-                  <span>{{
-                    origen.modo() === 'demo'
-                      ? parametrosPersonalizadosBorrador[parametro.clave] + '%'
-                      : '—'
-                  }}</span>
+                  <span>—</span>
                 </div>
                 <div class="custom-slider-content">
                   <header class="custom-slider-heading">
@@ -212,23 +167,11 @@
                       min="0"
                       max="100"
                       step="1"
-                      [value]="
-                        origen.modo() === 'demo'
-                          ? parametrosPersonalizadosBorrador[parametro.clave]
-                          : 0
-                      "
-                      [style.--slider-fill]="
-                        (origen.modo() === 'demo'
-                          ? parametrosPersonalizadosBorrador[parametro.clave]
-                          : 0) + '%'
-                      "
-                      [attr.aria-valuetext]="
-                        origen.modo() === 'demo'
-                          ? parametrosPersonalizadosBorrador[parametro.clave] + ' por ciento'
-                          : 'Integración pendiente'
-                      "
+                      [value]="0"
+                      [style.--slider-fill]="0 + '%'"
+                      [attr.aria-valuetext]="'Integración pendiente'"
                       aria-describedby="personalized-config-note"
-                      [disabled]="origen.modo() !== 'demo'"
+                      disabled
                       (input)="actualizarParametroPersonalizado(parametro.clave, $event)"
                     />
                     <div class="custom-slider-bounds" aria-hidden="true">
@@ -282,12 +225,7 @@
 
   <div class="save-row">
     <p role="status">{{ mensaje }}</p>
-    <button
-      type="button"
-      class="save-button"
-      [disabled]="origen.modo() !== 'demo' || cambios.length === 0"
-      (click)="prepararGuardado()"
-    >
+    <button type="button" class="save-button" disabled (click)="prepararGuardado()">
       Guardar cambios
     </button>
   </div>
@@ -302,7 +240,7 @@
         (click)="$event.stopPropagation()"
         (keydown.escape)="cancelar()"
       >
-        <h2 id="confirm-title">Confirmar cambios de demostración</h2>
+        <h2 id="confirm-title">Confirmar cambios</h2>
         <p>Revisa cada valor antes de aplicar esta vista previa.</p>
         <div class="change-list">
           @for (cambio of cambios; track cambio.nombre) {
