@@ -14,6 +14,7 @@ import { ConfigField } from './config-field';
 import { ConfigParameter, formatWeightsTotal, weightsSumToOne } from './config-model';
 import { ConfigSaveBar } from './config-save-bar';
 import { ConfigStore } from './config-store';
+import { ConfigVersions } from './config-versions';
 import { formulaLabel, formulaLayout, shortFormulaLabel } from './formula-layout';
 import { LockedProtections } from './locked-protections';
 import { SimulationPanel } from './simulation-panel';
@@ -33,6 +34,7 @@ import { SimulationPanel } from './simulation-panel';
     AsyncStateComponent,
     ConfigField,
     ConfigSaveBar,
+    ConfigVersions,
     LockedProtections,
     SimulationPanel,
     LucideHourglass,

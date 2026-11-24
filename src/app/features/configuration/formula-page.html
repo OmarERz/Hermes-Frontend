@@ -189,6 +189,7 @@
 
     <app-simulation-panel class="block" [editor]="editor" />
     <app-config-save-bar title="Confirmar cambios de la fórmula" [editor]="editor" />
+    <app-config-versions class="block" (restored)="editor.discard()" />
     <app-locked-protections class="block" [parameters]="editor.parameters()" />
   }
 </div>
