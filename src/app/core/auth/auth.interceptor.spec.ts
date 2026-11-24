@@ -18,6 +18,7 @@ const config: AppConfig = {
   apiBaseUrl: 'http://127.0.0.1:8000',
   firebase: null,
   authEmulatorUrl: null,
+  itopBaseUrl: null,
 };
 
 describe('isApiRequest', () => {

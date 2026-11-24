@@ -5,6 +5,7 @@ const defaults: AppConfig = {
   apiBaseUrl: 'http://127.0.0.1:8000',
   firebase: { apiKey: 'demo', authDomain: 'demo.firebaseapp.com', projectId: 'demo', appId: 'app' },
   authEmulatorUrl: 'http://127.0.0.1:9099',
+  itopBaseUrl: null,
 };
 
 const realFirebase = {
@@ -41,6 +42,7 @@ describe('mergeRuntimeConfig', () => {
     [{ apiBaseUrl: 'javascript:alert(1)' }, 'apiBaseUrl debe usar http o https.'],
     [{ apiBaseUrl: 'https://hermes.test/?x=1' }, 'apiBaseUrl no puede llevar'],
     [{ authEmulatorUrl: 42 }, 'authEmulatorUrl debe ser texto.'],
+    [{ itopBaseUrl: 'ftp://itop.test' }, 'itopBaseUrl debe usar http o https.'],
     [{ firebase: { ...realFirebase, appId: '' } }, 'firebase.appId es obligatorio.'],
     [{ firebase: { ...realFirebase, extra: 'x' } }, 'firebase.extra no es un campo conocido.'],
     [{ firebse: realFirebase }, 'firebse no es un campo conocido.'],
@@ -63,6 +65,15 @@ describe('mergeRuntimeConfig in production', () => {
     expect(() =>
       mergeRuntimeConfig(production, { authEmulatorUrl: 'http://127.0.0.1:9099' }),
     ).toThrowError('authEmulatorUrl no se permite en producción.');
+  });
+
+  it('refuses a plain http iTop console on a remote host', () => {
+    expect(() =>
+      mergeRuntimeConfig(production, { itopBaseUrl: 'http://itop.hermes.test' }),
+    ).toThrowError('itopBaseUrl debe usar https en producción.');
+    expect(
+      mergeRuntimeConfig(production, { itopBaseUrl: 'https://itop.hermes.test/' }).itopBaseUrl,
+    ).toBe('https://itop.hermes.test');
   });
 
   it('refuses plain http to a remote API but accepts https and a local API', () => {

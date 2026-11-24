@@ -15,4 +15,6 @@ export const environment: AppConfig = {
     appId: 'demo-hermes-web',
   },
   authEmulatorUrl: 'http://127.0.0.1:9099',
+  // The iTop console of the demo is set in runtime-config.json (itopBaseUrl); without it the links are hidden.
+  itopBaseUrl: null,
 };

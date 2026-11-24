@@ -19,6 +19,8 @@ export interface AppConfig {
   firebase: FirebaseWebConfig | null;
   /** Firebase Auth emulator URL (local development and tests); null talks to the real Firebase project. */
   authEmulatorUrl: string | null;
+  /** Web console of iTop, for the «Crear en iTop» / «Editar en iTop» links; null hides those links. */
+  itopBaseUrl: string | null;
 }
 
 export const APP_CONFIG = new InjectionToken<AppConfig>('APP_CONFIG');
@@ -28,7 +30,7 @@ export const RUNTIME_CONFIG_FILE = 'runtime-config.json';
 
 const FIREBASE_REQUIRED = ['apiKey', 'authDomain', 'projectId', 'appId'] as const;
 const FIREBASE_OPTIONAL = ['storageBucket', 'messagingSenderId'] as const;
-const TOP_LEVEL_KEYS = ['apiBaseUrl', 'firebase', 'authEmulatorUrl'] as const;
+const TOP_LEVEL_KEYS = ['apiBaseUrl', 'firebase', 'authEmulatorUrl', 'itopBaseUrl'] as const;
 
 /** Raised when runtime-config.json exists but is not valid; the message is shown to the person as is. */
 export class RuntimeConfigError extends Error {}
@@ -91,6 +93,10 @@ export function mergeRuntimeConfig(defaults: AppConfig, raw: unknown): AppConfig
     merged.authEmulatorUrl =
       raw['authEmulatorUrl'] === null ? null : httpUrl(raw['authEmulatorUrl'], 'authEmulatorUrl');
   }
+  if (raw['itopBaseUrl'] !== undefined) {
+    merged.itopBaseUrl =
+      raw['itopBaseUrl'] === null ? null : httpUrl(raw['itopBaseUrl'], 'itopBaseUrl');
+  }
   if (merged.production) {
     // A production build never talks to the emulator, nor sends the token over plain http to a remote host.
     if (merged.authEmulatorUrl) {
@@ -98,6 +104,9 @@ export function mergeRuntimeConfig(defaults: AppConfig, raw: unknown): AppConfig
     }
     if (merged.apiBaseUrl && !isSecureOrLocal(merged.apiBaseUrl)) {
       throw new RuntimeConfigError('apiBaseUrl debe usar https en producción.');
+    }
+    if (merged.itopBaseUrl && !isSecureOrLocal(merged.itopBaseUrl)) {
+      throw new RuntimeConfigError('itopBaseUrl debe usar https en producción.');
     }
   }
   return merged;
