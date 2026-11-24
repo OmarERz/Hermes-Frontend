@@ -65,6 +65,7 @@
             <h2>{{ ticketActivo }}</h2>
           </div>
           <button
+            *appIfRole="feedbackRole"
             #reviewButton
             type="button"
             class="review-open-button"

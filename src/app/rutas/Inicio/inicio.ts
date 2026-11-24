@@ -32,14 +32,14 @@ export class Inicio {
   private readonly sesion = inject(SessionService);
   private readonly catalogo = inject(CatalogoTecnologias);
   private readonly inventario = inject(InventarioActivos);
-  /** Prefiere el nombre visible de Firebase y usa el email como alternativa legible. */
+  /** Display name from GET /api/me (else from Firebase), or the user part of the e-mail. */
   get nombreSaludo(): string {
-    const perfil = this.sesion.profile();
-    const usuario = this.sesion.user();
-    const nombreVisible = perfil?.display_name?.trim() || usuario?.displayName?.trim();
-    if (nombreVisible) return nombreVisible;
-    const correo = perfil?.email ?? usuario?.email;
-    return correo?.split('@', 1)[0].trim() || 'Usuario';
+    const profile = this.sesion.profile();
+    const user = this.sesion.user();
+    const displayName = profile?.display_name?.trim() || user?.displayName?.trim();
+    if (displayName) return displayName;
+    const email = profile?.email ?? user?.email;
+    return email?.split('@', 1)[0].trim() || 'Usuario';
   }
   get totalTecnologias(): number | null {
     const total = this.catalogo.tecnologias().length;

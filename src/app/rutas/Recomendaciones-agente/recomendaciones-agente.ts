@@ -9,13 +9,24 @@ import {
 } from '../../servicios/supervision-agentes';
 import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegacion-agentes';
 import { RevisionHumana } from '../Revision-humana/revision-humana';
+import { IfRoleDirective } from '../../core/auth/if-role.directive';
+import { ACTION_ROLES } from '../../core/auth/roles';
 
 @Component({
   selector: 'app-recomendaciones-agente',
-  imports: [BannerPagina, NavegacionAgentes, LucideGitCompareArrows, LucideScale, RevisionHumana],
+  imports: [
+    BannerPagina,
+    NavegacionAgentes,
+    LucideGitCompareArrows,
+    LucideScale,
+    RevisionHumana,
+    IfRoleDirective,
+  ],
   templateUrl: './recomendaciones-agente.html',
 })
 export class RecomendacionesAgente implements OnInit {
+  /** The human review becomes feedback (POST /api/feedback): analyst or admin only. */
+  readonly feedbackRole = ACTION_ROLES.giveFeedback;
   private readonly supervision = inject(SupervisionAgentes);
   private readonly route = inject(ActivatedRoute);
   readonly iconoBanner = LucideGitCompareArrows;

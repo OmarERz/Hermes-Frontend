@@ -231,39 +231,10 @@
   </div>
 
   @if (modalAbierto) {
-    <div class="modal-backdrop" role="presentation" (click)="cancelar()">
-      <section
-        class="confirm-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirm-title"
-        (click)="$event.stopPropagation()"
-        (keydown.escape)="cancelar()"
-      >
-        <h2 id="confirm-title">Confirmar cambios</h2>
-        <p>Revisa cada valor antes de aplicar esta vista previa.</p>
-        <div class="change-list">
-          @for (cambio of cambios; track cambio.nombre) {
-            <article>
-              <h3>{{ cambio.nombre }}</h3>
-              <div>
-                <span
-                  >Anterior <strong>{{ cambio.anterior }}</strong></span
-                ><span
-                  >Nuevo <strong>{{ cambio.nuevo }}</strong></span
-                >
-              </div>
-              <p>{{ cambio.impacto }}</p>
-            </article>
-          }
-        </div>
-        <footer>
-          <button type="button" class="cancel-button" (click)="cancelar()">Cancelar</button
-          ><button type="button" class="save-button" (click)="confirmar()">
-            Confirmar cambios
-          </button>
-        </footer>
-      </section>
-    </div>
+    <app-confirm-changes-dialog
+      [changes]="changeRows"
+      (confirmed)="confirmar()"
+      (cancelled)="cancelar()"
+    />
   }
 </div>

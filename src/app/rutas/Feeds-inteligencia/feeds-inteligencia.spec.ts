@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { FeedsInteligencia } from './feeds-inteligencia';
 import { FeedInteligencia, FeedsInteligenciaServicio } from '../../servicios/feeds-inteligencia';
+import { SessionService } from '../../core/auth/session.service';
 
 describe('FeedsInteligencia carrusel', () => {
   let fixture: ComponentFixture<FeedsInteligencia>;
@@ -65,12 +66,13 @@ describe('FeedsInteligencia carrusel', () => {
     await TestBed.configureTestingModule({
       imports: [FeedsInteligencia],
       providers: [
+        { provide: SessionService, useValue: { hasRole: () => true } },
         {
           provide: FeedsInteligenciaServicio,
           useValue: {
             feeds,
             integracionPendiente: signal(false),
-            cambiarEstado: vi.fn(),
+            setFeedActive: vi.fn(),
           },
         },
       ],
@@ -108,7 +110,7 @@ describe('FeedsInteligencia carrusel', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('misp');
-    expect(fixture.componentInstance.servicio.cambiarEstado).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.servicio.setFeedActive).not.toHaveBeenCalled();
   });
 
   it('conserva navegación circular y filtros para listas dinámicas', () => {
@@ -149,7 +151,7 @@ describe('FeedsInteligencia carrusel', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('otx');
-    expect(fixture.componentInstance.servicio.cambiarEstado).toHaveBeenCalledWith('misp', true);
+    expect(fixture.componentInstance.servicio.setFeedActive).toHaveBeenCalledWith('misp', true);
   });
 
   it('maneja listas vacías, de un feed y de dos feeds sin duplicar tarjetas', () => {

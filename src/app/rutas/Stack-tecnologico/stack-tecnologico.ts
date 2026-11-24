@@ -18,9 +18,9 @@ import {
   EstadoTecnologia,
   LicenciaTecnologia,
   TecnologiaEmpresa,
-  CATEGORIAS_TECNOLOGIA,
-  ESTADOS_TECNOLOGIA,
-  LICENCIAS_TECNOLOGIA,
+  TECHNOLOGY_CATEGORIES,
+  TECHNOLOGY_STATUSES,
+  TECHNOLOGY_LICENSES,
 } from '../../servicios/catalogo-tecnologias';
 import type { PrioridadVulnerabilidad } from '../../servicios/resultados-vulnerabilidades-agente';
 import { ResultadosVulnerabilidadesAgente } from '../../servicios/resultados-vulnerabilidades-agente';
@@ -46,9 +46,9 @@ export class StackTecnologico {
   private readonly catalogo = inject(CatalogoTecnologias);
   private readonly resultadosVulnerabilidades = inject(ResultadosVulnerabilidadesAgente);
   readonly iconoBanner = LucideLayers;
-  readonly categorias: CategoriaTecnologia[] = CATEGORIAS_TECNOLOGIA;
-  readonly estados: EstadoTecnologia[] = ESTADOS_TECNOLOGIA;
-  readonly licencias: LicenciaTecnologia[] = LICENCIAS_TECNOLOGIA;
+  readonly categorias: CategoriaTecnologia[] = TECHNOLOGY_CATEGORIES;
+  readonly estados: EstadoTecnologia[] = TECHNOLOGY_STATUSES;
+  readonly licencias: LicenciaTecnologia[] = TECHNOLOGY_LICENSES;
   readonly tecnologiasReales = this.catalogo.tecnologias;
   get tecnologias() {
     return this.tecnologiasReales();

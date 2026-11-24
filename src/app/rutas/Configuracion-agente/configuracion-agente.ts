@@ -21,9 +21,11 @@ import {
   PerfilConservador,
   SupervisionAgentes,
 } from '../../servicios/supervision-agentes';
+import { ConfirmChangesDialog } from '../../shared/confirm-changes-dialog';
+import type { ChangeRow } from '../../shared/versioned-save';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 
-const SIN_BACKEND =
+const BACKEND_PENDING_MESSAGE =
   'Pendiente de conectar con el backend: los cambios todavía no se pueden guardar.';
 
 @Component({
@@ -37,6 +39,7 @@ const SIN_BACKEND =
     LucideSlidersHorizontal,
     LucideWrench,
     LucideDynamicIcon,
+    ConfirmChangesDialog,
   ],
   templateUrl: './configuracion-agente.html',
 })
@@ -158,8 +161,18 @@ export class ConfiguracionAgente {
     return resultado;
   }
 
+  /** The pending changes in the shape of the shared before/after dialog. */
+  get changeRows(): ChangeRow[] {
+    return this.cambios.map((change) => ({
+      name: change.nombre,
+      before: change.anterior,
+      after: change.nuevo,
+      impact: change.impacto,
+    }));
+  }
+
   prepararGuardado(): void {
-    this.mensaje = SIN_BACKEND;
+    this.mensaje = BACKEND_PENDING_MESSAGE;
   }
 
   /** Actualiza un porcentaje del borrador y rechaza valores fuera de 0 a 100 o no enteros. */
@@ -177,7 +190,7 @@ export class ConfiguracionAgente {
 
   confirmar(): void {
     this.modalAbierto = false;
-    this.mensaje = SIN_BACKEND;
+    this.mensaje = BACKEND_PENDING_MESSAGE;
   }
 
   cancelar(): void {

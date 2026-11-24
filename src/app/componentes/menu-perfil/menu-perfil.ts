@@ -34,14 +34,14 @@ export class MenuPerfil {
 
   /** Name from GET /api/me (display name, else the e-mail user part) and the effective role. */
   get usuario(): { iniciales: string; nombre: string; rol: string } {
-    const perfil = this.sesion.profile();
-    const correo = perfil?.email ?? this.sesion.user()?.email;
-    const nombre = perfil?.display_name?.trim() || correo?.split('@', 1)[0].trim() || 'Usuario';
-    const rol = this.sesion.role();
+    const profile = this.sesion.profile();
+    const email = profile?.email ?? this.sesion.user()?.email;
+    const name = profile?.display_name?.trim() || email?.split('@', 1)[0].trim() || 'Usuario';
+    const role = this.sesion.role();
     return {
-      iniciales: nombre.slice(0, 2).toUpperCase(),
-      nombre,
-      rol: rol ? `Rol: ${ROLE_LABELS[rol]}` : 'Sin rol',
+      iniciales: name.slice(0, 2).toUpperCase(),
+      nombre: name,
+      rol: role ? `Rol: ${ROLE_LABELS[role]}` : 'Sin rol',
     };
   }
 

@@ -113,6 +113,7 @@
             <span class="feed-demo-tag">Integración pendiente</span>
           </button>
           <label
+            *appIfRole="sourceToggleRole"
             class="feed-toggle"
             [attr.aria-label]="
               (tarjeta.feed.activo ? 'Desactivar ' : 'Activar ') + tarjeta.feed.nombre

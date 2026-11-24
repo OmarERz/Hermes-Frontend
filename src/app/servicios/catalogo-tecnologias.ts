@@ -87,7 +87,7 @@ export class CatalogoTecnologias {
   }
 }
 
-export const CATEGORIAS_TECNOLOGIA: CategoriaTecnologia[] = [
+export const TECHNOLOGY_CATEGORIES: CategoriaTecnologia[] = [
   'Frontend',
   'Backend',
   'Base de datos',
@@ -95,5 +95,5 @@ export const CATEGORIAS_TECNOLOGIA: CategoriaTecnologia[] = [
   'Analítica/IA',
   'Otra',
 ];
-export const ESTADOS_TECNOLOGIA: EstadoTecnologia[] = ['En uso', 'En evaluación', 'Descontinuada'];
-export const LICENCIAS_TECNOLOGIA: LicenciaTecnologia[] = ['Open source', 'Comercial', 'Otra'];
+export const TECHNOLOGY_STATUSES: EstadoTecnologia[] = ['En uso', 'En evaluación', 'Descontinuada'];
+export const TECHNOLOGY_LICENSES: LicenciaTecnologia[] = ['Open source', 'Comercial', 'Otra'];
