@@ -16,26 +16,33 @@ import {
   LucideGauge,
   LucideHash,
   LucideLayers,
+  LucidePlus,
   LucideRefreshCw,
   LucideRss,
   LucideShield,
   LucideSignal,
   LucideTag,
 } from '@lucide/angular';
-import { finalize, tap } from 'rxjs';
-import { toApiError } from '../../core/api/api-error';
+import { finalize, Observable, tap } from 'rxjs';
+import { ApiError, toApiError } from '../../core/api/api-error';
+import type { Role } from '../../core/api/api-types';
+import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
 import { SessionService } from '../../core/auth/session.service';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { ConfirmChangesDialog } from '../../shared/confirm-changes-dialog';
 import { formatDateTime } from '../../shared/labels';
 import { SectionTabs } from '../../shared/section-tabs';
+import type { ChangeRow } from '../../shared/versioned-save';
+import { AddSourceForm } from './add-source-form';
 import { CarouselState } from './carousel-state';
 import {
   capturedWithinDay,
   formatRefresh,
   HEALTH_LABELS,
   LEVEL_MEANINGS,
+  levelsFor,
   refreshMinutes,
   Source,
   SOURCE_LEVELS,
@@ -96,12 +103,17 @@ const SWIPE_DISTANCE = 45;
  * Fuentes (FRO-16, D-041, FE-1): the prototype's Feeds carousel over the real sources of `GET /api/sources`, with
  * their class, trust level N1 to N4, health and state, filtered by class or by level. Structural sources carry 🔒
  * and are never switched off; analysts and admins switch the optional ones on or off (`PATCH /api/sources/{id}`).
+ * Admins also change a level (with confirmation) and add own HTTPS feeds (`POST /api/sources`).
  */
 @Component({
   selector: 'app-sources-page',
   imports: [
     SectionTabs,
     AsyncStateComponent,
+    ConfirmChangesDialog,
+    IfRoleDirective,
+    AddSourceForm,
+    LucidePlus,
     LucideActivity,
     LucideCircleCheck,
     LucideCirclePause,
@@ -139,6 +151,27 @@ export class SourcesPage {
   /** Sources being changed right now (their switch is disabled until the API answers). */
   readonly pending = signal<ReadonlySet<string>>(new Set());
   readonly notice = signal<Notice | null>(null);
+
+  /** Level change waiting for the admin's confirmation (FRO-16: only an admin changes a level). */
+  readonly levelRole: Role = 'admin';
+  readonly levelChange = signal<{ source: Source; level: SourceLevel } | null>(null);
+  readonly levelSaving = signal(false);
+  readonly levelError = signal<ApiError | null>(null);
+  readonly levelRows = computed<ChangeRow[]>(() => {
+    const requested = this.levelChange();
+    if (!requested) return [];
+    const { source, level } = requested;
+    return [
+      {
+        name: `Nivel de confianza de ${source.name}`,
+        before: `${source.level} · ${LEVEL_MEANINGS[source.level]}`,
+        after: `${level} · ${LEVEL_MEANINGS[level]}`,
+      },
+    ];
+  });
+
+  readonly addRole = ACTION_ROLES.addSource;
+  readonly adding = signal(false);
 
   readonly rows = computed(() => this.sources().map(toRow));
   readonly filteredRows = computed(() =>
@@ -235,46 +268,85 @@ export class SourcesPage {
   toggle(row: SourceRow, event: Event): void {
     event.stopPropagation();
     (event.target as HTMLInputElement).checked = row.source.active;
-    this.change(row.source, { active: !row.source.active }, (saved) =>
-      saved.active ? `${saved.name} quedó activa.` : `${saved.name} quedó inactiva.`,
-    );
+    if (this.isPending(row.id)) return;
+    this.notice.set(null);
+    this.save(row.source, { active: !row.source.active }).subscribe({
+      next: (saved) =>
+        this.notify(saved.active ? `${saved.name} quedó activa.` : `${saved.name} quedó inactiva.`),
+      error: (error: unknown) => this.notify(toApiError(error).message, 'error'),
+    });
   }
 
   isPending(id: string): boolean {
     return this.pending().has(id);
   }
 
-  /** Sends one change of a source; `done` gets null on success or the error. */
-  protected change(
-    source: Source,
-    change: SourceChange,
-    success: (saved: Source) => string,
-    done?: (error: unknown) => void,
-  ): void {
-    if (this.isPending(source.id)) return;
-    this.setPending(source.id, true);
+  /** The levels an admin may give this source (N1 only for structural ones). */
+  levelOptions(source: Source): SourceLevel[] {
+    return levelsFor(source);
+  }
+
+  /** Asks to confirm a new level; the select stays on the saved level until the change is saved. */
+  askLevel(row: SourceRow, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const level = select.value as SourceLevel;
+    select.value = row.source.level;
+    if (level === row.source.level || this.isPending(row.id)) return;
+    this.levelError.set(null);
+    this.levelChange.set({ source: row.source, level });
+  }
+
+  confirmLevel(): void {
+    const requested = this.levelChange();
+    if (!requested || this.levelSaving()) return;
+    this.levelSaving.set(true);
+    this.levelError.set(null);
     this.notice.set(null);
-    this.service
-      .update(source.id, change)
-      .pipe(
-        finalize(() => this.setPending(source.id, false)),
-        takeUntilDestroyed(this.destroyRef),
-      )
+    this.save(requested.source, { level: requested.level })
+      .pipe(finalize(() => this.levelSaving.set(false)))
       .subscribe({
         next: (saved) => {
-          this.replace(saved);
-          this.notice.set({ kind: 'ok', text: success(saved) });
-          done?.(null);
+          this.levelChange.set(null);
+          this.notify(`${saved.name} quedó en nivel ${saved.level}.`);
         },
-        error: (error: unknown) => {
-          this.notice.set({ kind: 'error', text: toApiError(error).message });
-          done?.(error);
-        },
+        error: (error: unknown) => this.levelError.set(toApiError(error)),
       });
   }
 
+  cancelLevel(): void {
+    if (this.levelSaving()) return;
+    this.levelChange.set(null);
+    this.levelError.set(null);
+  }
+
+  /** A feed the admin just added: it shows up selected, with every filter cleared. */
+  sourceAdded(source: Source): void {
+    this.adding.set(false);
+    this.replace(source);
+    this.typeFilter.set('');
+    this.levelFilter.set('');
+    this.carousel.select(source.id);
+    this.notify(
+      `${source.name} se agregó con nivel ${source.level} e inactiva. Actívala cuando quieras que Hermes la lea.`,
+    );
+  }
+
+  private notify(text: string, kind: Notice['kind'] = 'ok'): void {
+    this.notice.set({ kind, text });
+  }
+
+  /** Sends one change of a source, marking it pending, and puts the saved source in the list. */
+  private save(source: Source, change: SourceChange): Observable<Source> {
+    this.setPending(source.id, true);
+    return this.service.update(source.id, change).pipe(
+      tap((saved) => this.replace(saved)),
+      finalize(() => this.setPending(source.id, false)),
+      takeUntilDestroyed(this.destroyRef),
+    );
+  }
+
   /** Puts the saved source in place of the old one (or at the end, if it is new). */
-  protected replace(saved: Source): void {
+  private replace(saved: Source): void {
     this.sources.update((sources) =>
       sources.some((source) => source.id === saved.id)
         ? sources.map((source) => (source.id === saved.id ? saved : source))

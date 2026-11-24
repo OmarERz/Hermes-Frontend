@@ -1,0 +1,65 @@
+<form novalidate aria-labelledby="add-source-title" (ngSubmit)="submit()">
+  <header>
+    <svg lucidePlus aria-hidden="true"></svg>
+    <h2 id="add-source-title">Agregar fuente</h2>
+  </header>
+  <p class="form-hint" id="add-source-hint">
+    Solo feeds por HTTPS. Entran con nivel N4 (feed propio, mínima confianza) e inactivos: actívalos
+    cuando quieras que Hermes los lea. Las llaves y los tokens nunca van en la dirección.
+  </p>
+  <div class="form-grid">
+    <label
+      >Nombre
+      <input
+        name="name"
+        autocomplete="off"
+        maxlength="200"
+        required
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)"
+        [attr.aria-invalid]="nameInvalid()"
+        [attr.aria-describedby]="nameError() ? 'add-source-name-error' : null"
+      />
+      @if (nameError(); as problem) {
+        <small class="field-error" id="add-source-name-error">{{ problem }}</small>
+      }
+    </label>
+    <label class="wide"
+      >Dirección (HTTPS)
+      <input
+        name="url"
+        type="url"
+        inputmode="url"
+        autocomplete="off"
+        maxlength="2048"
+        required
+        [ngModel]="url()"
+        (ngModelChange)="url.set($event)"
+        [attr.aria-invalid]="urlInvalid()"
+        [attr.aria-describedby]="urlError() ? 'add-source-url-error' : 'add-source-hint'"
+      />
+      @if (urlError(); as problem) {
+        <small class="field-error" id="add-source-url-error">{{ problem }}</small>
+      }
+    </label>
+    <label
+      >Formato
+      <select name="kind" [ngModel]="kind()" (ngModelChange)="kind.set($event)">
+        @for (option of kinds; track option) {
+          <option [ngValue]="option">{{ kindLabels[option] }}</option>
+        }
+      </select>
+    </label>
+  </div>
+  @if (error(); as failure) {
+    <p class="form-error" role="alert">{{ failure.message }}</p>
+  }
+  <footer>
+    <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelled.emit()">
+      Cancelar
+    </button>
+    <button type="submit" class="primary-button" [disabled]="saving()" [attr.aria-busy]="saving()">
+      {{ saving() ? 'Agregando…' : 'Agregar fuente' }}
+    </button>
+  </footer>
+</form>

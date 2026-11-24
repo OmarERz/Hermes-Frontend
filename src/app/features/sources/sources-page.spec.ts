@@ -251,4 +251,103 @@ describe('SourcesPage', () => {
     await fixture.whenStable();
     expect(tableNames(element)).toHaveLength(4);
   });
+
+  it('lets only an admin change a level, with N1 kept for structural sources', async () => {
+    for (const role of ['reader', 'analyst'] as const) {
+      TestBed.resetTestingModule();
+      const { element } = await render(role);
+      expect(element.querySelector('.level-select')).toBeNull();
+      expect(element.querySelector('.add-source-button')).toBeNull();
+    }
+    TestBed.resetTestingModule();
+    const { fixture, element, page } = await render('admin');
+    const options = () =>
+      all(element, '.level-select option').map((option) => (option as HTMLOptionElement).value);
+    expect(options()).toEqual(['N1', 'N2', 'N3', 'N4']);
+    page.carousel.select('thn');
+    await fixture.whenStable();
+    expect(options()).toEqual(['N2', 'N3', 'N4']);
+    expect(element.querySelector<HTMLSelectElement>('.level-select select')!.value).toBe('N3');
+  });
+
+  it('asks to confirm a new level and saves it only after the confirmation', async () => {
+    const { fixture, element, page, service } = await render('admin');
+    page.carousel.select('thn');
+    await fixture.whenStable();
+    const select = element.querySelector<HTMLSelectElement>('.level-select select')!;
+    select.value = 'N2';
+    select.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(select.value).toBe('N3');
+    expect(service.update).not.toHaveBeenCalled();
+    const dialog = element.querySelector('[role="dialog"]')!;
+    expect(text(dialog)).toContain('Nivel de confianza de The Hacker News');
+    expect(text(dialog)).toContain('N3 · Medios especializados');
+    expect(text(dialog)).toContain('N2 · Investigación o proveedor reconocido');
+
+    dialog.querySelector<HTMLButtonElement>('.save-button')!.click();
+    await fixture.whenStable();
+    expect(service.update).toHaveBeenCalledWith('thn', { level: 'N2' });
+    expect(element.querySelector('[role="dialog"]')).toBeNull();
+    expect(element.querySelector<HTMLSelectElement>('.level-select select')!.value).toBe('N2');
+    expect(text(element.querySelector('[role="status"].integration-note'))).toBe(
+      'The Hacker News quedó en nivel N2.',
+    );
+  });
+
+  it('keeps the dialog open with the API message when the level is refused', async () => {
+    const service = new FakeSources();
+    service.update.mockReturnValueOnce(
+      throwError(
+        () =>
+          new ApiError(422, 'validation_error', 'N1 está reservado para fuentes oficiales', [
+            { field: 'body', issue: 'source_rule' },
+          ]),
+      ),
+    );
+    const { fixture, element, page } = await render('admin', service);
+    page.carousel.select('thn');
+    await fixture.whenStable();
+    const select = element.querySelector<HTMLSelectElement>('.level-select select')!;
+    select.value = 'N4';
+    select.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    element.querySelector<HTMLButtonElement>('[role="dialog"] .save-button')!.click();
+    await fixture.whenStable();
+    expect(text(element.querySelector('[role="dialog"] [role="alert"]'))).toBe(
+      'N1 está reservado para fuentes oficiales',
+    );
+    expect(page.sources().find((source) => source.id === 'thn')?.level).toBe('N3');
+    element.querySelector<HTMLButtonElement>('[role="dialog"] .cancel-button')!.click();
+    await fixture.whenStable();
+    expect(element.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('shows a feed the admin adds, selected, with the filters cleared', async () => {
+    const { fixture, element, page } = await render('admin');
+    page.setTypeFilter('official');
+    await fixture.whenStable();
+    element.querySelector<HTMLButtonElement>('.add-source-button')!.click();
+    await fixture.whenStable();
+    expect(element.querySelector('app-add-source-form')).not.toBeNull();
+
+    page.sourceAdded(
+      makeSource({
+        id: 'new',
+        name: 'Boletín nuevo',
+        type: 'feed',
+        level: 'N4',
+        structural: false,
+        active: false,
+      }),
+    );
+    await fixture.whenStable();
+    expect(element.querySelector('app-add-source-form')).toBeNull();
+    expect(page.typeFilter()).toBe('');
+    expect(text(element.querySelector('.center-card'))).toContain('Boletín nuevo');
+    expect(tableNames(element)).toContain('Boletín nuevo');
+    expect(text(element.querySelector('[role="status"].integration-note'))).toContain(
+      'Boletín nuevo se agregó con nivel N4 e inactiva.',
+    );
+  });
 });

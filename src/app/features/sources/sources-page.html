@@ -96,7 +96,25 @@
         </button>
       }
     </div>
+    <button
+      *appIfRole="addRole"
+      type="button"
+      class="add-source-button"
+      [attr.aria-expanded]="adding()"
+      aria-controls="add-source-panel"
+      (click)="adding.set(!adding())"
+    >
+      <svg lucidePlus aria-hidden="true"></svg>Agregar fuente
+    </button>
   </div>
+
+  @if (adding()) {
+    <app-add-source-form
+      id="add-source-panel"
+      (created)="sourceAdded($event)"
+      (cancelled)="adding.set(false)"
+    />
+  }
 
   <section
     class="carousel-section"
@@ -238,7 +256,17 @@
         <div class="detail-row">
           <svg lucideGauge aria-hidden="true"></svg><strong>Nivel de confianza</strong
           ><span class="level-cell"
-            ><span>{{ row.source.level }} · {{ row.levelMeaning }}</span></span
+            ><span>{{ row.source.level }} · {{ row.levelMeaning }}</span>
+            <label *appIfRole="levelRole" class="level-select"
+              ><span class="sr-only">Cambiar el nivel de {{ row.name }}</span>
+              <select [disabled]="isPending(row.id)" (change)="askLevel(row, $event)">
+                @for (level of levelOptions(row.source); track level) {
+                  <option [value]="level" [selected]="level === row.source.level">
+                    {{ level }}
+                  </option>
+                }
+              </select></label
+            ></span
           >
         </div>
         <div class="detail-row">
@@ -332,5 +360,17 @@
         </table>
       </div>
     </section>
+  }
+
+  @if (levelChange()) {
+    <app-confirm-changes-dialog
+      title="Cambiar nivel de confianza"
+      [changes]="levelRows()"
+      [saving]="levelSaving()"
+      [error]="levelError()"
+      (confirmed)="confirmLevel()"
+      (cancelled)="cancelLevel()"
+      (reloadRequested)="cancelLevel(); reload()"
+    />
   }
 </main>
