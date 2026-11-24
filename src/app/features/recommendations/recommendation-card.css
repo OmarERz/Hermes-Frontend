@@ -1,0 +1,98 @@
+.level-chip {
+  flex: none;
+  align-self: flex-start;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-weight: 700;
+  white-space: nowrap;
+}
+.level-critical {
+  background: #fde2e2;
+  color: #a51616;
+}
+.level-high {
+  background: #ffedd5;
+  color: #9a3412;
+}
+.level-medium {
+  background: #fef3c7;
+  color: #854d0e;
+}
+.level-low {
+  background: #dcfce7;
+  color: #166534;
+}
+.trend {
+  grid-column: 1 / -1;
+  text-align: right;
+}
+.ai-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.ai-badge,
+.inferred {
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: var(--violet-wash, #f4e8fb);
+  color: var(--accent-lilac, #75118f);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-weight: 700;
+}
+.mitigation-steps {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  color: var(--text-secondary, #574b62);
+  font-size: calc(13px + var(--font-size-increase, 0px));
+  line-height: 1.5;
+}
+.ai-note {
+  font-style: italic;
+}
+.asset-panel,
+.ticket-line {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--border, #e4e3ee);
+  border-radius: 8px;
+}
+.asset-panel h4,
+.ticket-line h4 {
+  margin: 0;
+  color: var(--text-primary, #321044);
+  font-size: calc(13px + var(--font-size-increase, 0px));
+}
+.asset-panel p {
+  margin: 5px 0 0;
+}
+.asset-panel dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px 14px;
+  margin: 8px 0 0;
+}
+.asset-panel dt {
+  color: var(--text-secondary, #72647c);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+}
+.asset-panel dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+  color: var(--text-primary, #321044);
+  font-size: calc(13px + var(--font-size-increase, 0px));
+  overflow-wrap: anywhere;
+}
+.ticket-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary, #321044);
+  font-size: calc(13px + var(--font-size-increase, 0px));
+}

@@ -1,0 +1,135 @@
+@let rec = recommendation();
+<article class="proposal-card">
+  <div class="proposal-heading">
+    <div>
+      <small>Evaluación del {{ createdAt() }}</small>
+      <h3>Final {{ rec.final }} · {{ levelLabels[rec.level] }}</h3>
+    </div>
+    <span class="level-chip" [class]="'level-' + rec.level">{{ levelLabels[rec.level] }}</span>
+  </div>
+
+  <div class="before-after" role="group" aria-label="Cambio contra la evaluación anterior">
+    <div>
+      <small>Final anterior</small
+      ><strong>{{ rec.previous_final ?? 'Sin evaluación anterior' }}</strong>
+    </div>
+    <svg lucideGitCompareArrows aria-hidden="true"></svg>
+    <div class="proposed">
+      <small>Final actual</small><strong>{{ rec.final }}</strong>
+      @if (trend(); as change) {
+        <small class="trend">{{ change.arrow }} {{ change.text }}</small>
+      }
+    </div>
+  </div>
+
+  <section class="recommendation-scores" aria-label="Puntaje por etapa">
+    <h4>Puntaje por etapa</h4>
+    <div class="recommendation-score-grid">
+      <article>
+        <small>Base (fórmula)</small><strong>{{ rec.base }}</strong>
+      </article>
+      <article>
+        <small>Ajuste del juez</small><strong>{{ signed(rec.judge_adjustment) }}</strong>
+      </article>
+      <article>
+        <small>Final</small><strong>{{ rec.final }}</strong>
+      </article>
+    </div>
+    <p>
+      Base {{ rec.base }} → Juez {{ signed(rec.judge_adjustment) }} → Final {{ rec.final }}.
+      Puntajes de Hermes de 0 a 100 (no CVSS); el final ya incluye el piso KEV y los límites de la
+      escala.
+    </p>
+  </section>
+
+  <div class="analysis-grid">
+    <section>
+      <h4>Justificación</h4>
+      <p>{{ rec.justification }}</p>
+    </section>
+    <section>
+      <h4>Mitigación</h4>
+      <p>{{ rec.mitigation ?? 'Sin mitigación en las fuentes.' }}</p>
+      @if (rec.mitigation_draft?.length) {
+        <h4 class="ai-heading">
+          Pasos sugeridos <span class="ai-badge" title="Redactado por IA">IA</span>
+        </h4>
+        <ol class="mitigation-steps">
+          @for (step of rec.mitigation_draft; track $index) {
+            <li>{{ step }}</li>
+          }
+        </ol>
+        <p class="ai-note">Redactado por IA y validado por código antes de mostrarse.</p>
+      }
+    </section>
+  </div>
+
+  <section class="asset-panel" aria-label="Activo afectado">
+    <h4>Activo afectado</h4>
+    @if (asset(); as item) {
+      <dl>
+        <div>
+          <dt>Activo</dt>
+          <dd>
+            {{ item.name }}
+            @if (!rec.cve) {
+              <span class="inferred">Inferido por IA</span>
+            }
+            <app-itop-link [href]="item.itop_url" />
+          </dd>
+        </div>
+        <div>
+          <dt>Dueño</dt>
+          <dd>{{ item.owner ?? 'Sin dueño' }}</dd>
+        </div>
+        <div>
+          <dt>Custodio</dt>
+          <dd>{{ item.custodian ?? 'Sin custodio' }}</dd>
+        </div>
+        <div>
+          <dt>Criticidad</dt>
+          <dd>{{ item.criticalityLabel }}</dd>
+        </div>
+        <div>
+          <dt>Exposición</dt>
+          <dd>{{ item.exposed ? 'Expuesto a internet' : 'No expuesto' }}</dd>
+        </div>
+        <div>
+          <dt>Clasificación</dt>
+          <dd>
+            {{ item.classificationLabel }}
+            @if (item.classificationToday) {
+              <small>(hoy: {{ item.classificationToday }})</small>
+            }
+          </dd>
+        </div>
+        <div>
+          <dt>Estado del hallazgo</dt>
+          <dd>{{ item.statusLabel }}</dd>
+        </div>
+        <div>
+          <dt>Puntaje del activo</dt>
+          <dd>{{ item.score }}</dd>
+        </div>
+      </dl>
+    } @else {
+      <p>Sin activo directo.</p>
+    }
+  </section>
+
+  <section class="ticket-line" aria-label="Ticket">
+    <h4>Ticket</h4>
+    @if (rec.ticket_url) {
+      @if (ticketId(); as id) {
+        <span>{{ id }}</span>
+      }
+      <app-itop-link [href]="rec.ticket_url" />
+    } @else {
+      <span>Sin ticket en iTop.</span>
+    }
+  </section>
+
+  <app-judge-detail [assessmentId]="rec.assessment_id" />
+
+  <ng-content />
+</article>

@@ -1,0 +1,70 @@
+import { Component, computed, input } from '@angular/core';
+import { LucideGitCompareArrows } from '@lucide/angular';
+import { ItopLink } from '../../shared/itop-links';
+import {
+  CLASSIFICATION_LABELS,
+  formatDateTime,
+  LEVEL_LABELS,
+  STATUS_LABELS,
+} from '../../shared/labels';
+import { ticketItopId, type Recommendation } from './feedback';
+import { JudgeDetail } from './judge-detail';
+
+/** Spanish names of the iTop business criticality values; any other value is shown as iTop sends it. */
+const CRITICALITY_LABELS: Readonly<Record<string, string>> = {
+  high: 'Alta',
+  medium: 'Media',
+  low: 'Baja',
+};
+
+/** A score change with its sign, as FRO-13 writes it (`Juez +12`). */
+export function signed(points: number): string {
+  return points > 0 ? `+${points}` : points < 0 ? `−${Math.abs(points)}` : '0';
+}
+
+/**
+ * One evaluation (FRO-13): base, judge adjustment and final with the change against the previous evaluation
+ * (RE-4, RE-5), the justification, the mitigation from the data and the steps drafted by the AI (labelled «IA»),
+ * the affected asset with its classification at evaluation time, the ticket and the judge detail.
+ */
+@Component({
+  selector: 'app-recommendation-card',
+  imports: [ItopLink, JudgeDetail, LucideGitCompareArrows],
+  templateUrl: './recommendation-card.html',
+  styleUrl: './recommendation-card.css',
+})
+export class RecommendationCard {
+  readonly recommendation = input.required<Recommendation>();
+
+  readonly levelLabels = LEVEL_LABELS;
+  readonly signed = signed;
+
+  readonly createdAt = computed(() => formatDateTime(this.recommendation().created_at));
+  readonly ticketId = computed(() => ticketItopId(this.recommendation()));
+
+  /** Change of the final against the previous evaluation (↑↓, FRO-13), or null when there was none. */
+  readonly trend = computed(() => {
+    const { final, previous_final: previous } = this.recommendation();
+    if (previous === null) return null;
+    const change = final - previous;
+    if (change === 0) return { arrow: '=', text: 'Sin cambio' };
+    return change > 0
+      ? { arrow: '↑', text: `Sube ${change}` }
+      : { arrow: '↓', text: `Baja ${Math.abs(change)}` };
+  });
+
+  readonly asset = computed(() => {
+    const asset = this.recommendation().asset;
+    if (!asset) return null;
+    const atEvaluation = CLASSIFICATION_LABELS[asset.classification_at_evaluation];
+    const today = CLASSIFICATION_LABELS[asset.classification];
+    return {
+      ...asset,
+      criticalityLabel: CRITICALITY_LABELS[asset.criticality] ?? asset.criticality,
+      classificationLabel: atEvaluation,
+      classificationToday:
+        asset.classification === asset.classification_at_evaluation ? null : today,
+      statusLabel: STATUS_LABELS[asset.finding_status],
+    };
+  });
+}
