@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { LucideGitCompareArrows } from '@lucide/angular';
 import { ItopLink } from '../../shared/itop-links';
 import {
@@ -8,6 +8,7 @@ import {
   STATUS_LABELS,
 } from '../../shared/labels';
 import { ticketItopId, type Recommendation } from './feedback';
+import { FeedbackHistory } from './feedback-history';
 import { JudgeDetail } from './judge-detail';
 
 /** Spanish names of the iTop business criticality values; any other value is shown as iTop sends it. */
@@ -25,22 +26,33 @@ export function signed(points: number): string {
 /**
  * One evaluation (FRO-13): base, judge adjustment and final with the change against the previous evaluation
  * (RE-4, RE-5), the justification, the mitigation from the data and the steps drafted by the AI (labelled «IA»),
- * the affected asset with its classification at evaluation time, the ticket and the judge detail.
+ * the affected asset with its classification at evaluation time, the ticket, the judge detail and the feedback
+ * received, with its history on demand.
  */
 @Component({
   selector: 'app-recommendation-card',
-  imports: [ItopLink, JudgeDetail, LucideGitCompareArrows],
+  imports: [FeedbackHistory, ItopLink, JudgeDetail, LucideGitCompareArrows],
   templateUrl: './recommendation-card.html',
   styleUrl: './recommendation-card.css',
 })
 export class RecommendationCard {
   readonly recommendation = input.required<Recommendation>();
+  /** Bumped by the page after a feedback is saved, so an open history reads it again. */
+  readonly historyRevision = input(0);
+
+  readonly historyOpen = signal(false);
 
   readonly levelLabels = LEVEL_LABELS;
   readonly signed = signed;
 
   readonly createdAt = computed(() => formatDateTime(this.recommendation().created_at));
   readonly ticketId = computed(() => ticketItopId(this.recommendation()));
+
+  readonly feedbackSummary = computed(() => {
+    const count = this.recommendation().feedback_count;
+    if (count === 0) return 'Sin feedback todavía.';
+    return count === 1 ? '1 feedback vigente.' : `${count} feedbacks vigentes.`;
+  });
 
   /** Change of the final against the previous evaluation (↑↓, FRO-13), or null when there was none. */
   readonly trend = computed(() => {

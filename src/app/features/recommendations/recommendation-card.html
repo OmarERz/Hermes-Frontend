@@ -131,5 +131,21 @@
 
   <app-judge-detail [assessmentId]="rec.assessment_id" />
 
-  <ng-content />
+  <section class="judge-reason feedback-summary" aria-label="Feedback recibido">
+    <strong>Feedback</strong>
+    <p>{{ feedbackSummary() }}</p>
+    <div class="feedback-actions">
+      <button
+        type="button"
+        class="review-open-button"
+        [attr.aria-expanded]="historyOpen()"
+        (click)="historyOpen.set(!historyOpen())"
+      >
+        {{ historyOpen() ? 'Ocultar historial' : 'Ver historial de feedback' }}
+      </button>
+    </div>
+    @if (historyOpen()) {
+      <app-feedback-history [assessmentId]="rec.assessment_id" [revision]="historyRevision()" />
+    }
+  </section>
 </article>

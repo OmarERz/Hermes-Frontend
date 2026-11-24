@@ -96,3 +96,9 @@
   color: var(--text-primary, #321044);
   font-size: calc(13px + var(--font-size-increase, 0px));
 }
+.feedback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

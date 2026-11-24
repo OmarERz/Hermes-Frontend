@@ -113,6 +113,24 @@ describe('RecommendationsPage', () => {
     expect(texts(older, '.recommendation-score-grid strong')).toEqual(['70', '0', '70']);
   });
 
+  it('shows the feedback count and opens the feedback history on demand', async () => {
+    const service = new FakeService();
+    const { harness, element } = await render(service);
+    const cards = element.querySelectorAll('app-recommendation-card');
+    expect(cards[0].querySelector('.feedback-summary p')?.textContent).toBe(
+      'Sin feedback todavía.',
+    );
+    expect(cards[1].querySelector('.feedback-summary p')?.textContent).toBe(
+      '2 feedbacks vigentes.',
+    );
+    expect(service.feedback).not.toHaveBeenCalled();
+    (cards[1].querySelector('.feedback-summary button') as HTMLButtonElement).click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(service.feedback).toHaveBeenCalledWith(OLDER.assessment_id);
+    expect(cards[1].querySelector('app-feedback-history')).not.toBeNull();
+  });
+
   it('opens another case of the list', async () => {
     const { harness, element } = await render(new FakeService());
     (element.querySelectorAll('.ticket-option')[1] as HTMLButtonElement).click();
