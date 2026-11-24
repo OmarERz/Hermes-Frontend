@@ -14,7 +14,7 @@
           @if (blocked()) {
             🔒 Bloqueado
           } @else {
-            {{ hint() || (value() === 'true' ? 'Activado' : 'Desactivado') }}
+            {{ value() === 'true' ? 'Activado' : 'Desactivado' }}{{ hint() ? ' · ' + hint() : '' }}
           }
         </small>
       </span>
