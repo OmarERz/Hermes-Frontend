@@ -91,7 +91,23 @@ export function mergeRuntimeConfig(defaults: AppConfig, raw: unknown): AppConfig
     merged.authEmulatorUrl =
       raw['authEmulatorUrl'] === null ? null : httpUrl(raw['authEmulatorUrl'], 'authEmulatorUrl');
   }
+  if (merged.production) {
+    // A production build never talks to the emulator, nor sends the token over plain http to a remote host.
+    if (merged.authEmulatorUrl) {
+      throw new RuntimeConfigError('authEmulatorUrl no se permite en producción.');
+    }
+    if (merged.apiBaseUrl && !isSecureOrLocal(merged.apiBaseUrl)) {
+      throw new RuntimeConfigError('apiBaseUrl debe usar https en producción.');
+    }
+  }
   return merged;
+}
+
+const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+
+function isSecureOrLocal(url: string): boolean {
+  const parsed = new URL(url);
+  return parsed.protocol === 'https:' || LOCAL_HOSTS.includes(parsed.hostname);
 }
 
 /**

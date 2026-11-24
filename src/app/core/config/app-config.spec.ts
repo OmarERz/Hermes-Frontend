@@ -51,6 +51,36 @@ describe('mergeRuntimeConfig', () => {
   });
 });
 
+describe('mergeRuntimeConfig in production', () => {
+  const production: AppConfig = {
+    ...defaults,
+    production: true,
+    apiBaseUrl: '',
+    authEmulatorUrl: null,
+  };
+
+  it('refuses the Auth emulator', () => {
+    expect(() =>
+      mergeRuntimeConfig(production, { authEmulatorUrl: 'http://127.0.0.1:9099' }),
+    ).toThrowError('authEmulatorUrl no se permite en producción.');
+  });
+
+  it('refuses plain http to a remote API but accepts https and a local API', () => {
+    expect(() => mergeRuntimeConfig(production, { apiBaseUrl: 'http://hermes.test' })).toThrowError(
+      'apiBaseUrl debe usar https en producción.',
+    );
+    expect(mergeRuntimeConfig(production, { apiBaseUrl: 'https://hermes.test' }).apiBaseUrl).toBe(
+      'https://hermes.test',
+    );
+    expect(mergeRuntimeConfig(production, { apiBaseUrl: 'http://127.0.0.1:8000' }).apiBaseUrl).toBe(
+      'http://127.0.0.1:8000',
+    );
+    expect(mergeRuntimeConfig(production, { firebase: realFirebase }).firebase).toEqual(
+      realFirebase,
+    );
+  });
+});
+
 describe('loadAppConfig', () => {
   const base = 'http://localhost:4200/';
 
