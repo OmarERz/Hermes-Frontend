@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideLockKeyhole, LucideMail, LucideUserRound } from '@lucide/angular';
-import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-login',
@@ -13,7 +13,7 @@ import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
 export class Login {
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  private readonly sesion = inject(SesionAutenticacion);
+  readonly sesion = inject(SessionService);
 
   form = this.fb.nonNullable.group({
     correo: ['', [Validators.required, Validators.email]],
@@ -37,7 +37,7 @@ export class Login {
     const { correo, password } = this.form.getRawValue();
 
     try {
-      await this.sesion.iniciarSesionFirebase(correo.trim(), password);
+      await this.sesion.signIn(correo.trim(), password);
       await this.router.navigate(['/inicio']);
     } catch (error) {
       this.error.set(this.mensajeErrorAutenticacion(error));

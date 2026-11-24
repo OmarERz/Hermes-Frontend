@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { LucideChevronDown, LucideLogOut } from '@lucide/angular';
 import { Router } from '@angular/router';
-import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-menu-perfil',
@@ -20,7 +20,7 @@ import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
 export class MenuPerfil {
   private readonly elemento = inject(ElementRef<HTMLElement>);
   private readonly router = inject(Router);
-  readonly sesion = inject(SesionAutenticacion);
+  readonly sesion = inject(SessionService);
   @Input() ubicacion: 'arriba' | 'abajo' = 'abajo';
   @Input() menuId = 'profile-dropdown';
 
@@ -32,7 +32,7 @@ export class MenuPerfil {
   @ViewChild('panel') private panel?: ElementRef<HTMLElement>;
 
   get usuario(): { iniciales: string; nombre: string; rol: string } {
-    const correo = this.sesion.usuarioFirebase()?.email;
+    const correo = this.sesion.user()?.email;
     const nombre = correo?.split('@', 1)[0].trim() || 'Usuario';
     return { iniciales: nombre.slice(0, 2).toUpperCase(), nombre, rol: 'Cuenta empresarial' };
   }
@@ -42,7 +42,7 @@ export class MenuPerfil {
     this.cerrandoSesion.set(true);
     this.errorCierre.set('');
     try {
-      await this.sesion.cerrarSesion();
+      await this.sesion.signOut();
       this.menuAbierto = false;
       await this.router.navigate(['/login']);
     } catch {

@@ -9,7 +9,7 @@ import { ConfiguracionAgente } from './rutas/Configuracion-agente/configuracion-
 import { HistorialAgente } from './rutas/Historial-agente/historial-agente';
 import { RecomendacionesAgente } from './rutas/Recomendaciones-agente/recomendaciones-agente';
 import { Inicio } from './rutas/Inicio/inicio';
-import { autenticacionGuard } from './guards/autenticacion.guard';
+import { authGuard } from './core/auth/auth.guards';
 
 const seccionSidebarAgentes = { sidebarSection: 'agentes' };
 
@@ -19,8 +19,8 @@ export const routes: Routes = [
   {
     path: '',
     component: LayoutPrincipal,
-    canActivate: [autenticacionGuard],
-    canActivateChild: [autenticacionGuard],
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       { path: 'inicio', component: Inicio },
       { path: 'agentes', component: ControlAgente, data: seccionSidebarAgentes },

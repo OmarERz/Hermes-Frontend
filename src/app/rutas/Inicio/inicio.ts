@@ -13,7 +13,7 @@ import { CatalogoTecnologias } from '../../servicios/catalogo-tecnologias';
 import { InventarioActivos } from '../../servicios/inventario-activos';
 import { OrigenDashboard } from '../../servicios/origen-dashboard';
 import { SupervisionAgentes } from '../../servicios/supervision-agentes';
-import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-inicio',
@@ -32,7 +32,7 @@ import { SesionAutenticacion } from '../../servicios/sesion-autenticacion';
 })
 export class Inicio implements OnInit {
   readonly origen = inject(OrigenDashboard);
-  private readonly sesion = inject(SesionAutenticacion);
+  private readonly sesion = inject(SessionService);
   private readonly catalogo = inject(CatalogoTecnologias);
   private readonly inventario = inject(InventarioActivos);
   private readonly supervision = inject(SupervisionAgentes);
@@ -46,7 +46,7 @@ export class Inicio implements OnInit {
   }
   /** Prefiere el nombre visible de Firebase y usa el email como alternativa legible. */
   get nombreSaludo(): string {
-    const usuario = this.sesion.usuarioFirebase();
+    const usuario = this.sesion.user();
     const nombreVisible = usuario?.displayName?.trim();
     if (nombreVisible) return nombreVisible;
     return usuario?.email?.split('@', 1)[0].trim() || 'Usuario';

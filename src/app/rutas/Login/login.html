@@ -96,6 +96,12 @@
           }
         </div>
 
+        @if (!sesion.loginAvailable) {
+          <p class="error-general" role="alert">
+            El inicio de sesión no está configurado: falta la configuración de Firebase
+            (runtime-config.json). Avisa al equipo de soporte.
+          </p>
+        }
         @if (error()) {
           <p class="error-general" role="alert">{{ error() }}</p>
         }
@@ -103,7 +109,7 @@
         <button
           type="submit"
           class="login-button"
-          [disabled]="cargando()"
+          [disabled]="cargando() || !sesion.loginAvailable"
           aria-label="Iniciar sesión"
         >
           <svg lucideUserRound aria-hidden="true"></svg>

@@ -42,7 +42,7 @@
       <button
         class="logout-button"
         type="button"
-        [disabled]="cerrandoSesion() || sesion.tipo() === 'verificando'"
+        [disabled]="cerrandoSesion() || sesion.status() === 'initializing'"
         (click)="cerrarSesion()"
         [attr.aria-busy]="cerrandoSesion()"
       >
