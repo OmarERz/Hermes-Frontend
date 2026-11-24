@@ -42,3 +42,6 @@ firebase-debug.log*
 !.vscode/extensions.json
 .idea/
 .DS_Store
+
+# Outputs of the shared review script (scripts/review.sh)
+/.review/
