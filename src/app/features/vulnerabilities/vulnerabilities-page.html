@@ -27,6 +27,14 @@
     }
   </section>
 
+  <div class="view-switch" role="group" aria-label="Vista">
+    @for (option of views; track option) {
+      <button type="button" [attr.aria-pressed]="view() === option" (click)="setView(option)">
+        {{ viewLabels[option] }}
+      </button>
+    }
+  </div>
+
   <section class="filters" aria-label="Filtros">
     <label class="select-filter"
       ><svg lucideFunnel aria-hidden="true"></svg>
@@ -82,23 +90,82 @@
     <header>
       <div class="inventory-title">
         <svg lucideTriangleAlert aria-hidden="true"></svg>
-        <h2 id="vulnerabilities-title">Vulnerabilidades por grupo</h2>
+        <h2 id="vulnerabilities-title">
+          Vulnerabilidades · {{ viewLabels[view()].toLowerCase() }}
+        </h2>
       </div>
-      <span>Página {{ pager.pageIndex() + 1 }} · {{ rows().length }} grupos</span>
+      <span
+        >Página {{ pager().pageIndex() + 1 }} · {{ rowCount() }}
+        {{ view() === 'asset' ? 'activos' : 'grupos' }}</span
+      >
     </header>
 
     @if (tableState(); as state) {
       <app-async-state
         [state]="state"
         loadingText="Cargando vulnerabilidades…"
-        [emptyText]="
-          hasFilters()
-            ? 'No hay vulnerabilidades que coincidan con los filtros.'
-            : 'Aún no hay vulnerabilidades registradas.'
-        "
-        [error]="pager.state.error()"
-        (retry)="pager.reload()"
+        [emptyText]="emptyText()"
+        [error]="pager().state.error()"
+        (retry)="pager().reload()"
       />
+    } @else if (view() === 'asset') {
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Activos con vulnerabilidades; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Activo</th>
+              <th scope="col">Riesgo</th>
+              <th scope="col">Hallazgos por nivel</th>
+              <th scope="col">En KEV</th>
+              <th scope="col">Expuesto</th>
+              <th scope="col">Clasificación</th>
+              <th scope="col">Responsable</th>
+              <th scope="col">Custodio</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Última vez visto</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of assetRows(); track row.ci_id) {
+              <tr>
+                <td>
+                  <a class="row-link" [routerLink]="['/activos', row.ci_id]"
+                    ><strong>{{ row.name }}</strong></a
+                  ><small>{{ row.ci_id }}</small>
+                </td>
+                <td class="numeric">{{ row.risk }}</td>
+                <td>
+                  <span class="level-list">
+                    @for (item of row.levels; track item.level) {
+                      <span [class]="'level-chip level-' + item.level"
+                        >{{ item.label }}: {{ item.count }}</span
+                      >
+                    } @empty {
+                      —
+                    }
+                  </span>
+                </td>
+                <td class="numeric">{{ row.in_kev }}</td>
+                <td>{{ row.exposed ? 'Sí' : 'No' }}</td>
+                <td>
+                  <span class="type-chip">{{ row.classificationLabel }}</span>
+                </td>
+                <td>{{ row.owner ?? '—' }}</td>
+                <td>{{ row.custodian ?? '—' }}</td>
+                <td>
+                  <span class="status">{{ row.statusLabel }}</span>
+                </td>
+                <td>{{ row.lastSeen }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     } @else {
       <div
         class="table-scroll"
@@ -124,29 +191,42 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of rows(); track row.group_id) {
-              <tr>
-                <td>
-                  <strong>{{ row.cve }}</strong>
-                </td>
-                <td>{{ row.product }}</td>
-                <td>
-                  <span [class]="'level-chip level-' + row.level">{{ row.levelLabel }}</span>
-                </td>
-                <td class="numeric">{{ row.final }}</td>
-                <td class="numeric">{{ row.ci_count }}</td>
-                <td>{{ row.in_kev ? 'Sí' : 'No' }}</td>
-                <td>{{ row.exposed ? 'Sí' : 'No' }}</td>
-                <td>
-                  <span class="type-chip">{{ row.classificationLabel }}</span>
-                </td>
-                <td>
-                  <span class="status">{{ row.statusLabel }}</span>
-                </td>
-                <td>{{ row.custodianList }}</td>
-                <td class="numeric">{{ row.tickets.length }}</td>
-                <td>{{ row.lastSeen }}</td>
-              </tr>
+            @for (row of groupRows(); track row.key) {
+              @if (row.kind === 'band') {
+                <tr class="band-row">
+                  <th scope="rowgroup" colspan="12">
+                    <span [class]="'level-chip level-' + row.level">{{
+                      levelLabels[row.level]
+                    }}</span>
+                    {{ row.count }} {{ row.count === 1 ? 'grupo' : 'grupos' }} en total
+                  </th>
+                </tr>
+              } @else {
+                <tr>
+                  <td>
+                    <a class="row-link" [routerLink]="['/vulnerabilidades', row.group_id]"
+                      ><strong>{{ row.cve }}</strong></a
+                    >
+                  </td>
+                  <td>{{ row.product }}</td>
+                  <td>
+                    <span [class]="'level-chip level-' + row.level">{{ row.levelLabel }}</span>
+                  </td>
+                  <td class="numeric">{{ row.final }}</td>
+                  <td class="numeric">{{ row.ci_count }}</td>
+                  <td>{{ row.in_kev ? 'Sí' : 'No' }}</td>
+                  <td>{{ row.exposed ? 'Sí' : 'No' }}</td>
+                  <td>
+                    <span class="type-chip">{{ row.classificationLabel }}</span>
+                  </td>
+                  <td>
+                    <span class="status">{{ row.statusLabel }}</span>
+                  </td>
+                  <td>{{ row.custodianList }}</td>
+                  <td class="numeric">{{ row.tickets.length }}</td>
+                  <td>{{ row.lastSeen }}</td>
+                </tr>
+              }
             }
           </tbody>
         </table>
@@ -165,19 +245,19 @@
       <div class="pagination">
         <button
           type="button"
-          [disabled]="!pager.hasPrevious() || pager.state.loading()"
-          (click)="pager.previous()"
+          [disabled]="!pager().hasPrevious() || pager().state.loading()"
+          (click)="pager().previous()"
           aria-label="Página anterior"
         >
           <svg lucideArrowLeft aria-hidden="true"></svg>
         </button>
         <button type="button" class="selected" aria-current="page">
-          {{ pager.pageIndex() + 1 }}
+          {{ pager().pageIndex() + 1 }}
         </button>
         <button
           type="button"
-          [disabled]="!pager.hasNext()"
-          (click)="pager.next()"
+          [disabled]="!pager().hasNext()"
+          (click)="pager().next()"
           aria-label="Página siguiente"
         >
           <svg lucideArrowRight aria-hidden="true"></svg>
