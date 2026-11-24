@@ -1,0 +1,75 @@
+.scope-note {
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--border, #e4e3ee);
+  border-radius: 10px;
+  background: var(--surface-soft, #f8f4fb);
+  color: var(--text-primary, #321044);
+  font-size: calc(13px + var(--font-size-increase, 0px));
+}
+.scope-note a,
+.link-button {
+  color: var(--accent, #c90083);
+  font-weight: 600;
+}
+.feedback-filter,
+.filter-note,
+.list-state,
+.list-pager {
+  grid-column: 1 / -1;
+}
+.feedback-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 2px;
+  color: var(--text-secondary, #72647c);
+  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-weight: 650;
+}
+.filter-note {
+  margin: 6px 0 0;
+  color: var(--text-secondary, #72647c);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+  line-height: 1.4;
+}
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+.link-button:focus-visible,
+.list-pager button:focus-visible {
+  outline: 2px solid var(--accent, #ed079b);
+  outline-offset: 2px;
+}
+.list-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--text-secondary, #72647c);
+  font-size: calc(12px + var(--font-size-increase, 0px));
+}
+.list-pager button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border, #e4e3ee);
+  border-radius: 8px;
+  background: var(--surface-raised, #fff);
+  color: var(--text-primary, #321044);
+  cursor: pointer;
+}
+.list-pager button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.list-pager svg {
+  width: 16px;
+  height: 16px;
+}
