@@ -1,9 +1,9 @@
 :host {
   display: block;
-  margin: 0 0 14px;
   min-width: 0;
 }
-.agent-tabs {
+.section-tabs {
+  margin: 0 0 14px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -14,7 +14,7 @@
   border-radius: 11px;
   background: var(--surface, #fff);
 }
-.agent-tabs a {
+.section-tabs a {
   display: inline-flex;
   flex: none;
   align-items: center;
@@ -34,40 +34,40 @@
     background 0.16s ease,
     border-color 0.16s ease;
 }
-.agent-tabs a svg {
+.section-tabs a svg {
   width: 17px;
   height: 17px;
 }
-.agent-tabs a:hover {
+.section-tabs a:hover {
   background: var(--surface-soft, #f7f3fa);
   color: var(--text-primary, #321044);
 }
-.agent-tabs a.active {
+.section-tabs a.active {
   border-color: #ed079b44;
   background: #ed079b12;
   color: #c90083;
 }
-.agent-tabs a:focus-visible {
+.section-tabs a:focus-visible {
   outline: 2px solid #ed079b;
   outline-offset: 2px;
 }
-.app-shell[data-theme='dark'] .agent-tabs a.active {
+:host-context(.app-shell[data-theme='dark']) .section-tabs a.active {
   color: #ff78cf;
 }
-.app-shell[data-theme='dark'] .agent-tabs a:hover {
+:host-context(.app-shell[data-theme='dark']) .section-tabs a:hover {
   color: var(--text-primary);
 }
 @media (max-width: 520px) {
-  .agent-tabs {
+  .section-tabs {
     justify-content: flex-start;
   }
-  .agent-tabs a {
+  .section-tabs a {
     min-height: 42px;
     padding-inline: 11px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .agent-tabs a {
+  .section-tabs a {
     transition: none;
   }
 }

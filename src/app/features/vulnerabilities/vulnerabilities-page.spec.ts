@@ -3,8 +3,9 @@ import { of, Subject, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import type { VulnerabilityGroup } from '../../core/api/api-types';
 import type { CursorPage } from '../../shared/cursor-pager';
-import { VulnerabilitiesPage } from './vulnerabilities-page';
+import { VulnerabilitiesPage } from './vulnerabilities.page';
 import { VulnerabilitiesService } from './vulnerabilities.service';
+import { provideFakeSession } from '../../testing/fake-session';
 
 const GROUP: VulnerabilityGroup = {
   group_id: '7d9f2b1e-0c3a-4f5e-9b8d-1a2b3c4d5e6f',
@@ -35,7 +36,7 @@ class FakeService {
 async function render(service: FakeService) {
   TestBed.configureTestingModule({
     imports: [VulnerabilitiesPage],
-    providers: [{ provide: VulnerabilitiesService, useValue: service }],
+    providers: [{ provide: VulnerabilitiesService, useValue: service }, ...provideFakeSession()],
   });
   const fixture = TestBed.createComponent(VulnerabilitiesPage);
   await fixture.whenStable();

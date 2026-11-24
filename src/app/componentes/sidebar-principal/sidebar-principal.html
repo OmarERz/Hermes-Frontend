@@ -1,23 +1,19 @@
 <aside class="sidebar">
-  <a class="brand" routerLink="/agentes" aria-label="Hermes Control, inicio">
+  <a class="brand" routerLink="/inicio" aria-label="Hermes Control, inicio">
     <img class="brand-mark" src="/assets/hermes-winged-boot.png" alt="" aria-hidden="true" />
     <span>Hermes Control</span>
   </a>
 
   <nav class="main-nav" aria-label="Navegación principal">
-    @for (item of navegacion; track item.etiqueta) {
+    @for (section of navigation.sections(); track section.id) {
       <a
-        [routerLink]="item.ruta"
-        [routerLinkActive]="item.seccion ? 'route-active' : 'active'"
-        [routerLinkActiveOptions]="{ exact: true }"
-        [class.active]="item.seccion === seccionActiva()"
-        [class.disabled]="!item.habilitada"
-        [attr.aria-disabled]="!item.habilitada"
-        [attr.aria-label]="item.etiqueta"
-        [attr.tabindex]="item.habilitada ? 0 : -1"
+        [routerLink]="section.link"
+        [class.active]="section.id === navigation.current()?.id"
+        [attr.aria-current]="section.id === navigation.current()?.id ? 'page' : null"
+        [attr.aria-label]="section.label"
       >
-        <svg [lucideIcon]="item.icono" [size]="20" class="nav-icon" aria-hidden="true"></svg>
-        <span>{{ item.etiqueta }}</span>
+        <svg [lucideIcon]="section.icon" [size]="20" class="nav-icon" aria-hidden="true"></svg>
+        <span>{{ section.label }}</span>
       </a>
     }
   </nav>

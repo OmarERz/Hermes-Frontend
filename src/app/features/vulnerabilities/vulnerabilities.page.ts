@@ -31,7 +31,7 @@ import {
   LEVELS,
   STATUS_LABELS,
   STATUSES,
-} from './vulnerability-labels';
+} from '../../shared/labels';
 
 type YesNoFilter = '' | 'true' | 'false';
 

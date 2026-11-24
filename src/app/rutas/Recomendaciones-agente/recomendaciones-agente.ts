@@ -7,7 +7,6 @@ import {
   RevisionDemo,
   SupervisionAgentes,
 } from '../../servicios/supervision-agentes';
-import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegacion-agentes';
 import { RevisionHumana } from '../Revision-humana/revision-humana';
 import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
@@ -15,14 +14,7 @@ import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-recomendaciones-agente',
-  imports: [
-    BannerPagina,
-    NavegacionAgentes,
-    LucideGitCompareArrows,
-    LucideScale,
-    RevisionHumana,
-    IfRoleDirective,
-  ],
+  imports: [BannerPagina, LucideGitCompareArrows, LucideScale, RevisionHumana, IfRoleDirective],
   templateUrl: './recomendaciones-agente.html',
 })
 export class RecomendacionesAgente implements OnInit {
