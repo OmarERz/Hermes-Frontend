@@ -1,5 +1,13 @@
 # Funcionalidades y cambios
 
+## Conexión con el backend y pantalla Vulnerabilidades (F17.1)
+
+**Qué cambió:** la app ya no usa SSR ni datos de demostración. Inicia sesión con Firebase Auth (emulador del backend en desarrollo, proyecto real con `public/runtime-config.json`), carga el perfil y el rol efectivo desde `GET /api/me`, protege cada ruta con un rol mínimo y manda el token solo a la API. Se quitó el selector «Origen de datos» del menú lateral. Nueva pantalla **Vulnerabilidades** (`/vulnerabilidades`), con el diseño de la tabla de Activos, filtros, conteo por nivel y paginación por cursor contra `GET /api/vulnerabilities`.
+
+**Archivos:** `src/main.ts`, `src/app/app.config.ts`, `src/app/app.routes.ts`, `src/environments/`, `src/app/core/`, `src/app/shared/`, `src/app/features/`, el menú lateral y de perfil, Login, Inicio y las pantallas que tenían modo demostración.
+
+**Comprobación manual:** con la pila del backend arriba (`make up`, `make demo`, `CORS_ALLOWED_ORIGINS=http://localhost:4200`) ejecuta `npm start`, entra con `reader@hermes.test` / `emulator-test-password` (creado por `make emulator-token ROLE=reader`), revisa que el menú de perfil diga «Rol: Lector» y abre Vulnerabilidades: deben aparecer las dos vulnerabilidades de la demo (OpenSSL crítica y nginx baja) y las tarjetas 1 / 0 / 0 / 1.
+
 ## Comparación de evaluaciones de jueces en Revisión Humana
 
 **Qué cambió:** el modal existente distribuye las propuestas y la evaluación en dos columnas (45/55 aprox.). En el caso demo `TCK-DEMO-1043`, las dos tarjetas se identifican como Juez 1 y Juez 2 porque ahora incluyen evaluaciones explícitas con IDs internos distintos. La selección se hace con la propia tarjeta, que es un botón accesible por teclado; su estado seleccionado actualiza el título y el contenido del panel derecho. Un solo registro produce una sola tarjeta.

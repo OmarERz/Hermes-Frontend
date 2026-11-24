@@ -1,6 +1,6 @@
 # Documentación de la aplicación
 
-Hermes Control es una aplicación Angular para supervisar agentes, administrar el catálogo tecnológico empresarial y consultar activos. El catálogo y sus asignaciones se guardan temporalmente en localStorage; agentes y otros indicadores siguen usando datos de demostración.
+Hermes Control es una aplicación Angular para supervisar agentes, administrar el catálogo tecnológico empresarial y consultar activos y vulnerabilidades. Se conecta al backend de Hermes (fuente de verdad) y usa Firebase Auth; la configuración y los comandos están en el `README.md` de la raíz. El catálogo y sus asignaciones se guardan temporalmente en localStorage; las pantallas que aún no tienen ruta en el backend muestran «Sin datos» (ya no hay datos de demostración).
 
 ## Estructura actual
 
@@ -8,24 +8,25 @@ Hermes Control es una aplicación Angular para supervisar agentes, administrar e
 - `src/app/app.routes.ts`: rutas de Login, el marco de administración y sus pantallas hijas.
 - `src/app/componentes/layout-principal/`: navegación lateral, encabezado común, búsqueda visual e identidad Hermes Control.
 - `src/app/componentes/navegacion-agentes/`: pestañas accesibles compartidas para Dashboard, Historial, Recomendaciones y Revisión humana.
-- `src/app/rutas/Login/`: inicio de sesión de demostración.
+- `src/app/rutas/Login/`: inicio de sesión con Firebase Auth (correo y contraseña); al entrar carga el perfil y el rol desde `GET /api/me`.
 - `src/app/rutas/Inicio/`: bienvenida, enlaces a módulos y métricas según los datos disponibles; usa ilustraciones transparentes distintas para tema claro y oscuro.
 - `src/app/rutas/Agentes/`: control y métricas simuladas del agente.
 - `src/app/rutas/Configuracion-agente/`: configuración de demostración separada del dashboard.
 - `src/app/rutas/Historial-agente/`: consulta y filtros de eventos demostrativos; no representa auditoría real.
 - `src/app/rutas/Recomendaciones-agente/`: comparación demostrativa de propuestas y desacuerdos.
 - `src/app/rutas/Revision-humana/`: decisiones y comentarios de demostración en memoria.
-- `src/app/servicios/supervision-agentes.ts`: catálogo de ejemplo central para tickets, ejecuciones, recomendaciones, revisiones y configuración en memoria.
+- `src/app/servicios/supervision-agentes.ts`: modelos de presentación de tickets, ejecuciones, recomendaciones y revisiones (listas vacías hasta conectar el backend).
 - `src/app/rutas/Stack-tecnologico/`: registro, administración y consulta del catálogo empresarial; el dashboard calcula sus conteos desde los registros guardados.
 - `src/app/rutas/Asignar-stack/`: componente y lógica de asignación conservados; la ruta pública `/asignar-stack` redirige al catálogo y no ofrece acceso al formulario.
 - `src/app/rutas/Activos/`: inventario, filtros y paginación de activos.
 - `src/app/rutas/Registrar-activo/`: formulario que agrega elementos al inventario en memoria.
-- `src/app/servicios/inventario-activos.ts`: registros reales en memoria y conexión opcional a la API de activos; inicia vacío cuando no hay registros.
-- `src/app/servicios/origen-dashboard.ts`: origen global real/demo y conjuntos demostrativos centralizados para Agentes, Stack y Activos.
-- `src/app/config/api.config.ts`: URL base y selección entre datos de demostración y API REST.
+- `src/app/servicios/inventario-activos.ts`: registros en memoria; inicia vacío (el backend aún no tiene ruta de activos para esta pantalla).
+- `src/app/core/`: configuración (`config/`), cliente tipado de la API y manejo de errores (`api/`), sesión, guardas por rol e interceptor del token (`auth/`).
+- `src/app/shared/`: estados de carga, vacío y error, paginación por cursor, diálogo de confirmación con versión esperada y exportación CSV segura.
+- `src/app/features/vulnerabilities/`: pantalla Vulnerabilidades conectada a `GET /api/vulnerabilities`.
 - `src/styles.css`: carga los estilos de las tres pantallas, delimitados a su vista.
 - `src/app/tarjeta/`: componente de ejemplo con contador, no se usa en las rutas actuales.
-- `src/main.ts`, `src/app/app.config.ts` y `src/app/app.config.server.ts`: arranque y configuración Angular/SSR.
+- `src/main.ts` y `src/app/app.config.ts`: arranque en el cliente (lee `runtime-config.json` si existe) y proveedores de Angular.
 
 ## Ejecutar la aplicación
 
@@ -33,7 +34,7 @@ Con las dependencias instaladas, ejecuta `npm start` desde la raíz y abre la di
 
 ## Funcionalidades y verificaciones
 
-El detalle de cada funcionalidad, sus archivos y los pasos para comprobarla se mantiene en [cambios.md](cambios.md). La raíz abre Login. El inicio de sesión es una simulación local y, al aceptarse, navega a Control del agente.
+El detalle de cada funcionalidad, sus archivos y los pasos para comprobarla se mantiene en [cambios.md](cambios.md). La raíz abre Login. Al iniciar sesión con Firebase y cargar el perfil, navega a Inicio.
 
 ## Criterio para mantener esta documentación
 
