@@ -1,4 +1,9 @@
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
@@ -70,7 +75,7 @@ describe('authInterceptor', () => {
     expect(request.request.headers.get('Authorization')).toBe('Bearer cached-token');
     request.flush({ uid: 'u1' });
     await expect(result).resolves.toEqual({ uid: 'u1' });
-    expect(idToken).toHaveBeenCalledWith();
+    expect(idToken).toHaveBeenCalledWith(false);
   });
 
   it('never sends the token to another origin', async () => {
@@ -122,6 +127,46 @@ describe('authInterceptor', () => {
     await expect(result).rejects.toMatchObject({ status: 401 });
     expect(expired).toHaveBeenCalledTimes(1);
     expect(idToken).toHaveBeenCalledTimes(2);
+  });
+
+  it('ends the session when Firebase refuses to refresh the token (revoked session)', async () => {
+    idToken.mockImplementation(async (force?: boolean) => {
+      if (force) throw Object.assign(new Error('revoked'), { code: 'auth/user-token-expired' });
+      return 'cached-token';
+    });
+    const result = firstValueFrom(http.get('http://127.0.0.1:8000/api/me')).catch(
+      (error: unknown) => error,
+    );
+    await flushMicrotasks();
+    backend
+      .expectOne('http://127.0.0.1:8000/api/me')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
+    await expect(result).resolves.toBeInstanceOf(HttpErrorResponse);
+    await expect(result).resolves.toMatchObject({ status: 401 });
+    expect(expired).toHaveBeenCalledTimes(1);
+  });
+
+  it('ends the session when Firebase cannot give the current token', async () => {
+    idToken.mockRejectedValue(Object.assign(new Error('disabled'), { code: 'auth/user-disabled' }));
+    const result = firstValueFrom(http.get('http://127.0.0.1:8000/api/me')).catch(
+      (error: unknown) => error,
+    );
+    await flushMicrotasks();
+    backend.expectNone('http://127.0.0.1:8000/api/me');
+    await expect(result).resolves.toMatchObject({ status: 401 });
+    expect(expired).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves a request that already carries an Authorization header untouched', async () => {
+    const result = firstValueFrom(
+      http.get('http://127.0.0.1:8000/api/me', { headers: { Authorization: 'Bearer explicit' } }),
+    );
+    await flushMicrotasks();
+    const request = backend.expectOne('http://127.0.0.1:8000/api/me');
+    expect(request.request.headers.get('Authorization')).toBe('Bearer explicit');
+    request.flush({});
+    await result;
+    expect(idToken).not.toHaveBeenCalled();
   });
 
   it('does not retry other errors', async () => {

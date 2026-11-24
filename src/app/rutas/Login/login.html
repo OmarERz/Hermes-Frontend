@@ -105,6 +105,16 @@
         @if (error()) {
           <p class="error-general" role="alert">{{ error() }}</p>
         }
+        @if (sesion.status() === 'profile-error') {
+          <button
+            type="button"
+            class="login-button"
+            [disabled]="cargando()"
+            (click)="retryProfile()"
+          >
+            <span>Reintentar con la sesión actual</span>
+          </button>
+        }
 
         <button
           type="submit"

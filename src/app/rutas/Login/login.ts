@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { LucideLockKeyhole, LucideMail, LucideUserRound } from '@lucide/angular';
 import { SessionService } from '../../core/auth/session.service';
 
+const PROFILE_ERROR_MESSAGE = 'No se pudo cargar tu perfil. Inténtalo de nuevo.';
+
 @Component({
   selector: 'app-login',
   imports: [ReactiveFormsModule, LucideLockKeyhole, LucideMail, LucideUserRound],
@@ -40,10 +42,22 @@ export class Login {
     try {
       const status = await this.sesion.signIn(correo.trim(), password);
       if (status === 'ready') await this.router.navigate(['/inicio']);
-      else
-        this.error.set(this.sesion.notice() || 'No se pudo cargar tu perfil. Inténtalo de nuevo.');
+      else this.error.set(this.sesion.notice() || PROFILE_ERROR_MESSAGE);
     } catch (error) {
       this.error.set(this.mensajeErrorAutenticacion(error));
+    } finally {
+      this.cargando.set(false);
+    }
+  }
+
+  /** After a transient GET /api/me failure, asks for the profile again with the current Firebase session. */
+  async retryProfile(): Promise<void> {
+    this.cargando.set(true);
+    this.error.set('');
+    try {
+      const status = await this.sesion.retryProfile();
+      if (status === 'ready') await this.router.navigate(['/inicio']);
+      else this.error.set(this.sesion.notice() || PROFILE_ERROR_MESSAGE);
     } finally {
       this.cargando.set(false);
     }

@@ -56,10 +56,21 @@ export class FirebaseAuthService {
     return onAuthStateChanged(this.auth, listener, onError);
   }
 
-  /** The Firebase ID token of the signed-in user (renewed by the SDK when it is about to expire). */
+  private refreshing: Promise<string | null> | null = null;
+
+  /**
+   * The Firebase ID token of the signed-in user (renewed by the SDK when it is about to expire). Waits for the
+   * persisted session to be restored first. A forced refresh is shared by concurrent callers, so parallel 401s
+   * cause one refresh. Rejects when Firebase refuses the session (revoked refresh token, disabled user).
+   */
   async idToken(forceRefresh = false): Promise<string | null> {
-    const user = this.auth?.currentUser;
-    return user ? user.getIdToken(forceRefresh) : null;
+    if (!this.auth) return null;
+    await this.auth.authStateReady();
+    const user = this.auth.currentUser;
+    if (!user) return null;
+    if (!forceRefresh) return user.getIdToken();
+    this.refreshing ??= user.getIdToken(true).finally(() => (this.refreshing = null));
+    return this.refreshing;
   }
 
   async signIn(email: string, password: string): Promise<User> {

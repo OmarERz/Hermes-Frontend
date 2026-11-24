@@ -130,6 +130,54 @@ describe('SessionService', () => {
     expect(navigate).toHaveBeenCalledWith(['/login']);
   });
 
+  it('goes back to the login once when Firebase drops a live session by itself', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    firebase.emit({ uid: 'u1' } as User);
+    backend.expectOne(ME).flush(profile('admin'));
+    await session.ready();
+    firebase.emit(null);
+    TestBed.inject(AuthEvents).sessionExpired.next();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(session.status()).toBe('signed-out');
+    expect(session.notice()).toBe(SESSION_EXPIRED_MESSAGE);
+    expect(session.hasRole('reader')).toBe(false);
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('keeps the Firebase session on a transient profile failure and retries', async () => {
+    firebase.emit({ uid: 'u1', email: 'ana@hermes.test' } as User);
+    backend.expectOne(ME).flush(
+      {
+        error: {
+          code: 'auth_unavailable',
+          message: 'El servicio de identidad no responde; intenta más tarde.',
+          details: [],
+        },
+      },
+      { status: 503, statusText: 'Service Unavailable' },
+    );
+    await expect(session.ready()).resolves.toBe('profile-error');
+    expect(session.notice()).toBe('El servicio de identidad no responde; intenta más tarde.');
+    expect(session.user()?.uid).toBe('u1');
+    expect(firebase.signOut).not.toHaveBeenCalled();
+    expect(session.hasRole('reader')).toBe(false);
+
+    const retried = session.retryProfile();
+    backend.expectOne(ME).flush(profile('analyst'));
+    await expect(retried).resolves.toBe('ready');
+    expect(session.role()).toBe('analyst');
+    expect(session.notice()).toBe('');
+  });
+
+  it('keeps the Firebase session when the API is unreachable', async () => {
+    firebase.emit({ uid: 'u1' } as User);
+    backend.expectOne(ME).error(new ProgressEvent('error'));
+    await expect(session.ready()).resolves.toBe('profile-error');
+    expect(session.notice()).toContain('No se pudo conectar con el servidor');
+    expect(firebase.signOut).not.toHaveBeenCalled();
+  });
+
   it('signs out without leaving a notice', async () => {
     firebase.emit({ uid: 'u1' } as User);
     backend.expectOne(ME).flush(profile('reader'));
