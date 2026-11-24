@@ -12,14 +12,16 @@
           ><svg lucideTriangleAlert aria-hidden="true"></svg
         ></span>
         <small>{{ levelLabels[level] }}</small>
-        @if (levelCount(level); as count) {
-          <strong>{{ count }}</strong>
-        } @else if (counts.status() === 'error') {
-          <strong class="unknown">Sin datos</strong>
-        } @else if (counts.loading()) {
-          <strong class="unknown">Cargando…</strong>
-        } @else {
-          <strong>0</strong>
+        @switch (counts.status()) {
+          @case ('ready') {
+            <strong>{{ levelCount(level) }}</strong>
+          }
+          @case ('error') {
+            <strong class="unknown">Sin datos</strong>
+          }
+          @default {
+            <strong class="unknown">Cargando…</strong>
+          }
         }
       </article>
     }

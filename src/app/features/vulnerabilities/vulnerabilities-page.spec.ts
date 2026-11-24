@@ -88,6 +88,37 @@ describe('VulnerabilitiesPage', () => {
     expect(fixture.componentInstance.pager.pageIndex()).toBe(0);
   });
 
+  it('asks for the level counts again with the new filters', async () => {
+    const service = new FakeService();
+    const { fixture } = await render(service);
+    fixture.componentInstance.setInKev('true');
+    await fixture.whenStable();
+    expect(service.levelCounts).toHaveBeenLastCalledWith({
+      band: null,
+      status: null,
+      in_kev: true,
+      exposed: null,
+    });
+  });
+
+  it('never shows the counts of other filters while loading or after an error', async () => {
+    const service = new FakeService();
+    const { fixture, element } = await render(service);
+    const cards = () =>
+      Array.from(element.querySelectorAll('.stat-card strong')).map((s) => s.textContent?.trim());
+    expect(cards()).toEqual(['1', '0', '2', '0']);
+
+    const pending = new Subject<{ critical: number; high: number; medium: number; low: number }>();
+    service.levelCounts.mockReturnValueOnce(pending);
+    fixture.componentInstance.setExposed('true');
+    await fixture.whenStable();
+    expect(cards()).toEqual(['Cargando…', 'Cargando…', 'Cargando…', 'Cargando…']);
+
+    pending.error(new ApiError(503, 'auth_unavailable', 'No responde.'));
+    await fixture.whenStable();
+    expect(cards()).toEqual(['Sin datos', 'Sin datos', 'Sin datos', 'Sin datos']);
+  });
+
   it('shows the loading state, then the empty state with filters', async () => {
     const service = new FakeService();
     const pending = new Subject<CursorPage<VulnerabilityGroup>>();

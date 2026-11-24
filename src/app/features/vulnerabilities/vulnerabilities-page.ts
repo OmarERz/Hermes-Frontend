@@ -160,7 +160,8 @@ export class VulnerabilitiesPage {
     this.refresh();
   }
 
-  levelCount(level: Level): number | null {
-    return this.counts.value()?.[level] ?? null;
+  /** Groups of `level` in the current filtered result (read only while `counts` is ready). */
+  levelCount(level: Level): number {
+    return this.counts.value()?.[level] ?? 0;
   }
 }
