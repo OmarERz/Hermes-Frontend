@@ -157,6 +157,35 @@ describe('authInterceptor', () => {
     expect(expired).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the session when Firebase cannot reach its token service', async () => {
+    idToken.mockRejectedValue(
+      Object.assign(new Error('offline'), { code: 'auth/network-request-failed' }),
+    );
+    const result = firstValueFrom(http.get('http://127.0.0.1:8000/api/me')).catch(
+      (error: unknown) => error,
+    );
+    await flushMicrotasks();
+    backend.expectNone('http://127.0.0.1:8000/api/me');
+    await expect(result).resolves.toMatchObject({ status: 0 });
+    expect(expired).not.toHaveBeenCalled();
+  });
+
+  it('keeps the session when the forced refresh fails for a transient reason', async () => {
+    idToken.mockImplementation(async (force?: boolean) => {
+      if (force) throw Object.assign(new Error('busy'), { code: 'auth/too-many-requests' });
+      return 'cached-token';
+    });
+    const result = firstValueFrom(http.get('http://127.0.0.1:8000/api/me')).catch(
+      (error: unknown) => error,
+    );
+    await flushMicrotasks();
+    backend
+      .expectOne('http://127.0.0.1:8000/api/me')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
+    await expect(result).resolves.toMatchObject({ status: 0 });
+    expect(expired).not.toHaveBeenCalled();
+  });
+
   it('leaves a request that already carries an Authorization header untouched', async () => {
     const result = firstValueFrom(
       http.get('http://127.0.0.1:8000/api/me', { headers: { Authorization: 'Bearer explicit' } }),

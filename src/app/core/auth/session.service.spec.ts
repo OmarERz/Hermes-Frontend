@@ -1,10 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import type { User } from 'firebase/auth';
 import { APP_CONFIG } from '../config/app-config';
 import { AuthEvents } from './auth-events';
+import { authInterceptor } from './auth.interceptor';
 import { FirebaseAuthService } from './firebase-auth.service';
 import { SESSION_EXPIRED_MESSAGE, SessionService } from './session.service';
 
@@ -186,5 +187,39 @@ describe('SessionService', () => {
     expect(session.status()).toBe('signed-out');
     expect(session.notice()).toBe('');
     expect(session.user()).toBeNull();
+  });
+});
+
+describe('SessionService with the auth interceptor', () => {
+  it('keeps the session when Firebase cannot refresh the token for lack of network', async () => {
+    const firebase = new FakeFirebase();
+    firebase.idToken.mockRejectedValue(
+      Object.assign(new Error('offline'), { code: 'auth/network-request-failed' }),
+    );
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(withInterceptors([authInterceptor])),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: FirebaseAuthService, useValue: firebase },
+        {
+          provide: APP_CONFIG,
+          useValue: {
+            production: false,
+            apiBaseUrl: 'http://127.0.0.1:8000',
+            firebase: null,
+            authEmulatorUrl: null,
+          },
+        },
+      ],
+    });
+    const session = TestBed.inject(SessionService);
+    const backend = TestBed.inject(HttpTestingController);
+    firebase.emit({ uid: 'u1' } as User);
+    await expect(session.ready()).resolves.toBe('profile-error');
+    backend.expectNone(ME);
+    expect(firebase.signOut).not.toHaveBeenCalled();
+    expect(session.notice()).toContain('No se pudo conectar con el servidor');
+    backend.verify();
   });
 });

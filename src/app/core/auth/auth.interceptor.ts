@@ -31,11 +31,34 @@ function unauthorized(request: HttpRequest<unknown>): HttpErrorResponse {
   return new HttpErrorResponse({ status: 401, statusText: 'Unauthorized', url: request.url });
 }
 
+/** A local "no connection" error (status 0), so the screens show the network message and can retry. */
+function unreachable(request: HttpRequest<unknown>): HttpErrorResponse {
+  return new HttpErrorResponse({ status: 0, statusText: 'Unknown Error', url: request.url });
+}
+
+/**
+ * Firebase errors that mean the session itself is gone (the SDK invalidates the user on them). Anything else,
+ * such as `auth/network-request-failed` or `auth/too-many-requests`, is transient and keeps the session.
+ */
+const SESSION_ENDING_CODES = new Set([
+  'auth/user-token-expired',
+  'auth/user-disabled',
+  'auth/user-not-found',
+  'auth/invalid-user-token',
+]);
+
+export function endsFirebaseSession(error: unknown): boolean {
+  const code =
+    typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;
+  return typeof code === 'string' && SESSION_ENDING_CODES.has(code);
+}
+
 /**
  * Attaches `Authorization: Bearer <Firebase ID token>` to API requests. On a 401 it forces one token refresh
  * (`getIdToken(true)`: a role change revokes the session, FRONTEND.md §2) and retries once. The session is over
  * when the retry is still a 401 or when Firebase refuses to give a token (revoked refresh token, disabled user):
- * then `AuthEvents.sessionExpired` sends the person back to the login.
+ * then `AuthEvents.sessionExpired` sends the person back to the login. A transient Firebase error (no network,
+ * too many requests) becomes a status-0 error instead, and the session is kept.
  */
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const config = inject(APP_CONFIG);
@@ -54,7 +77,11 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     return throwError(() => unauthorized(request));
   };
   const token = (forceRefresh: boolean): Observable<string | null> =>
-    from(firebase.idToken(forceRefresh)).pipe(catchError(() => expired()));
+    from(firebase.idToken(forceRefresh)).pipe(
+      catchError((error: unknown) =>
+        endsFirebaseSession(error) ? expired() : throwError(() => unreachable(request)),
+      ),
+    );
 
   return token(false).pipe(
     switchMap((current) => {
