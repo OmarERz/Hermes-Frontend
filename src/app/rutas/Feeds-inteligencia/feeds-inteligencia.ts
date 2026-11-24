@@ -13,13 +13,12 @@ import {
   FeedsInteligenciaServicio,
   TipoFeedInteligencia,
 } from '../../servicios/feeds-inteligencia';
-import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-feeds-inteligencia',
   imports: [
-    IfRoleDirective,
     LucideCircleCheck,
     LucideCirclePause,
     LucideLayers,
@@ -33,6 +32,7 @@ import { ACTION_ROLES } from '../../core/auth/roles';
 export class FeedsInteligencia {
   /** Turning a source on or off is PATCH /api/sources/{id}: analyst or admin only. */
   readonly sourceToggleRole = ACTION_ROLES.toggleSource;
+  readonly sesion = inject(SessionService);
   readonly servicio = inject(FeedsInteligenciaServicio);
   readonly categoria = signal<TipoFeedInteligencia>('Amenazas');
   private readonly indiceCarrusel = signal(0);

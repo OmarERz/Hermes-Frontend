@@ -172,7 +172,7 @@
       }
     </section>
   </div>
-  @if (revisionAbierta && ticketActivo) {
+  @if (revisionAbierta && ticketActivo && sesion.hasRole(feedbackRole)) {
     <app-revision-humana
       [ticketId]="ticketActivo"
       [recomendacionId]="revisionActivaId"

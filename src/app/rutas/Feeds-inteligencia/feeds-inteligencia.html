@@ -112,24 +112,29 @@
             }
             <span class="feed-demo-tag">Integración pendiente</span>
           </button>
-          <label
-            *appIfRole="sourceToggleRole"
-            class="feed-toggle"
-            [attr.aria-label]="
-              (tarjeta.feed.activo ? 'Desactivar ' : 'Activar ') + tarjeta.feed.nombre
-            "
-          >
-            <input
-              type="checkbox"
-              role="switch"
-              [checked]="tarjeta.feed.activo"
-              [disabled]="servicio.integracionPendiente()"
-              (click)="$event.stopPropagation()"
-              (change)="alternarFeed(tarjeta.feed, $event)"
-            />
-            <span class="toggle-track" aria-hidden="true"></span>
-            <span class="toggle-label">{{ tarjeta.feed.activo ? 'Activo' : 'Inactivo' }}</span>
-          </label>
+          @if (sesion.hasRole(sourceToggleRole)) {
+            <label
+              class="feed-toggle"
+              [attr.aria-label]="
+                (tarjeta.feed.activo ? 'Desactivar ' : 'Activar ') + tarjeta.feed.nombre
+              "
+            >
+              <input
+                type="checkbox"
+                role="switch"
+                [checked]="tarjeta.feed.activo"
+                [disabled]="servicio.integracionPendiente()"
+                (click)="$event.stopPropagation()"
+                (change)="alternarFeed(tarjeta.feed, $event)"
+              />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">{{ tarjeta.feed.activo ? 'Activo' : 'Inactivo' }}</span>
+            </label>
+          } @else {
+            <span class="feed-toggle toggle-label">{{
+              tarjeta.feed.activo ? 'Activo' : 'Inactivo'
+            }}</span>
+          }
         </article>
       }
       @if (servicio.integracionPendiente()) {

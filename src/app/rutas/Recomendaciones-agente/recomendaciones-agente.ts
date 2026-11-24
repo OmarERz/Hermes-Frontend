@@ -11,6 +11,7 @@ import { NavegacionAgentes } from '../../componentes/navegacion-agentes/navegaci
 import { RevisionHumana } from '../Revision-humana/revision-humana';
 import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
+import { SessionService } from '../../core/auth/session.service';
 
 @Component({
   selector: 'app-recomendaciones-agente',
@@ -27,6 +28,8 @@ import { ACTION_ROLES } from '../../core/auth/roles';
 export class RecomendacionesAgente implements OnInit {
   /** The human review becomes feedback (POST /api/feedback): analyst or admin only. */
   readonly feedbackRole = ACTION_ROLES.giveFeedback;
+  /** A deep link (?recomendacionId, ?id, ?ticketId) must not open the review for a lower role either. */
+  readonly sesion = inject(SessionService);
   private readonly supervision = inject(SupervisionAgentes);
   private readonly route = inject(ActivatedRoute);
   readonly iconoBanner = LucideGitCompareArrows;

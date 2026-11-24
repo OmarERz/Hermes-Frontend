@@ -8,7 +8,10 @@ describe('FeedsInteligencia carrusel', () => {
   let fixture: ComponentFixture<FeedsInteligencia>;
   let feeds: ReturnType<typeof signal<FeedInteligencia[]>>;
 
+  let canToggle: boolean;
+
   beforeEach(async () => {
+    canToggle = true;
     feeds = signal<FeedInteligencia[]>([
       {
         id: 'otx',
@@ -66,7 +69,7 @@ describe('FeedsInteligencia carrusel', () => {
     await TestBed.configureTestingModule({
       imports: [FeedsInteligencia],
       providers: [
-        { provide: SessionService, useValue: { hasRole: () => true } },
+        { provide: SessionService, useValue: { hasRole: () => canToggle } },
         {
           provide: FeedsInteligenciaServicio,
           useValue: {
@@ -143,6 +146,15 @@ describe('FeedsInteligencia carrusel', () => {
     fixture.componentInstance.seleccionarCategoria('Vulnerabilidades');
     fixture.detectChanges();
     expect(fixture.componentInstance.feedSeleccionado()?.id).toBe('cisa');
+  });
+
+  it('shows the feed state without the switch to a role that cannot change sources', () => {
+    canToggle = false;
+    fixture.componentRef.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('input[role="switch"]')).toBeNull();
+    expect(element.querySelector('.toggle-label')?.textContent?.trim()).toMatch(/Activo|Inactivo/);
   });
 
   it('permite activar el switch sin seleccionar otra tarjeta', () => {

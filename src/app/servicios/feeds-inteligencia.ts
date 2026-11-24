@@ -30,10 +30,10 @@ export class FeedsInteligenciaServicio {
   readonly feeds = signal<FeedInteligencia[]>([]);
 
   /** Without the backend there is nothing to change; returns whether the change was applied. */
-  setFeedActive(id: string, activo: boolean): boolean {
+  setFeedActive(id: string, active: boolean): boolean {
     if (this.integracionPendiente() || !this.feeds().some((feed) => feed.id === id)) return false;
     this.feeds.update((feeds) =>
-      feeds.map((feed) => (feed.id === id ? { ...feed, activo } : feed)),
+      feeds.map((feed) => (feed.id === id ? { ...feed, activo: active } : feed)),
     );
     return true;
   }
