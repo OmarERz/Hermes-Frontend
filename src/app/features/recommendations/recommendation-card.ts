@@ -1,5 +1,7 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { LucideGitCompareArrows } from '@lucide/angular';
+import { IfRoleDirective } from '../../core/auth/if-role.directive';
+import { ACTION_ROLES } from '../../core/auth/roles';
 import { ItopLink } from '../../shared/itop-links';
 import {
   CLASSIFICATION_LABELS,
@@ -31,7 +33,7 @@ export function signed(points: number): string {
  */
 @Component({
   selector: 'app-recommendation-card',
-  imports: [FeedbackHistory, ItopLink, JudgeDetail, LucideGitCompareArrows],
+  imports: [FeedbackHistory, IfRoleDirective, ItopLink, JudgeDetail, LucideGitCompareArrows],
   templateUrl: './recommendation-card.html',
   styleUrl: './recommendation-card.css',
 })
@@ -40,6 +42,10 @@ export class RecommendationCard {
   /** Bumped by the page after a feedback is saved, so an open history reads it again. */
   readonly historyRevision = input(0);
 
+  /** «Dar feedback»: only analyst or admin see it (`*appIfRole`); the page opens the feedback dialog. */
+  readonly giveFeedback = output<void>();
+
+  readonly feedbackRole = ACTION_ROLES.giveFeedback;
   readonly historyOpen = signal(false);
 
   readonly levelLabels = LEVEL_LABELS;

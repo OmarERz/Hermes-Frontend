@@ -4,11 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap, RouterLink } from '@angular/router';
 import { LucideArrowLeft, LucideArrowRight, LucideGitCompareArrows } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
+import { ACTION_ROLES } from '../../core/auth/roles';
+import { SessionService } from '../../core/auth/session.service';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
 import { formatDateTime, LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
-import type { Recommendation } from './feedback';
+import type { FeedbackResult, Recommendation } from './feedback';
+import { FeedbackDialog } from './feedback-dialog';
 import { filterPage, groupByVulnerability, type RecommendationGroup } from './grouping';
 import { RecommendationCard } from './recommendation-card';
 import { RecommendationsService, type RecommendationScope } from './recommendations.service';
@@ -39,6 +42,7 @@ function linkOf(params: ParamMap): { id: string | null; scope: RecommendationSco
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    FeedbackDialog,
     RecommendationCard,
     LucideArrowLeft,
     LucideArrowRight,
@@ -49,6 +53,9 @@ function linkOf(params: ParamMap): { id: string | null; scope: RecommendationSco
 })
 export class RecommendationsPage {
   private readonly service = inject(RecommendationsService);
+  /** Feedback (`POST /api/feedback`) is for analyst or admin; a lower role never gets the dialog. */
+  readonly session = inject(SessionService);
+  readonly feedbackRole = ACTION_ROLES.giveFeedback;
 
   readonly bannerIcon = LucideGitCompareArrows;
   readonly levels = LEVELS;
@@ -63,6 +70,11 @@ export class RecommendationsPage {
   readonly linked = new AsyncState<Recommendation>();
   private readonly linkedId = signal<string | null>(null);
   readonly showLinked = signal(false);
+
+  /** The evaluation the feedback dialog is open for, the last save message and a counter of saves. */
+  readonly feedbackTarget = signal<Recommendation | null>(null);
+  readonly savedMessage = signal('');
+  readonly feedbackSaves = signal(0);
 
   readonly pager = new CursorPager<Recommendation>((cursor) =>
     this.service.list(this.scope(), cursor, PAGE_SIZE),
@@ -155,6 +167,23 @@ export class RecommendationsPage {
 
   formatDate(iso: string): string {
     return formatDateTime(iso);
+  }
+
+  openFeedback(recommendation: Recommendation): void {
+    this.savedMessage.set('');
+    this.feedbackTarget.set(recommendation);
+  }
+
+  /** After a save: say so, and read the counts and any open history again (the score never changes). */
+  onFeedbackSaved(result: FeedbackResult): void {
+    this.savedMessage.set(
+      result.replaced_previous
+        ? 'Feedback guardado. Reemplaza tu feedback anterior sobre esta evaluación.'
+        : 'Feedback guardado.',
+    );
+    this.feedbackSaves.update((count) => count + 1);
+    this.pager.reload();
+    if (this.showLinked()) this.loadLinked();
   }
 
   clearFilters(): void {

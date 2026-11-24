@@ -5,6 +5,10 @@
     [icono]="bannerIcon"
   />
 
+  @if (savedMessage()) {
+    <p class="review-saved-message" role="status">{{ savedMessage() }}</p>
+  }
+
   <p class="score-note">
     Puntajes de Hermes de 0 a 100 (no CVSS). El feedback ayuda a calibrar el sistema; nunca cambia
     la puntuación por sí solo ni toca el ticket.
@@ -121,7 +125,11 @@
         </header>
         <div class="proposal-list">
           @for (item of group.items; track item.assessment_id) {
-            <app-recommendation-card [recommendation]="item" />
+            <app-recommendation-card
+              [recommendation]="item"
+              [historyRevision]="feedbackSaves()"
+              (giveFeedback)="openFeedback(item)"
+            />
           }
         </div>
       } @else {
@@ -133,4 +141,14 @@
       }
     </section>
   </div>
+
+  @if (feedbackTarget(); as target) {
+    @if (session.hasRole(feedbackRole)) {
+      <app-feedback-dialog
+        [recommendation]="target"
+        (saved)="onFeedbackSaved($event)"
+        (closed)="feedbackTarget.set(null)"
+      />
+    }
+  }
 </div>

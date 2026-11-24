@@ -143,6 +143,14 @@
       >
         {{ historyOpen() ? 'Ocultar historial' : 'Ver historial de feedback' }}
       </button>
+      <button
+        *appIfRole="feedbackRole"
+        type="button"
+        class="review-open-button give-feedback"
+        (click)="giveFeedback.emit()"
+      >
+        Dar feedback
+      </button>
     </div>
     @if (historyOpen()) {
       <app-feedback-history [assessmentId]="rec.assessment_id" [revision]="historyRevision()" />

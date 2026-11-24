@@ -224,4 +224,70 @@ describe('RecommendationsPage', () => {
     expect(service.list).toHaveBeenCalledTimes(2);
     expect(texts(element, '.ticket-option strong')).toHaveLength(2);
   });
+
+  it('offers feedback only to analyst and admin', async () => {
+    const reader = await render(new FakeService(), '/recomendaciones-agente', 'reader');
+    expect(reader.element.querySelector('.give-feedback')).toBeNull();
+    TestBed.resetTestingModule();
+
+    for (const role of ['analyst', 'admin'] as const) {
+      const { element } = await render(new FakeService(), '/recomendaciones-agente', role);
+      expect(element.querySelectorAll('.give-feedback')).toHaveLength(2);
+      TestBed.resetTestingModule();
+    }
+  });
+
+  it('never opens the feedback dialog for a reader', async () => {
+    const { harness, page, element } = await render(new FakeService());
+    page.openFeedback(NEWEST);
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(element.querySelector('app-feedback-dialog')).toBeNull();
+  });
+
+  it('opens the dialog for an evaluation and refreshes the list after a save', async () => {
+    const service = new FakeService();
+    service.levelBands.mockReturnValue(of(null));
+    service.send.mockReturnValue(
+      of({ feedback_id: '0192f3a5-1c2d-7e3f-9a4b-5c6d7e8f9a0b', replaced_previous: true }),
+    );
+    const { harness, page, element } = await render(service, '/recomendaciones-agente', 'analyst');
+    (element.querySelectorAll('.give-feedback')[1] as HTMLButtonElement).click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    const dialog = element.querySelector('app-feedback-dialog') as HTMLElement;
+    expect(dialog.querySelector('.review-status-badge')?.textContent).toBe('Media');
+
+    (dialog.querySelector('.decision-option input') as HTMLInputElement).click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    (dialog.querySelector('.review-save') as HTMLButtonElement).click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+
+    expect(service.send).toHaveBeenCalledWith(
+      expect.objectContaining({ assessment_id: OLDER.assessment_id, verdict: 'relevant' }),
+    );
+    expect(element.querySelector('app-feedback-dialog')).toBeNull();
+    expect(element.querySelector('.review-saved-message')?.textContent).toContain(
+      'Reemplaza tu feedback anterior',
+    );
+    expect(service.list).toHaveBeenCalledTimes(2);
+    expect(page.feedbackSaves()).toBe(1);
+  });
+
+  it('reloads a linked evaluation after its feedback is saved', async () => {
+    const service = new FakeService();
+    const { page } = await render(
+      service,
+      `/recomendaciones-agente?id=${OTHER.assessment_id}`,
+      'analyst',
+    );
+    page.onFeedbackSaved({
+      feedback_id: '0192f3a5-1c2d-7e3f-9a4b-5c6d7e8f9a0b',
+      replaced_previous: false,
+    });
+    expect(service.get).toHaveBeenCalledTimes(2);
+    expect(page.savedMessage()).toBe('Feedback guardado.');
+  });
 });
