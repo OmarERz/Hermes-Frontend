@@ -187,6 +187,28 @@ describe('ProfilePanel', () => {
     expect(element.querySelectorAll('.facts div')).toHaveLength(4);
   });
 
+  it('offers to edit only once the profile is read, never during or after a failed reload', async () => {
+    const service = new FakeCompany();
+    const { fixture, element, panel } = await render('admin', service);
+    const pending = new Subject<CompanyProfile>();
+    service.getProfile.mockReturnValueOnce(pending);
+    panel.reload();
+    await fixture.whenStable();
+    expect(element.querySelector('.panel-action')).toBeNull();
+    panel.startEdit();
+    expect(panel.editing()).toBe(false);
+
+    pending.error(new ApiError(500, 'internal_error', 'Ocurrió un error en el servidor.'));
+    await fixture.whenStable();
+    expect(element.querySelector('.panel-action')).toBeNull();
+
+    service.getProfile.mockReturnValueOnce(of({ ...PROFILE, version: 5 }));
+    element.querySelector<HTMLButtonElement>('[role="alert"] button')!.click();
+    await fixture.whenStable();
+    expect(element.querySelector('.panel-action')).not.toBeNull();
+    expect(text(element.querySelector('.inventory > header'))).toContain('Versión 5');
+  });
+
   it('lists only the fields that change', () => {
     const before = {
       sector: 'fintech',

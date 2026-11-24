@@ -199,8 +199,8 @@ describe('SourcesPage', () => {
     const { fixture, element, page } = await render('reader', service);
 
     const details = () => detailRows(element);
-    expect(details()).toContain('Proveedor No disponible');
-    expect(details()).toContain('Frecuencia No disponible');
+    expect(details().some((line) => /^(Proveedor|Frecuencia)/.test(line))).toBe(false);
+    expect(details().join(' ')).not.toContain('No disponible');
     expect(text(element.querySelector('.center-card .feed-description'))).toBe(
       'Oficial (máxima confianza)',
     );

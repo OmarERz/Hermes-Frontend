@@ -1,4 +1,4 @@
-<main class="feeds-page sources-view" aria-labelledby="feeds-title">
+<div class="feeds-page sources-view">
   <header class="feeds-header">
     <div class="heading-copy">
       <div class="title-line">
@@ -245,14 +245,18 @@
     </header>
     @if (carousel.selected(); as row) {
       <div class="details-grid">
-        <div class="detail-row">
-          <svg lucideShield aria-hidden="true"></svg><strong>Proveedor</strong
-          ><span>{{ row.provider ?? 'No disponible' }}</span>
-        </div>
-        <div class="detail-row">
-          <svg lucideRefreshCw aria-hidden="true"></svg><strong>Frecuencia</strong
-          ><span>{{ row.refresh ?? 'No disponible' }}</span>
-        </div>
+        @if (row.provider) {
+          <div class="detail-row">
+            <svg lucideShield aria-hidden="true"></svg><strong>Proveedor</strong
+            ><span>{{ row.provider }}</span>
+          </div>
+        }
+        @if (row.refresh) {
+          <div class="detail-row">
+            <svg lucideRefreshCw aria-hidden="true"></svg><strong>Frecuencia</strong
+            ><span>{{ row.refresh }}</span>
+          </div>
+        }
         <div class="detail-row">
           <svg lucideGauge aria-hidden="true"></svg><strong>Nivel de confianza</strong
           ><span class="level-cell"
@@ -373,4 +377,4 @@
       (reloadRequested)="cancelLevel(); reload()"
     />
   }
-</main>
+</div>

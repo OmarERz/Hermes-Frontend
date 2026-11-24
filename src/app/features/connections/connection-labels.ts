@@ -7,10 +7,7 @@ export type ConnectionGroup = 'services' | 'sources';
 export type ConnectionState = 'ok' | 'missing' | 'failing';
 
 /** What each connection is for (the OpenAPI descriptions of `ConnectionStatus.name`) and where the page lists it. */
-export const CONNECTION_INFO: Record<
-  ConnectionName,
-  { title: string; purpose: string; group: ConnectionGroup }
-> = {
+export const CONNECTION_INFO: Record<ConnectionName, ConnectionInfo> = {
   itop: { title: 'iTop', purpose: 'CMDB y tickets de iTop', group: 'services' },
   deepseek: { title: 'DeepSeek', purpose: 'Juez y analistas de IA', group: 'services' },
   firebase: { title: 'Firebase', purpose: 'Inicio de sesión', group: 'services' },
@@ -25,6 +22,21 @@ export const CONNECTION_INFO: Record<
 
 /** The order of the page: services first, then the data sources. */
 export const CONNECTION_NAMES = Object.keys(CONNECTION_INFO) as ConnectionName[];
+
+export interface ConnectionInfo {
+  title: string;
+  purpose: string;
+  group: ConnectionGroup;
+}
+
+/**
+ * What the page shows for a connection. A name the front does not know yet (a probe added to the API later) keeps
+ * its raw name among the services instead of breaking the page.
+ */
+export function connectionInfo(name: string): ConnectionInfo {
+  const known: Partial<Record<string, ConnectionInfo>> = CONNECTION_INFO;
+  return known[name] ?? { title: name, purpose: '', group: 'services' };
+}
 
 export const STATE_LABELS: Record<ConnectionState, string> = {
   ok: 'Funciona',

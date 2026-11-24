@@ -193,6 +193,21 @@ describe('ConnectionsPage', () => {
     expect(element.querySelector<HTMLButtonElement>('.test-all')!.disabled).toBe(false);
   });
 
+  it('shows a connection the front does not know yet with its raw name', async () => {
+    const service = new FakeConnections();
+    const slack = { ...status({ name: 'itop' }), name: 'slack' } as unknown as ConnectionStatus;
+    service.status.mockReturnValueOnce(of([...STATUSES, slack]));
+    const { element, click } = await render('admin', service);
+    expect(row(element, 'slack').slice(0, 2)).toEqual(['slack', '✅ Funciona']);
+    expect(
+      element.querySelectorAll('.connections-panel')[0].querySelectorAll('tbody tr'),
+    ).toHaveLength(4);
+    service.test.mockReturnValueOnce(of([slack]));
+    await click('[aria-label="Probar de nuevo slack"]');
+    expect(text(element.querySelector('[role="status"]'))).toBe('Se comprobó slack de nuevo.');
+    expect(row(element, 'slack')[0]).toBe('slack');
+  });
+
   it('hides the checks from a role below admin', async () => {
     const { element } = await render('analyst');
     expect(element.querySelector('.test-all')).toBeNull();

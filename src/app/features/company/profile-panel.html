@@ -7,7 +7,7 @@
     @if (profile(); as current) {
       <span>Versión {{ current.version }}</span>
     }
-    @if (profile() && !editing()) {
+    @if (load.status() === 'ready' && profile() && !editing()) {
       <button *appIfRole="editRole" type="button" class="panel-action" (click)="startEdit()">
         <svg lucidePencil aria-hidden="true"></svg> Editar perfil
       </button>

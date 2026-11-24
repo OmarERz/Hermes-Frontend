@@ -17,9 +17,9 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import {
-  CONNECTION_INFO,
   CONNECTION_NAMES,
   connectionDetail,
+  connectionInfo,
   ConnectionGroup,
   ConnectionName,
   connectionState,
@@ -46,7 +46,7 @@ export interface ConnectionRow {
 }
 
 function toRow(status: ConnectionStatus): ConnectionRow {
-  const info = CONNECTION_INFO[status.name];
+  const info = connectionInfo(status.name);
   const state = connectionState(status);
   return {
     name: status.name,
@@ -72,9 +72,11 @@ export function mergeStatuses(
   current: readonly ConnectionStatus[],
   fresh: readonly ConnectionStatus[],
 ): ConnectionStatus[] {
-  const byName = new Map(current.map((status) => [status.name, status]));
+  const byName = new Map<string, ConnectionStatus>(current.map((status) => [status.name, status]));
   for (const status of fresh) byName.set(status.name, status);
-  return CONNECTION_NAMES.flatMap((name) => byName.get(name) ?? []);
+  const known: readonly string[] = CONNECTION_NAMES;
+  const unknown = [...byName.keys()].filter((name) => !known.includes(name));
+  return [...known, ...unknown].flatMap((name) => byName.get(name) ?? []);
 }
 
 /**
@@ -181,7 +183,7 @@ export class ConnectionsPage {
           this.statuses.update((current) => mergeStatuses(current, fresh));
           this.notice.set(
             name
-              ? `Se comprobó ${CONNECTION_INFO[name].title} de nuevo.`
+              ? `Se comprobó ${connectionInfo(name).title} de nuevo.`
               : 'Se comprobaron todas las conexiones de nuevo.',
           );
         },

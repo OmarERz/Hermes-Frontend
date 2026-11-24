@@ -161,9 +161,10 @@ export class ProfilePanel implements OnInit {
     );
   }
 
+  /** Starts from the profile just read; never while a reload is running or failed (its draft would be stale). */
   startEdit(): void {
     const current = this.profile();
-    if (!current) return;
+    if (!current || this.load.status() !== 'ready') return;
     this.sector.set(current.sector);
     this.subsectors.set([...current.subsectors]);
     this.countries.set([...current.countries]);
