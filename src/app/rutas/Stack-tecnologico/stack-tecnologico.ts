@@ -24,6 +24,7 @@ import {
 } from '../../servicios/catalogo-tecnologias';
 import type { PrioridadVulnerabilidad } from '../../servicios/resultados-vulnerabilidades-agente';
 import { ResultadosVulnerabilidadesAgente } from '../../servicios/resultados-vulnerabilidades-agente';
+import { toCsv } from '../../shared/csv';
 
 @Component({
   selector: 'app-stack-tecnologico',
@@ -255,9 +256,7 @@ export class StackTecnologico {
       item.estado,
       item.licencia,
     ]);
-    const csv = [encabezados, ...filas]
-      .map((fila) => fila.map((valor) => `"${valor.replace(/"/g, '""')}"`).join(','))
-      .join('\n');
+    const csv = toCsv([encabezados, ...filas]);
     const enlace = document.createElement('a');
     enlace.href = URL.createObjectURL(
       new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' }),
