@@ -1,0 +1,193 @@
+@switch (param().type) {
+  @case ('boolean') {
+    <label class="tool-setting" [class.changed]="changed()" [for]="id()">
+      @if (blocked()) {
+        <svg lucideLock aria-hidden="true"></svg>
+      } @else if (icon(); as glyph) {
+        <svg [lucideIcon]="glyph" aria-hidden="true"></svg>
+      } @else {
+        <span aria-hidden="true"></span>
+      }
+      <span class="tool-copy">
+        <strong>{{ label() }}</strong>
+        <small>
+          @if (blocked()) {
+            🔒 Bloqueado
+          } @else {
+            {{ hint() || (value() === 'true' ? 'Activado' : 'Desactivado') }}
+          }
+        </small>
+      </span>
+      <input
+        class="tool-switch"
+        type="checkbox"
+        role="switch"
+        [id]="id()"
+        [checked]="value() === 'true'"
+        [disabled]="!editable()"
+        [attr.aria-describedby]="error() ? errorId() : null"
+        (change)="toggle($event)"
+      />
+    </label>
+  }
+  @case ('enum') {
+    <div class="field-row" [class.changed]="changed()">
+      <label [for]="id()">
+        {{ label() }}
+        @if (blocked()) {
+          <span class="lock">🔒 Bloqueado</span>
+        }
+      </label>
+      @if (hint()) {
+        <small class="field-hint">{{ hint() }}</small>
+      }
+      <select
+        [id]="id()"
+        [disabled]="!editable()"
+        [attr.aria-invalid]="!!error()"
+        [attr.aria-describedby]="error() ? errorId() : null"
+        (change)="emit($event)"
+      >
+        @for (option of param().options ?? []; track option) {
+          <option [value]="option" [selected]="option === value()">
+            {{ optionLabel(option) }}
+          </option>
+        }
+      </select>
+    </div>
+  }
+  @case ('string') {
+    <div class="field-row" [class.changed]="changed()">
+      <label [for]="id()">
+        {{ label() }}
+        @if (blocked()) {
+          <span class="lock">🔒 Bloqueado</span>
+        }
+      </label>
+      @if (hint()) {
+        <small class="field-hint">{{ hint() }}</small>
+      }
+      <input
+        type="text"
+        class="text-input"
+        maxlength="1000"
+        [id]="id()"
+        [value]="value()"
+        [disabled]="!editable()"
+        [attr.aria-invalid]="!!error()"
+        [attr.aria-describedby]="error() ? errorId() : null"
+        (input)="emit($event)"
+      />
+    </div>
+  }
+  @default {
+    @if (sliderCard()) {
+      <article class="custom-slider-card" [class.changed]="changed()">
+        <div class="custom-slider-meter" aria-hidden="true">
+          <svg viewBox="0 0 100 100">
+            <circle class="custom-meter-track" cx="50" cy="50" r="43" pathLength="100" />
+            <circle
+              class="custom-meter-progress"
+              cx="50"
+              cy="50"
+              r="43"
+              pathLength="100"
+              [attr.stroke-dashoffset]="100 - percent()"
+            />
+          </svg>
+          <span>{{ value() }}</span>
+        </div>
+        <div class="custom-slider-content">
+          <header class="custom-slider-heading">
+            @if (icon(); as glyph) {
+              <svg [lucideIcon]="glyph" aria-hidden="true"></svg>
+            }
+            <h4>
+              <label [for]="id()">{{ label() }}</label>
+            </h4>
+            @if (blocked()) {
+              <span class="lock">🔒 Bloqueado</span>
+            }
+          </header>
+          @if (hint()) {
+            <p>{{ hint() }}</p>
+          }
+          <div class="custom-slider-control">
+            <input
+              class="custom-slider"
+              type="range"
+              [min]="param().min"
+              [max]="param().max"
+              [step]="step()"
+              [id]="id()"
+              [value]="sliderValue()"
+              [style.--slider-fill]="percent() + '%'"
+              [disabled]="!editable()"
+              [attr.aria-valuetext]="value()"
+              [attr.aria-describedby]="error() ? errorId() : null"
+              (input)="emit($event)"
+            />
+            <div class="custom-slider-bounds" aria-hidden="true">
+              <span>{{ param().min }}</span
+              ><span>{{ param().max }}</span>
+            </div>
+          </div>
+          @if (error(); as message) {
+            <small class="field-error" role="alert" [id]="errorId()">{{ message }}</small>
+          }
+        </div>
+      </article>
+    } @else {
+      <div class="field-row numeric" [class.changed]="changed()">
+        <label [for]="id()">
+          {{ label() }}
+          @if (blocked()) {
+            <span class="lock">🔒 Bloqueado</span>
+          }
+        </label>
+        @if (hint()) {
+          <small class="field-hint">{{ hint() }}</small>
+        }
+        <div class="field-controls">
+          @if (hasRange()) {
+            <input
+              class="custom-slider"
+              type="range"
+              tabindex="-1"
+              aria-hidden="true"
+              [min]="param().min"
+              [max]="param().max"
+              [step]="step()"
+              [value]="sliderValue()"
+              [style.--slider-fill]="percent() + '%'"
+              [disabled]="!editable()"
+              (input)="emit($event)"
+            />
+          }
+          <input
+            type="number"
+            class="number-input"
+            step="any"
+            inputmode="decimal"
+            [id]="id()"
+            [min]="param().min ?? null"
+            [max]="param().max ?? null"
+            [value]="value()"
+            [disabled]="!editable()"
+            [attr.aria-invalid]="!!error()"
+            [attr.aria-describedby]="error() ? errorId() : null"
+            (input)="emit($event)"
+          />
+        </div>
+        @if (bounds()) {
+          <small class="field-hint">Rango: {{ bounds() }}</small>
+        }
+      </div>
+    }
+  }
+}
+@if (error(); as message) {
+  @if (!sliderCard()) {
+    <small class="field-error" role="alert" [id]="errorId()">{{ message }}</small>
+  }
+}
