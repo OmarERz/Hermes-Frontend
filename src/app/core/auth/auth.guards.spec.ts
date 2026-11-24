@@ -86,6 +86,17 @@ describe('authGuard and guestGuard', () => {
   });
 });
 
+describe('guards with a transient profile failure', () => {
+  // profile-error: Firebase session kept, profile missing. The login must stay reachable to offer the retry,
+  // and the protected screens must send the person there (no /login <-> /inicio loop).
+  it('authGuard and roleGuard send to the login, guestGuard lets it show', async () => {
+    setup('profile-error', null);
+    await expect(run(authGuard)).resolves.toBe('/login');
+    await expect(run(roleGuard, { minRole: 'reader' })).resolves.toBe('/login');
+    await expect(run(guestGuard)).resolves.toBe(true);
+  });
+});
+
 describe('roleAtLeast', () => {
   it('follows reader < analyst < admin', () => {
     expect(roleAtLeast('admin', 'analyst')).toBe(true);

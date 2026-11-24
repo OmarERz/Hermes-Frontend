@@ -4,22 +4,26 @@ import { FIREBASE_AUTH, FirebaseAuthService } from './firebase-auth.service';
 
 describe('FirebaseAuthService.idToken', () => {
   function setup(currentUser: { getIdToken: (force?: boolean) => Promise<string> } | null) {
-    const order: string[] = [];
-    const auth = {
-      currentUser,
-      authStateReady: vi.fn(async () => {
-        order.push('ready');
-      }),
-    } as unknown as Auth;
+    const auth = { currentUser, authStateReady: vi.fn(async () => undefined) } as unknown as Auth;
     TestBed.configureTestingModule({ providers: [{ provide: FIREBASE_AUTH, useValue: auth }] });
-    return { service: TestBed.inject(FirebaseAuthService), auth, order };
+    return { service: TestBed.inject(FirebaseAuthService), auth };
   }
 
   it('waits for the persisted session before reading the user', async () => {
     const getIdToken = vi.fn(async () => 'token');
-    const { service, auth } = setup({ getIdToken });
+    let restored = false;
+    const auth = {
+      get currentUser() {
+        return restored ? { getIdToken } : null;
+      },
+      authStateReady: vi.fn(async () => {
+        await Promise.resolve();
+        restored = true;
+      }),
+    } as unknown as Auth;
+    TestBed.configureTestingModule({ providers: [{ provide: FIREBASE_AUTH, useValue: auth }] });
+    const service = TestBed.inject(FirebaseAuthService);
     await expect(service.idToken()).resolves.toBe('token');
-    expect(auth.authStateReady).toHaveBeenCalled();
     expect(getIdToken).toHaveBeenCalledWith();
   });
 
