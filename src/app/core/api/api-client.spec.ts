@@ -76,6 +76,8 @@ describe('ApiClient', () => {
       void api.get('/api/vulnerabilities', { query: { nope: 1 } });
       // @ts-expect-error: not a GET route.
       void api.get('/api/feedback');
+      // @ts-expect-error: the run events are a stream (SSE), not JSON.
+      void api.get('/api/runs/{id}/events', { path: { id: 'x' } });
       // @ts-expect-error: body required for PUT /api/config.
       void api.put('/api/config');
       const me: ApiResult<'/api/me', 'get'> = {

@@ -618,39 +618,6 @@ h3 {
   color: var(--accent-lilac);
 }
 
-.app-shell[data-theme='dark'] app-registrar-activo {
-  color: var(--text-primary);
-}
-.app-shell[data-theme='dark'] app-registrar-activo .bloque {
-  border-color: var(--border);
-  background: var(--surface);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-card);
-}
-.app-shell[data-theme='dark']
-  app-registrar-activo
-  :is(.form-heading h1, .bloque h2, .resumen p strong) {
-  color: var(--text-primary);
-}
-.app-shell[data-theme='dark'] app-registrar-activo :is(.form-heading p, .pagina label, .resumen p) {
-  color: var(--text-secondary);
-}
-.app-shell[data-theme='dark'] app-registrar-activo :is(input, select, textarea, .botones button) {
-  border-color: var(--border);
-  background: var(--surface-raised);
-  color: var(--text-primary);
-}
-.app-shell[data-theme='dark'] app-registrar-activo .botones button.principal {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-}
-.app-shell[data-theme='dark']
-  app-registrar-activo
-  :is(input, select, textarea, button):focus-visible {
-  outline-color: var(--accent-lilac);
-}
-
 .app-shell[data-theme='dark']
   :is(.stack-view, .assets-view, .agent-history-view, .human-review-view)
   .table-scroll {

@@ -105,7 +105,8 @@ Reglas:
 4. **API:** `inject(ApiClient).get('/api/…', { path, query })` (también `post`, `put`, `patch`, `delete`) dentro de
    la carpeta propia; los tipos, con `ApiResult`, `ApiQuery`, `ApiBody` y `ApiSchema`. No se agregan métodos a
    `HermesApi` ni alias a `api-types.ts`. Si una ruta todavía no está en `openapi/openapi.json`, se espera al PR
-   de la base que regenera el contrato.
+   de la base que regenera el contrato. El progreso en vivo de una corrida (`GET /api/runs/{id}/events`, SSE) no
+   pasa por `ApiClient`: necesita una llamada en _streaming_ que mande el token (carril F2).
 5. **Diseño:** cada página empieza con `<app-banner-pagina>` (dibuja las pestañas de la sección) dentro de la clase
    de vista del prototipo que reutiliza (`assets-view`, `agent-view`, `stack-view`…).
 6. **Piezas compartidas:** `AsyncState`, `CursorPager` y `<app-async-state>` para datos asíncronos (con señales:

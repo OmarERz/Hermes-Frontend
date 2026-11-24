@@ -1,11 +1,30 @@
 import {
   LucideBot,
+  LucideBuilding2,
+  LucideChartColumn,
+  LucideClipboardList,
+  LucideDownload,
+  LucideFileClock,
+  LucideFileSearch,
+  LucideGitCompareArrows,
   LucideHouse,
   LucideIconInput,
+  LucideLayers,
   LucideMonitor,
+  LucidePlay,
+  LucidePlug,
+  LucideRss,
+  LucideScale,
   LucideServerCog,
+  LucideSettings,
   LucideShieldAlert,
+  LucideSigma,
   LucideSlidersHorizontal,
+  LucideTarget,
+  LucideTicket,
+  LucideTriangleAlert,
+  LucideUsers,
+  LucideWandSparkles,
 } from '@lucide/angular';
 import type { Role } from '../api/api-types';
 import type { SectionId } from './route-data';
@@ -13,6 +32,7 @@ import type { SectionId } from './route-data';
 export { SECTION, type SectionId } from './route-data';
 
 export interface NavTab {
+  icon: LucideIconInput;
   label: string;
   /** Route path without the leading slash, as in app.routes.ts. */
   path: string;
@@ -36,17 +56,22 @@ export const SECTIONS: readonly NavSection[] = [
     id: 'home',
     label: 'Inicio',
     icon: LucideHouse,
-    tabs: [{ label: 'Inicio', path: 'inicio', minRole: 'reader' }],
+    tabs: [{ icon: LucideHouse, label: 'Inicio', path: 'inicio', minRole: 'reader' }],
   },
   {
     id: 'agents',
     label: 'Agentes',
     icon: LucideBot,
     tabs: [
-      { label: 'Panel', path: 'agentes', minRole: 'reader' },
-      { label: 'Historial', path: 'historial-agente', minRole: 'reader' },
-      { label: 'Recomendaciones', path: 'recomendaciones-agente', minRole: 'reader' },
-      { label: 'Métricas', path: 'metricas', minRole: 'reader' },
+      { icon: LucideBot, label: 'Panel', path: 'agentes', minRole: 'reader' },
+      { icon: LucideFileClock, label: 'Historial', path: 'historial-agente', minRole: 'reader' },
+      {
+        icon: LucideGitCompareArrows,
+        label: 'Recomendaciones',
+        path: 'recomendaciones-agente',
+        minRole: 'reader',
+      },
+      { icon: LucideChartColumn, label: 'Métricas', path: 'metricas', minRole: 'reader' },
     ],
   },
   {
@@ -54,10 +79,15 @@ export const SECTIONS: readonly NavSection[] = [
     label: 'Vulnerabilidades',
     icon: LucideShieldAlert,
     tabs: [
-      { label: 'Por grupo', path: 'vulnerabilidades', minRole: 'reader' },
-      { label: 'Comparación', path: 'comparacion', minRole: 'reader' },
-      { label: 'Tickets y alertas', path: 'tickets', minRole: 'reader' },
-      { label: 'Exportación STIX', path: 'exportacion-stix', minRole: 'analyst' },
+      { icon: LucideShieldAlert, label: 'Por grupo', path: 'vulnerabilidades', minRole: 'reader' },
+      { icon: LucideScale, label: 'Comparación', path: 'comparacion', minRole: 'reader' },
+      { icon: LucideTicket, label: 'Tickets y alertas', path: 'tickets', minRole: 'reader' },
+      {
+        icon: LucideDownload,
+        label: 'Exportación STIX',
+        path: 'exportacion-stix',
+        minRole: 'analyst',
+      },
     ],
   },
   {
@@ -65,9 +95,14 @@ export const SECTIONS: readonly NavSection[] = [
     label: 'Inventario',
     icon: LucideMonitor,
     tabs: [
-      { label: 'Activos', path: 'activos', minRole: 'reader' },
-      { label: 'Software', path: 'software', minRole: 'reader' },
-      { label: 'Pendientes', path: 'pendientes-inventario', minRole: 'reader' },
+      { icon: LucideMonitor, label: 'Activos', path: 'activos', minRole: 'reader' },
+      { icon: LucideLayers, label: 'Software', path: 'software', minRole: 'reader' },
+      {
+        icon: LucideClipboardList,
+        label: 'Pendientes',
+        path: 'pendientes-inventario',
+        minRole: 'reader',
+      },
     ],
   },
   {
@@ -75,12 +110,17 @@ export const SECTIONS: readonly NavSection[] = [
     label: 'Configuración',
     icon: LucideSlidersHorizontal,
     tabs: [
-      { label: 'Juez', path: 'configuracion-agente', minRole: 'reader' },
-      { label: 'Fórmula', path: 'formula', minRole: 'reader' },
-      { label: 'Parámetros', path: 'parametros', minRole: 'reader' },
-      { label: 'Calibración', path: 'calibracion', minRole: 'reader' },
-      { label: 'Fuentes', path: 'fuentes', minRole: 'reader' },
-      { label: 'Empresa', path: 'empresa', minRole: 'reader' },
+      {
+        icon: LucideSlidersHorizontal,
+        label: 'Juez',
+        path: 'configuracion-agente',
+        minRole: 'reader',
+      },
+      { icon: LucideSigma, label: 'Fórmula', path: 'formula', minRole: 'reader' },
+      { icon: LucideSettings, label: 'Parámetros', path: 'parametros', minRole: 'reader' },
+      { icon: LucideTarget, label: 'Calibración', path: 'calibracion', minRole: 'reader' },
+      { icon: LucideRss, label: 'Fuentes', path: 'fuentes', minRole: 'reader' },
+      { icon: LucideBuilding2, label: 'Empresa', path: 'empresa', minRole: 'reader' },
     ],
   },
   {
@@ -88,12 +128,17 @@ export const SECTIONS: readonly NavSection[] = [
     label: 'Operación',
     icon: LucideServerCog,
     tabs: [
-      { label: 'Corridas', path: 'corridas', minRole: 'reader' },
-      { label: 'Usuarios', path: 'usuarios', minRole: 'admin' },
-      { label: 'Conexiones', path: 'conexiones', minRole: 'admin' },
-      { label: 'Auditoría', path: 'auditoria', minRole: 'admin' },
-      { label: 'Cola de errores', path: 'cola-errores', minRole: 'admin' },
-      { label: 'Asistente', path: 'asistente', minRole: 'admin' },
+      { icon: LucidePlay, label: 'Corridas', path: 'corridas', minRole: 'reader' },
+      { icon: LucideUsers, label: 'Usuarios', path: 'usuarios', minRole: 'admin' },
+      { icon: LucidePlug, label: 'Conexiones', path: 'conexiones', minRole: 'admin' },
+      { icon: LucideFileSearch, label: 'Auditoría', path: 'auditoria', minRole: 'admin' },
+      {
+        icon: LucideTriangleAlert,
+        label: 'Cola de errores',
+        path: 'cola-errores',
+        minRole: 'admin',
+      },
+      { icon: LucideWandSparkles, label: 'Asistente', path: 'asistente', minRole: 'admin' },
     ],
   },
 ];

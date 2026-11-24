@@ -9,5 +9,5 @@
     "appId": "REPLACE_ME"
   },
   "authEmulatorUrl": null,
-  "itopBaseUrl": "http://127.0.0.1:18080"
+  "itopBaseUrl": "http://127.0.0.1:8080"
 }

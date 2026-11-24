@@ -6,7 +6,7 @@ import { toApiError } from './api-error';
 import type { components, paths } from './schema';
 
 /**
- * Generic typed client of the backend API, keyed by the OpenAPI path: `api.get('/api/inventory/assets', {query})`.
+ * Generic typed client of the backend API, keyed by the OpenAPI path: `api.get('/api/vulnerabilities', {query})`.
  * Path parameters, query, body and result come from the generated types (src/app/core/api/schema.d.ts), so a
  * screen calls any route without editing a shared file. Every failure comes out as an ApiError (Spanish message);
  * the bearer token is added by the auth interceptor.
@@ -14,12 +14,30 @@ import type { components, paths } from './schema';
 
 export type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
-/** Paths that declare `method` in the OpenAPI. */
+/** True when the operation answers JSON (200, 201 or 202) or nothing (204); a stream (SSE) is not. */
+type AnswersJson<O> = O extends { responses: infer R }
+  ? R extends { 200: { content: { 'application/json': unknown } } }
+    ? true
+    : R extends { 201: { content: { 'application/json': unknown } } }
+      ? true
+      : R extends { 202: { content: { 'application/json': unknown } } }
+        ? true
+        : R extends { 204: unknown }
+          ? true
+          : false
+  : false;
+
+/**
+ * Paths that declare `method` in the OpenAPI and answer JSON. Streams such as `GET /api/runs/{id}/events`
+ * (text/event-stream) are left out: they need a streaming call that sends the bearer token, not this client.
+ */
 export type ApiPath<M extends HttpMethod> = {
   [P in keyof paths]: paths[P] extends Record<M, infer O>
     ? [O] extends [never]
       ? never
-      : P
+      : AnswersJson<O> extends true
+        ? P
+        : never
     : never;
 }[keyof paths];
 

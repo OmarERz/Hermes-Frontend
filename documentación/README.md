@@ -40,6 +40,5 @@ Al incorporar una funcionalidad o hacer un cambio importante, actualizar primero
 - `src/app/componentes/sidebar-principal/`: navegación lateral por secciones (Inicio, Agentes, Vulnerabilidades, Inventario, Configuración y Operación) y perfil de usuario.
 - `src/app/componentes/grafico-dashboard/`: componente reutilizable para gráficas ECharts.
 - `src/app/servicios/catalogo-tecnologias.ts`: catálogo de tecnologías persistido en localStorage.
-- `src/app/servicios/asignaciones-stack.ts`: relaciones entre activos y tecnologías persistidas en localStorage.
 - El selector global ofrece datos reales (predeterminado) o datos de demostración. Las pantallas muestran estados vacíos o “Sin evaluar” cuando no hay datos reales.
 - Configuración, historial, recomendaciones y revisión humana son demostraciones mientras no existan APIs de agentes; ninguna acción se presenta como persistida en producción.

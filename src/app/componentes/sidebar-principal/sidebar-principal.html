@@ -9,7 +9,7 @@
       <a
         [routerLink]="section.link"
         [class.active]="section.id === navigation.current()?.id"
-        [attr.aria-current]="section.id === navigation.current()?.id ? 'page' : null"
+        [attr.aria-current]="section.id === navigation.current()?.id ? 'true' : null"
         [attr.aria-label]="section.label"
       >
         <svg [lucideIcon]="section.icon" [size]="20" class="nav-icon" aria-hidden="true"></svg>
