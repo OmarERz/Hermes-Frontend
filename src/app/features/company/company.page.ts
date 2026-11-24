@@ -2,6 +2,7 @@ import { Component, computed, signal } from '@angular/core';
 import { LucideBuilding2, LucideGlobe, LucideLanguages, LucideListTree } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { CompanyProfile, languageName, sectorName } from './company-labels';
+import { PeersPanel } from './peers-panel';
 import { ProfilePanel } from './profile-panel';
 
 /**
@@ -13,6 +14,7 @@ import { ProfilePanel } from './profile-panel';
   imports: [
     BannerPagina,
     ProfilePanel,
+    PeersPanel,
     LucideBuilding2,
     LucideGlobe,
     LucideLanguages,
@@ -47,6 +49,7 @@ import { ProfilePanel } from './profile-panel';
 
       <div class="company-grid">
         <app-profile-panel (profileChange)="profile.set($event)" />
+        <app-peers-panel />
       </div>
     </div>
   `,
