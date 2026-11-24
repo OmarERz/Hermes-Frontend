@@ -1,5 +1,11 @@
 # Funcionalidades y cambios
 
+## Navegación por secciones y base para construir en paralelo (F17.2)
+
+**Qué cambió:** el menú lateral agrupa las pantallas en seis secciones (Inicio, Agentes, Vulnerabilidades, Inventario, Configuración y Operación), y cada sección muestra sus pestañas bajo el banner de la página, con el mismo estilo que tenían las pestañas de Agentes. Las pestañas y secciones se ocultan si el rol no alcanza. Todas las pantallas de D-088 tienen ya su ruta: las que aún no existen muestran una página provisional. Se agregaron el cliente tipado por ruta (`ApiClient`), los enlaces «Ver, Editar o Crear en iTop» (con `itopBaseUrl` en `runtime-config.json`) y se borraron componentes del prototipo sin uso (Registrar activo, Asignar stack, Tarjeta y las pestañas propias de Agentes).
+
+**Comprobación manual:** inicia sesión como lector y recorre las seis secciones; Exportación STIX solo aparece para analista o administrador, y Usuarios, Conexiones, Auditoría, Cola de errores y Asistente solo para administrador. `/stack-tecnologico` lleva a Software y `/feeds` a Fuentes.
+
 ## Conexión con el backend y pantalla Vulnerabilidades (F17.1)
 
 **Qué cambió:** la app ya no usa SSR ni datos de demostración. Inicia sesión con Firebase Auth (emulador del backend en desarrollo, proyecto real con `public/runtime-config.json`), carga el perfil y el rol efectivo desde `GET /api/me`, protege cada ruta con un rol mínimo y manda el token solo a la API. Se quitó el selector «Origen de datos» del menú lateral. Nueva pantalla **Vulnerabilidades** (`/vulnerabilidades`), con el diseño de la tabla de Activos, filtros, conteo por nivel y paginación por cursor contra `GET /api/vulnerabilities`.
