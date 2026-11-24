@@ -1,0 +1,229 @@
+<div class="agent-config-view judge-view">
+  <app-banner-pagina
+    titulo="Configuración del juez"
+    descripcion="Sensibilidad del juez y modo avanzado. Simula el efecto antes de guardar; el juez nunca ejecuta acciones."
+    [icono]="bannerIcon"
+  />
+
+  @if (pageState(); as view) {
+    <section class="config-card">
+      <app-async-state
+        [state]="view"
+        loadingText="Cargando la configuración del juez…"
+        [error]="store.state.error()"
+        (retry)="store.load()"
+      />
+    </section>
+  } @else {
+    <section class="config-summary" aria-label="Resumen de la configuración del juez">
+      <article>
+        <span class="summary-icon"><svg lucideScale aria-hidden="true"></svg></span>
+        <span class="summary-copy"
+          ><small>Perfil vigente</small><strong>{{ currentProfile() }}</strong></span
+        >
+      </article>
+      <article>
+        <span class="summary-icon"><svg lucideLayers aria-hidden="true"></svg></span>
+        <span class="summary-copy"
+          ><small>Versión de configuración</small><strong>v{{ store.version() }}</strong></span
+        >
+      </article>
+      <article>
+        <span class="summary-icon"><svg lucideListChecks aria-hidden="true"></svg></span>
+        <span class="summary-copy">
+          @if (reasons().length) {
+            <small>Motivos activos</small>
+            <strong>{{ activeReasons() }} de {{ reasons().length }}</strong>
+          } @else {
+            <small>Cambios sin guardar</small>
+            <strong>{{ editor.changeCount() }}</strong>
+          }
+        </span>
+      </article>
+    </section>
+
+    <section class="config-panel" aria-label="Configuración del juez">
+      <div class="config-left-column">
+        <article class="config-card profile-card">
+          <header>
+            <h2><svg lucideShieldCheck aria-hidden="true"></svg> Sensibilidad del juez</h2>
+            <p>
+              Define qué tanto puede mover el juez la puntuación base. No cambia las protecciones
+              bloqueadas ni da acciones al juez.
+            </p>
+          </header>
+          @if (profileParam(); as param) {
+            <div class="profile-section-heading">
+              <h3>
+                Perfil
+                <app-ayuda-tooltip
+                  texto="Multiplica los rangos de los motivos del juez, fija si puede bajar la puntuación y la zona muerta de referencia (docs/07 §12)."
+                />
+              </h3>
+              <p>{{ param.description }}</p>
+            </div>
+            <fieldset class="profile-options judge-profiles" [disabled]="!editor.canEdit(param)">
+              <legend class="field-label">Perfil de sensibilidad</legend>
+              @for (profile of profiles(); track profile.value) {
+                <label
+                  class="profile-option"
+                  [class.selected]="editor.value(param.key) === profile.value"
+                >
+                  <span class="profile-option-heading"
+                    ><input
+                      type="radio"
+                      name="sensitivity-profile"
+                      [value]="profile.value"
+                      [checked]="editor.value(param.key) === profile.value"
+                      (change)="editor.set(param.key, profile.value)" /><svg
+                      [lucideIcon]="profile.icon"
+                      aria-hidden="true"
+                    ></svg
+                  ></span>
+                  <strong>{{ profile.label }}</strong>
+                  @if (profile.text) {
+                    <small>{{ profile.text }}</small>
+                  }
+                </label>
+              }
+            </fieldset>
+            @if (editor.fieldErrors()[param.key]; as message) {
+              <p class="field-error" role="alert">{{ message }}</p>
+            }
+          } @else {
+            <p class="connection-notice compact">
+              El servidor no publica el perfil de sensibilidad.
+            </p>
+          }
+          <label class="tool-setting advanced-toggle" for="advanced-mode">
+            <svg lucideSlidersHorizontal aria-hidden="true"></svg>
+            <span class="tool-copy">
+              <strong>Modo avanzado</strong>
+              <small>{{
+                advancedChanged()
+                  ? 'Guarda o descarta los cambios avanzados para ocultarlo'
+                  : 'Umbral de doble revisión, razonamiento, zona muerta y más'
+              }}</small>
+            </span>
+            <input
+              id="advanced-mode"
+              class="tool-switch"
+              type="checkbox"
+              role="switch"
+              [checked]="showAdvanced()"
+              [disabled]="advancedChanged()"
+              (change)="setAdvanced($event)"
+            />
+          </label>
+          <img
+            class="config-robot"
+            src="/assets/hermes-agent-laptop.png"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+          />
+        </article>
+      </div>
+
+      <div class="config-right-column">
+        @if (showAdvanced()) {
+          <section
+            class="custom-config-panel custom-config-right-panel"
+            aria-labelledby="advanced-title"
+          >
+            <header>
+              <div class="custom-config-icon">
+                <svg lucideSlidersHorizontal aria-hidden="true"></svg>
+              </div>
+              <div>
+                <h3 id="advanced-title">Modo avanzado</h3>
+                <p>Parámetros del juez que publica el servidor, cada uno con su rango.</p>
+              </div>
+            </header>
+            <small class="custom-config-safety-note"
+              >Este modo no cambia permisos ni las protecciones bloqueadas: el juez nunca ejecuta
+              acciones.</small
+            >
+            <div class="custom-slider-list">
+              @for (param of advancedParams(); track param.key) {
+                <app-config-field
+                  variant="card"
+                  [param]="param"
+                  [label]="editor.label(param)"
+                  [hint]="hint(param)"
+                  [icon]="icon(param)"
+                  [value]="editor.value(param.key)"
+                  [editable]="editor.canEdit(param)"
+                  [changed]="editor.isChanged(param.key)"
+                  [error]="editor.fieldErrors()[param.key]"
+                  (valueChange)="editor.set(param.key, $event)"
+                />
+              } @empty {
+                <p class="custom-config-note">
+                  El servidor no publica parámetros avanzados del juez.
+                </p>
+              }
+            </div>
+          </section>
+          @if (reasons().length) {
+            <section class="config-card tools-card reasons-card" aria-labelledby="reasons-title">
+              <header>
+                <h2 id="reasons-title">
+                  <svg lucideListChecks aria-hidden="true"></svg> Motivos del juez
+                </h2>
+                <p>
+                  Activa o desactiva cada motivo que el juez puede proponer ({{
+                    activeReasons()
+                  }}
+                  de {{ reasons().length }} activos).
+                </p>
+              </header>
+              @for (param of reasons(); track param.key) {
+                <app-config-field
+                  [param]="param"
+                  [label]="reasonLabel(param)"
+                  [hint]="param.description"
+                  [value]="editor.value(param.key)"
+                  [editable]="editor.canEdit(param)"
+                  [changed]="editor.isChanged(param.key)"
+                  [error]="editor.fieldErrors()[param.key]"
+                  (valueChange)="editor.set(param.key, $event)"
+                />
+              }
+            </section>
+          }
+        } @else {
+          <app-locked-protections [parameters]="editor.parameters()" />
+          <section class="config-card hitl-card">
+            <header>
+              <h2><svg lucideBot aria-hidden="true"></svg> Calibración supervisada</h2>
+              <p>
+                Las propuestas semanales de ajuste esperan la decisión de un administrador antes de
+                aplicarse.
+              </p>
+            </header>
+            <a routerLink="/calibracion" class="secondary-link">Ver propuestas de calibración</a>
+          </section>
+        }
+      </div>
+    </section>
+
+    @if (editor.ruleErrors().length) {
+      <div class="rule-errors" role="alert">
+        <ul>
+          @for (message of editor.ruleErrors(); track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <app-simulation-panel class="judge-simulation" [editor]="editor" />
+
+    @if (showAdvanced()) {
+      <app-locked-protections class="judge-locked" [parameters]="editor.parameters()" />
+    }
+
+    <app-config-save-bar title="Confirmar cambios del juez" [editor]="editor" />
+  }
+</div>

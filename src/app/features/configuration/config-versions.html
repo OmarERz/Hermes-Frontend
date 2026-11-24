@@ -1,0 +1,98 @@
+<section class="config-card versions-card" aria-labelledby="versions-title">
+  <header>
+    <h2 id="versions-title"><svg lucideHistory aria-hidden="true"></svg> Historial de versiones</h2>
+    <p>
+      Cada cambio guardado crea una versión de toda la configuración (fórmula y parámetros).
+      Restaurar crea una versión nueva con los valores de la elegida.
+    </p>
+  </header>
+  @if (notice()) {
+    <p class="versions-notice" role="status">{{ notice() }}</p>
+  }
+  @if (state(); as view) {
+    <app-async-state
+      [state]="view"
+      loadingText="Cargando versiones…"
+      emptyText="Todavía no hay versiones."
+      [error]="pager.state.error()"
+      (retry)="pager.reload()"
+    />
+  } @else {
+    <div class="table-scroll">
+      <table class="versions-table">
+        <thead>
+          <tr>
+            <th scope="col">Versión</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Autor</th>
+            <th scope="col">Cambio</th>
+            <th scope="col"><span class="sr-only">Acción</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.version) {
+            <tr [class.current]="row.version === store.version()">
+              <td class="numeric">
+                v{{ row.version }}
+                @if (row.version === store.version()) {
+                  <span class="current-chip">Vigente</span>
+                }
+              </td>
+              <td>{{ row.when }}</td>
+              <td>{{ row.author }}</td>
+              <td>{{ row.summary }}</td>
+              <td>
+                @if (row.version !== store.version()) {
+                  <button
+                    *appIfRole="restoreRole"
+                    type="button"
+                    class="cancel-button"
+                    [attr.aria-label]="'Restaurar la versión ' + row.version"
+                    (click)="ask(row)"
+                  >
+                    Restaurar
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (pager.hasPrevious() || pager.hasNext()) {
+    <nav class="versions-pager" aria-label="Páginas del historial">
+      <button
+        type="button"
+        class="cancel-button"
+        aria-label="Página anterior"
+        [disabled]="!pager.hasPrevious() || pager.state.loading()"
+        (click)="pager.previous()"
+      >
+        <svg lucideArrowLeft aria-hidden="true"></svg>
+      </button>
+      <span>Página {{ pager.pageIndex() + 1 }}</span>
+      <button
+        type="button"
+        class="cancel-button"
+        aria-label="Página siguiente"
+        [disabled]="!pager.hasNext()"
+        (click)="pager.next()"
+      >
+        <svg lucideArrowRight aria-hidden="true"></svg>
+      </button>
+    </nav>
+  }
+</section>
+
+@if (target(); as entry) {
+  <app-confirm-changes-dialog
+    [title]="'Restaurar la versión ' + entry.version"
+    [changes]="restoreRows()"
+    [saving]="restoring()"
+    [error]="restoreError()"
+    (confirmed)="confirm()"
+    (cancelled)="cancel()"
+    (reloadRequested)="reload()"
+  />
+}

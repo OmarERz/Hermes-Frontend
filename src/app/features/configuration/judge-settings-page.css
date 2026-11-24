@@ -1,0 +1,35 @@
+.profile-options.judge-profiles {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.advanced-toggle {
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.field-error {
+  margin: 6px 0 0;
+  color: var(--danger-text, #b91c1c);
+  font-size: calc(12px + var(--font-size-increase, 0px));
+}
+.rule-errors {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  border: 1px solid var(--danger-text, #b91c1c);
+  border-radius: 10px;
+  background: var(--danger-bg);
+  color: var(--text-primary);
+  font-size: calc(13px + var(--font-size-increase, 0px));
+}
+.rule-errors ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.judge-simulation,
+.judge-locked {
+  display: block;
+  margin-top: 14px;
+}
+@media (max-width: 760px) {
+  .profile-options.judge-profiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
