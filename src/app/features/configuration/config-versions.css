@@ -1,0 +1,82 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.versions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: calc(13px + var(--font-size-increase, 0px));
+}
+.versions-table th,
+.versions-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+.versions-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.versions-table .numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.versions-table tr.current td {
+  background: var(--accent-wash);
+}
+.current-chip {
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: calc(10px + var(--font-size-increase, 0px));
+  font-weight: 700;
+}
+.versions-notice {
+  margin: 0 0 10px;
+  color: var(--success-text, #16804a);
+}
+.versions-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+.versions-pager svg {
+  width: 16px;
+  height: 16px;
+}
+.cancel-button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-weight: 700;
+  cursor: pointer;
+}
+.cancel-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.cancel-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
