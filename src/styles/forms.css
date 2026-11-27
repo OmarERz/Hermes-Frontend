@@ -52,69 +52,65 @@
   line-height: var(--leading-snug);
 }
 
+/*
+ * The select or the input is the box itself (border, fill, focus ring), so the ring of the page's base rules marks
+ * it; the icons sit on top of it and let the clicks through.
+ */
 .app-shell .page-content .control {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
   min-width: 0;
-  min-height: var(--control-h);
-  box-sizing: border-box;
-  padding: 0 var(--control-pad-x);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  transition:
-    border-color 0.16s ease,
-    box-shadow 0.16s ease;
-}
-.app-shell .page-content .control:hover {
-  border-color: color-mix(in srgb, var(--accent-violet) 55%, var(--border));
-}
-.app-shell .page-content .control:focus-within {
-  border-color: var(--accent-violet);
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-offset);
-}
-.app-shell .page-content .control > svg {
-  width: 17px;
-  height: 17px;
-  flex: none;
-  color: var(--accent-violet);
-  stroke-width: 1.9;
-}
-.app-shell .page-content .control > svg.control-chevron {
-  width: 16px;
-  height: 16px;
-  margin-left: calc(-1 * var(--space-6));
-  color: var(--text-muted);
-  pointer-events: none;
 }
 .app-shell .page-content .control > :is(select, input) {
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  min-height: calc(var(--control-h) - 2px);
+  min-height: var(--control-h);
+  box-sizing: border-box;
   margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  padding: 0 var(--control-pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
   box-shadow: none;
-  color: inherit;
+  color: var(--text-primary);
   font: inherit;
-  outline: none;
+  font-size: var(--text-sm);
+  transition: border-color 0.16s ease;
 }
-/* The ring is on the whole control (:focus-within), not on the select or the input inside it. */
+.app-shell .page-content .control > :is(select, input):hover {
+  border-color: color-mix(in srgb, var(--accent-violet) 55%, var(--border));
+}
 .app-shell .page-content .control > :is(select, input):focus-visible {
-  outline: none;
+  border-color: var(--accent-violet);
+}
+.app-shell .page-content .control > svg {
+  position: absolute;
+  top: 50%;
+  left: var(--control-pad-x);
+  width: 17px;
+  height: 17px;
+  color: var(--accent-violet);
+  stroke-width: 1.9;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+/* Room for the leading icon (17 px and a gap of 8). */
+.app-shell .page-content .control > svg:not(.control-chevron) ~ :is(select, input) {
+  padding-left: calc(var(--control-pad-x) + 17px + var(--space-2));
+}
+.app-shell .page-content .control > svg.control-chevron {
+  right: var(--control-pad-x);
+  left: auto;
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
 }
 /* One chevron: the native arrow is off and the select leaves room for the drawn one. */
 .app-shell .page-content .control > select {
   appearance: none;
-  padding-right: var(--space-6);
+  padding-right: calc(var(--control-pad-x) + 16px + var(--space-2));
   text-overflow: ellipsis;
   cursor: pointer;
 }
@@ -131,13 +127,7 @@
 }
 .app-shell .page-content .control > input[type='date']::-webkit-calendar-picker-indicator {
   cursor: pointer;
-  opacity: 0.75;
-}
-.app-shell[data-theme='dark']
-  .page-content
-  .control
-  > input[type='date']::-webkit-calendar-picker-indicator {
-  filter: invert(0.85);
+  opacity: 0.8;
 }
 
 /* Checkboxes and radios: 18 px, a 2 px border at 3:1 or more in both themes, the strong accent when checked. */
@@ -210,7 +200,7 @@
   cursor: not-allowed;
 }
 @media (prefers-reduced-motion: reduce) {
-  .app-shell .page-content .control,
+  .app-shell .page-content .control > :is(select, input),
   .app-shell .page-content input:is([type='checkbox'], [type='radio']),
   .app-shell .page-content input:is([type='checkbox'], [type='radio'])::before {
     transition: none;

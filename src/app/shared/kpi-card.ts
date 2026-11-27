@@ -74,6 +74,7 @@ export function kpiState(status: LoadStatus): KpiState {
   styles: `
     :host {
       position: relative;
+      container-type: inline-size;
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       grid-template-rows: auto auto 1fr;
@@ -89,7 +90,7 @@ export function kpiState(status: LoadStatus): KpiState {
       color: var(--text-primary);
     }
     :host(.kpi-has-icon) {
-      grid-template-columns: 40px minmax(0, 1fr);
+      grid-template-columns: auto minmax(0, 1fr);
     }
     :host(.kpi-nested) {
       padding: var(--space-3);
@@ -145,17 +146,18 @@ export function kpiState(status: LoadStatus): KpiState {
       background: var(--sev-low-bg);
       color: var(--sev-low-text);
     }
+    /* Block text with the help button inline at its end (it never drops to a line of its own). */
     .kpi-label {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-1);
+      display: block;
       min-width: 0;
       color: var(--text-secondary);
       font-size: var(--text-xs);
       font-weight: var(--weight-semibold);
       line-height: var(--leading-snug);
       text-wrap: pretty;
+    }
+    .kpi-label app-ayuda-tooltip {
+      margin-left: var(--space-0-5);
     }
     .kpi-note {
       color: var(--text-muted);
@@ -213,6 +215,29 @@ export function kpiState(status: LoadStatus): KpiState {
       overflow: hidden;
       clip: rect(0 0 0 0);
       white-space: nowrap;
+    }
+    /*
+     * A narrow card (two columns on a phone, five in a panel): a smaller tile next to the label, and the note and the
+     * value across the whole card, so the label is not squeezed into a column beside the tile.
+     */
+    @container (max-width: 180px) {
+      .kpi-icon {
+        grid-row: auto;
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+      }
+      .kpi-icon svg {
+        width: 18px;
+        height: 18px;
+      }
+      .kpi-label {
+        align-self: center;
+      }
+      .kpi-note,
+      .kpi-value-row {
+        grid-column: 1 / -1;
+      }
     }
     @keyframes kpi-shimmer {
       from {
