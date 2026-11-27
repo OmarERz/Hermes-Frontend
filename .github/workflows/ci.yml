@@ -28,5 +28,17 @@ jobs:
       # Lifecycle scripts of dependencies are not run; the build only needs the esbuild binary package.
       - name: Install dependencies
         run: npm ci --ignore-scripts
-      - name: Lint, format check, unit tests and build
+      - name: Lint, format check, unit tests with the coverage thresholds and build
         run: npm run verify
+
+  # In parallel with verify: Semgrep in its pinned image (scripts/semgrep.sh), about half a minute.
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Semgrep (registry packs and the project rules in .semgrep/)
+        run: bash scripts/semgrep.sh

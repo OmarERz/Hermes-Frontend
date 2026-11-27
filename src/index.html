@@ -8,6 +8,7 @@
     <link rel="icon" type="image/png" href="/assets/hermes-winged-boot.png" />
   </head>
   <body>
-    <app-root></app-root>
+    <!-- ngCspNonce: the nginx of the front image (docker/nginx) writes a per-request nonce here and in its CSP. -->
+    <app-root ngCspNonce="HERMES_CSP_NONCE"></app-root>
   </body>
 </html>

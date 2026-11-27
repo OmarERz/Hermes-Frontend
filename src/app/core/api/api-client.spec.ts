@@ -56,6 +56,41 @@ describe('ApiClient', () => {
     await result;
   });
 
+  it('sends POST, PATCH and DELETE to the filled path', async () => {
+    const approved = firstValueFrom(
+      api.post('/api/calibration/proposals/{id}/approve', { path: { id: 'p 1' } }),
+    );
+    const approve = backend.expectOne(
+      'http://127.0.0.1:8000/api/calibration/proposals/p%201/approve',
+    );
+    expect(approve.request.method).toBe('POST');
+    approve.flush({});
+    await approved;
+
+    const patched = firstValueFrom(
+      api.patch('/api/sources/{id}', { path: { id: '7' }, body: { active: false } }),
+    );
+    const patch = backend.expectOne('http://127.0.0.1:8000/api/sources/7');
+    expect(patch.request.method).toBe('PATCH');
+    expect(patch.request.body).toEqual({ active: false });
+    patch.flush({});
+    await patched;
+
+    const deleted = firstValueFrom(api.delete('/api/peer-companies/{id}', { path: { id: '3' } }));
+    const remove = backend.expectOne('http://127.0.0.1:8000/api/peer-companies/3');
+    expect(remove.request.method).toBe('DELETE');
+    remove.flush(null);
+    await deleted;
+  });
+
+  it('fails with an ApiError, without a request, when a path parameter is empty', async () => {
+    const result = firstValueFrom(api.get('/api/assets/{ci_id}', { path: { ci_id: '' } })).catch(
+      (error: unknown) => error,
+    );
+    await expect(result).resolves.toBeInstanceOf(ApiError);
+    backend.expectNone(() => true);
+  });
+
   it('maps failures to ApiError', async () => {
     const result = firstValueFrom(api.get('/api/me')).catch((error: unknown) => error);
     backend

@@ -1,0 +1,33 @@
+# Project rules for Angular: the templates, which the registry packs do not parse (they read TypeScript and
+# JavaScript only), and the DOM HTML sinks. Run by scripts/semgrep.sh next to the registry packs.
+rules:
+  - id: angular-html-property-binding
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      Binding HTML into [innerHTML] or [outerHTML] renders markup from data (news, CI names, judge text), which is
+      an XSS sink even with Angular's sanitizer. Bind text with {{ }} or build the elements in the template.
+    paths:
+      include: ['*.html', '*.ts']
+    pattern-regex: \[\s*(innerHTML|outerHTML)\s*\]
+  - id: angular-bypass-security-trust
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      bypassSecurityTrust* turns off Angular's sanitizer for that value. Keep the value sanitized and bind it as
+      text or as a safe URL instead.
+    paths:
+      include: ['*.html', '*.ts']
+    pattern-regex: \bbypassSecurityTrust(Html|Script|Style|Url|ResourceUrl)\b
+  - id: dom-html-sink
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      Writing HTML through the DOM bypasses Angular's template escaping. Set textContent or render the value in a
+      template instead.
+    pattern-either:
+      - pattern: $EL.innerHTML = $VALUE
+      - pattern: $EL.outerHTML = $VALUE
+      - pattern: $EL.insertAdjacentHTML(...)
+      - pattern: document.write(...)
+      - pattern: document.writeln(...)

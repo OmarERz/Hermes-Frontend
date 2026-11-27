@@ -12,6 +12,7 @@ export default defineConfig([
       'coverage/',
       '.angular/',
       'tmp/',
+      'e2e/test-output/',
       'src/app/core/api/schema.d.ts',
     ],
   },
