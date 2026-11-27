@@ -46,6 +46,7 @@
         <svg lucideTriangleAlert aria-hidden="true"></svg>
         <h2 id="errors-title">Elementos con error</h2>
       </div>
+      <app-columns-toggle [(all)]="allColumns" controls="errors-table" phoneCards />
       <span>Página {{ pager.pageIndex() + 1 }}</span>
     </header>
     @if (tableState(); as state) {
@@ -65,15 +66,21 @@
         role="region"
         aria-label="Cola de errores; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table class="errors-table">
+        <table
+          id="errors-table"
+          class="errors-table data-table cards-mobile"
+          [class.all-columns]="allColumns()"
+        >
           <thead>
             <tr>
               <th scope="col">Fecha</th>
               <th scope="col">Origen</th>
               <th scope="col">Estado</th>
-              <th scope="col">Intentos</th>
-              <th scope="col">Próximo intento</th>
+              <th scope="col" class="col-from-lg">Intentos</th>
+              <th scope="col" class="col-from-lg">Próximo intento</th>
               <th scope="col">Error</th>
               <th scope="col">Relacionado</th>
               <th scope="col"><span class="sr-only">Acción</span></th>
@@ -82,20 +89,28 @@
           <tbody>
             @for (row of rows(); track row.id) {
               <tr>
-                <td class="numeric">{{ row.when }}</td>
-                <td>
+                <td class="cell-date" data-label="Fecha" [title]="row.when">{{ row.whenShort }}</td>
+                <td class="card-title">
                   <strong>{{ row.kindLabel }}</strong>
                   <small [attr.title]="row.componentCode">{{ row.component }}</small>
                 </td>
-                <td>
+                <td data-label="Estado">
                   <app-chip [tone]="row.scheduled ? 'warning' : 'danger'">{{
                     row.statusLabel
                   }}</app-chip>
                 </td>
-                <td class="numeric">{{ row.attempts }}</td>
-                <td>{{ row.nextAttempt }}</td>
-                <td class="error-text">{{ row.error }}</td>
-                <td class="related">
+                <td class="numeric col-from-lg" data-label="Intentos">{{ row.attempts }}</td>
+                <td
+                  class="cell-date col-from-lg"
+                  data-label="Próximo intento"
+                  [title]="row.nextAttempt"
+                >
+                  {{ row.nextAttemptShort }}
+                </td>
+                <td class="error-text card-full" data-label="Error">
+                  <span class="cell-text">{{ row.error }}</span>
+                </td>
+                <td class="related" data-label="Relacionado">
                   @if (row.cve) {
                     <span class="code">{{ row.cve }}</span>
                   }
@@ -114,7 +129,7 @@
                     —
                   }
                 </td>
-                <td class="row-actions">
+                <td class="row-actions card-full">
                   @if (row.retryable) {
                     <button
                       type="button"

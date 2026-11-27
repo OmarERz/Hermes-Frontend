@@ -5,13 +5,14 @@ import { fadeEdges, ScrollFade } from './scroll-fade.directive';
 @Component({
   imports: [ScrollFade],
   template: `
-    <div class="row" appScrollFade>
+    <div class="row" appScrollFade [appScrollFadeReveal]="reveal()">
       <button type="button" [attr.aria-pressed]="selected() === 'a'">A</button>
       <button type="button" [attr.aria-pressed]="selected() === 'b'">{{ label() }}</button>
     </div>
   `,
 })
 class Host {
+  readonly reveal = signal(true);
   readonly selected = signal<'a' | 'b'>('a');
   readonly label = signal('B');
 }
@@ -50,9 +51,10 @@ function place(element: Element, left: number, width: number): void {
 /** Lets the MutationObserver callbacks run. */
 const mutationsSettle = () => new Promise((resolve) => setTimeout(resolve));
 
-async function render(size: Size, firstButtonLeft = 10) {
+async function render(size: Size, firstButtonLeft = 10, reveal = true) {
   TestBed.configureTestingModule({ imports: [Host] });
   const fixture = TestBed.createComponent(Host);
+  fixture.componentInstance.reveal.set(reveal);
   const element = fixture.nativeElement as HTMLElement;
   const row = element.querySelector<HTMLElement>('.row')!;
   const [first, second] = Array.from(row.querySelectorAll('button'));
@@ -108,6 +110,17 @@ describe('ScrollFade', () => {
     const { row } = await render({ scrollWidth: 800, clientWidth: 300 }, 400);
     // 400 (its left) - 0 (the row's) - (300 - 100) / 2
     expect(row.scrollLeft).toBe(300);
+  });
+
+  it('only marks the edges of a table scroller, without moving it to the selection', async () => {
+    const { fixture, row } = await render({ scrollWidth: 800, clientWidth: 300 }, 400, false);
+    expect(row.scrollLeft).toBe(0);
+    expect(row.getAttribute('data-fade')).toBe('end');
+
+    fixture.componentInstance.selected.set('b');
+    await fixture.whenStable();
+    await mutationsSettle();
+    expect(row.scrollLeft).toBe(0);
   });
 
   it('brings the new selection into view and updates the mark when the items change', async () => {

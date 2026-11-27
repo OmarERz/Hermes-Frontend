@@ -3,9 +3,10 @@ import { provideRouter } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import { provideFakeSession } from '../../testing/fake-session';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 import { ErrorQueuePage } from './error-queue.page';
 import { ErrorQueueItem, ErrorQueueService, NotificationEventRow } from './error-queue.service';
+import { cardLabelMismatches } from '../../testing/card-labels';
 
 const NOTIFICATION: ErrorQueueItem = {
   id: '0196a6f0-0000-7000-8000-0000000000aa',
@@ -106,7 +107,7 @@ describe('ErrorQueuePage', () => {
     const { element } = await render();
     const [notification, itop, llm] = rows(element);
     expect(cells(notification)).toEqual([
-      formatDateTime(NOTIFICATION.created_at),
+      formatShortDateTime(NOTIFICATION.created_at),
       'Notificación Ticket nuevo',
       'Agotó sus reintentos',
       '5',
@@ -115,6 +116,10 @@ describe('ErrorQueuePage', () => {
       'CVE-2026-10001 Ticket R-000123 Ver recomendación',
       'Reintentar',
     ]);
+    // The cells keep the full date and the whole error in their title.
+    expect(notification.querySelector('td')?.getAttribute('title')).toBe(
+      formatDateTime(NOTIFICATION.created_at),
+    );
     // External text is data: never HTML.
     expect(notification.querySelector('td.error-text b')).toBeNull();
     expect(notification.querySelector('a.row-link')?.getAttribute('href')).toBe(
@@ -135,6 +140,25 @@ describe('ErrorQueuePage', () => {
     expect(llm.querySelector('small[title]')?.getAttribute('title')).toBe('news_analyst');
   });
 
+  it('shows the attempts and the next attempt on demand', async () => {
+    const { element, settle } = await render();
+    const table = element.querySelector('table.errors-table')!;
+    const toggle = element.querySelector<HTMLButtonElement>('app-columns-toggle button')!;
+    expect(toggle.getAttribute('aria-controls')).toBe(table.id);
+    toggle.click();
+    await settle();
+    expect(table.classList).toContain('all-columns');
+  });
+
+  it('labels each field of the phone cards with its column header', async () => {
+    const { element } = await render();
+    const table = element.querySelector('table.errors-table') as HTMLTableElement;
+    expect(table.classList).toContain('cards-mobile');
+    const { labelled, mismatches } = cardLabelMismatches(table);
+    expect(labelled).toBeGreaterThan(0);
+    expect(mismatches).toEqual([]);
+  });
+
   it('says a retry is scheduled only when the API gives its date', async () => {
     const queue = new FakeQueue();
     const scheduled = { ...LLM, next_attempt_at: '2026-11-27T10:00:00Z' };
@@ -150,7 +174,7 @@ describe('ErrorQueuePage', () => {
     expect(cells(row).slice(2, 5)).toEqual([
       'Espera su próximo reintento',
       '3',
-      formatDateTime(scheduled.next_attempt_at),
+      formatShortDateTime(scheduled.next_attempt_at),
     ]);
     expect(row.querySelector('app-chip')?.getAttribute('data-tone')).toBe('warning');
     // Values the front does not know yet are shown as they come.

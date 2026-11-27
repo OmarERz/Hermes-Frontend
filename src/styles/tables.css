@@ -1,0 +1,261 @@
+/*
+ * Data tables (F19.5, docs/front/diseno-ronda-1.md G14). A table opts in with the class .data-table, inside its
+ * horizontal scroller (.table-scroll, which also carries the appScrollFade directive without reveal: it marks with
+ * data-fade the edges that hide columns).
+ *
+ * - The table is as wide as its columns need: no fixed minimum (the prototype's 860–1150 px minimums did not fit
+ *   at 1280 px). Text wraps at word boundaries by default, headers included (a long header folds only when the
+ *   table is squeezed); dates, figures, codes and chips do not.
+ * - Cells: .cell-date and .cell-nowrap keep one line; inside a cell, .cell-text wraps a long text in a column with a
+ *   minimum width (220 px; 160 px with .cell-text-sm), where only a word longer than that breaks. .cell-truncate
+ *   (one line with an ellipsis) and .cell-clamp-2 (two lines) only cut a text whose whole value the person can also
+ *   reach with keyboard or touch: the detail of the row, or the page a link of the row opens. A cut text also
+ *   carries its full value in `title`, and stays whole in the DOM for screen readers.
+
+ * - Columns by priority (container queries on the scroller): .col-from-md shows when the scroller is at least
+ *   760 px wide (about a 1280 px window), .col-from-lg from 1200 px (about 1600 px). Their data is also in the
+ *   detail of the row (or the page its link opens); a table without one has «Todas las columnas»
+ *   (<app-columns-toggle>), which shows them all with .all-columns.
+ * - .sticky-first keeps the first column in view while the table scrolls sideways, with a shadow once it covers
+ *   something.
+ * - .cards-mobile: at phone widths (560 px or less) each row is a card of label/value pairs. Each cell's label is its
+ *   data-label attribute; a .card-title cell heads the card without a label (whatever its column) and .card-full
+ *   cells span the card.
+ *   The header row stays in the accessibility tree (visually hidden), so the table keeps its headers.
+ *
+ * The selectors start at .app-shell .page-content so they win over the prototype's table rules (scoped to
+ * .assets-view and .agent-history-view in the global sheets, including their column-number nowrap rules) and over
+ * the component sheets, whatever the order of the sheets.
+ */
+.app-shell .page-content .table-scroll:has(> .data-table) {
+  container: data-table / inline-size;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.app-shell .page-content .data-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: var(--text-sm);
+}
+.app-shell .page-content .data-table :is(th, td) {
+  padding: var(--cell-pad-y) var(--cell-pad-x);
+  white-space: normal;
+  vertical-align: middle;
+}
+.app-shell .page-content .data-table th {
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  vertical-align: bottom;
+}
+.app-shell .page-content .data-table td {
+  line-height: var(--leading-normal);
+}
+.app-shell .page-content .data-table .numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Cells. */
+.app-shell .page-content .data-table :is(.cell-date, .cell-nowrap) {
+  white-space: nowrap;
+}
+.app-shell .page-content .data-table .cell-date {
+  font-variant-numeric: tabular-nums;
+}
+.app-shell .page-content .data-table .cell-truncate {
+  display: block;
+  max-width: var(--cell-truncate-max, 24ch);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-shell .page-content .data-table .cell-text {
+  display: block;
+  min-width: var(--cell-text-min, 13.75rem);
+  max-width: var(--cell-text-max, 26rem);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.app-shell .page-content .data-table .cell-text.cell-text-sm {
+  --cell-text-min: 10rem;
+}
+.app-shell .page-content .data-table .cell-clamp-2 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/*
+ * Columns by priority: hidden until the scroller is wide enough. A narrow scroller (a phone, a tablet, a side
+ * column) scrolls its table sideways anyway, so its headers keep one line instead of folding word by word.
+ */
+@container data-table (max-width: 759.98px) {
+  .app-shell .page-content .data-table .col-from-md {
+    display: none;
+  }
+  .app-shell .page-content .data-table th {
+    white-space: nowrap;
+  }
+}
+@container data-table (max-width: 1199.98px) {
+  .app-shell .page-content .data-table .col-from-lg {
+    display: none;
+  }
+}
+
+/* «Todas las columnas»: the priority columns of a table without a row detail, on demand. */
+.app-shell .page-content .data-table.all-columns :is(.col-from-md, .col-from-lg) {
+  display: table-cell;
+}
+@media (min-width: 1600px) {
+  .app-shell .page-content app-columns-toggle {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  .app-shell .page-content app-columns-toggle[data-phone-cards] {
+    display: none;
+  }
+}
+
+/*
+ * Sticky first column: opaque, above the cells that scroll under it. A screen whose rows can be selected tints the
+ * selected one with --row-tint on its row (the same colour it gives the other cells), so the sticky cell matches.
+ */
+.app-shell .page-content .data-table.sticky-first > * > tr > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+.app-shell .page-content .data-table.sticky-first > tbody > tr > td:first-child {
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--row-tint, transparent), var(--row-tint, transparent));
+}
+.app-shell
+  .page-content
+  .table-scroll:is([data-fade='start'], [data-fade='both'])
+  > .data-table.sticky-first
+  > *
+  > tr
+  > :first-child {
+  box-shadow: 8px 0 8px -8px var(--table-edge-shadow);
+}
+
+/* Edges that hide columns (data-fade of appScrollFade): a soft shadow inside the scroller, under the cells. */
+.app-shell .page-content .table-scroll:has(> .data-table) {
+  --table-edge-shadow: rgba(50, 16, 68, 0.28);
+  background-repeat: no-repeat;
+  background-size: var(--space-6) 100%;
+}
+.app-shell[data-theme='dark'] .page-content .table-scroll:has(> .data-table) {
+  --table-edge-shadow: rgba(3, 0, 14, 0.7);
+}
+.app-shell .page-content .table-scroll[data-fade='end']:has(> .data-table) {
+  background-image: linear-gradient(to left, var(--table-edge-shadow), transparent);
+  background-position: right;
+}
+.app-shell .page-content .table-scroll[data-fade='start']:has(> .data-table:not(.sticky-first)) {
+  background-image: linear-gradient(to right, var(--table-edge-shadow), transparent);
+  background-position: left;
+}
+.app-shell .page-content .table-scroll[data-fade='both']:has(> .data-table) {
+  background-image:
+    linear-gradient(to right, var(--table-edge-shadow), transparent),
+    linear-gradient(to left, var(--table-edge-shadow), transparent);
+  background-position: left, right;
+}
+.app-shell .page-content .table-scroll[data-fade='both']:has(> .data-table.sticky-first) {
+  background-image: linear-gradient(to left, var(--table-edge-shadow), transparent);
+  background-position: right;
+}
+
+/* Phones: each row is a card of label/value pairs. */
+@media (max-width: 560px) {
+  .app-shell .page-content .data-table.cards-mobile,
+  .app-shell .page-content .data-table.cards-mobile > tbody {
+    display: block;
+    width: 100%;
+  }
+  .app-shell .page-content .data-table.cards-mobile > thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3) var(--space-4);
+    padding: var(--card-pad-compact);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-soft);
+  }
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr + tr {
+    margin-top: var(--space-3);
+  }
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr:is(.selected-row, .is-selected) {
+    border-color: var(--accent);
+    background: var(--accent-wash);
+  }
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr > td {
+    position: static;
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    white-space: normal;
+  }
+  .app-shell .page-content .data-table.cards-mobile.sticky-first > * > tr > :first-child {
+    position: static;
+    background: none;
+    box-shadow: none;
+  }
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr > td :is(a, button) {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr > td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: var(--space-0-5);
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+  }
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr > :is(.card-title, .card-full) {
+    grid-column: 1 / -1;
+  }
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr > .card-title {
+    order: -1;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+  }
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr > td:empty {
+    display: none;
+  }
+  /* A card has room for every field: the priority columns come back. */
+  .app-shell .page-content .data-table.cards-mobile :is(.col-from-md, .col-from-lg) {
+    display: block;
+  }
+  .app-shell .page-content .data-table.cards-mobile :is(.cell-truncate, .cell-text) {
+    max-width: none;
+    min-width: 0;
+  }
+  .app-shell .page-content .data-table.cards-mobile .cell-truncate {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

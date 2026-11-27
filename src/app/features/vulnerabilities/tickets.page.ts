@@ -14,7 +14,9 @@ import { AsyncStateComponent, ViewState } from '../../shared/async-state.compone
 import { Chip, ChipTone } from '../../shared/chip';
 import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink } from '../../shared/itop-links';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
+import { ColumnsToggle } from '../../shared/columns-toggle';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import { ThreatAlert, Ticket, TicketsService } from './tickets.service';
 import { RELEVANCE_LABELS, URGENCY_LABELS } from './vulnerability-texts';
 
@@ -42,7 +44,9 @@ const URGENCY_TONES: Record<number, ChipTone> = { 1: 'critical', 2: 'high', 3: '
     BannerPagina,
     AsyncStateComponent,
     Chip,
+    ColumnsToggle,
     ItopLink,
+    ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
     LucideChevronDown,
@@ -61,6 +65,9 @@ export class TicketsPage {
   readonly urgencyLabels = URGENCY_LABELS;
   readonly relevanceLabels = RELEVANCE_LABELS;
   readonly formatDateTime = formatDateTime;
+  readonly formatShortDateTime = formatShortDateTime;
+  /** «Todas las columnas» of the alerts: the vector, which has no detail of its own. */
+  readonly allAlertColumns = signal(false);
 
   readonly urgency = signal<number | null>(null);
 

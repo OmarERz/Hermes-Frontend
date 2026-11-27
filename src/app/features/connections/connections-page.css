@@ -33,17 +33,16 @@
 .connections-panel {
   margin-bottom: 15px;
 }
-table.connections-table {
-  min-width: 860px;
-}
-.connections-table td.detail {
-  max-width: 260px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
+/*
+ * The table's widths, priority columns and phone cards: src/styles/tables.css. The detail keeps a 220 px column
+ * (.cell-text) of 240 px at most, so the name and the last success get the rest: only a long variable name breaks,
+ * never the words (CON-1).
+ */
 .connections-table .numeric {
   text-align: right;
-  white-space: nowrap;
+}
+.connections-table .cell-text {
+  --cell-text-max: 15rem;
 }
 .connection-state {
   display: inline-flex;

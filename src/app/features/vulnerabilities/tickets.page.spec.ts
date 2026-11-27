@@ -4,6 +4,7 @@ import { of, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import { APP_CONFIG } from '../../core/config/app-config';
 import { provideFakeSession } from '../../testing/fake-session';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 import { TicketsPage } from './tickets.page';
 import { ThreatAlert, Ticket, TicketsService } from './tickets.service';
 
@@ -89,6 +90,26 @@ describe('TicketsPage', () => {
     expect(row.textContent).toContain('LockBit');
     expect(row.querySelector('.type-chip')?.classList).toContain('inferred');
     expect(row.querySelector('a.row-link')?.getAttribute('href')).toBe('/activos/SRV-01');
+    // Nothing of an alert is cut (it has no detail): the summary and the relevance wrap. The date cell keeps the
+    // full date in its title.
+    expect(row.querySelector('.summary span')?.textContent?.trim()).toBe(ALERT.summary);
+    expect(row.querySelector('.cell-truncate, .cell-clamp-2')).toBeNull();
+    expect(row.querySelector('td')?.getAttribute('title')).toBe(formatDateTime(ALERT.created_at));
+    expect(row.querySelector('td')?.textContent?.trim()).toBe(
+      formatShortDateTime(ALERT.created_at),
+    );
+  });
+
+  it('shows every column of the alerts on demand', async () => {
+    const { fixture, element } = await render(new FakeService());
+    const table = element.querySelector('#alerts-table')!;
+    expect(table.classList).not.toContain('all-columns');
+    const toggle = element.querySelector<HTMLButtonElement>('app-columns-toggle button')!;
+    expect(toggle.getAttribute('aria-controls')).toBe('alerts-table');
+    toggle.click();
+    await fixture.whenStable();
+    expect(table.classList).toContain('all-columns');
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('labels an R3 alert without claiming more than the contract (peer, sector or vector)', async () => {

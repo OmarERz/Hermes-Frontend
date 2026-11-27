@@ -5,6 +5,7 @@
 .fixed-count {
   display: block;
   margin-bottom: 4px;
+  text-align: start;
 }
 .progress {
   display: block;
@@ -19,10 +20,14 @@
   height: 100%;
   background: #2bb673;
 }
-.summary {
-  min-width: 260px;
-  max-width: 420px;
+/*
+ * The tables' widths, the summary column and the priority columns: src/styles/tables.css. The relevance chip stays
+ * narrow and wraps its label (TIC-3): the alerts have no detail where a cut label could be read whole.
+ */
+.relevance-chip {
+  max-width: 20ch;
   white-space: normal;
+  vertical-align: middle;
 }
 .type-chip.inferred {
   background: #fff0dd;

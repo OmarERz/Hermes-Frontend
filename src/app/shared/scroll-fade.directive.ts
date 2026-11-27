@@ -1,4 +1,4 @@
-import { afterNextRender, DestroyRef, Directive, ElementRef, inject } from '@angular/core';
+import { afterNextRender, DestroyRef, Directive, ElementRef, inject, input } from '@angular/core';
 
 /** The selected item of a row: the tab of the current page, a pressed button or an active link. */
 const SELECTED = '[aria-current="page"], [aria-pressed="true"], .active';
@@ -25,9 +25,14 @@ export function fadeEdges(
  * that hide content with data-fade="start|end|both", so the styles fade them, and brings the selected item into view
  * when part of it is cut off (the current tab of a long section on a phone, also after the row narrows). It follows
  * scrolling, resizing and changes of its items (labels, counts, selection) without running change detection.
+ * The scroller of a table (src/styles/tables.css) only wants the marks: `[appScrollFadeReveal]="false"` leaves its
+ * scroll position to the person (a pressed row action is not brought to the middle).
  */
 @Directive({ selector: '[appScrollFade]' })
 export class ScrollFade {
+  /** Brings the selected item into view when part of it is cut off (off for the scroller of a table). */
+  readonly appScrollFadeReveal = input(true);
+
   private readonly element: HTMLElement = inject(ElementRef<HTMLElement>).nativeElement;
 
   constructor() {
@@ -75,6 +80,7 @@ export class ScrollFade {
 
   /** Scrolls the selected item to the middle of the row when part of it is out of view. */
   reveal(): void {
+    if (!this.appScrollFadeReveal()) return;
     const selected = this.element.querySelector<HTMLElement>(SELECTED);
     if (!selected) return;
     const row = this.element.getBoundingClientRect();

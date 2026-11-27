@@ -66,34 +66,42 @@
             role="region"
             aria-label="Historial de eventos; desplazamiento horizontal"
             tabindex="0"
+            appScrollFade
+            [appScrollFadeReveal]="false"
           >
-            <table>
+            <table class="data-table">
               <thead>
                 <tr>
                   <th scope="col">Fecha y hora</th>
-                  <th scope="col">Evento</th>
+                  <th scope="col" class="col-from-md">Evento</th>
                   <th scope="col">Descripción</th>
-                  <th scope="col">Agente</th>
+                  <th scope="col" class="col-from-md">Agente</th>
                   <th scope="col">Estado final</th>
-                  <th scope="col">Quién</th>
-                  <th scope="col">Motivo</th>
-                  <th scope="col">Duración</th>
+                  <th scope="col" class="col-from-md">Quién</th>
+                  <th scope="col" class="col-from-lg">Motivo</th>
+                  <th scope="col" class="col-from-lg">Duración</th>
                   <th scope="col"><span class="visually-hidden">Detalle</span></th>
                 </tr>
               </thead>
               <tbody>
                 @for (row of rows(); track row.id) {
                   <tr [class.is-selected]="isSelected(row.event)">
-                    <td>{{ row.at }}</td>
-                    <td>{{ row.type }}</td>
-                    <td>{{ row.title }}</td>
-                    <td>{{ row.agent }}</td>
+                    <td class="cell-date" [title]="row.at">{{ row.atShort }}</td>
+                    <td class="col-from-md">{{ row.type }}</td>
+                    <td>
+                      <span class="cell-text cell-text-sm cell-clamp-2" [title]="row.title">{{
+                        row.title
+                      }}</span>
+                    </td>
+                    <td class="col-from-md">{{ row.agent }}</td>
                     <td>
                       <span [class]="'status status-' + row.statusKey">{{ row.status }}</span>
                     </td>
-                    <td>{{ row.actor }}</td>
-                    <td>{{ row.trigger }}</td>
-                    <td class="numeric">{{ row.duration }}</td>
+                    <td class="col-from-md">
+                      <span class="cell-truncate" [title]="row.actor">{{ row.actor }}</span>
+                    </td>
+                    <td class="col-from-lg">{{ row.trigger }}</td>
+                    <td class="numeric col-from-lg">{{ row.duration }}</td>
                     <td>
                       <button
                         type="button"

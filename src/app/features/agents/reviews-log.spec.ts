@@ -7,6 +7,7 @@ import { LLM_REVIEW } from './agents.fixtures';
 import { AgentsService } from './agents.service';
 import { dayBoundary } from './formatting';
 import { reviewRow, ReviewsLog } from './reviews-log';
+import { cardLabelMismatches } from '../../testing/card-labels';
 
 /** Rendering a whole screen in jsdom can pass the 5 s default on a loaded machine. */
 const SCREEN = { timeout: 20_000 };
@@ -71,6 +72,10 @@ describe('ReviewsLog', SCREEN, () => {
       'USD 0.0071',
       '2 aceptados · 1 rechazados',
     ]);
+    // The date cell drops the current year and keeps the full date in its title.
+    const date = judge.querySelector('td');
+    expect(date?.textContent?.trim()).toBe(reviewRow(LLM_REVIEW).atShort);
+    expect(date?.getAttribute('title')).toBe(reviewRow(LLM_REVIEW).at);
     expect(judge.querySelector('a.row-link')?.getAttribute('href')).toBe(
       `/recomendaciones-agente?id=${LLM_REVIEW.assessment_id}`,
     );
@@ -83,6 +88,25 @@ describe('ReviewsLog', SCREEN, () => {
     expect(cells(news)[9]).toBe('No aplica');
     expect(cells(news)[10]).toBe('—');
     expect(news.querySelector('.status')?.classList).toContain('status-rejected');
+  });
+
+  it('shows mode, model, attempts, tokens and cost on demand', async () => {
+    const { fixture, element } = await render(new FakeService());
+    const table = element.querySelector('#reviews-table')!;
+    const toggle = element.querySelector<HTMLButtonElement>('app-columns-toggle button')!;
+    expect(toggle.getAttribute('aria-controls')).toBe('reviews-table');
+    toggle.click();
+    await fixture.whenStable();
+    expect(table.classList).toContain('all-columns');
+  });
+
+  it('labels each field of the phone cards with its column header', async () => {
+    const { element } = await render(new FakeService());
+    const table = element.querySelector('table.data-table') as HTMLTableElement;
+    expect(table.classList).toContain('cards-mobile');
+    const { labelled, mismatches } = cardLabelMismatches(table);
+    expect(labelled).toBeGreaterThan(0);
+    expect(mismatches).toEqual([]);
   });
 
   it('explains the tokens in the cell title', () => {

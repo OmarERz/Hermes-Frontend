@@ -202,18 +202,20 @@
         role="region"
         aria-label="Activos con vulnerabilidades; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table>
+        <table class="data-table sticky-first">
           <thead>
             <tr>
               <th scope="col">Activo</th>
               <th scope="col">Riesgo</th>
               <th scope="col">Hallazgos por nivel</th>
               <th scope="col">En KEV</th>
-              <th scope="col">Expuesto</th>
-              <th scope="col">Clasificación</th>
-              <th scope="col">Responsable</th>
-              <th scope="col">Custodio</th>
+              <th scope="col" class="col-from-lg">Expuesto</th>
+              <th scope="col" class="col-from-lg">Clasificación</th>
+              <th scope="col" class="col-from-lg">Responsable</th>
+              <th scope="col" class="col-from-md">Custodio</th>
               <th scope="col">Estado</th>
               <th scope="col">Última vez visto</th>
             </tr>
@@ -222,8 +224,8 @@
             @for (row of assetRows(); track row.ci_id) {
               <tr>
                 <td>
-                  <a class="row-link" [routerLink]="['/activos', row.ci_id]"
-                    ><strong>{{ row.name }}</strong></a
+                  <a class="row-link" [routerLink]="['/activos', row.ci_id]" [title]="row.name"
+                    ><strong class="cell-truncate">{{ row.name }}</strong></a
                   ><small>{{ row.ci_id }}</small>
                 </td>
                 <td class="numeric">{{ row.risk }}</td>
@@ -237,16 +239,24 @@
                   </span>
                 </td>
                 <td class="numeric">{{ row.in_kev }}</td>
-                <td>{{ row.exposed ? 'Sí' : 'No' }}</td>
-                <td>
+                <td class="col-from-lg">{{ row.exposed ? 'Sí' : 'No' }}</td>
+                <td class="col-from-lg">
                   <span class="type-chip">{{ row.classificationLabel }}</span>
                 </td>
-                <td>{{ row.owner ?? '—' }}</td>
-                <td>{{ row.custodian ?? '—' }}</td>
+                <td class="col-from-lg">
+                  <span class="cell-truncate" [title]="row.owner ?? '—'">{{
+                    row.owner ?? '—'
+                  }}</span>
+                </td>
+                <td class="col-from-md">
+                  <span class="cell-truncate" [title]="row.custodian ?? '—'">{{
+                    row.custodian ?? '—'
+                  }}</span>
+                </td>
                 <td>
                   <app-chip [tone]="statusTones[row.status]">{{ row.statusLabel }}</app-chip>
                 </td>
-                <td>{{ row.lastSeen }}</td>
+                <td class="cell-date" [title]="row.lastSeen">{{ row.lastSeenShort }}</td>
               </tr>
             }
           </tbody>
@@ -258,8 +268,10 @@
         role="region"
         aria-label="Vulnerabilidades; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table>
+        <table class="data-table sticky-first">
           <thead>
             <tr>
               <th scope="col">CVE</th>
@@ -268,11 +280,11 @@
               <th scope="col">Puntaje final</th>
               <th scope="col">Activos</th>
               <th scope="col">KEV</th>
-              <th scope="col">Expuesta</th>
-              <th scope="col">Clasificación</th>
+              <th scope="col" class="col-from-lg">Expuesta</th>
+              <th scope="col" class="col-from-lg">Clasificación</th>
               <th scope="col">Estado</th>
-              <th scope="col">Custodios</th>
-              <th scope="col">Tickets</th>
+              <th scope="col" class="col-from-lg">Custodios</th>
+              <th scope="col" class="col-from-lg">Tickets</th>
               <th scope="col">Última vez vista</th>
             </tr>
           </thead>
@@ -287,28 +299,34 @@
                 </tr>
               } @else {
                 <tr>
-                  <td>
+                  <td class="cell-nowrap">
                     <a class="row-link" [routerLink]="['/vulnerabilidades', row.group_id]"
                       ><strong>{{ row.cve }}</strong></a
                     >
                   </td>
-                  <td>{{ row.product }}</td>
+                  <td>
+                    <span class="cell-truncate" [title]="row.product">{{ row.product }}</span>
+                  </td>
                   <td>
                     <app-chip [tone]="row.level">{{ row.levelLabel }}</app-chip>
                   </td>
                   <td class="numeric">{{ row.final }}</td>
                   <td class="numeric">{{ row.ci_count }}</td>
                   <td>{{ row.in_kev ? 'Sí' : 'No' }}</td>
-                  <td>{{ row.exposed ? 'Sí' : 'No' }}</td>
-                  <td>
+                  <td class="col-from-lg">{{ row.exposed ? 'Sí' : 'No' }}</td>
+                  <td class="col-from-lg">
                     <span class="type-chip">{{ row.classificationLabel }}</span>
                   </td>
                   <td>
                     <app-chip [tone]="statusTones[row.status]">{{ row.statusLabel }}</app-chip>
                   </td>
-                  <td>{{ row.custodianList }}</td>
-                  <td class="numeric">{{ row.tickets.length }}</td>
-                  <td>{{ row.lastSeen }}</td>
+                  <td class="col-from-lg">
+                    <span class="cell-truncate" [title]="row.custodianList">{{
+                      row.custodianList
+                    }}</span>
+                  </td>
+                  <td class="numeric col-from-lg">{{ row.tickets.length }}</td>
+                  <td class="cell-date" [title]="row.lastSeen">{{ row.lastSeenShort }}</td>
                 </tr>
               }
             }

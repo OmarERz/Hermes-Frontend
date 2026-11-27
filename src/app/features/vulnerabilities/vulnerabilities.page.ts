@@ -40,6 +40,7 @@ import {
   CLASSIFICATION_LABELS,
   FindingStatus,
   formatDateTime,
+  formatShortDateTime,
   Level,
   LEVEL_LABELS,
   LEVELS,
@@ -80,6 +81,8 @@ type GroupRowView = VulnerabilityGroup & {
   statusLabel: string;
   classificationLabel: string;
   lastSeen: string;
+  /** The same date for the table cell: without the current year (the full one goes in its title). */
+  lastSeenShort: string;
   custodianList: string;
 };
 
@@ -92,6 +95,7 @@ function groupRow(group: VulnerabilityGroup, key: string): GroupTableRow {
     statusLabel: STATUS_LABELS[group.status],
     classificationLabel: CLASSIFICATION_LABELS[group.classification],
     lastSeen: formatDateTime(group.last_seen),
+    lastSeenShort: formatShortDateTime(group.last_seen),
     custodianList: group.custodians.join(', ') || '—',
   };
 }
@@ -234,6 +238,7 @@ export class VulnerabilitiesPage {
       classificationLabel: CLASSIFICATION_LABELS[asset.classification],
       statusLabel: STATUS_LABELS[asset.status],
       lastSeen: formatDateTime(asset.last_seen),
+      lastSeenShort: formatShortDateTime(asset.last_seen),
       levels: LEVELS.map((level) => ({
         level,
         label: LEVEL_LABELS[level],

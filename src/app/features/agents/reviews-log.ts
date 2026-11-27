@@ -9,7 +9,9 @@ import {
 } from '@lucide/angular';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
+import { ColumnsToggle } from '../../shared/columns-toggle';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   Agent,
   AGENT_LABELS,
@@ -31,6 +33,8 @@ export function reviewRow(review: LlmReview) {
   return {
     id: review.id,
     at: formatDateTime(review.created_at),
+    /** The same date for the table cell: without the current year (the full one goes in its title). */
+    atShort: formatShortDateTime(review.created_at),
     agent: labelOf(AGENT_LABELS, review.agent),
     mode: labelOf(REVIEW_MODE_LABELS, review.mode),
     model: review.model,
@@ -63,6 +67,8 @@ export function reviewRow(review: LlmReview) {
     FormsModule,
     RouterLink,
     AsyncStateComponent,
+    ColumnsToggle,
+    ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
     LucideFileClock,
@@ -72,6 +78,8 @@ export function reviewRow(review: LlmReview) {
   styleUrls: ['./agents-tables.css', './reviews-log.css'],
 })
 export class ReviewsLog {
+  /** «Todas las columnas»: mode, model, attempts, tokens and cost, which have no detail of their own. */
+  readonly allColumns = signal(false);
   private readonly service = inject(AgentsService);
 
   readonly agents = AGENTS;
