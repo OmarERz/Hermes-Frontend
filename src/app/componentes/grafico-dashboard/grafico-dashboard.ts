@@ -70,8 +70,12 @@ export class GraficoDashboard implements AfterViewInit, OnChanges, OnDestroy {
     ]);
     this.chart = core.init(this.chartHost.nativeElement, undefined, { renderer: 'svg' });
     this.actualizarGrafica();
-    this.resizeObserver = new ResizeObserver(() => this.chart?.resize());
-    this.resizeObserver.observe(this.chartHost.nativeElement);
+    // Environments without ResizeObserver (jsdom in unit tests, very old browsers) keep a fixed-size chart instead of
+    // throwing after the lazy ECharts import resolves.
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => this.chart?.resize());
+      this.resizeObserver.observe(this.chartHost.nativeElement);
+    }
     const themeRoot = this.chartHost.nativeElement.closest('[data-theme]');
     if (themeRoot) {
       this.themeObserver = new MutationObserver(() => this.actualizarGrafica());
