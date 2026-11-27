@@ -1,9 +1,10 @@
 /*
  * Segmented control (F19, docs/front/diseno-ronda-1.md VUL-4, FUE-3, G13): one look for the section tabs, the views of
  * Vulnerabilities and the filters of Sources. The items are links or buttons; the selected one is .active,
- * [aria-current='page'] or [aria-pressed='true']. One row 40 px high (44 on touch widths, --control-h) that scrolls
- * sideways when it does not fit: the appScrollFade directive marks the edges that hide items (data-fade) and the mask
- * fades them. It shrinks to its items; .segmented-full spans the whole width (the section tabs).
+ * [aria-current='page'] or [aria-pressed='true']. One row 40 px high in all, padding and border included (44 on touch
+ * widths: --control-h), that scrolls sideways when it does not fit: the appScrollFade directive marks the edges that
+ * hide items (data-fade) and the mask fades them. It shrinks to its items; .segmented-full spans the whole width (the
+ * section tabs).
  *
  * The selectors start at .app-shell .page-content so they win over the base rules of every button in the page
  * (styles.css), whatever the order of the sheets.
@@ -16,6 +17,7 @@
   width: fit-content;
   max-width: 100%;
   min-width: 0;
+  min-height: var(--control-h);
   box-sizing: border-box;
   padding: var(--space-1);
   overflow-x: auto;
@@ -36,7 +38,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-height: var(--control-h);
+  /* The row's height less its padding and its 1 px borders. */
+  min-height: calc(var(--control-h) - 2 * var(--space-1) - 2px);
   margin: 0;
   padding: 0 var(--space-3);
   border: 1px solid transparent;
