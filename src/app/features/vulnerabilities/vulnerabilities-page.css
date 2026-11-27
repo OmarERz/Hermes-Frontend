@@ -11,35 +11,9 @@
 .filters .date-filter input {
   width: auto;
 }
+/* The views: the shared segmented control (src/styles/segmented.css). */
 .view-switch {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin: 14px 0 12px;
-  padding: 4px;
-  border: 1px solid var(--border, #e4e3ee);
-  border-radius: 11px;
-  background: var(--surface, #fff);
-}
-.view-switch button {
-  min-height: 36px;
-  padding: 6px 13px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-secondary, #675b70);
-  font: inherit;
-  font-weight: 650;
-  cursor: pointer;
-}
-.view-switch button[aria-pressed='true'] {
-  border-color: #ed079b44;
-  background: #ed079b12;
-  color: var(--accent-text);
-}
-.view-switch button:focus-visible {
-  outline: 2px solid #ed079b;
-  outline-offset: 2px;
+  margin: var(--space-4) 0 var(--space-3);
 }
 .level-list {
   display: inline-flex;

@@ -47,8 +47,7 @@
   --page-max-w: 1800px;
   --sidebar-w: 244px;
   --sidebar-w-compact: 76px;
-  --mobile-nav-h: 112px; /* bottom bar on phones */
-  --mobile-top-reserve: 62px; /* room above the page for the floating theme button on phones */
+  --mobile-nav-h: 64px; /* bottom bar on phones: the sections and the profile in one row */
 
   /* Type. */
   --text-2xs: 12px; /* chips, badges (minimum) */
@@ -130,7 +129,7 @@
 @media (max-width: 560px) {
   :root {
     --page-pad-x: var(--space-4);
-    --page-pad-top: var(--mobile-top-reserve);
+    --page-pad-top: var(--space-4);
     --control-h: 44px;
   }
 }

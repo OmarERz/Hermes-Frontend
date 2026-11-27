@@ -54,7 +54,22 @@ async function selectFirstRecommendation(page: Page): Promise<void> {
  * screen specs (e2e/screens/), so a renamed control breaks both. Flip `pending` off when a lane replaces the entry.
  */
 export const SCREENS: readonly Screen[] = [
-  { id: 'home', path: '/inicio', minRole: 'reader' },
+  {
+    id: 'home',
+    path: '/inicio',
+    minRole: 'reader',
+    variants: [
+      {
+        // The profile menu with the theme switch: in the sidebar, the compact sidebar and the bottom bar.
+        name: 'profile-menu',
+        dialog: true,
+        act: async (page) => {
+          await page.locator('.sidebar-profile .profile-trigger').dispatchEvent('click');
+          await page.locator('.profile-dropdown .theme-toggle').waitFor();
+        },
+      },
+    ],
+  },
   { id: 'agents', path: '/agentes', minRole: 'reader' },
   {
     id: 'agents-history',

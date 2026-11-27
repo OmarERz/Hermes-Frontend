@@ -38,6 +38,13 @@
         >
       </div>
       <div class="profile-divider" role="separator"></div>
+      <button class="theme-toggle" type="button" (click)="tema.toggle()">
+        @if (tema.theme() === 'dark') {
+          <svg lucideSun aria-hidden="true"></svg><span>Cambiar a tema claro</span>
+        } @else {
+          <svg lucideMoon aria-hidden="true"></svg><span>Cambiar a tema oscuro</span>
+        }
+      </button>
       <button
         class="logout-button"
         type="button"

@@ -77,6 +77,7 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+.theme-toggle,
 .logout-button {
   display: flex;
   align-items: center;
@@ -101,6 +102,7 @@
     box-shadow 0.2s ease,
     transform 0.2s ease;
 }
+.theme-toggle svg,
 .logout-button svg {
   width: 18px;
   height: 18px;
@@ -110,24 +112,31 @@
     color 0.2s ease,
     transform 0.2s ease;
 }
+.theme-toggle:hover,
 .logout-button:hover:not(:disabled) {
   border-color: rgba(255, 65, 201, 0.58);
   background: rgba(207, 24, 166, 0.18);
   color: #fff;
   box-shadow: 0 0 13px rgba(237, 7, 155, 0.14);
 }
+.theme-toggle:hover svg,
 .logout-button:hover:not(:disabled) svg {
   color: #ff5bd1;
   transform: translateX(2px);
 }
+.theme-toggle:active,
 .logout-button:active:not(:disabled) {
   transform: scale(0.96);
   background: rgba(207, 24, 166, 0.24);
   box-shadow: 0 0 5px rgba(237, 7, 155, 0.12);
 }
+.theme-toggle:focus-visible,
 .logout-button:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
+}
+.theme-toggle {
+  margin-bottom: var(--space-1);
 }
 .logout-button:disabled {
   opacity: 0.68;
@@ -147,11 +156,6 @@
     display: grid;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .profile-dropdown {
-    animation: none;
-  }
-}
 @media (max-width: 850px) {
   /* Only the avatar shows; the name and role stay in the trigger's accessible name. */
   .sidebar-profile-menu .profile-copy {
@@ -166,20 +170,50 @@
     display: none;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .sidebar-profile-menu .profile-trigger,
-  .sidebar-profile-menu .profile-chevron {
-    transition: none;
+@media (max-width: 560px) {
+  /*
+   * Last item of the bottom bar: the avatar alone. The menu and its host are not positioned, so the dropdown is
+   * placed against the fixed bar (styles.css), not against this narrow item.
+   */
+  :host,
+  .profile-menu {
+    position: static;
+  }
+  .sidebar-profile-menu,
+  .sidebar-profile-menu .profile-trigger {
+    height: 100%;
+  }
+  .sidebar-profile-menu .profile-trigger {
+    justify-content: center;
+    min-height: 0;
+    padding: 0;
+    border-color: transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+  }
+  .sidebar-profile-menu .profile-trigger .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: var(--text-xs);
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .profile-dropdown {
+    animation: none;
+  }
+  .sidebar-profile-menu .profile-trigger,
+  .sidebar-profile-menu .profile-chevron,
+  .theme-toggle,
+  .theme-toggle svg,
   .logout-button,
   .logout-button svg {
     transition: none;
   }
+  .theme-toggle:active,
   .logout-button:active:not(:disabled) {
     transform: none;
   }
+  .theme-toggle:hover svg,
   .logout-button:hover:not(:disabled) svg {
     transform: none;
   }

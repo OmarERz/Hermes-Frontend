@@ -27,7 +27,7 @@
     }
   </section>
 
-  <div class="view-switch" role="group" aria-label="Vista">
+  <div class="view-switch segmented" appScrollFade role="group" aria-label="Vista">
     @for (option of views; track option) {
       <button type="button" [attr.aria-pressed]="view() === option" (click)="setView(option)">
         {{ viewLabels[option] }}

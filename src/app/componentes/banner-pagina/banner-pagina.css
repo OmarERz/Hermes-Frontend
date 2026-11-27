@@ -1,0 +1,112 @@
+/*
+ * The one page banner (F19, docs/front/diseno-ronda-1.md G6): the prototype's icon tile beside the title and the
+ * description, then the section tabs and the content, each --section-gap apart. Every rule starts at :host, so it
+ * wins over the per-view rules of the prototype sheets (@scope (.agent-view) and the like), whatever view holds it.
+ */
+:host {
+  display: block;
+  min-width: 0;
+  margin-bottom: var(--section-gap);
+}
+:host .page-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+  margin: 0;
+}
+:host .page-heading .heading-icon {
+  box-sizing: border-box;
+  width: 56px;
+  height: 56px;
+  flex: none;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--accent-wash);
+  color: var(--accent);
+  stroke-width: 1.9;
+}
+:host .heading-copy {
+  min-width: 0;
+}
+:host .page-heading h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.8px;
+}
+:host .page-heading p {
+  max-width: 72ch;
+  margin: var(--stack-xs) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  line-height: var(--leading-normal);
+  text-wrap: pretty;
+}
+/* Folded to two lines (three on phones); the toggle below shows the rest. */
+:host .page-heading p.folded {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+:host .heading-copy .description-toggle {
+  min-height: 24px;
+  margin-top: var(--stack-xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+:host .heading-copy .description-toggle:not(:disabled):hover {
+  box-shadow: none;
+  text-decoration-thickness: 2px;
+  transform: none;
+}
+:host .heading-copy .description-toggle:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+/* Phones: a 40 px tile beside the title; the description takes the whole width below them. */
+@media (max-width: 560px) {
+  :host .page-heading {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: var(--space-2) var(--space-3);
+  }
+  :host .heading-copy {
+    display: contents;
+  }
+  :host .page-heading .heading-icon {
+    width: 40px;
+    height: 40px;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+  }
+  :host .page-heading h1 {
+    font-size: var(--text-3xl);
+  }
+  :host .page-heading p {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: var(--text-md);
+  }
+  :host .page-heading p.folded {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+  :host .heading-copy .description-toggle {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin: 0;
+  }
+}
