@@ -50,10 +50,20 @@ antes de `make up`. Usuarios de prueba del emulador (los crea `make emulator-tok
 | `npm run audit`                   | `npm audit` de las dependencias de producción (falla con _high_ o _critical_)                   |
 | `npm run api:generate`            | Regenera `src/app/core/api/schema.d.ts` desde `openapi/openapi.json` (openapi-typescript 7.9.1) |
 | `npm run api:check`               | Falla si los tipos generados no corresponden al OpenAPI                                         |
+| `npm run design:capture`          | Capturas de diseño y axe de todas las pantallas (F19); ver «Captura de diseño»                  |
 
 **Actualizar el contrato:** copia `openapi/openapi.json` del backend, corre `npm run api:generate` y versiona los
 dos archivos. Los tipos de la API no se escriben a mano: se toman de los generados con `ApiResult`, `ApiQuery`,
 `ApiBody` y `ApiSchema` (`src/app/core/api/api-client.ts`).
+
+**Captura de diseño (F19):** `npm run design:capture` levanta la misma pila desechable que `npm run e2e` y toma
+capturas de página completa de cada pantalla (`e2e/design/catalogue.ts`) con cada rol, a 375, 768, 1280 y 1920 px, en
+tema oscuro y claro; además, los estados vacío, cargando y error (con respuestas simuladas de la API), la pantalla sin
+permiso, el foco de teclado y los diálogos y detalles del catálogo, y corre axe-core en cada vista. Todo queda en
+`e2e/design-output/<corrida>/` (ignorada por git): `index.html` (galería), `summary.md` (axe, desbordes horizontales y
+problemas), `axe/` y `shots/`. Se acota con `E2E_DESIGN_ROLES`, `E2E_DESIGN_WIDTHS`, `E2E_DESIGN_THEMES`,
+`E2E_DESIGN_STATES` (`none` para omitirlos), `E2E_DESIGN_SCREENS` y `E2E_DESIGN_PENDING=1` (incluye las pantallas que
+aún son del prototipo). Ejemplo: `E2E_DESIGN_SCREENS=home,runs E2E_DESIGN_WIDTHS=375,1280 npm run design:capture`.
 
 ## Estructura
 

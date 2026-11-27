@@ -4,6 +4,7 @@
 /tmp/
 /coverage/
 /e2e/test-output/
+/e2e/design-output/
 /.angular/
 .angular/
 
