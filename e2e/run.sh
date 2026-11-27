@@ -29,6 +29,7 @@ started="$(date +%s)"
 
 tmp=""
 project=""
+outputs=""
 stack_started=""
 front_started=""
 
@@ -63,7 +64,7 @@ cleanup() {
       { cat "$tmp/down-stack.log" >&2; echo "warning: could not remove the stack $project" >&2; }
   fi
   if [ -n "$tmp" ]; then rm -rf "$tmp"; fi
-  if [ "$rc" -ne 0 ]; then echo "✖ e2e failed" >&2; fi
+  if [ "$rc" -ne 0 ]; then echo "✖ e2e failed${outputs:+ (report: $outputs/report/index.html)}" >&2; fi
   exit "$rc"
 }
 trap cleanup EXIT
@@ -89,6 +90,12 @@ PY
 
 tmp="$(mktemp -d "${TMPDIR:-/tmp}/hermes-front-e2e.XXXXXX")"
 project="hermes-front-e2e-$(printf '%s' "$root" | sha256sum | cut -c1-8)-$$-$(openssl rand -hex 3)"
+# This run's report, traces and sessions (a second run from this checkout gets its own folder); runs older than a day
+# are pruned. e2e/test-output/ is ignored by git.
+outputs="e2e/test-output/$(date -u +%Y%m%dT%H%M%SZ)-${project##*-}"
+mkdir -p "$root/e2e/test-output"
+find "$root/e2e/test-output" -mindepth 1 -maxdepth 1 -mtime +0 -exec rm -rf -- {} +
+mkdir -p "$root/$outputs"
 
 echo "==> e2e: backend $backend_ref from $backend_dir"
 mkdir "$tmp/backend"
@@ -134,6 +141,7 @@ fdc up --build --wait --wait-timeout 300 -d
 echo "==> e2e: Playwright"
 docker run --rm --init --ipc host --network host --user "$(id -u):$(id -g)" -e HOME=/tmp -e CI=1 \
   -e E2E_BASE_URL="http://127.0.0.1:$FRONT_PORT" -e E2E_AUTH_EMULATOR_URL="http://127.0.0.1:$AUTH_EMULATOR_PORT" \
+  -e E2E_OUTPUT_DIR="/work/$outputs" \
   -v "$root:/work" -w /work "$PLAYWRIGHT_IMAGE" npx --no-install playwright test -c e2e/playwright.config.ts "$@"
 
-echo "✔ e2e green in $(($(date +%s) - started))s (report: e2e/test-output/report/index.html)"
+echo "✔ e2e green in $(($(date +%s) - started))s (report: $outputs/report/index.html)"

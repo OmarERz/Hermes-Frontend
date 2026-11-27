@@ -21,7 +21,15 @@ export function email(role: Role): string {
   return `${role}@hermes.test`;
 }
 
+/** This run's output folder (report, traces, sessions), set by e2e/run.sh: two runs never share one. */
+export function outputRoot(): string {
+  const dir = process.env['E2E_OUTPUT_DIR'];
+  if (!dir)
+    throw new Error('E2E_OUTPUT_DIR is not set: run the suite with `npm run e2e` (e2e/run.sh)');
+  return dir;
+}
+
 /** Saved session (cookies, local storage and the IndexedDB where Firebase keeps it) of each role. */
 export function sessionFile(role: Role): string {
-  return join(__dirname, '..', 'test-output', 'sessions', `${role}.json`);
+  return join(outputRoot(), 'sessions', `${role}.json`);
 }

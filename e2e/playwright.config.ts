@@ -1,9 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
+import { join } from 'node:path';
+import { outputRoot } from './support/roles';
 
 /**
  * Browser suite (e2e/run.sh builds and serves the front container next to an isolated backend stack, then runs this
  * inside the pinned Playwright image). E2E_BASE_URL is the served front; E2E_AUTH_EMULATOR_URL the Firebase Auth
- * emulator of that stack. Outputs (report, traces, sessions) go to e2e/test-output/, ignored by git.
+ * emulator of that stack. Outputs (report, traces, sessions) go to this run's own folder under e2e/test-output/
+ * (E2E_OUTPUT_DIR, ignored by git), so two runs never share them.
  */
 const baseURL = process.env['E2E_BASE_URL'];
 if (!baseURL)
@@ -11,7 +14,7 @@ if (!baseURL)
 
 export default defineConfig({
   testDir: '.',
-  outputDir: 'test-output/results',
+  outputDir: join(outputRoot(), 'results'),
   globalSetup: './global-setup.ts',
   fullyParallel: true,
   forbidOnly: true,
@@ -19,7 +22,7 @@ export default defineConfig({
   workers: 4,
   timeout: 30_000,
   expect: { timeout: 10_000 },
-  reporter: [['list'], ['html', { outputFolder: 'test-output/report', open: 'never' }]],
+  reporter: [['list'], ['html', { outputFolder: join(outputRoot(), 'report'), open: 'never' }]],
   use: {
     baseURL,
     locale: 'es-MX',
