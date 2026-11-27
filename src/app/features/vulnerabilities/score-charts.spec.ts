@@ -1,4 +1,4 @@
-import { historyChart, waterfallChart, waterfallSteps } from './score-charts';
+import { historyChart, waterfallChart, waterfallRange, waterfallSteps } from './score-charts';
 
 describe('waterfallSteps', () => {
   it('goes from raw through the non-zero bars, in order, to the final of the backend', () => {
@@ -70,6 +70,51 @@ describe('chart options', () => {
       [45, '#9844df'],
     ]);
     expect(option.series[0].data).toEqual([0, 50, 45, 0]);
+  });
+
+  it('widens the axis so a step past 100 and the clamp that brings it back are drawn whole', () => {
+    const steps = waterfallSteps({
+      assessment_id: 'a1',
+      raw: 95,
+      final: 100,
+      waterfall: { P: 10, clamp: -5 },
+    });
+    expect(steps.map((step) => [step.key, step.from, step.to])).toEqual([
+      ['raw', 0, 95],
+      ['P', 95, 105],
+      ['clamp', 105, 100],
+      ['final', 0, 100],
+    ]);
+    const option = waterfallChart(steps) as {
+      yAxis: { min: number; max: number };
+      series: { stackStrategy: string; data: unknown[] }[];
+    };
+    expect([option.yAxis.min, option.yAxis.max]).toEqual([0, 110]);
+    expect(option.series.map((series) => series.stackStrategy)).toEqual(['all', 'all']);
+    expect(option.series[0].data).toEqual([0, 95, 100, 0]);
+  });
+
+  it('starts a step that goes below zero at its real base', () => {
+    const steps = waterfallSteps({
+      assessment_id: 'a1',
+      raw: 5,
+      final: 0,
+      waterfall: { judge: -12, clamp: 7 },
+    });
+    expect(waterfallRange(steps)).toEqual({ min: -10, max: 100 });
+    const option = waterfallChart(steps) as { series: { data: unknown[] }[] };
+    // Base (invisible) plus the visible part: 5 → −7 is drawn from −7 up to 5, and the clamp from −7 up to 0.
+    expect(option.series[0].data).toEqual([0, -7, -7, 0]);
+    const visible = option.series[1].data as { value: number }[];
+    expect(visible.map((bar) => bar.value)).toEqual([5, 12, 7, 0]);
+  });
+
+  it('keeps the 0 to 100 axis when every step is inside it', () => {
+    expect(
+      waterfallRange(
+        waterfallSteps({ assessment_id: 'a1', raw: 40, final: 50, waterfall: { A: 10 } }),
+      ),
+    ).toEqual({ min: 0, max: 100 });
   });
 
   it('plots final and base for each assessment', () => {

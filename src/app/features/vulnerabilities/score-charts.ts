@@ -59,8 +59,25 @@ export function waterfallSteps(breakdown: Breakdown): WaterfallStep[] {
   return steps;
 }
 
-/** Stacked-bar waterfall: an invisible base plus the visible part (violet totals, pink up, green down). */
+/**
+ * Range of the value axis: at least 0 to 100, widened (to the next ten) when a running total goes past a limit
+ * before the `clamp` bar brings it back, so every step is drawn whole.
+ */
+export function waterfallRange(steps: WaterfallStep[]): { min: number; max: number } {
+  const ends = steps.flatMap((step) => [step.from, step.to]);
+  return {
+    min: Math.floor(Math.min(0, ...ends) / 10) * 10,
+    max: Math.ceil(Math.max(100, ...ends) / 10) * 10,
+  };
+}
+
+/**
+ * Stacked-bar waterfall: an invisible base plus the visible part (violet totals, pink up, green down). Both series
+ * stack every value whatever its sign (`stackStrategy: 'all'`), so a step that starts or ends below zero still
+ * starts at its real base.
+ */
 export function waterfallChart(steps: WaterfallStep[]): EChartsCoreOption {
+  const range = waterfallRange(steps);
   return {
     grid: { left: 12, right: 12, top: 18, bottom: 8, containLabel: true },
     tooltip: {
@@ -79,8 +96,8 @@ export function waterfallChart(steps: WaterfallStep[]): EChartsCoreOption {
     },
     yAxis: {
       type: 'value',
-      min: 0,
-      max: 100,
+      min: range.min,
+      max: range.max,
       splitLine: { lineStyle: { color: GRID } },
       axisLabel: { color: AXIS },
     },
@@ -88,6 +105,7 @@ export function waterfallChart(steps: WaterfallStep[]): EChartsCoreOption {
       {
         type: 'bar',
         stack: 'waterfall',
+        stackStrategy: 'all',
         silent: true,
         itemStyle: { color: 'transparent' },
         data: steps.map((step) => Math.min(step.from, step.to)),
@@ -95,6 +113,7 @@ export function waterfallChart(steps: WaterfallStep[]): EChartsCoreOption {
       {
         type: 'bar',
         stack: 'waterfall',
+        stackStrategy: 'all',
         barMaxWidth: 42,
         label: {
           show: true,
