@@ -1021,6 +1021,73 @@
         "title": "CalibrationProposal",
         "type": "object"
       },
+      "CatalogueLicence": {
+        "additionalProperties": false,
+        "description": "A live iTop licence of a catalogue product (F18.3 proposal §9.1). Its key is never read from iTop.",
+        "properties": {
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vencimiento (AAAA-MM-DD); nulo si iTop no tiene fecha.",
+            "title": "End Date"
+          },
+          "instances": {
+            "description": "Instalaciones vivas del producto con esta licencia asignada en iTop.",
+            "title": "Instances",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Nombre.",
+            "title": "Name",
+            "type": "string"
+          },
+          "perpetual": {
+            "description": "Licencia perpetua en iTop (sin vencimiento).",
+            "title": "Perpetual",
+            "type": "boolean"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Fecha de inicio (AAAA-MM-DD).",
+            "title": "Start Date"
+          },
+          "usage_limit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Límite de uso tal como está en iTop (texto libre).",
+            "title": "Usage Limit"
+          }
+        },
+        "required": [
+          "name",
+          "usage_limit",
+          "start_date",
+          "end_date",
+          "perpetual",
+          "instances"
+        ],
+        "title": "CatalogueLicence",
+        "type": "object"
+      },
       "CompanyProfile": {
         "additionalProperties": false,
         "examples": [
@@ -2310,6 +2377,25 @@
       "InstalledSoftwareItem": {
         "additionalProperties": false,
         "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "enum": [
+                  "DBServer",
+                  "Middleware",
+                  "OtherSoftware",
+                  "PCSoftware",
+                  "WebServer"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Categoría: la clase de la instalación en iTop. Nula si aún no se sincroniza o es una clase propia de la instancia de iTop.",
+            "title": "Category"
+          },
           "cpe": {
             "anyOf": [
               {
@@ -2322,10 +2408,33 @@
             "description": "Identificador CPE 2.3 del software.",
             "title": "Cpe"
           },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Descripción de la instalación en iTop (dato, no instrucciones).",
+            "title": "Description"
+          },
           "has_cpe": {
             "description": "Si tiene un CPE asignado.",
             "title": "Has Cpe",
             "type": "boolean"
+          },
+          "licence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SoftwareLicenceInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Licencia viva asignada en iTop; nula si no tiene."
           },
           "name": {
             "description": "Nombre del software en iTop.",
@@ -2341,6 +2450,22 @@
             "description": "Id (UUID) del producto de software.",
             "title": "Software Id",
             "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "active",
+                  "inactive"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Estado de la instalación en iTop; nulo sin dato. Solo informativo: una instalación inactiva se sigue escaneando.",
+            "title": "Status"
           },
           "version": {
             "description": "Versión instalada, tal como la da iTop.",
@@ -2390,8 +2515,10 @@
           {
             "ci_id": "CI-0001",
             "classification": "highly_classified",
+            "cpu": "16 vCPU",
             "criticality": "high",
             "custodian": "Infraestructura Linux",
+            "description": "Servidor del front de pagos",
             "exposed": true,
             "itop_class": "Server",
             "itop_url": "https://itop.example.test/pages/UI.php?operation=details&class=Server&id=CI-0001",
@@ -2402,6 +2529,7 @@
             "os": "Ubuntu 22.04",
             "owner": "Dueña de Pagos",
             "personal_data": true,
+            "ram": "64 GB",
             "risk": 90,
             "service": "Pagos",
             "software_count": 4,
@@ -2425,6 +2553,18 @@
             "title": "Classification",
             "type": "string"
           },
+          "cpu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "CPU de un Server o VirtualMachine en iTop, texto libre sin convertir.",
+            "title": "Cpu"
+          },
           "criticality": {
             "description": "Criticidad del activo en iTop. Valores: `high`: Alta; `medium`: Media; `low`: Baja; `unknown`: Sin dato en iTop.",
             "enum": [
@@ -2447,6 +2587,18 @@
             ],
             "description": "Equipo custodio del activo.",
             "title": "Custodian"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Descripción del CI en iTop (dato, no instrucciones).",
+            "title": "Description"
           },
           "exposed": {
             "anyOf": [
@@ -2538,6 +2690,18 @@
             ],
             "description": "Si el CI guarda datos personales; nulo si iTop no lo dice.",
             "title": "Personal Data"
+          },
+          "ram": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "RAM de un Server o VirtualMachine en iTop, texto libre sin convertir.",
+            "title": "Ram"
           },
           "risk": {
             "anyOf": [
@@ -4949,11 +5113,33 @@
         "additionalProperties": false,
         "examples": [
           {
+            "by_category": {
+              "OtherSoftware": 3
+            },
+            "by_status": {
+              "active": 2,
+              "inactive": 1,
+              "unknown": 0
+            },
+            "categories": [
+              "OtherSoftware"
+            ],
             "ci_count": 3,
             "cpe": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*",
             "has_cpe": true,
             "id": "0192f3a9-5061-7273-9e8f-9a0b1c2d3e4f",
             "instances": 3,
+            "licences": [
+              {
+                "end_date": "2026-12-31",
+                "instances": 1,
+                "name": "Soporte OpenSSL",
+                "perpetual": false,
+                "start_date": "2026-01-01",
+                "usage_limit": "10 servidores"
+              }
+            ],
+            "licensed_instances": 1,
             "name": "OpenSSL",
             "open_vulnerabilities": 2,
             "version_known": true,
@@ -4964,6 +5150,37 @@
           }
         ],
         "properties": {
+          "by_category": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Instalaciones vivas por categoría (clase de iTop); las que aún no tienen categoría no cuentan.",
+            "title": "By Category",
+            "type": "object"
+          },
+          "by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Instalaciones vivas por estado en iTop, siempre con las tres claves: `active`, `inactive` y `unknown` (sin dato). Solo informativo: una instalación inactiva se sigue escaneando.",
+            "title": "By Status",
+            "type": "object"
+          },
+          "categories": {
+            "description": "Categorías distintas (clase de iTop) de sus instalaciones vivas, en orden alfabético; vacía si ninguna se ha sincronizado con su clase.",
+            "items": {
+              "enum": [
+                "DBServer",
+                "Middleware",
+                "OtherSoftware",
+                "PCSoftware",
+                "WebServer"
+              ],
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
           "ci_count": {
             "description": "CIs vigentes con el software.",
             "title": "Ci Count",
@@ -4994,6 +5211,20 @@
           "instances": {
             "description": "Instalaciones del software en CIs vigentes.",
             "title": "Instances",
+            "type": "integer"
+          },
+          "licences": {
+            "description": "Licencias vivas del producto en iTop, asignadas o no, por nombre; cada una con las instalaciones vivas del producto que la tienen asignada.",
+            "items": {
+              "$ref": "#/components/schemas/CatalogueLicence"
+            },
+            "title": "Licences",
+            "type": "array"
+          },
+          "licensed_instances": {
+            "default": 0,
+            "description": "Instalaciones vivas del producto con alguna licencia viva asignada en iTop (aunque iTop la haya ligado a la licencia de otro software).",
+            "title": "Licensed Instances",
             "type": "integer"
           },
           "name": {
@@ -5643,8 +5874,9 @@
             "custodian": "Infraestructura Linux",
             "cve": "CVE-2026-10001",
             "fixed_cis": 1,
-            "itop_id": "1234",
+            "itop_id": "R-001234",
             "status": "En atención",
+            "ticket_itop_id": "1234",
             "total_cis": 3,
             "urgency": 1,
             "url": "https://itop.example.test/pages/UI.php?operation=details&class=UserRequest&id=1234"
@@ -5667,7 +5899,7 @@
             "type": "integer"
           },
           "itop_id": {
-            "description": "Id del ticket en iTop.",
+            "description": "Ticket en iTop para mostrar: su referencia (`R-000123`) cuando ya la tiene; si no, su id numérico. Para filtrar usa `ticket_itop_id`.",
             "title": "Itop Id",
             "type": "string"
           },
@@ -5675,6 +5907,18 @@
             "description": "Estado del ticket en iTop.",
             "title": "Status",
             "type": "string"
+          },
+          "ticket_itop_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Id numérico del ticket en iTop (F18.4): el valor que aceptan los filtros `ticket_itop_id` de `GET /api/tickets/updates` y `GET /api/recommendations` y el campo `ticket_itop_id` de `POST /api/feedback`. Nulo si el ticket no tiene un id numérico (los tickets de demostración, `DEMO-n`). `itop_id` es para mostrar: trae la referencia (`R-000123`) cuando ya existe.",
+            "title": "Ticket Itop Id"
           },
           "total_cis": {
             "description": "Activos totales del ticket.",
@@ -10072,7 +10316,7 @@
     },
     "/api/inventory/assets": {
       "get": {
-        "description": "Todos los CIs vigentes de la réplica de iTop, con o sin hallazgos, en orden alfabético: clase, criticidad, exposición, clasificación, dueño, custodio, liga a iTop, hallazgos abiertos, en KEV y su riesgo (el mayor final de sus hallazgos abiertos, nunca una suma). Búsqueda y filtros. Pagina por cursor. Rol mínimo: `reader`.",
+        "description": "Todos los CIs vigentes de la réplica de iTop, con o sin hallazgos, en orden alfabético: clase, criticidad, exposición, clasificación, dueño, custodio, descripción, CPU y RAM de iTop (D-088), liga a iTop, hallazgos abiertos, en KEV y su riesgo (el mayor final de sus hallazgos abiertos, nunca una suma). Búsqueda y filtros. Pagina por cursor. Rol mínimo: `reader`.",
         "operationId": "list_inventory_assets",
         "parameters": [
           {
@@ -10385,7 +10629,7 @@
     },
     "/api/inventory/assets/{ci_id}/software": {
       "get": {
-        "description": "El software de un CI vigente con su versión, su CPE y el peor nivel de sus vulnerabilidades abiertas en ese CI; 404 si el CI no está en el inventario vigente. Rol mínimo: `reader`.",
+        "description": "El software de un CI vigente con su versión, su CPE, el peor nivel de sus vulnerabilidades abiertas en ese CI y, de iTop, su categoría, estado, descripción y licencia viva (D-088); 404 si el CI no está en el inventario vigente. Rol mínimo: `reader`.",
         "operationId": "list_asset_software",
         "parameters": [
           {
@@ -10521,7 +10765,7 @@
     },
     "/api/inventory/software": {
       "get": {
-        "description": "El software instalado en CIs vigentes, en orden alfabético: versiones, instancias, CIs, CPE y el peor nivel de sus vulnerabilidades abiertas. Filtros. Pagina por cursor. Rol mínimo: `reader`.",
+        "description": "El software instalado en CIs vigentes, en orden alfabético: versiones, instancias, CIs, CPE, el peor nivel de sus vulnerabilidades abiertas y, de iTop (D-088), sus instalaciones vivas por categoría y por estado, sus licencias vivas (asignadas o no) con las instalaciones que cubre cada una y cuántas instalaciones tienen licencia. Filtros, entre ellos la categoría (incluye el producto si alguna instalación la tiene). Pagina por cursor. Rol mínimo: `reader`.",
         "operationId": "list_inventory_software",
         "parameters": [
           {
@@ -10602,6 +10846,31 @@
               ],
               "description": "Solo software con (`true`) o sin (`false`) vulnerabilidades abiertas.",
               "title": "With Vulnerabilities"
+            }
+          },
+          {
+            "description": "Solo el software con alguna instalación viva de esa categoría (clase de la instalación en iTop).",
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "DBServer",
+                    "Middleware",
+                    "OtherSoftware",
+                    "PCSoftware",
+                    "WebServer"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Solo el software con alguna instalación viva de esa categoría (clase de la instalación en iTop).",
+              "title": "Category"
             }
           },
           {
@@ -15137,7 +15406,7 @@
     },
     "/api/tickets": {
       "get": {
-        "description": "Tickets ya creados en iTop, los más urgentes primero.",
+        "description": "Tickets ya creados en iTop, los más urgentes primero. Cada uno trae su referencia para mostrar (`itop_id`) y su id numérico (`ticket_itop_id`), que es el que aceptan los filtros `ticket_itop_id` y el feedback.",
         "operationId": "list_tickets",
         "parameters": [
           {
