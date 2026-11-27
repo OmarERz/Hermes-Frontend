@@ -106,6 +106,26 @@ test.describe('inventory as reader', () => {
   });
 });
 
+test.describe('pending inventory as reader', () => {
+  asRole('reader');
+
+  test('lists what the demo inventory lacks and opens the CI', async ({ page }) => {
+    await page.goto('/pendientes-inventario');
+    await expect(page.getByRole('region', { name: 'Pendientes por tipo' })).toContainText(
+      /Sin responsable\s*1/,
+    );
+    const owners = page.getByRole('region', {
+      name: 'Activos sin responsable; desplazamiento horizontal',
+    });
+    await expect(owners.getByRole('row').filter({ hasText: 'srv-web-03' })).toContainText('CI-3');
+    // Every demo product has a CPE: no software list, and nothing to map for a reader anyway.
+    await expect(page.getByRole('button', { name: 'Mapear CPE' })).toHaveCount(0);
+    await owners.getByRole('link', { name: 'srv-web-03' }).click();
+    await expect(page).toHaveURL(/\/activos\/CI-3$/);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('srv-web-03');
+  });
+});
+
 test.describe('inventory as analyst', () => {
   asRole('analyst');
 
