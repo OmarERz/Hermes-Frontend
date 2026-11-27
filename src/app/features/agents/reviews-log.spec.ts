@@ -90,6 +90,16 @@ describe('ReviewsLog', SCREEN, () => {
     expect(news.querySelector('.status')?.classList).toContain('status-rejected');
   });
 
+  it('shows mode, model, attempts, tokens and cost on demand', async () => {
+    const { fixture, element } = await render(new FakeService());
+    const table = element.querySelector('#reviews-table')!;
+    const toggle = element.querySelector<HTMLButtonElement>('app-columns-toggle button')!;
+    expect(toggle.getAttribute('aria-controls')).toBe('reviews-table');
+    toggle.click();
+    await fixture.whenStable();
+    expect(table.classList).toContain('all-columns');
+  });
+
   it('labels each field of the phone cards with its column header', async () => {
     const { element } = await render(new FakeService());
     const table = element.querySelector('table.data-table') as HTMLTableElement;

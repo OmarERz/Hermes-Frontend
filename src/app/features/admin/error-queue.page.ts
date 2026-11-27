@@ -17,6 +17,7 @@ import { AsyncStateComponent, ViewState } from '../../shared/async-state.compone
 import { Chip } from '../../shared/chip';
 import { CursorPager } from '../../shared/cursor-pager';
 import { formatDateTime, formatShortDateTime } from '../../shared/labels';
+import { ColumnsToggle } from '../../shared/columns-toggle';
 import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   ERROR_KINDS,
@@ -101,6 +102,7 @@ const GONE_CODES = new Set(['not_in_error', 'not_found']);
     BannerPagina,
     AsyncStateComponent,
     Chip,
+    ColumnsToggle,
     ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
@@ -114,6 +116,8 @@ const GONE_CODES = new Set(['not_in_error', 'not_found']);
   styleUrls: ['./admin-tables.css', './error-queue-page.css'],
 })
 export class ErrorQueuePage {
+  /** «Todas las columnas»: the attempts and the next attempt, which have no detail of their own. */
+  readonly allColumns = signal(false);
   private readonly service = inject(ErrorQueueService);
   private readonly destroyRef = inject(DestroyRef);
 

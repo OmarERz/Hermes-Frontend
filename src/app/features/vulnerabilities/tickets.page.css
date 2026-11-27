@@ -21,13 +21,12 @@
   background: #2bb673;
 }
 /*
- * The tables' widths, the long texts (summary folded to three lines, names cut to one, the whole text in their title)
- * and the priority columns: src/styles/tables.css. The relevance chip is cut to one line too (TIC-3).
+ * The tables' widths, the summary column and the priority columns: src/styles/tables.css. The relevance chip stays
+ * narrow and wraps its label (TIC-3): the alerts have no detail where a cut label could be read whole.
  */
 .relevance-chip {
-  max-width: 22ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 20ch;
+  white-space: normal;
   vertical-align: middle;
 }
 .type-chip.inferred {

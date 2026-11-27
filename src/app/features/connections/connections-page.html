@@ -76,6 +76,12 @@
               }
               <h2 [id]="'connections-' + group.id">{{ group.title }}</h2>
             </div>
+            <app-columns-toggle
+              [all]="allColumns()[group.id] ?? false"
+              (allChange)="showAllColumns(group.id, $event)"
+              [controls]="'connections-table-' + group.id"
+              phoneCards
+            />
             <span>{{ group.rows.length }}</span>
           </header>
           <div
@@ -86,7 +92,11 @@
             appScrollFade
             [appScrollFadeReveal]="false"
           >
-            <table class="connections-table data-table sticky-first cards-mobile">
+            <table
+              class="connections-table data-table sticky-first cards-mobile"
+              [id]="'connections-table-' + group.id"
+              [class.all-columns]="allColumns()[group.id] ?? false"
+            >
               <thead>
                 <tr>
                   <th scope="col">Conexión</th>

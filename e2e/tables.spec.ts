@@ -86,6 +86,23 @@ test.describe('data tables as admin', () => {
     });
   }
 
+  test('«Todas las columnas» shows the priority columns of a table without a row detail', async ({
+    page,
+  }) => {
+    await page.setViewportSize(DESKTOP);
+    await open(page, 'error-queue');
+    const table = page.locator('#errors-table');
+    const attempts = table.getByRole('columnheader', { name: 'Intentos' });
+    await expect(attempts).toBeHidden();
+    const toggle = page.getByRole('button', { name: 'Todas las columnas' });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(attempts).toBeVisible();
+    await expect(table.getByRole('columnheader', { name: 'Próximo intento' })).toBeVisible();
+    await toggle.click();
+    await expect(attempts).toBeHidden();
+  });
+
   test('the asset view of vulnerabilities fits at 1280 px too', async ({ page }) => {
     await page.setViewportSize(DESKTOP);
     await open(page, 'vulnerabilities');

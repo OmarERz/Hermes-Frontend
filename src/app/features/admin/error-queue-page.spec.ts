@@ -120,9 +120,6 @@ describe('ErrorQueuePage', () => {
     expect(notification.querySelector('td')?.getAttribute('title')).toBe(
       formatDateTime(NOTIFICATION.created_at),
     );
-    expect(notification.querySelector('td.error-text span')?.getAttribute('title')).toBe(
-      'Slack respondió 503 <b>no</b>',
-    );
     // External text is data: never HTML.
     expect(notification.querySelector('td.error-text b')).toBeNull();
     expect(notification.querySelector('a.row-link')?.getAttribute('href')).toBe(
@@ -141,6 +138,16 @@ describe('ErrorQueuePage', () => {
     expect(llm.querySelector('app-chip')?.getAttribute('data-tone')).toBe('danger');
     // The raw value of the API stays in the tooltip.
     expect(llm.querySelector('small[title]')?.getAttribute('title')).toBe('news_analyst');
+  });
+
+  it('shows the attempts and the next attempt on demand', async () => {
+    const { element, settle } = await render();
+    const table = element.querySelector('table.errors-table')!;
+    const toggle = element.querySelector<HTMLButtonElement>('app-columns-toggle button')!;
+    expect(toggle.getAttribute('aria-controls')).toBe(table.id);
+    toggle.click();
+    await settle();
+    expect(table.classList).toContain('all-columns');
   });
 
   it('labels each field of the phone cards with its column header', async () => {

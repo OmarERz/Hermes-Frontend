@@ -10,6 +10,7 @@ import {
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
 import { formatDateTime, formatShortDateTime } from '../../shared/labels';
+import { ColumnsToggle } from '../../shared/columns-toggle';
 import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   Agent,
@@ -66,6 +67,7 @@ export function reviewRow(review: LlmReview) {
     FormsModule,
     RouterLink,
     AsyncStateComponent,
+    ColumnsToggle,
     ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
@@ -76,6 +78,8 @@ export function reviewRow(review: LlmReview) {
   styleUrls: ['./agents-tables.css', './reviews-log.css'],
 })
 export class ReviewsLog {
+  /** «Todas las columnas»: mode, model, attempts, tokens and cost, which have no detail of their own. */
+  readonly allColumns = signal(false);
   private readonly service = inject(AgentsService);
 
   readonly agents = AGENTS;

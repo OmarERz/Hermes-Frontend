@@ -6,13 +6,16 @@
  * - The table is as wide as its columns need: no fixed minimum (the prototype's 860–1150 px minimums did not fit
  *   at 1280 px). Text wraps at word boundaries by default, headers included (a long header folds only when the
  *   table is squeezed); dates, figures, codes and chips do not.
- * - Cells: .cell-date and .cell-nowrap keep one line; inside a cell, .cell-truncate cuts one line with an ellipsis
- *   and .cell-text wraps a long text in a column with a minimum width (220 px; 160 px with .cell-text-sm), where
- *   only a word longer than that breaks; .cell-clamp-2 and .cell-clamp-3 also fold it to two or three lines. A cut text always carries its full value in `title`, and stays whole in the DOM for
- *   screen readers.
+ * - Cells: .cell-date and .cell-nowrap keep one line; inside a cell, .cell-text wraps a long text in a column with a
+ *   minimum width (220 px; 160 px with .cell-text-sm), where only a word longer than that breaks. .cell-truncate
+ *   (one line with an ellipsis) and .cell-clamp-2 (two lines) only cut a text whose whole value the person can also
+ *   reach with keyboard or touch: the detail of the row, or the page a link of the row opens. A cut text also
+ *   carries its full value in `title`, and stays whole in the DOM for screen readers.
+
  * - Columns by priority (container queries on the scroller): .col-from-md shows when the scroller is at least
  *   760 px wide (about a 1280 px window), .col-from-lg from 1200 px (about 1600 px). Their data is also in the
- *   detail of the row, the filters or the indicators of the screen.
+ *   detail of the row (or the page its link opens); a table without one has «Todas las columnas»
+ *   (<app-columns-toggle>), which shows them all with .all-columns.
  * - .sticky-first keeps the first column in view while the table scrolls sideways, with a shadow once it covers
  *   something.
  * - .cards-mobile: at phone widths (560 px or less) each row is a card of label/value pairs. Each cell's label is its
@@ -80,16 +83,12 @@
 .app-shell .page-content .data-table .cell-text.cell-text-sm {
   --cell-text-min: 10rem;
 }
-.app-shell .page-content .data-table :is(.cell-clamp-2, .cell-clamp-3) {
+.app-shell .page-content .data-table .cell-clamp-2 {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-}
-.app-shell .page-content .data-table .cell-clamp-3 {
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
 }
 
 /*
@@ -106,6 +105,21 @@
 }
 @container data-table (max-width: 1199.98px) {
   .app-shell .page-content .data-table .col-from-lg {
+    display: none;
+  }
+}
+
+/* «Todas las columnas»: the priority columns of a table without a row detail, on demand. */
+.app-shell .page-content .data-table.all-columns :is(.col-from-md, .col-from-lg) {
+  display: table-cell;
+}
+@media (min-width: 1600px) {
+  .app-shell .page-content app-columns-toggle {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  .app-shell .page-content app-columns-toggle[data-phone-cards] {
     display: none;
   }
 }

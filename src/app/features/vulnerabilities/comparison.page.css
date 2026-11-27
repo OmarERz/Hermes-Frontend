@@ -89,7 +89,3 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-/* The main cause is cut to one line, the whole text in its title (COM-4); the rest: src/styles/tables.css. */
-.main-cause {
-  --cell-truncate-max: 30ch;
-}

@@ -17,6 +17,7 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { KpiCard } from '../../shared/kpi-card';
+import { ColumnsToggle } from '../../shared/columns-toggle';
 import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   CONNECTION_NAMES,
@@ -104,6 +105,7 @@ export function mergeStatuses(
     BannerPagina,
     AsyncStateComponent,
     IfRoleDirective,
+    ColumnsToggle,
     KpiCard,
     ScrollFade,
     LucideDatabase,
@@ -114,6 +116,13 @@ export function mergeStatuses(
   styleUrl: './connections-page.css',
 })
 export class ConnectionsPage {
+  /** «Todas las columnas» of each group: the time of each check, which has no detail of its own. */
+  readonly allColumns = signal<Partial<Record<ConnectionGroup, boolean>>>({});
+
+  showAllColumns(group: ConnectionGroup, all: boolean): void {
+    this.allColumns.update((current) => ({ ...current, [group]: all }));
+  }
+
   private readonly service = inject(ConnectionsService);
   private readonly destroyRef = inject(DestroyRef);
 

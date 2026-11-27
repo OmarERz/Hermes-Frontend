@@ -67,11 +67,7 @@
                   <strong>{{ ticket.itop_id }}</strong>
                 </td>
                 <td class="cell-nowrap">{{ ticket.cve }}</td>
-                <td>
-                  <span class="cell-truncate" [title]="ticket.custodian">{{
-                    ticket.custodian
-                  }}</span>
-                </td>
+                <td>{{ ticket.custodian }}</td>
                 <td>
                   <app-chip [tone]="ticket.urgencyTone">{{ ticket.urgencyLabel }}</app-chip>
                 </td>
@@ -131,6 +127,7 @@
         <svg lucideRadar aria-hidden="true"></svg>
         <h2 id="alerts-title">Alertas de amenazas</h2>
       </div>
+      <app-columns-toggle [(all)]="allAlertColumns" controls="alerts-table" />
       <span>Página {{ alerts.pageIndex() + 1 }}</span>
     </header>
     @if (alertState(); as state) {
@@ -151,7 +148,7 @@
         appScrollFade
         [appScrollFadeReveal]="false"
       >
-        <table class="data-table">
+        <table id="alerts-table" class="data-table" [class.all-columns]="allAlertColumns()">
           <thead>
             <tr>
               <th scope="col">Fecha</th>
@@ -170,33 +167,16 @@
                   {{ formatShortDateTime(alert.created_at) }}
                 </td>
                 <td>
-                  <span
-                    class="type-chip relevance-chip"
-                    [class.inferred]="alert.inferred"
-                    [title]="relevanceLabels[alert.relevance]"
-                    >{{ relevanceLabels[alert.relevance] }}</span
-                  >
+                  <span class="type-chip relevance-chip" [class.inferred]="alert.inferred">{{
+                    relevanceLabels[alert.relevance]
+                  }}</span>
                 </td>
                 <td class="summary">
-                  <span class="cell-text cell-clamp-3" [title]="alert.summary">{{
-                    alert.summary
-                  }}</span>
+                  <span class="cell-text">{{ alert.summary }}</span>
                 </td>
-                <td>
-                  <span class="cell-truncate" [title]="alert.actor ?? '—'">{{
-                    alert.actor ?? '—'
-                  }}</span>
-                </td>
-                <td>
-                  <span class="cell-truncate" [title]="alert.victim ?? '—'">{{
-                    alert.victim ?? '—'
-                  }}</span>
-                </td>
-                <td class="col-from-lg">
-                  <span class="cell-truncate" [title]="alert.vector ?? '—'">{{
-                    alert.vector ?? '—'
-                  }}</span>
-                </td>
+                <td>{{ alert.actor ?? '—' }}</td>
+                <td>{{ alert.victim ?? '—' }}</td>
+                <td class="col-from-lg">{{ alert.vector ?? '—' }}</td>
                 <td class="cell-nowrap">
                   @if (alert.ci_id) {
                     <a class="row-link" [routerLink]="['/activos', alert.ci_id]"

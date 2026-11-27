@@ -46,6 +46,7 @@
         <svg lucideTriangleAlert aria-hidden="true"></svg>
         <h2 id="errors-title">Elementos con error</h2>
       </div>
+      <app-columns-toggle [(all)]="allColumns" controls="errors-table" phoneCards />
       <span>Página {{ pager.pageIndex() + 1 }}</span>
     </header>
     @if (tableState(); as state) {
@@ -68,7 +69,11 @@
         appScrollFade
         [appScrollFadeReveal]="false"
       >
-        <table class="errors-table data-table cards-mobile">
+        <table
+          id="errors-table"
+          class="errors-table data-table cards-mobile"
+          [class.all-columns]="allColumns()"
+        >
           <thead>
             <tr>
               <th scope="col">Fecha</th>
@@ -103,7 +108,7 @@
                   {{ row.nextAttemptShort }}
                 </td>
                 <td class="error-text card-full" data-label="Error">
-                  <span class="cell-text cell-clamp-3" [title]="row.error">{{ row.error }}</span>
+                  <span class="cell-text">{{ row.error }}</span>
                 </td>
                 <td class="related" data-label="Relacionado">
                   @if (row.cve) {

@@ -128,6 +128,19 @@ describe('ConnectionsPage', () => {
     expect(text(element.querySelector('.connections-footnote'))).toContain('nunca se capturan');
   });
 
+  it('shows the time of each check on demand, group by group', async () => {
+    const { element, stable } = await render();
+    const [services, sources] = Array.from(element.querySelectorAll('table.connections-table'));
+    const [toggle] = Array.from(
+      element.querySelectorAll<HTMLButtonElement>('app-columns-toggle button'),
+    );
+    expect(toggle.getAttribute('aria-controls')).toBe(services.id);
+    toggle.click();
+    await stable();
+    expect(services.classList).toContain('all-columns');
+    expect(sources.classList).not.toContain('all-columns');
+  });
+
   it('labels each field of the phone cards with its column header', async () => {
     const { element } = await render();
     for (const table of Array.from(

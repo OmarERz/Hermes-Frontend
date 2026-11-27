@@ -2,7 +2,10 @@
   <div class="history-panel table-panel">
     <header>
       <h2 id="reviews-title"><svg lucideFileClock aria-hidden="true"></svg> Revisiones de IA</h2>
-      <span class="page-label">Página {{ pager.pageIndex() + 1 }}</span>
+      <div class="header-actions">
+        <app-columns-toggle [(all)]="allColumns" controls="reviews-table" phoneCards />
+        <span class="page-label">Página {{ pager.pageIndex() + 1 }}</span>
+      </div>
     </header>
     <p class="log-note">
       Cada llamada de los agentes al modelo, de la más reciente a la más antigua. Solo metadatos:
@@ -56,7 +59,11 @@
         appScrollFade
         [appScrollFadeReveal]="false"
       >
-        <table class="data-table cards-mobile">
+        <table
+          id="reviews-table"
+          class="data-table cards-mobile"
+          [class.all-columns]="allColumns()"
+        >
           <thead>
             <tr>
               <th scope="col">Fecha y hora</th>
@@ -85,9 +92,7 @@
                   }
                 </td>
                 <td class="col-from-lg" data-label="Modo">{{ row.mode }}</td>
-                <td class="col-from-lg" data-label="Modelo">
-                  <span class="cell-truncate" [title]="row.model">{{ row.model }}</span>
-                </td>
+                <td class="col-from-lg" data-label="Modelo">{{ row.model }}</td>
                 <td data-label="Estado">
                   <span [class]="'status status-' + row.statusKey">{{ row.status }}</span>
                 </td>
