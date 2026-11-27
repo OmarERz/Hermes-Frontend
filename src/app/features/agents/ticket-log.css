@@ -1,0 +1,14 @@
+.ticket-log {
+  margin-bottom: 0;
+}
+.ticket-log > header {
+  gap: 12px;
+}
+.ticket-filters {
+  grid-template-columns: repeat(2, minmax(160px, 280px));
+}
+@media (max-width: 650px) {
+  .ticket-filters {
+    grid-template-columns: 1fr;
+  }
+}

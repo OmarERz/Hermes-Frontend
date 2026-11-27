@@ -3,7 +3,14 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { APP_CONFIG } from '../../core/config/app-config';
-import { LATEST_RUN, LLM_REVIEW } from './agents.fixtures';
+import {
+  ASSESSMENT_ID,
+  HISTORY_RUN,
+  JUDGE_DETAIL,
+  LATEST_RUN,
+  LLM_REVIEW,
+  TICKET_UPDATE,
+} from './agents.fixtures';
 import { AgentsService } from './agents.service';
 
 const API = 'http://127.0.0.1:8000';
@@ -89,5 +96,39 @@ describe('AgentsService', () => {
     const result = firstValueFrom(service.metrics());
     backend.expectOne(`${API}/api/metrics`).flush({ generated_at: 'x', metrics: [] });
     await expect(result).resolves.toEqual({ generated_at: 'x', metrics: [] });
+  });
+
+  it('pages the history timeline with its filters', async () => {
+    const result = firstValueFrom(
+      service.history({ type: 'run', status: 'failed', date_from: null, date_to: null }, 'a.b', 25),
+    );
+    const request = backend.expectOne((req) => req.url === `${API}/api/history`);
+    expect(request.request.params.get('type')).toBe('run');
+    expect(request.request.params.get('status')).toBe('failed');
+    expect(request.request.params.get('cursor')).toBe('a.b');
+    request.flush({ items: [HISTORY_RUN], next_cursor: null });
+    await expect(result).resolves.toEqual({ items: [HISTORY_RUN], nextCursor: null });
+  });
+
+  it('pages the ticket log with its filters', async () => {
+    const result = firstValueFrom(
+      service.ticketUpdates({ ticket_itop_id: '123', action: 'add_ci' }, null, 25),
+    );
+    const request = backend.expectOne((req) => req.url === `${API}/api/tickets/updates`);
+    expect(request.request.params.get('ticket_itop_id')).toBe('123');
+    expect(request.request.params.get('action')).toBe('add_ci');
+    expect(request.request.params.has('cursor')).toBe(false);
+    request.flush({ items: [TICKET_UPDATE], next_cursor: 'c.d' });
+    await expect(result).resolves.toEqual({ items: [TICKET_UPDATE], nextCursor: 'c.d' });
+  });
+
+  it('reads the judge detail and the feedback of an evaluation', async () => {
+    const judge = firstValueFrom(service.judge(ASSESSMENT_ID));
+    backend.expectOne(`${API}/api/recommendations/${ASSESSMENT_ID}/judge`).flush(JUDGE_DETAIL);
+    await expect(judge).resolves.toEqual(JUDGE_DETAIL);
+
+    const feedback = firstValueFrom(service.feedback(ASSESSMENT_ID));
+    backend.expectOne(`${API}/api/recommendations/${ASSESSMENT_ID}/feedback`).flush([]);
+    await expect(feedback).resolves.toEqual([]);
   });
 });

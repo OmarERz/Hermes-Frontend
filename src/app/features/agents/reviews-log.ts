@@ -75,7 +75,7 @@ export function reviewRow(review: LlmReview) {
     LucideListFilter,
   ],
   templateUrl: './reviews-log.html',
-  styleUrl: './reviews-log.css',
+  styleUrls: ['./agents-tables.css', './reviews-log.css'],
 })
 export class ReviewsLog {
   private readonly service = inject(AgentsService);
