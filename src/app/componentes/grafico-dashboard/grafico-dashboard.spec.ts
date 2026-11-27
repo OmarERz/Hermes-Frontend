@@ -19,7 +19,7 @@ function createChartComponent() {
 describe('GraficoDashboard', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
-    document.body.innerHTML = '';
+    document.body.replaceChildren();
   });
 
   it('draws the chart without ResizeObserver support instead of throwing', async () => {
