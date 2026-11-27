@@ -4,10 +4,20 @@
 .ticket-log > header {
   gap: 12px;
 }
+.ticket-id {
+  display: block;
+  color: var(--text-secondary, #62576c);
+  font-size: calc((10px) + var(--font-size-increase));
+}
 .ticket-filters {
   grid-template-columns: repeat(2, minmax(160px, 280px));
 }
 @media (max-width: 650px) {
+  .ticket-id {
+    display: block;
+    color: var(--text-secondary, #62576c);
+    font-size: calc((10px) + var(--font-size-increase));
+  }
   .ticket-filters {
     grid-template-columns: 1fr;
   }

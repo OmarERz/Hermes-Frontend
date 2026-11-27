@@ -14,11 +14,11 @@
   </p>
   <div class="filters ticket-filters">
     <label
-      >Ticket (número o referencia)<input
+      >Id del ticket en iTop<input
         type="text"
-        inputmode="text"
+        inputmode="numeric"
         autocomplete="off"
-        placeholder="123 o R-000123"
+        placeholder="123"
         [ngModel]="ticketInput()"
         (ngModelChange)="ticketInput.set($event)"
         (change)="applyTicket()"
@@ -80,6 +80,9 @@
                   >
                 } @else {
                   {{ row.ticket }}
+                }
+                @if (row.itopId) {
+                  <span class="ticket-id">id {{ row.itopId }}</span>
                 }
               </td>
               <td>{{ row.cve }}</td>

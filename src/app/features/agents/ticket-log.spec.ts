@@ -48,6 +48,9 @@ describe('TicketLog', () => {
   it('lists what Hermes did on each ticket, with the iTop link and the evaluation', async () => {
     const { element } = await render(new FakeService());
     const [created, pending] = Array.from(element.querySelectorAll('tbody tr'));
+    // The id the filter takes goes on its own line under the reference.
+    expect(created.querySelector('.ticket-id')?.textContent?.trim()).toBe('id 123');
+    created.querySelector('.ticket-id')?.remove();
     expect(cells(created).slice(1, 6)).toEqual([
       'R-000123 (abre iTop en otra pestaña)',
       'CVE-2026-10001',
@@ -75,20 +78,26 @@ describe('TicketLog', () => {
     expect(ticketRow({ ...TICKET_UPDATE, ticket_url: 'javascript:alert(1)' }).url).toBeNull();
   });
 
-  it('reads a ticket number or reference', () => {
-    expect(ticketIdOf('123')).toBe('123');
-    expect(ticketIdOf(' R-000123 ')).toBe('123');
-    expect(ticketIdOf('r000045')).toBe('45');
+  it('takes the numeric iTop id as typed, never a reference', () => {
+    expect(ticketIdOf(' 123 ')).toBe('123');
+    expect(ticketIdOf('000123')).toBe('000123');
     expect(ticketIdOf('')).toBe('');
+    expect(ticketIdOf('R-000123')).toBeNull();
     expect(ticketIdOf('abc')).toBeNull();
     expect(ticketIdOf('1234567890123')).toBeNull();
+  });
+
+  it('shows the id next to the reference only when they differ', () => {
+    expect(ticketRow(TICKET_UPDATE).itopId).toBe('123');
+    expect(ticketRow({ ...TICKET_UPDATE, ticket_ref: '123' }).itopId).toBeNull();
+    expect(ticketRow({ ...TICKET_UPDATE, ticket_itop_id: null }).itopId).toBeNull();
   });
 
   it('filters by ticket and action from the first page, and clears the filters', async () => {
     const service = new FakeService();
     const { fixture, element } = await render(service);
     const input = element.querySelector('input') as HTMLInputElement;
-    input.value = 'R-000123';
+    input.value = '123';
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new Event('change'));
     await fixture.whenStable();
@@ -121,16 +130,16 @@ describe('TicketLog', () => {
     expect(input.value).toBe('');
   });
 
-  it('does not send a ticket that is not a number or a reference', async () => {
+  it('does not send a ticket that is not a numeric id, such as its reference', async () => {
     const service = new FakeService();
     const { fixture, element } = await render(service);
     const input = element.querySelector('input') as HTMLInputElement;
-    input.value = 'servidor-01';
+    input.value = 'R-000123';
     input.dispatchEvent(new Event('input'));
     input.dispatchEvent(new Event('change'));
     await fixture.whenStable();
     expect(service.ticketUpdates).toHaveBeenCalledTimes(1);
-    expect(element.querySelector('#ticket-error')?.textContent).toContain('número del ticket');
+    expect(element.querySelector('#ticket-error')?.textContent).toContain('id numérico del ticket');
     expect(input.getAttribute('aria-invalid')).toBe('true');
 
     input.value = '7';

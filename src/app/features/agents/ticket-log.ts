@@ -19,15 +19,14 @@ import { pagerState } from './view-state';
 const PAGE_SIZE = 25;
 
 /**
- * The iTop id of a ticket from what a person types: its number ("123") or its iTop reference ("R-000123"). Anything
- * else is not a ticket (null); an empty value means every ticket ('').
+ * The iTop id of a ticket as a person types it: digits only, sent exactly as typed because the API filters by the
+ * exact `ticket_itop_id` (the reference shown, such as "R-000123", is a different field). Anything else is not an id
+ * (null); an empty value means every ticket ('').
  */
 export function ticketIdOf(value: string): string | null {
   const text = value.trim();
   if (!text) return '';
-  const match = /^(?:R-?)?(\d{1,12})$/i.exec(text);
-  if (!match) return null;
-  return String(Number(match[1]));
+  return /^\d{1,12}$/.test(text) ? text : null;
 }
 
 /** One row of the log, already in Spanish. */
@@ -36,6 +35,11 @@ export function ticketRow(update: TicketUpdate) {
     id: update.id,
     at: formatDateTime(update.created_at),
     ticket: update.ticket_ref ?? update.ticket_itop_id ?? 'Por crear en iTop',
+    /** The id the filter takes, shown next to the reference when they differ. */
+    itopId:
+      update.ticket_itop_id && update.ticket_itop_id !== update.ticket_ref
+        ? update.ticket_itop_id
+        : null,
     url: safeExternalUrl(update.ticket_url),
     cve: update.cve,
     custodian: update.custodian,
@@ -99,7 +103,7 @@ export class TicketLog {
     const id = ticketIdOf(this.ticketInput());
     if (id === null) {
       this.ticketError.set(
-        'Escribe el número del ticket en iTop (por ejemplo 123) o su referencia (R-000123).',
+        'Escribe el id numérico del ticket en iTop (por ejemplo 123); aparece en la columna Ticket.',
       );
       return;
     }
