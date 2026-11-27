@@ -55,6 +55,12 @@ app-sidebar-principal {
   flex: none;
   object-fit: contain;
 }
+/* LAY-1: the name never reaches the sidebar's right edge; a larger text size ends it with an ellipsis. */
+.brand > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .main-nav {
   display: grid;
   gap: var(--space-1);

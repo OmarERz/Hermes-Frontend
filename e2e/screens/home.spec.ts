@@ -26,6 +26,31 @@ test.describe('home as reader', () => {
     await expect(summary.getByRole('status')).toContainText('última sincronización con iTop');
   });
 
+  // INI-1 (F19.6): at 1280 px the cards were ≈ 240 px wide and long words ran under the arrow button.
+  test('keeps the text of every module card clear of its arrow', async ({ page }) => {
+    await page.goto('/inicio');
+    const cards = page.getByRole('navigation', { name: 'Módulos principales' }).getByRole('link');
+    await expect(cards).toHaveCount(4);
+    for (const width of [1280, 1100, 768, 375]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.evaluate(() => document.fonts.ready.then(() => undefined));
+      const clashes = await cards.evaluateAll((links) =>
+        links.flatMap((link) => {
+          const copy = link.querySelector('.home-card-copy');
+          const arrow = link.querySelector('.home-card-arrow');
+          if (!copy || !arrow) return ['missing parts'];
+          const text = document.createRange();
+          text.selectNodeContents(copy);
+          const gap = arrow.getBoundingClientRect().left - text.getBoundingClientRect().right;
+          return gap < 0
+            ? [`${copy.textContent?.trim().split(/\s+/)[0]}: ${Math.round(gap)} px`]
+            : [];
+        }),
+      );
+      expect(clashes, `module cards at ${width} px`).toEqual([]);
+    }
+  });
+
   test('links the main modules', async ({ page }) => {
     await page.goto('/inicio');
     const modules = page.getByRole('navigation', { name: 'Módulos principales' });
