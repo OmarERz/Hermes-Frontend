@@ -16,6 +16,7 @@ import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { KpiCard } from '../../shared/kpi-card';
 import { CpeMappingDialog, MappingTarget } from './cpe-mapping-dialog';
 import { InventoryPending, InventoryService, Mapping, PendingItem } from './inventory.service';
 import { viewState } from './inventory-view';
@@ -104,6 +105,7 @@ const SECTIONS: readonly PendingSection[] = [
     AsyncStateComponent,
     IfRoleDirective,
     CpeMappingDialog,
+    KpiCard,
     LucideDynamicIcon,
     LucideRefreshCw,
   ],

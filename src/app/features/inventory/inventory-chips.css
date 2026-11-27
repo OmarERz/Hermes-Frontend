@@ -1,51 +1,4 @@
-/* Chips, numbers and links shared by the Inventario screens (lane B). */
-.level-chip,
-.criticality-chip,
-.state-chip,
-.category-chip {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 10px;
-  font-size: calc(10px + var(--font-size-increase, 0px));
-  font-weight: 700;
-  white-space: nowrap;
-}
-.level-critical,
-.criticality-high {
-  background: #fde2e2;
-  color: #a51616;
-}
-.level-high {
-  background: #ffedd5;
-  color: #9a3412;
-}
-.level-medium,
-.criticality-medium {
-  background: #fef3c7;
-  color: #854d0e;
-}
-.level-low,
-.criticality-low {
-  background: #dcfce7;
-  color: #166534;
-}
-.criticality-unknown,
-.state-unknown {
-  background: #ece9f1;
-  color: #4f4659;
-}
-.state-active {
-  background: #dcfce7;
-  color: #166534;
-}
-.state-inactive {
-  background: #fef3c7;
-  color: #854d0e;
-}
-.category-chip {
-  background: #f2e4fb;
-  color: #601279;
-}
+/* Numbers and links shared by the Inventario screens; their chips are the shared <app-chip> (src/styles/chips.css). */
 .chip-list {
   display: inline-flex;
   flex-wrap: wrap;
@@ -69,7 +22,7 @@
 }
 .row-link:hover strong,
 .row-link:focus-visible strong {
-  color: var(--accent, #c90083);
+  color: var(--accent-text);
   text-decoration: underline;
 }
 .clamped {

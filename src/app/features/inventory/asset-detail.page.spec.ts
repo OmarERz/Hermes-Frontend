@@ -87,11 +87,11 @@ describe('AssetDetailPage', () => {
       Custodio: 'Infraestructura Linux',
       'Última sincronización con iTop': expect.stringContaining('2026'),
     });
-    const cards = Array.from(element.querySelectorAll('.stat-card strong')).map((item) =>
+    const cards = Array.from(element.querySelectorAll('.kpi-value')).map((item) =>
       item.textContent?.trim(),
     );
     expect(cards).toEqual(['92', '1', '1', '2']);
-    expect(element.querySelector('.stat-card em')?.textContent?.trim()).toBe('Crítica');
+    expect(element.querySelector('app-kpi-card app-chip')?.textContent?.trim()).toBe('Crítica');
   });
 
   it('lists the installed software with category, status, licence, CPE and findings', async () => {
@@ -178,7 +178,7 @@ describe('AssetDetailPage', () => {
     );
     expect(element.textContent).toContain('iTop no registra software instalado en este activo.');
     expect(element.textContent).toContain('Este activo no tiene vulnerabilidades registradas.');
-    expect(element.querySelector('.stat-card strong')?.textContent?.trim()).toBe(
+    expect(element.querySelector('.kpi-value')?.textContent?.trim()).toBe(
       'Sin vulnerabilidades abiertas',
     );
   });
@@ -214,11 +214,11 @@ describe('AssetDetailPage', () => {
       }),
     );
     const { element } = await render(service);
-    const cards = Array.from(element.querySelectorAll('.stat-card strong')).map((item) =>
+    const cards = Array.from(element.querySelectorAll('.kpi-value')).map((item) =>
       item.textContent?.trim(),
     );
     expect(cards.slice(0, 3)).toEqual(['30', '1', '0']);
-    expect(element.querySelector('.stat-card em')?.textContent?.trim()).toBe('Baja');
+    expect(element.querySelector('app-kpi-card app-chip')?.textContent?.trim()).toBe('Baja');
     // The fixed group is still listed, with its status.
     expect(rowsOf(element, 'Vulnerabilidades del activo')).toHaveLength(2);
     expect(element.textContent).toContain('Corregido');
@@ -230,7 +230,7 @@ describe('AssetDetailPage', () => {
       of({ ...DETAIL, findings: [{ ...DETAIL.findings[0]!, status: 'fixed' }] }),
     );
     const { element } = await render(service);
-    expect(element.querySelector('.stat-card strong')?.textContent?.trim()).toBe(
+    expect(element.querySelector('.kpi-value')?.textContent?.trim()).toBe(
       'Sin vulnerabilidades abiertas',
     );
   });
@@ -267,7 +267,7 @@ describe('AssetDetailPage', () => {
     const { fixture, element } = await render(service);
     expect(element.textContent).toContain('No se pudieron leer la criticidad');
     expect(element.textContent).toContain('Falló el software.');
-    expect(Array.from(element.querySelectorAll('.stat-card strong')).at(-1)?.textContent).toContain(
+    expect(Array.from(element.querySelectorAll('.kpi-value')).at(-1)?.textContent).toContain(
       'Sin datos',
     );
 

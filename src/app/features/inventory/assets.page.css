@@ -1,9 +1,4 @@
-.filters {
-  flex-wrap: wrap;
-}
-.filters .text-filter {
-  flex: 1 1 150px;
-}
+/* The filters are the shared .filter-bar (src/styles/forms.css). */
 .action-row {
   align-items: center;
 }

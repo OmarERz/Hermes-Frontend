@@ -20,6 +20,7 @@ import { ACTION_ROLES } from '../../core/auth/roles';
 import { APP_CONFIG } from '../../core/config/app-config';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { Chip } from '../../shared/chip';
 import { toCsv } from '../../shared/csv';
 import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink, safeExternalUrl } from '../../shared/itop-links';
@@ -29,6 +30,7 @@ import {
   CATEGORIES,
   CATEGORY_LABELS,
   INSTALL_STATUS_LABELS,
+  INSTALL_STATUS_TONES,
   INSTALL_STATUSES,
   plural,
   type SoftwareCategory,
@@ -75,6 +77,7 @@ function yesNo(value: YesNoFilter): boolean | null {
     BannerPagina,
     GraficoDashboard,
     AsyncStateComponent,
+    Chip,
     IfRoleDirective,
     ItopLink,
     CpeMappingDialog,
@@ -103,6 +106,7 @@ export class SoftwarePage {
   readonly statusLabels = INSTALL_STATUS_LABELS;
   readonly levels = LEVELS;
   readonly levelLabels = LEVEL_LABELS;
+  readonly stateTones = INSTALL_STATUS_TONES;
   readonly charts = CHARTS;
   readonly chartTitles = CHART_TITLES;
   readonly mapRole = ACTION_ROLES.mapCpe;

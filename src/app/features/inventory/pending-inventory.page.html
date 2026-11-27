@@ -6,7 +6,7 @@
   />
 
   <div class="action-row">
-    <button type="button" (click)="load()" [disabled]="pending.loading()">
+    <button type="button" class="btn btn-secondary" [disabled]="pending.loading()" (click)="load()">
       <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
     </button>
     <p class="itop-hint">
@@ -28,15 +28,14 @@
       />
     </section>
   } @else {
-    <section class="pending-stats" aria-label="Pendientes por tipo">
+    <section class="pending-stats kpi-grid" aria-label="Pendientes por tipo">
       @for (section of sections(); track section.kind) {
-        <article class="stat-card">
-          <span [class.warning]="section.items.length > 0"
-            ><svg [lucideIcon]="section.icon" aria-hidden="true"></svg
-          ></span>
-          <small>{{ section.card }}</small>
-          <strong>{{ section.items.length }}</strong>
-        </article>
+        <app-kpi-card
+          [label]="section.card"
+          [icon]="section.icon"
+          [tone]="section.items.length > 0 ? 'danger' : 'accent'"
+          [value]="section.items.length"
+        />
       }
     </section>
 

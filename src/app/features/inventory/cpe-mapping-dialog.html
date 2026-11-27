@@ -28,7 +28,7 @@
           aria-label="Buscar candidatos de CPE"
           [attr.aria-invalid]="!!queryError()"
       /></label>
-      <button type="submit" class="secondary-button" [disabled]="candidates.loading()">
+      <button type="submit" class="btn btn-secondary" [disabled]="candidates.loading()">
         Buscar
       </button>
     </form>
@@ -84,12 +84,12 @@
         <p class="field-error" role="alert">{{ message }}</p>
       }
       <footer>
-        <button type="button" class="secondary-button" [disabled]="saving()" (click)="close()">
+        <button type="button" class="btn btn-secondary" [disabled]="saving()" (click)="close()">
           Cancelar
         </button>
         <button
           type="submit"
-          class="primary-button"
+          class="btn btn-primary"
           [disabled]="saving()"
           [attr.aria-busy]="saving()"
         >

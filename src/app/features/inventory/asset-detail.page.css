@@ -56,11 +56,6 @@
   margin: 2px 0 0;
   overflow-wrap: anywhere;
 }
-.stat-card em.level-chip {
-  position: absolute;
-  right: 9px;
-  bottom: 10px;
-}
 .hint {
   margin: 10px 0 0;
   color: var(--text-muted, #6b6175);

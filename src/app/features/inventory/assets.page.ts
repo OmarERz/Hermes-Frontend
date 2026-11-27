@@ -25,9 +25,12 @@ import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink, safeExternalUrl } from '../../shared/itop-links';
+import { Chip } from '../../shared/chip';
+import { KpiCard, KpiState } from '../../shared/kpi-card';
 import {
   Classification,
   CLASSIFICATION_LABELS,
+  criticalityTone,
   formatDateTime,
   LEVEL_LABELS,
 } from '../../shared/labels';
@@ -72,7 +75,9 @@ const CLASSIFICATIONS = Object.keys(CLASSIFICATION_LABELS) as Classification[];
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    Chip,
     ItopLink,
+    KpiCard,
     LucideActivity,
     LucideArrowLeft,
     LucideArrowRight,
@@ -96,6 +101,14 @@ export class AssetsPage {
   private readonly service = inject(InventoryService);
 
   readonly bannerIcon = LucideMonitor;
+  /** Icons of the indicator cards. */
+  readonly kpiIcons = {
+    total: LucideLayers,
+    critical: LucideTriangleAlert,
+    owners: LucideUsers,
+    findings: LucideShieldAlert,
+  };
+  readonly criticalityTone = criticalityTone;
   readonly criticalities = CRITICALITIES;
   readonly criticalityLabels = CRITICALITY_LABELS;
   readonly classifications = CLASSIFICATIONS;
@@ -157,6 +170,11 @@ export class AssetsPage {
   );
 
   readonly summaryState = computed(() => viewState(this.summary));
+  /** The cards keep the last totals while they reload; before the first answer they load or say «Sin datos». */
+  readonly totalsState = computed<KpiState>(() => {
+    if (this.summary.value()) return 'ready';
+    return this.summaryState() === 'error' ? 'error' : 'loading';
+  });
   /** CIs of high criticality (the summary leaves out a criticality that no CI has). */
   readonly highCriticality = computed(() => this.summary.value()?.by_criticality['high'] ?? 0);
   /** Classes for the filter: the ones of the inventory, plus the selected one if it has no CI left. */

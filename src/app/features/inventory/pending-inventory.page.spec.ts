@@ -43,8 +43,9 @@ function dialogOf(fixture: Awaited<ReturnType<typeof render>>['fixture']): CpeMa
 describe('PendingInventoryPage', () => {
   it('counts each kind of pending item and lists the ones that have any', async () => {
     const { element } = await render();
-    const cards = Array.from(element.querySelectorAll('.pending-stats .stat-card')).map((card) =>
-      card.textContent?.replace(/\s+/g, ' ').trim(),
+    const cards = Array.from(element.querySelectorAll('.pending-stats app-kpi-card')).map(
+      (card) =>
+        `${card.querySelector('.kpi-label')?.textContent?.trim()}${card.querySelector('.kpi-value')?.textContent?.trim()}`,
     );
     // «Fuera del modelo de entrega» is not modelled yet (always empty): no card, no section.
     expect(cards).toEqual([

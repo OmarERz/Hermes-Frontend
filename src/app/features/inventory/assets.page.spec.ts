@@ -96,14 +96,17 @@ describe('AssetsPage', () => {
 
   it('shows the totals and distributions of the summary', async () => {
     const { element } = await render();
-    const cards = Array.from(element.querySelectorAll('.stat-card')).map((card) =>
-      card.textContent?.replace(/\s+/g, ' ').trim(),
+    const cards = Array.from(element.querySelectorAll('app-kpi-card')).map((card) =>
+      ['.kpi-label', '.kpi-value', '.kpi-detail']
+        .map((part) => card.querySelector(part)?.textContent?.trim() ?? '')
+        .filter(Boolean)
+        .join(' · '),
     );
     expect(cards).toEqual([
-      'Total de activos3',
-      'Criticidad alta1',
-      'Responsables asignados11 sin responsable',
-      'Con vulnerabilidades abiertas21 con KEV',
+      'Total de activos · 3',
+      'Criticidad alta · 1',
+      'Responsables asignados · 1 · 1 sin responsable',
+      'Con vulnerabilidades abiertas · 2 · 1 con KEV',
     ]);
     const classes = Array.from(
       element.querySelectorAll('.distribution-row strong:first-child'),
@@ -192,7 +195,7 @@ describe('AssetsPage', () => {
     );
     const { fixture, element } = await render(service);
     expect(element.querySelector('[role="alert"]')?.textContent).toContain('No tienes permiso.');
-    expect(element.querySelector('.stat-card strong')?.textContent?.trim()).toBe('Sin datos');
+    expect(element.querySelector('.kpi-value')?.textContent?.trim()).toBe('Sin datos');
 
     service.listAssets.mockReturnValue(of({ items: [PAYMENTS], nextCursor: null }));
     service.summary.mockReturnValue(of(SUMMARY));
