@@ -1,10 +1,10 @@
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { LucideChartColumn, LucideCoins, LucideDynamicIcon } from '@lucide/angular';
-import { AyudaTooltip } from '../../componentes/ayuda-tooltip/ayuda-tooltip';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { GraficoDashboard } from '../../componentes/grafico-dashboard/grafico-dashboard';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { KpiCard } from '../../shared/kpi-card';
 import { formatDateTime } from '../../shared/labels';
 import { dailyCostChart } from './agents-charts';
 import { AgentsService, MetricsDashboard, TelemetryDaily } from './agents.service';
@@ -24,9 +24,9 @@ export const COST_DAYS = 30;
   selector: 'app-metrics-page',
   imports: [
     AsyncStateComponent,
-    AyudaTooltip,
     BannerPagina,
     GraficoDashboard,
+    KpiCard,
     LucideCoins,
     LucideDynamicIcon,
   ],

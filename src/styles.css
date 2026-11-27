@@ -1,6 +1,7 @@
 @import './styles/tokens.css';
 @import './styles/segmented.css';
 @import './styles/buttons.css';
+@import './styles/kpi.css';
 @import './app/componentes/layout-principal/layout-principal.css';
 @import './app/rutas/Agentes/control-agente.css';
 @import './app/rutas/Stack-tecnologico/stack-tecnologico.css';
@@ -56,6 +57,15 @@
   --warning-text: #ffd18d;
   --danger-bg: rgba(255, 54, 113, 0.16);
   --danger-text: #ff9dbb;
+  /* Severity levels (G10): text and fill of the level chips and tiles; dark values 7.41–8.56:1 on --surface. */
+  --sev-critical-text: #ffb3b3;
+  --sev-critical-bg: rgba(255, 77, 77, 0.18);
+  --sev-high-text: #ffc58f;
+  --sev-high-bg: rgba(255, 140, 40, 0.18);
+  --sev-medium-text: #ffe08a;
+  --sev-medium-bg: rgba(250, 204, 21, 0.16);
+  --sev-low-text: #8ff0b5;
+  --sev-low-bg: rgba(43, 203, 119, 0.18);
   --shadow-card: 0 10px 28px rgba(3, 0, 14, 0.26), 0 0 18px rgba(165, 55, 255, 0.08);
   font-family:
     Inter,
@@ -131,6 +141,15 @@ h3 {
   --warning-text: #96540a;
   --danger-bg: #ffe4f2;
   --danger-text: #b51459; /* 5.49:1 on --danger-bg */
+  /* Severity levels (G10): the prototype's light chips, 6.15–6.49:1. */
+  --sev-critical-text: #a51616;
+  --sev-critical-bg: #fde2e2;
+  --sev-high-text: #9a3412;
+  --sev-high-bg: #ffedd5;
+  --sev-medium-text: #854d0e;
+  --sev-medium-bg: #fef3c7;
+  --sev-low-text: #166534;
+  --sev-low-bg: #dcfce7;
   --shadow-card: 0 3px 10px #3510440a;
 }
 

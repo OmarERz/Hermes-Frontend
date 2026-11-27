@@ -32,6 +32,7 @@ import { ACTION_ROLES } from '../../core/auth/roles';
 import { SessionService } from '../../core/auth/session.service';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { KpiCard } from '../../shared/kpi-card';
 import { ConfirmChangesDialog } from '../../shared/confirm-changes-dialog';
 import { formatDateTime } from '../../shared/labels';
 import { ScrollFade } from '../../shared/scroll-fade.directive';
@@ -115,10 +116,10 @@ const SWIPE_DISTANCE = 45;
     ConfirmChangesDialog,
     IfRoleDirective,
     AddSourceForm,
+    KpiCard,
     LucidePlus,
     LucideActivity,
     LucideCircleCheck,
-    LucideCirclePause,
     LucideClock,
     LucideGauge,
     LucideHash,
@@ -137,6 +138,13 @@ export class SourcesPage {
   readonly session = inject(SessionService);
 
   readonly bannerIcon = LucideRss;
+  /** Icons of the indicator cards. */
+  readonly kpiIcons = {
+    total: LucideLayers,
+    active: LucideCircleCheck,
+    inactive: LucideCirclePause,
+    captured: LucideRefreshCw,
+  };
   readonly toggleRole = ACTION_ROLES.toggleSource;
   readonly types = SOURCE_TYPES;
   readonly levels = SOURCE_LEVELS;

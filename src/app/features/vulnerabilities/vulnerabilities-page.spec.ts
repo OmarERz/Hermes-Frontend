@@ -106,7 +106,7 @@ describe('VulnerabilitiesPage', () => {
       'Clasificada',
       'Nuevo',
     ]);
-    const cards = Array.from(element.querySelectorAll('.stat-card strong')).map((s) =>
+    const cards = Array.from(element.querySelectorAll('.kpi-value')).map((s) =>
       s.textContent?.trim(),
     );
     expect(cards).toEqual(['1', '0', '2', '0']);
@@ -142,7 +142,7 @@ describe('VulnerabilitiesPage', () => {
     const service = new FakeService();
     const { fixture, element } = await render(service);
     const cards = () =>
-      Array.from(element.querySelectorAll('.stat-card strong')).map((s) => s.textContent?.trim());
+      Array.from(element.querySelectorAll('.kpi-value')).map((s) => s.textContent?.trim());
     expect(cards()).toEqual(['1', '0', '2', '0']);
 
     const pending = new Subject<{ critical: number; high: number; medium: number; low: number }>();

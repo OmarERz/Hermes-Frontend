@@ -109,7 +109,7 @@ describe('ConnectionsPage', () => {
     ]);
     expect(row(element, 'nvd').slice(1, 3)).toEqual(['❌ Con falla', 'Sin conexión']);
 
-    expect(Array.from(element.querySelectorAll('.stat-card strong')).map(text)).toEqual([
+    expect(Array.from(element.querySelectorAll('.kpi-value')).map(text)).toEqual([
       '6',
       '4',
       '2',
@@ -152,7 +152,7 @@ describe('ConnectionsPage', () => {
       'Se comprobaron todas las conexiones de nuevo.',
     );
     expect(element.querySelector<HTMLButtonElement>('.test-all')!.disabled).toBe(false);
-    expect(Array.from(element.querySelectorAll('.stat-card strong')).map(text)[1]).toBe('6');
+    expect(Array.from(element.querySelectorAll('.kpi-value')).map(text)[1]).toBe('6');
   });
 
   it('runs single checks side by side and blocks «Probar todas» meanwhile', async () => {
@@ -223,7 +223,7 @@ describe('ConnectionsPage', () => {
     expect(text(element.querySelector('.panel [role="status"]'))).toBe(
       'Cargando el estado de las conexiones…',
     );
-    expect(text(element.querySelector('.stat-card strong'))).toBe('—');
+    expect(text(element.querySelector('.kpi-value'))).toBe('Cargando…');
     pending.error(new ApiError(403, 'forbidden', 'No tienes permiso para realizar esta acción.'));
     await stable();
     expect(text(element.querySelector('[role="alert"]'))).toContain('No tienes permiso');
@@ -232,7 +232,7 @@ describe('ConnectionsPage', () => {
     element.querySelector<HTMLButtonElement>('[role="alert"] button')!.click();
     await stable();
     expect(text(element.querySelector('.state'))).toBe('La API no reportó conexiones.');
-    expect(Array.from(element.querySelectorAll('.stat-card strong')).map(text)).toEqual([
+    expect(Array.from(element.querySelectorAll('.kpi-value')).map(text)).toEqual([
       '0',
       '0',
       '0',

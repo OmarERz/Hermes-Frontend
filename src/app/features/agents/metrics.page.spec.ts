@@ -41,12 +41,12 @@ const text = (node: Element | null | undefined) =>
 
 function sections(element: HTMLElement): [string, string[]][] {
   return Array.from(element.querySelectorAll('.metric-group'))
-    .filter((section) => section.querySelector('.metric-grid'))
+    .filter((section) => section.querySelector('.kpi-grid'))
     .map((section) => [
       text(section.querySelector('h2')),
-      Array.from(section.querySelectorAll('.metric')).map(
+      Array.from(section.querySelectorAll('app-kpi-card')).map(
         (card) =>
-          `${text(card.querySelector('.metric-label'))}: ${text(card.querySelector('strong'))}`,
+          `${text(card.querySelector('.kpi-label'))}: ${text(card.querySelector('.kpi-value'))}`,
       ),
     ]);
 }
@@ -123,9 +123,7 @@ describe('MetricsPage', SCREEN, () => {
     service.daily.mockReturnValue(of({ days: 0, series: [] }));
     (alert.querySelector('button') as HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(text(element.querySelector('.metric-group:last-of-type'))).toContain(
-      'No hay datos diarios.',
-    );
+    expect(text(element.querySelector('.cost-section'))).toContain('No hay datos diarios.');
   });
 
   it('says it is loading while the board has not answered', async () => {

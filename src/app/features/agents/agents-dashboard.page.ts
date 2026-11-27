@@ -20,6 +20,7 @@ import { GraficoDashboard } from '../../componentes/grafico-dashboard/grafico-da
 import { SessionService } from '../../core/auth/session.service';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { KpiCard } from '../../shared/kpi-card';
 import { formatDateTime } from '../../shared/labels';
 import {
   Agent,
@@ -123,18 +124,15 @@ export function orderAgents(agents: readonly AgentTelemetry[]): AgentTelemetry[]
     AyudaTooltip,
     BannerPagina,
     GraficoDashboard,
+    KpiCard,
     ReviewsLog,
     LucideActivity,
     LucideBot,
     LucideChartColumn,
     LucideChartNoAxesCombined,
-    LucideCircleCheck,
     LucideClock,
     LucideCpu,
     LucideLayers,
-    LucideScale,
-    LucideTriangleAlert,
-    LucideZap,
   ],
   templateUrl: './agents-dashboard.page.html',
   styleUrl: './agents-dashboard.page.css',
@@ -144,6 +142,14 @@ export class AgentsDashboardPage {
   private readonly session = inject(SessionService);
 
   readonly bannerIcon = LucideBot;
+  /** Icons of the indicator cards. */
+  readonly kpiIcons = {
+    success: LucideCircleCheck,
+    runs: LucideLayers,
+    latency: LucideZap,
+    ladder: LucideScale,
+    failed: LucideTriangleAlert,
+  };
   readonly windows = WINDOWS;
   readonly windowLabels = WINDOW_LABELS;
   readonly agentOptions = AGENTS;

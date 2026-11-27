@@ -85,9 +85,7 @@ describe('RunsPage', () => {
 
   it('shows the counts of the last 24 hours', async () => {
     const { element } = await render();
-    const values = Array.from(element.querySelectorAll('.stat-card strong')).map((item) =>
-      text(item),
-    );
+    const values = Array.from(element.querySelectorAll('.kpi-value')).map((item) => text(item));
     expect(values).toEqual(['1', '2', '14', '3']);
   });
 
@@ -97,7 +95,7 @@ describe('RunsPage', () => {
       throwError(() => new ApiError(503, 'service_unavailable', 'Telemetría no disponible.')),
     );
     const { element } = await render(runs);
-    expect(Array.from(element.querySelectorAll('.stat-card strong')).map((s) => text(s))).toEqual([
+    expect(Array.from(element.querySelectorAll('.kpi-value')).map((s) => text(s))).toEqual([
       '—',
       '—',
       '—',

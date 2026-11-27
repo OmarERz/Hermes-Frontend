@@ -22,6 +22,7 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
+import { KpiCard, kpiState } from '../../shared/kpi-card';
 import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   AssetRisk,
@@ -104,6 +105,7 @@ function groupRow(group: VulnerabilityGroup, key: string): GroupTableRow {
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    KpiCard,
     ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
@@ -128,6 +130,7 @@ export class VulnerabilitiesPage {
   private readonly route = inject(ActivatedRoute);
 
   readonly bannerIcon = LucideShieldAlert;
+  readonly levelIcon = LucideTriangleAlert;
   readonly levels = LEVELS;
   readonly statuses = STATUSES;
   readonly levelLabels = LEVEL_LABELS;
@@ -176,6 +179,7 @@ export class VulnerabilitiesPage {
     this.service.listBands(this.filters(), cursor, this.pageSize()),
   );
   readonly counts = new AsyncState<LevelCounts>();
+  readonly countState = computed(() => kpiState(this.counts.status()));
 
   /** The pager of the current view (each view pages with its own cursors). */
   readonly pager = computed<CursorPager<unknown>>(() => {

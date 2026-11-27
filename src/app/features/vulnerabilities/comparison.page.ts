@@ -1,9 +1,18 @@
 import { Component, computed, DestroyRef, inject } from '@angular/core';
-import { LucideArrowLeft, LucideArrowRight, LucideScale } from '@lucide/angular';
+import {
+  LucideArrowLeft,
+  LucideArrowLeftRight,
+  LucideArrowRight,
+  LucideBellOff,
+  LucideChartScatter,
+  LucideEyeOff,
+  LucideScale,
+} from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
+import { KpiCard } from '../../shared/kpi-card';
 import { LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
 import { ComparisonRow, ComparisonService, ComparisonSummary } from './comparison.service';
 import { FUNNEL_LABELS, FUNNEL_ORDER, signed } from './vulnerability-texts';
@@ -21,7 +30,7 @@ function rank(level: Level): number {
  */
 @Component({
   selector: 'app-comparison-page',
-  imports: [BannerPagina, AsyncStateComponent, LucideArrowLeft, LucideArrowRight],
+  imports: [BannerPagina, AsyncStateComponent, KpiCard, LucideArrowLeft, LucideArrowRight],
   templateUrl: './comparison.page.html',
   styleUrls: ['./vulnerability-chips.css', './comparison.page.css'],
 })
@@ -29,6 +38,13 @@ export class ComparisonPage {
   private readonly service = inject(ComparisonService);
 
   readonly bannerIcon = LucideScale;
+  /** Icons of the indicator cards. */
+  readonly kpiIcons = {
+    reclassified: LucideArrowLeftRight,
+    hidden: LucideEyeOff,
+    noise: LucideBellOff,
+    correlation: LucideChartScatter,
+  };
   readonly levels = LEVELS;
   readonly levelLabels = LEVEL_LABELS;
   readonly signed = signed;

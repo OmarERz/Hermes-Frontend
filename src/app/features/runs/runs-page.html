@@ -5,27 +5,37 @@
     [icono]="bannerIcon"
   />
 
-  <section class="stats-grid" aria-label="Resumen de corridas">
-    <article class="stat-card">
-      <span><svg lucideClock aria-hidden="true"></svg></span><small>En cola ahora</small>
-      <strong class="numeric" [class.unknown]="queued() === null">{{ queued() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span><svg lucideLoader aria-hidden="true"></svg></span><small>En ejecución ahora</small>
-      <strong class="numeric" [class.unknown]="running() === null">{{ running() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span><svg lucideCircleCheck aria-hidden="true"></svg></span
-      ><small>Iniciadas en las últimas 24 h · terminaron bien</small>
-      <strong class="numeric" [class.unknown]="succeeded() === null">{{
-        succeeded() ?? '—'
-      }}</strong>
-    </article>
-    <article class="stat-card">
-      <span class="warning"><svg lucideCircleAlert aria-hidden="true"></svg></span
-      ><small>Iniciadas en las últimas 24 h · con error</small>
-      <strong class="numeric" [class.unknown]="failed() === null">{{ failed() ?? '—' }}</strong>
-    </article>
+  <!-- A failed read leaves «—» in the cards; the notice below says why. -->
+  <section class="kpi-grid" aria-label="Resumen de corridas">
+    <app-kpi-card
+      label="En cola ahora"
+      [icon]="kpiIcons.queued"
+      [state]="summary.loading() ? 'loading' : 'ready'"
+      [value]="queued()"
+    />
+    <app-kpi-card
+      label="En ejecución ahora"
+      [icon]="kpiIcons.running"
+      tone="violet"
+      [state]="summary.loading() ? 'loading' : 'ready'"
+      [value]="running()"
+    />
+    <app-kpi-card
+      label="Terminaron bien"
+      note="Iniciadas en las últimas 24 h"
+      [icon]="kpiIcons.succeeded"
+      tone="success"
+      [state]="summary.loading() ? 'loading' : 'ready'"
+      [value]="succeeded()"
+    />
+    <app-kpi-card
+      label="Con error"
+      note="Iniciadas en las últimas 24 h"
+      [icon]="kpiIcons.failed"
+      tone="danger"
+      [state]="summary.loading() ? 'loading' : 'ready'"
+      [value]="failed()"
+    />
   </section>
   @if (summary.error(); as failure) {
     <p class="runs-notice" role="status">

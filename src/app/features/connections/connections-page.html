@@ -5,26 +5,34 @@
     [icono]="bannerIcon"
   />
 
-  <section class="stats-grid" aria-label="Resumen de conexiones">
-    <article class="stat-card">
-      <span><svg lucidePlug aria-hidden="true"></svg></span><small>Conexiones</small>
-      <strong [class.unknown]="total() === null">{{ total() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span><svg lucideCircleCheck aria-hidden="true"></svg></span><small>Funcionan</small>
-      <strong [class.unknown]="okCount() === null">{{ okCount() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span class="warning"><svg lucideCircleAlert aria-hidden="true"></svg></span
-      ><small>Con falla o sin configurar</small>
-      <strong [class.unknown]="problemCount() === null">{{ problemCount() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span><svg lucideClock aria-hidden="true"></svg></span><small>Última comprobación</small>
-      <strong class="moment" [class.unknown]="lastCheck() === null">{{
-        lastCheck() ?? '—'
-      }}</strong>
-    </article>
+  <section class="kpi-grid" aria-label="Resumen de conexiones">
+    <app-kpi-card
+      label="Conexiones"
+      [icon]="kpiIcons.total"
+      [state]="load.loading() ? 'loading' : 'ready'"
+      [value]="total()"
+    />
+    <app-kpi-card
+      label="Funcionan"
+      [icon]="kpiIcons.ok"
+      tone="success"
+      [state]="load.loading() ? 'loading' : 'ready'"
+      [value]="okCount()"
+    />
+    <app-kpi-card
+      label="Con falla o sin configurar"
+      [icon]="kpiIcons.problems"
+      tone="danger"
+      [state]="load.loading() ? 'loading' : 'ready'"
+      [value]="problemCount()"
+    />
+    <app-kpi-card
+      label="Última comprobación"
+      [icon]="kpiIcons.checked"
+      kind="text"
+      [state]="load.loading() ? 'loading' : 'ready'"
+      [value]="lastCheck()"
+    />
   </section>
 
   <div class="action-row" *appIfRole="testRole">

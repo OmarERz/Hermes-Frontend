@@ -16,6 +16,7 @@ import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { KpiCard } from '../../shared/kpi-card';
 import {
   CONNECTION_NAMES,
   connectionDetail,
@@ -91,11 +92,8 @@ export function mergeStatuses(
     BannerPagina,
     AsyncStateComponent,
     IfRoleDirective,
-    LucideCircleAlert,
-    LucideCircleCheck,
-    LucideClock,
+    KpiCard,
     LucideDatabase,
-    LucidePlug,
     LucideRefreshCw,
     LucideServer,
   ],
@@ -107,6 +105,13 @@ export class ConnectionsPage {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly bannerIcon = LucidePlug;
+  /** Icons of the indicator cards. */
+  readonly kpiIcons = {
+    total: LucidePlug,
+    ok: LucideCircleCheck,
+    problems: LucideCircleAlert,
+    checked: LucideClock,
+  };
   /** POST /api/connections/test is admin only, like the whole screen. */
   readonly testRole: Role = 'admin';
 

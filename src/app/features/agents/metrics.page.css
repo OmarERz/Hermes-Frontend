@@ -1,13 +1,19 @@
-/* Additions to the prototype's agent view (control-agente.css, global): spacing between sections and the chart. */
-.metric-group + .metric-group {
-  margin-top: 14px;
+/*
+ * Additions to the prototype's agent view (control-agente.css, global). The sections share a grid of two columns on
+ * wide screens (MET-1: a section with one or two indicators no longer leaves two thirds of its row empty); the cost
+ * chart takes the whole width below them.
+ */
+.metric-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: var(--grid-gap);
+  align-items: start;
+}
+.cost-section {
+  margin-top: var(--grid-gap);
 }
 .metric-group .performance-heading {
-  margin-bottom: 12px;
-}
-.metric strong {
-  white-space: normal;
-  overflow-wrap: anywhere;
+  margin-bottom: var(--space-3);
 }
 .cost-chart {
   height: 240px;

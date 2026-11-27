@@ -5,25 +5,15 @@
     [icono]="bannerIcon"
   />
 
-  <section class="stats-grid" aria-label="Vulnerabilidades por nivel">
+  <section class="kpi-grid" aria-label="Vulnerabilidades por nivel">
     @for (level of levels; track level) {
-      <article class="stat-card">
-        <span [class]="'level-icon level-' + level"
-          ><svg lucideTriangleAlert aria-hidden="true"></svg
-        ></span>
-        <small>{{ levelLabels[level] }}</small>
-        @switch (counts.status()) {
-          @case ('ready') {
-            <strong>{{ levelCount(level) }}</strong>
-          }
-          @case ('error') {
-            <strong class="unknown">Sin datos</strong>
-          }
-          @default {
-            <strong class="unknown">Cargando…</strong>
-          }
-        }
-      </article>
+      <app-kpi-card
+        [label]="levelLabels[level]"
+        [icon]="levelIcon"
+        [tone]="level"
+        [state]="countState()"
+        [value]="levelCount(level)"
+      />
     }
   </section>
 
