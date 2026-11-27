@@ -14,6 +14,7 @@ import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { formatDateTime } from '../../shared/labels';
 import { formatCount, formatPercent } from '../agents/formatting';
+import { SetupReminder } from '../setup/setup-reminder';
 import { HomeService, InventorySummary, TelemetrySummary, TicketSummary } from './home.service';
 
 /** What a summary card shows while its source loads or after it failed. */
@@ -37,6 +38,7 @@ function cardValue<T>(state: AsyncState<T>, read: (value: T) => string): string 
   imports: [
     RouterLink,
     AsyncStateComponent,
+    SetupReminder,
     LucideActivity,
     LucideArrowRight,
     LucideBot,

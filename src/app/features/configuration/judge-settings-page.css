@@ -1,6 +1,10 @@
 .profile-options.judge-profiles {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+.profile-option small.profile-dead-zone {
+  color: var(--text-primary);
+  font-weight: 600;
+}
 .advanced-toggle {
   margin-top: 12px;
   border-top: 1px solid var(--border);

@@ -22,28 +22,13 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { ConfigEditor } from './config-editor';
 import { ConfigField } from './config-field';
-import {
-  ConfigParameter,
-  displayValue,
-  optionLabel,
-  reasonCode,
-  reasonLabel,
-} from './config-model';
+import { ConfigParameter, displayValue, reasonCode, reasonLabel } from './config-model';
 import { ConfigSaveBar } from './config-save-bar';
 import { ConfigStore } from './config-store';
 import { LockedProtections } from './locked-protections';
+import { chooseProfile, followsProfile, PROFILE_KEY, profileCards } from './sensitivity-profiles';
 import { SimulationPanel } from './simulation-panel';
 
-const PROFILE_KEY = 'sensitivity_profile';
-
-/** What each profile of docs/07 §12 does, for the profile cards; an unknown option shows only its name. */
-const PROFILE_TEXT: Record<string, string> = {
-  minimal: 'El juez solo puede subir la puntuación y sus ajustes valen la mitad (×0.5).',
-  normal: 'Rangos de referencia (×1). Puede bajar la puntuación si hay una fuente N1.',
-  broad: 'Ajustes más amplios (×1.5). Puede bajar la puntuación si hay una fuente N1.',
-};
-/** Display order of the known profiles (the API lists its options alphabetically); others go last. */
-const PROFILE_ORDER = ['minimal', 'normal', 'broad'];
 const PROFILE_ICONS: Record<string, LucideIconInput> = {
   minimal: LucideTurtle,
   normal: LucideScale,
@@ -69,14 +54,6 @@ const ICONS: Record<string, LucideIconInput> = {
   'judge.max_calls': LucideHourglass,
   'judge.max_rejections': LucideListChecks,
 };
-
-function byProfileOrder(a: string, b: string): number {
-  const rank = (option: string) => {
-    const index = PROFILE_ORDER.indexOf(option);
-    return index < 0 ? PROFILE_ORDER.length : index;
-  };
-  return rank(a) - rank(b);
-}
 
 /**
  * Configuración del juez (FRO-02, FRO-03, CO-1): the sensitivity profile and the advanced mode, both generated
@@ -122,11 +99,9 @@ export class JudgeSettingsPage {
     () => this.editor.parameters().find((param) => param.key === PROFILE_KEY) ?? null,
   );
   readonly profiles = computed(() =>
-    [...(this.profileParam()?.options ?? [])].sort(byProfileOrder).map((option) => ({
-      value: option,
-      label: optionLabel(PROFILE_KEY, option),
-      text: PROFILE_TEXT[option] ?? '',
-      icon: PROFILE_ICONS[option] ?? LucideSlidersHorizontal,
+    profileCards(this.profileParam()?.options ?? []).map((card) => ({
+      ...card,
+      icon: PROFILE_ICONS[card.value] ?? LucideSlidersHorizontal,
     })),
   );
   readonly currentProfile = computed(() => {
@@ -142,9 +117,14 @@ export class JudgeSettingsPage {
   readonly activeReasons = computed(
     () => this.reasons().filter((param) => this.editor.value(param.key) === 'true').length,
   );
-  /** Advanced changes keep the advanced mode open, so nothing unsaved is hidden. */
+  /**
+   * Advanced changes keep the advanced mode open, so nothing unsaved is hidden. The dead zone a chosen profile brought
+   * along is part of the profile change (its card shows it), not an advanced one.
+   */
   readonly advancedChanged = computed(() =>
-    [...this.advancedParams(), ...this.reasons()].some((param) => this.editor.isChanged(param.key)),
+    [...this.advancedParams(), ...this.reasons()].some(
+      (param) => this.editor.isChanged(param.key) && !followsProfile(this.editor, param.key),
+    ),
   );
   readonly showAdvanced = computed(() => this.advanced() || this.advancedChanged());
 
@@ -156,6 +136,11 @@ export class JudgeSettingsPage {
 
   constructor() {
     this.store.load();
+  }
+
+  /** Drafts a profile together with its dead zone (D-091). */
+  selectProfile(profile: string): void {
+    chooseProfile(this.editor, profile);
   }
 
   hint(param: ConfigParameter): string {

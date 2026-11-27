@@ -57,7 +57,7 @@
               <h3>
                 Perfil
                 <app-ayuda-tooltip
-                  texto="Multiplica los rangos de los motivos del juez, fija si puede bajar la puntuación y la zona muerta de referencia (docs/07 §12)."
+                  texto="Multiplica los rangos de los motivos del juez, fija si puede bajar la puntuación y trae su zona muerta, que se simula y se guarda junto con el perfil."
                 />
               </h3>
               <p>{{ param.description }}</p>
@@ -75,7 +75,7 @@
                       name="sensitivity-profile"
                       [value]="profile.value"
                       [checked]="editor.value(param.key) === profile.value"
-                      (change)="editor.set(param.key, profile.value)" /><svg
+                      (change)="selectProfile(profile.value)" /><svg
                       [lucideIcon]="profile.icon"
                       aria-hidden="true"
                     ></svg
@@ -83,6 +83,9 @@
                   <strong>{{ profile.label }}</strong>
                   @if (profile.text) {
                     <small>{{ profile.text }}</small>
+                  }
+                  @if (profile.deadZone !== null) {
+                    <small class="profile-dead-zone">Zona muerta: ≤ {{ profile.deadZone }}</small>
                   }
                 </label>
               }
