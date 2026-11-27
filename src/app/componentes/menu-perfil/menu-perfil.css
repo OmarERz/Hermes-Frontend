@@ -156,11 +156,6 @@
     display: grid;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .profile-dropdown {
-    animation: none;
-  }
-}
 @media (max-width: 850px) {
   /* Only the avatar shows; the name and role stay in the trigger's accessible name. */
   .sidebar-profile-menu .profile-copy {
@@ -203,12 +198,11 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sidebar-profile-menu .profile-trigger,
-  .sidebar-profile-menu .profile-chevron {
-    transition: none;
+  .profile-dropdown {
+    animation: none;
   }
-}
-@media (prefers-reduced-motion: reduce) {
+  .sidebar-profile-menu .profile-trigger,
+  .sidebar-profile-menu .profile-chevron,
   .theme-toggle,
   .theme-toggle svg,
   .logout-button,

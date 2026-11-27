@@ -34,6 +34,7 @@ import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { ConfirmChangesDialog } from '../../shared/confirm-changes-dialog';
 import { formatDateTime } from '../../shared/labels';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import type { ChangeRow } from '../../shared/versioned-save';
 import { AddSourceForm } from './add-source-form';
 import { CarouselState } from './carousel-state';
@@ -110,6 +111,7 @@ const SWIPE_DISTANCE = 45;
   imports: [
     BannerPagina,
     AsyncStateComponent,
+    ScrollFade,
     ConfirmChangesDialog,
     IfRoleDirective,
     AddSourceForm,

@@ -73,4 +73,14 @@ describe('ActiveSection and SectionTabs', () => {
     await fixture.whenStable();
     expect((fixture.nativeElement as HTMLElement).querySelector('nav')).toBeNull();
   });
+
+  it('draws the tabs as the full-width segmented control with the current page marked', async () => {
+    role.set('admin');
+    await TestBed.inject(Router).navigateByUrl('/usuarios');
+    const fixture = TestBed.createComponent(SectionTabs);
+    await fixture.whenStable();
+    const nav = (fixture.nativeElement as HTMLElement).querySelector('nav')!;
+    expect([...nav.classList]).toEqual(['section-tabs', 'segmented', 'segmented-full']);
+    expect(nav.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe('Usuarios');
+  });
 });

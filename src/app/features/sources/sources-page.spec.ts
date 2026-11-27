@@ -77,6 +77,20 @@ describe('SourcesPage', () => {
     expect(banner.nextElementSibling?.matches('section.feed-stats')).toBe(true);
   });
 
+  it('draws the class and level filters as segmented controls that say which one is on', async () => {
+    const { element, fixture } = await render();
+    const groups = all(element, '.sources-toolbar .segmented[role="group"]');
+    expect(groups.map((group) => group.getAttribute('aria-label'))).toEqual([
+      'Filtrar por clase',
+      'Filtrar por nivel',
+    ]);
+    const pressed = () => all(element, '.segmented [aria-pressed="true"]').map(text);
+    expect(pressed()).toEqual(['Todas 4', 'Todos los niveles 4']);
+    all(groups[1], 'button')[1].click();
+    await fixture.whenStable();
+    expect(pressed()).toEqual(['Todas 2', 'N1 2']);
+  });
+
   it('shows the real sources with their totals and never the invented feeds', async () => {
     const { element } = await render();
     expect(all(element, '.feed-stats strong').map(text)).toEqual(['4', '3', '1', '2']);

@@ -47,20 +47,14 @@
   }
 
   <div class="sources-toolbar">
-    <div class="feed-filters" role="group" aria-label="Filtrar por clase">
-      <button
-        type="button"
-        [attr.aria-pressed]="typeFilter() === ''"
-        [class.selected]="typeFilter() === ''"
-        (click)="setTypeFilter('')"
-      >
+    <div class="feed-filters segmented" appScrollFade role="group" aria-label="Filtrar por clase">
+      <button type="button" [attr.aria-pressed]="typeFilter() === ''" (click)="setTypeFilter('')">
         <svg lucideLayers aria-hidden="true"></svg>Todas <span>{{ allTypesCount() }}</span>
       </button>
       @for (type of types; track type) {
         <button
           type="button"
           [attr.aria-pressed]="typeFilter() === type"
-          [class.selected]="typeFilter() === type"
           (click)="setTypeFilter(type)"
         >
           <svg lucideShield aria-hidden="true"></svg>{{ typeLabels[type] }}
@@ -68,20 +62,19 @@
         </button>
       }
     </div>
-    <div class="feed-filters level-filters" role="group" aria-label="Filtrar por nivel">
-      <button
-        type="button"
-        [attr.aria-pressed]="levelFilter() === ''"
-        [class.selected]="levelFilter() === ''"
-        (click)="setLevelFilter('')"
-      >
+    <div
+      class="feed-filters level-filters segmented"
+      appScrollFade
+      role="group"
+      aria-label="Filtrar por nivel"
+    >
+      <button type="button" [attr.aria-pressed]="levelFilter() === ''" (click)="setLevelFilter('')">
         Todos los niveles <span>{{ allLevelsCount() }}</span>
       </button>
       @for (level of levels; track level) {
         <button
           type="button"
           [attr.aria-pressed]="levelFilter() === level"
-          [class.selected]="levelFilter() === level"
           (click)="setLevelFilter(level)"
         >
           {{ level }} <span>{{ levelCounts()[level] }}</span>

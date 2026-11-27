@@ -84,46 +84,6 @@
   flex: none;
   color: var(--accent);
 }
-.feed-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.feed-filters button {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 8px 17px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--text-primary);
-  font-weight: 650;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    border-color 0.2s,
-    box-shadow 0.2s;
-}
-.feed-filters button > svg {
-  width: 20px;
-  height: 20px;
-  color: var(--accent-lilac);
-}
-.feed-filters button span {
-  color: var(--text-secondary);
-}
-.feed-filters button.selected {
-  border-color: var(--accent);
-  background: linear-gradient(110deg, #ed079b, #a90be2);
-  color: #fff;
-  box-shadow: 0 0 18px rgba(255, 0, 157, 0.28);
-}
-.feed-filters button.selected > svg,
-.feed-filters button.selected span {
-  color: #fff;
-}
 .carousel-section {
   position: relative;
   min-width: 0;
@@ -563,15 +523,6 @@
     width: 20px;
     height: 20px;
   }
-  .feed-filters {
-    gap: 8px;
-  }
-  .feed-filters button {
-    flex: 1;
-    justify-content: center;
-    padding: 8px 10px;
-    font-size: calc(12px + var(--font-size-increase));
-  }
   .carousel-section {
     min-height: 290px;
   }
@@ -647,7 +598,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .feed-filters button,
   .carousel-card,
   .toggle-track,
   .toggle-track:after {

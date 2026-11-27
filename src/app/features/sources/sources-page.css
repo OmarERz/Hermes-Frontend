@@ -7,8 +7,12 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-/* Banner, indicators and every block below, --section-gap apart (the grid gap; the banner adds no margin here). */
+/*
+ * Banner, indicators and every block below, --section-gap apart (the grid gap; the banner adds no margin here). One
+ * column as wide as the page: a row that scrolls (the filters) never widens it.
+ */
 .feeds-page {
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--section-gap);
 }
 .feeds-page > app-banner-pagina {
@@ -27,9 +31,26 @@
   align-items: center;
   gap: 12px 18px;
 }
-.level-filters button {
-  min-height: 38px;
-  padding: 6px 13px;
+/*
+ * The filters are the shared segmented control (src/styles/segmented.css). The selected one keeps the prototype's
+ * gradient: D-093 leaves the gradients as they are until the user decides on them.
+ */
+.feed-filters.segmented > button > svg {
+  color: var(--accent-lilac);
+}
+.feed-filters.segmented > button span {
+  color: var(--text-secondary);
+}
+.feed-filters.segmented > button[aria-pressed='true'],
+.feed-filters.segmented > button[aria-pressed='true']:hover {
+  border-color: var(--accent);
+  background: linear-gradient(110deg, #ed079b, #a90be2);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(255, 0, 157, 0.28);
+}
+.feed-filters.segmented > button[aria-pressed='true'] > svg,
+.feed-filters.segmented > button[aria-pressed='true'] span {
+  color: #fff;
 }
 .lock-chip {
   font-size: calc(13px + var(--font-size-increase));

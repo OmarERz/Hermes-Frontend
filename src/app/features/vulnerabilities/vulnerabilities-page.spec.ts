@@ -197,8 +197,12 @@ describe('VulnerabilitiesPage', () => {
     const assetButton = Array.from(element.querySelectorAll('.view-switch button')).find((button) =>
       button.textContent?.includes('Por activo'),
     ) as HTMLButtonElement;
+    const viewSwitch = element.querySelector('.view-switch')!;
+    expect(viewSwitch.classList).toContain('segmented');
+    expect(assetButton.getAttribute('aria-pressed')).toBe('false');
     assetButton.click();
     await fixture.whenStable();
+    expect(assetButton.getAttribute('aria-pressed')).toBe('true');
     expect(service.listAssets).toHaveBeenCalledWith(NO_FILTERS, null, 25);
     expect(TestBed.inject(Router).url).toBe('/vulnerabilidades?vista=activo');
     const cells = Array.from(element.querySelectorAll('tbody tr td')).map((td) =>

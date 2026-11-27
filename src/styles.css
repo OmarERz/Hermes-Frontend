@@ -1,4 +1,5 @@
 @import './styles/tokens.css';
+@import './styles/segmented.css';
 @import './app/componentes/layout-principal/layout-principal.css';
 @import './app/rutas/Agentes/control-agente.css';
 @import './app/rutas/Stack-tecnologico/stack-tecnologico.css';

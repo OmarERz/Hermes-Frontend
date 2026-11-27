@@ -22,6 +22,7 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   AssetRisk,
   LevelCounts,
@@ -103,6 +104,7 @@ function groupRow(group: VulnerabilityGroup, key: string): GroupTableRow {
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
     LucideCalendar,
