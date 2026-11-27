@@ -717,6 +717,10 @@
 .app-shell[data-theme='light'] .feeds-page .carousel-card[data-offset='2'] {
   opacity: 0.72;
 }
+/* The side cards are faded (0.9): their initials need a deeper pink to stay at AA (5.09:1 over the faded card). */
+.app-shell[data-theme='light'] .feeds-page .side-card .feed-brand {
+  color: #9c0063;
+}
 .app-shell[data-theme='light'] .feeds-page .carousel-card.center-card {
   border-color: #e72ac4;
   background: linear-gradient(145deg, #fff, #f3e5fb);

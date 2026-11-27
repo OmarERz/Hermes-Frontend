@@ -77,6 +77,11 @@ app-sidebar-principal {
 .main-nav a:hover {
   background: rgba(217, 168, 255, 0.12);
 }
+.brand:focus-visible,
+.main-nav a:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
 .main-nav a.active {
   background: linear-gradient(100deg, #ff009d, #a90be2);
   color: #fff;
