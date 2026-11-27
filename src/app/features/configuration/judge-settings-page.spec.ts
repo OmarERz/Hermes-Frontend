@@ -146,6 +146,39 @@ describe('JudgeSettingsPage', () => {
     ).toEqual(['Zona muerta: ≤ 6', 'Zona muerta: ≤ 4', 'Zona muerta: ≤ 2']);
   });
 
+  it('takes each profile dead zone from the schema, and from docs/07 only when the schema lacks it', async () => {
+    const withValues = (optionValues: ConfigParameter['option_values']) =>
+      SCHEMA.map((param) =>
+        param.key === 'sensitivity_profile' ? { ...param, option_values: optionValues } : param,
+      );
+    const api = new FakeConfigApi();
+    api.schema.mockReturnValue(
+      of(withValues({ broad: { dead_zone: '3', 'judge.range_multiplier': '1.75' } })),
+    );
+    const { fixture, element, page } = await render('admin', api);
+    expect(
+      Array.from(element.querySelectorAll('.profile-dead-zone')).map((s) => s.textContent?.trim()),
+    ).toEqual(['Zona muerta: ≤ 6', 'Zona muerta: ≤ 4', 'Zona muerta: ≤ 3']);
+    expect(element.querySelectorAll('.profile-option small')[4].textContent).toContain('×1.75');
+    element.querySelectorAll<HTMLInputElement>('.profile-option input')[2].click();
+    await fixture.whenStable();
+    expect(page.editor.changes()).toEqual({ sensitivity_profile: 'broad', dead_zone: '3' });
+    // The dead zone came with the profile: not an advanced change.
+    expect(page.advancedChanged()).toBe(false);
+
+    TestBed.resetTestingModule();
+    const older = new FakeConfigApi();
+    older.schema.mockReturnValue(of(withValues(undefined)));
+    const second = await render('admin', older);
+    second.element.querySelectorAll<HTMLInputElement>('.profile-option input')[0].click();
+    await second.fixture.whenStable();
+    expect(second.page.editor.changes()).toEqual({
+      sensitivity_profile: 'minimal',
+      dead_zone: '6',
+    });
+    expect(second.page.advancedChanged()).toBe(false);
+  });
+
   it('drafts the dead zone of the chosen profile without opening the advanced mode', async () => {
     const { fixture, element, page } = await render('admin');
     element.querySelectorAll<HTMLInputElement>('.profile-option input')[0].click();

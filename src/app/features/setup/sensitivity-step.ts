@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, output } from '@angular/core';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { ConfigEditor } from '../configuration/config-editor';
+import { optionLabel } from '../configuration/config-model';
 import { ConfigSaveBar } from '../configuration/config-save-bar';
 import { ConfigStore } from '../configuration/config-store';
 import {
@@ -144,10 +145,10 @@ export class SetupSensitivityStep {
   readonly profileParam = computed(
     () => this.editor.parameters().find((param) => param.key === PROFILE_KEY) ?? null,
   );
-  readonly profiles = computed(() => profileCards(this.profileParam()?.options ?? []));
+  readonly profiles = computed(() => profileCards(this.profileParam()));
   readonly savedProfile = computed(() => {
     const value = this.editor.current(PROFILE_KEY);
-    return value ? profileCards([value])[0].label : '—';
+    return value ? optionLabel(PROFILE_KEY, value) : '—';
   });
   readonly savedDeadZone = computed(() => {
     const value = this.editor.current(DEAD_ZONE_KEY);
