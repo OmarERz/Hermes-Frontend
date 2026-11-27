@@ -176,7 +176,7 @@
   font-size: calc((11px) + var(--font-size-increase));
   line-height: 1.35;
 }
-.app-shell[data-theme='light'] .welcome-view {
+:host-context(.app-shell[data-theme='light']) .welcome-view {
   --robot-image: url('/assets/hermes-welcome-robot-light.png');
 }
 @media (max-width: 1100px) {

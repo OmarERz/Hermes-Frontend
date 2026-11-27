@@ -1,0 +1,132 @@
+<section class="history-panel table-panel ticket-log" aria-labelledby="ticket-log-title">
+  <header>
+    <h2 id="ticket-log-title">
+      <svg lucideTicket aria-hidden="true"></svg> Bitácora de tickets
+      <span>Página {{ pager.pageIndex() + 1 }}</span>
+    </h2>
+    <button type="button" class="clear" [disabled]="!filtered()" (click)="clear()">
+      Limpiar filtros
+    </button>
+  </header>
+  <p class="log-note">
+    Lo que Hermes hizo en cada ticket de iTop y por qué. El ciclo del ticket (asignar, resolver,
+    cerrar) vive en iTop.
+  </p>
+  <div class="filters ticket-filters">
+    <label
+      >Id del ticket en iTop<input
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="123"
+        [ngModel]="ticketInput()"
+        (ngModelChange)="ticketInput.set($event)"
+        (change)="applyTicket()"
+        (keydown.enter)="applyTicket()"
+        [attr.aria-invalid]="ticketError() ? true : null"
+        [attr.aria-describedby]="ticketError() ? 'ticket-error' : null"
+    /></label>
+    <label
+      >Acción<select [ngModel]="action()" (ngModelChange)="setAction($event)">
+        <option value="">Todas</option>
+        @for (item of actions; track item) {
+          <option [value]="item">{{ actionLabels[item] }}</option>
+        }
+      </select></label
+    >
+  </div>
+  @if (ticketError(); as message) {
+    <p id="ticket-error" class="field-error" role="alert">{{ message }}</p>
+  }
+
+  @if (state(); as current) {
+    <app-async-state
+      [state]="current"
+      loadingText="Cargando la bitácora de tickets…"
+      [emptyText]="
+        filtered() ? 'No hay registros con estos filtros.' : 'Hermes aún no ha escrito en tickets.'
+      "
+      [error]="pager.state.error()"
+      (retry)="pager.reload()"
+    />
+  } @else {
+    <div
+      class="table-scroll"
+      role="region"
+      aria-label="Bitácora de tickets; desplazamiento horizontal"
+      tabindex="0"
+    >
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Fecha y hora</th>
+            <th scope="col">Ticket</th>
+            <th scope="col">CVE</th>
+            <th scope="col">Custodio</th>
+            <th scope="col">Acción</th>
+            <th scope="col">Escritura en iTop</th>
+            <th scope="col">Evaluación</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.id) {
+            <tr>
+              <td>{{ row.at }}</td>
+              <td>
+                @if (row.url; as url) {
+                  <a class="row-link" [href]="url" target="_blank" rel="noopener noreferrer"
+                    >{{ row.ticket
+                    }}<span class="visually-hidden"> (abre iTop en otra pestaña)</span></a
+                  >
+                } @else {
+                  {{ row.ticket }}
+                }
+                @if (row.itopId) {
+                  <span class="ticket-id">id {{ row.itopId }}</span>
+                }
+              </td>
+              <td>{{ row.cve }}</td>
+              <td>{{ row.custodian }}</td>
+              <td>{{ row.action }}</td>
+              <td>
+                <span [class]="'status write-' + row.writeKey" [attr.title]="row.writeTitle">{{
+                  row.write
+                }}</span>
+              </td>
+              <td>
+                @if (row.assessmentId) {
+                  <a
+                    class="row-link"
+                    routerLink="/recomendaciones-agente"
+                    [queryParams]="{ id: row.assessmentId }"
+                    >Ver recomendación</a
+                  >
+                } @else {
+                  —
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  <nav class="pager" aria-label="Páginas de la bitácora de tickets">
+    <button
+      type="button"
+      [disabled]="!pager.hasPrevious()"
+      (click)="pager.previous()"
+      aria-label="Página anterior de la bitácora de tickets"
+    >
+      <svg lucideArrowLeft aria-hidden="true"></svg>
+    </button>
+    <button
+      type="button"
+      [disabled]="!pager.hasNext()"
+      (click)="pager.next()"
+      aria-label="Página siguiente de la bitácora de tickets"
+    >
+      <svg lucideArrowRight aria-hidden="true"></svg>
+    </button>
+  </nav>
+</section>
