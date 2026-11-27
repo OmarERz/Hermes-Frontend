@@ -1,6 +1,8 @@
-// Decides the ZAP baseline result (scripts/zap.sh): fails on every alert of the JSON report that is not listed in
-// the accepted file. An accepted entry names the alert by its `alertRef` (the ZAP rule id, with a suffix for the
-// variants of one rule, such as 10055-6) and must give the reason it is accepted.
+// Decides the ZAP baseline result (scripts/zap.sh): fails on every Low, Medium or High alert of the JSON report that
+// is not listed in the accepted file. Informational alerts are always printed but never fail the gate (user decision
+// D-094, 27 Nov 2026: ZAP 10049 classifies every response by its cache headers and 10109 only notes a single-page
+// app, so no header can clear them). An accepted entry names the alert by its `alertRef` (the ZAP rule id, with a
+// suffix for the variants of one rule, such as 10055-6) and must give the reason it is accepted.
 // Usage: node scripts/zap-check.mjs <report.json> <accepted-alerts.json>
 import { readFileSync } from 'node:fs';
 
@@ -35,6 +37,8 @@ for (const site of report.site ?? []) {
     const line = `${ref} ${alert.name ?? alert.alert} [${RISK[alert.riskcode] ?? alert.riskcode}] (${alert.count} instances: ${where})`;
     if (reasons.has(ref)) {
       console.log(`accepted ${line}\n  reason: ${reasons.get(ref)}`);
+    } else if (Number(alert.riskcode) === 0) {
+      console.log(`info (does not block) ${line}`);
     } else {
       failures.push(line);
     }
@@ -49,4 +53,4 @@ if (failures.length) {
   for (const line of failures) console.error(`  ${line}`);
   process.exit(1);
 }
-console.log('✔ ZAP baseline: no alerts besides the accepted ones');
+console.log('✔ ZAP baseline: no Low, Medium or High alerts besides the accepted ones');
