@@ -100,7 +100,7 @@ describe('StixExportPage', () => {
 
   it('sends a run or a whole-day date range', async () => {
     const service = new FakeStix();
-    const { page } = await render(service);
+    const { page, harness, element } = await render(service);
     page.setScope('run');
     page.runId.set('r-1');
     page.excludeHighlyClassified.set(false);
@@ -111,13 +111,16 @@ describe('StixExportPage', () => {
       exclude_ultra_classified: false,
     });
     page.setScope('date_range');
+    await harness.fixture.whenStable();
+    expect(element.textContent).toContain('días completos en hora UTC, incluido el último');
     page.dateFrom.set('2026-11-01');
     page.dateTo.set('2026-11-24');
     page.export();
     expect(service.exportBundle).toHaveBeenLastCalledWith({
       scope: 'date_range',
-      date_from: '2026-11-01T00:00:00Z',
-      date_to: '2026-11-24T23:59:59Z',
+      // Days without time: the backend covers 2026-11-01T00:00Z up to, not including, 2026-11-25T00:00Z.
+      date_from: '2026-11-01',
+      date_to: '2026-11-24',
       exclude_ultra_classified: false,
     });
   });

@@ -97,7 +97,11 @@ export class StixExportPage {
     this.error.set(null);
   }
 
-  /** The request of the current form (only the fields of its scope). */
+  /**
+   * The request of the current form (only the fields of its scope). The range goes as two days without time: the
+   * backend takes them as whole UTC days, from the first day's midnight up to (not including) the midnight after
+   * the last day, so nothing changed in the last second is left out.
+   */
   request(): StixExportRequest {
     const base = { exclude_ultra_classified: this.excludeHighlyClassified() };
     switch (this.scope()) {
@@ -109,8 +113,8 @@ export class StixExportPage {
         return {
           ...base,
           scope: 'date_range',
-          date_from: `${this.dateFrom()}T00:00:00Z`,
-          date_to: `${this.dateTo()}T23:59:59Z`,
+          date_from: this.dateFrom(),
+          date_to: this.dateTo(),
         };
     }
   }
