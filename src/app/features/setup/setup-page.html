@@ -1,0 +1,187 @@
+<div class="assets-view setup-view">
+  <app-banner-pagina
+    titulo="Asistente de configuración"
+    descripcion="Primera configuración de Hermes en siete pasos. Todo lo que captures aquí se puede cambiar después en las pantallas normales."
+    [icono]="bannerIcon"
+  />
+
+  <section class="stats-grid" aria-label="Avance del asistente">
+    <article class="stat-card">
+      <span><svg lucideListOrdered aria-hidden="true"></svg></span><small>Pasos</small>
+      <strong [class.unknown]="total() === null">{{ total() ?? '—' }}</strong>
+    </article>
+    <article class="stat-card">
+      <span><svg lucideCircleCheck aria-hidden="true"></svg></span><small>Hechos</small>
+      <strong [class.unknown]="doneCount() === null">{{ doneCount() ?? '—' }}</strong>
+    </article>
+    <article class="stat-card">
+      <span><svg lucideSkipForward aria-hidden="true"></svg></span><small>Omitidos</small>
+      <strong [class.unknown]="skippedCount() === null">{{ skippedCount() ?? '—' }}</strong>
+    </article>
+    <article class="stat-card">
+      <span class="warning"><svg lucideCircleDashed aria-hidden="true"></svg></span
+      ><small>Pendientes</small>
+      <strong [class.unknown]="pendingCount() === null">{{ pendingCount() ?? '—' }}</strong>
+    </article>
+  </section>
+
+  @switch (load.status()) {
+    @case ('error') {
+      <section class="panel">
+        <app-async-state state="error" [error]="load.error()" (retry)="reload()" />
+      </section>
+    }
+    @case ('ready') {
+      @if (complete()) {
+        <p class="setup-notice setup-complete" role="status">
+          ✅ La configuración inicial está completa. Puedes volver a cualquier paso o cambiar todo
+          en sus pantallas.
+        </p>
+      }
+      <div class="setup-layout">
+        <nav class="panel setup-stepper" aria-label="Pasos del asistente">
+          <ol>
+            @for (step of views(); track step.n) {
+              <li>
+                <button
+                  type="button"
+                  class="step-link"
+                  [class.current]="step.n === selected()"
+                  [attr.data-state]="step.state"
+                  [attr.aria-current]="step.n === selected() ? 'step' : null"
+                  (click)="select(step.n)"
+                >
+                  <span class="step-number" aria-hidden="true">{{
+                    step.state === 'done' ? '✓' : step.n
+                  }}</span>
+                  <span class="step-copy">
+                    <strong>{{ step.name }}</strong>
+                    <small>Paso {{ step.n }} · {{ step.stateLabel }}</small>
+                  </span>
+                </button>
+              </li>
+            } @empty {
+              <li class="step-empty">La API no reportó pasos.</li>
+            }
+          </ol>
+        </nav>
+
+        @if (current(); as step) {
+          <section class="panel inventory setup-step" aria-labelledby="setup-step-title">
+            <header>
+              <div class="inventory-title">
+                <svg [lucideIcon]="step.guide.icon" aria-hidden="true"></svg>
+                <h2 id="setup-step-title">Paso {{ step.n }} · {{ step.name }}</h2>
+              </div>
+              <span class="step-state" [attr.data-state]="step.state">{{ step.stateLabel }}</span>
+            </header>
+            <p class="step-what">{{ step.guide.what }}</p>
+            <p class="step-skip"><strong>Si se omite:</strong> {{ step.guide.ifSkipped }}</p>
+
+            <div class="step-body">
+              @switch (step.n) {
+                @case (1) {
+                  <app-setup-connections-step (checked)="refresh()" />
+                }
+                @case (2) {
+                  <app-profile-panel (profileChange)="refresh()" />
+                }
+                @case (3) {
+                  <app-peers-panel />
+                }
+                @case (4) {
+                  <app-setup-sources-step (changed)="refresh()" />
+                }
+                @case (5) {
+                  <app-setup-inventory-step />
+                }
+                @case (6) {
+                  <app-setup-sensitivity-step (saved)="refresh()" />
+                }
+                @case (7) {
+                  <app-setup-scan-step (finished)="refresh()" />
+                }
+              }
+            </div>
+
+            @if (step.guide.links.length) {
+              <p class="step-links">
+                @for (link of step.guide.links; track link.path) {
+                  <a [routerLink]="link.path">{{ link.label }}</a>
+                }
+              </p>
+            }
+
+            @if (notice(); as message) {
+              <p class="setup-notice" role="status">{{ message }}</p>
+            }
+            @if (markError(); as problem) {
+              <p class="setup-notice error" role="alert">{{ problem }}</p>
+            }
+
+            <footer class="step-actions">
+              <button
+                type="button"
+                class="step-nav"
+                [disabled]="previous() === null"
+                (click)="select(previous())"
+              >
+                <svg lucideArrowLeft aria-hidden="true"></svg> Anterior
+              </button>
+              <span class="step-marks">
+                @if (step.state === 'pending') {
+                  <button
+                    type="button"
+                    class="step-nav"
+                    [disabled]="marking() !== null"
+                    (click)="mark('skipped')"
+                  >
+                    Omitir paso
+                  </button>
+                  <button
+                    type="button"
+                    class="primary-action"
+                    [disabled]="marking() !== null"
+                    [attr.aria-busy]="marking() === step.n"
+                    (click)="mark('done')"
+                  >
+                    <svg lucideCircleCheck aria-hidden="true"></svg>
+                    {{ marking() === step.n ? 'Guardando…' : 'Marcar como hecho' }}
+                  </button>
+                } @else if (step.state === 'skipped') {
+                  <button
+                    type="button"
+                    class="step-nav"
+                    [disabled]="marking() !== null"
+                    (click)="mark('reset')"
+                  >
+                    Retomar paso
+                  </button>
+                }
+              </span>
+              <button
+                type="button"
+                class="step-nav"
+                [disabled]="next() === null"
+                (click)="select(next())"
+              >
+                Siguiente <svg lucideArrowRight aria-hidden="true"></svg>
+              </button>
+            </footer>
+          </section>
+        }
+      </div>
+    }
+    @default {
+      <section class="panel">
+        <app-async-state state="loading" loadingText="Cargando los pasos del asistente…" />
+      </section>
+    }
+  }
+
+  <p class="setup-footnote">
+    El asistente solo verifica las llaves: quien instala copia <code>.env.example</code> a
+    <code>.env</code>, llena las llaves y corre <code>make up</code>, que genera los Docker secrets.
+    Ninguna llave se captura ni se muestra aquí, y cambiar una requiere reiniciar los servicios.
+  </p>
+</div>

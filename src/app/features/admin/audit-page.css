@@ -1,0 +1,8 @@
+/* Auditoría: the table width and the object column. */
+table.audit-table {
+  min-width: 760px;
+}
+.audit-table td.target {
+  max-width: 320px;
+  white-space: normal;
+}

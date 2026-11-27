@@ -50,4 +50,20 @@ test.describe('configuration as admin', () => {
     await expect(page.getByRole('radio', { name: /^Normal/ })).toBeEnabled();
     await expect(page.getByRole('button', { name: 'Guardar cambios' })).toBeVisible();
   });
+
+  test('simulates a sensitivity profile together with its dead zone (D-091)', async ({ page }) => {
+    await page.goto('/configuracion-agente');
+    const broad = page.getByRole('radio', { name: /^Influencia amplia/ });
+    await expect(broad).toBeEnabled();
+    await broad.check();
+    await expect(page.getByText('Zona muerta: ≤ 2')).toBeVisible();
+    // Simulating saves nothing: the preview goes to POST /api/formula/simulate.
+    const simulation = page.waitForRequest(
+      (request) => request.method() === 'POST' && request.url().endsWith('/api/formula/simulate'),
+    );
+    await page.getByRole('button', { name: 'Simular' }).click();
+    const body = (await simulation).postDataJSON() as { changes: Record<string, string> };
+    expect(body.changes).toEqual({ sensitivity_profile: 'broad', dead_zone: '2' });
+    await expect(page.getByRole('button', { name: 'Guardar cambios' })).toBeEnabled();
+  });
 });

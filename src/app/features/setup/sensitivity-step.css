@@ -1,0 +1,21 @@
+/* Paso 6: the profile cards, simulation and save row come from the Configuración design (agent-config-view). */
+.setup-sensitivity {
+  color: var(--text-primary);
+}
+.profile-options.setup-profiles {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 12px;
+}
+.profile-option small.profile-dead-zone {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.setup-simulation {
+  display: block;
+  margin: 14px 0;
+}
+@media (max-width: 760px) {
+  .profile-options.setup-profiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
