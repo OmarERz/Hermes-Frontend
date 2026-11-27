@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { Observable, of, Subject, throwError } from 'rxjs';
+import { NEVER, Observable, of, Subject, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import { provideFakeSession } from '../../testing/fake-session';
 import type { CompanyProfile } from '../company/company-labels';
@@ -10,7 +10,7 @@ import { configDocument, SCHEMA } from '../configuration/testing/config-fixtures
 import { ConnectionsService } from '../connections/connections.service';
 import { makeSource } from '../sources/source-fixtures';
 import { SourcesService } from '../sources/sources.service';
-import { SCAN_POLLING } from './scan-step';
+import { RunEventsService } from '../runs/run-events';
 import type { SetupStep, SetupStepUpdate } from './setup-steps';
 import { SetupPage } from './setup.page';
 import { SetupService } from './setup.service';
@@ -70,7 +70,7 @@ async function render(setup = new FakeSetup()) {
       provideRouter([]),
       ...provideFakeSession('admin'),
       { provide: SetupService, useValue: setup },
-      { provide: SCAN_POLLING, useValue: { intervalMs: 1, maxPolls: 2 } },
+      { provide: RunEventsService, useValue: { watch: () => NEVER } },
       {
         provide: ConnectionsService,
         useValue: { status: () => of([]), test: () => of([]) },

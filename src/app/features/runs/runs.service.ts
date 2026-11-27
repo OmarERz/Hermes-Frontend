@@ -7,7 +7,10 @@ import type { Run } from './run-labels';
 export type RunFilters = Pick<ApiQuery<'/api/runs'>, 'kind' | 'status' | 'date_from' | 'date_to'>;
 export type TelemetrySummary = ApiSchema<'TelemetrySummary'>;
 
-/** Runs: the paged list (reader), launching a scan (analyst) and the run counts of the last 24 hours (reader). */
+/**
+ * Runs: the paged list and one run by its id (reader), launching a scan (analyst) and the run counts of the last
+ * 24 hours (reader).
+ */
 @Injectable({ providedIn: 'root' })
 export class RunsService {
   private readonly api = inject(ApiClient);
@@ -17,6 +20,11 @@ export class RunsService {
     return this.api
       .get('/api/runs', { query: { ...filters, cursor, limit } })
       .pipe(map((page) => ({ items: page.items, nextCursor: page.next_cursor ?? null })));
+  }
+
+  /** One run by its id (`GET /api/runs/{id}`): the list's model, with its current status (the final one once ended). */
+  get(id: string): Observable<Run> {
+    return this.api.get('/api/runs/{id}', { path: { id } });
   }
 
   /** Queues a simulated scan (FRO-19); the worker takes it and its progress streams from the run events. */

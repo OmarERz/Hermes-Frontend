@@ -57,6 +57,15 @@ describe('RunsService', () => {
     await expect(result).resolves.toEqual({ items: [], nextCursor: null });
   });
 
+  it('reads one run by its id', async () => {
+    const ended = { ...SCAN_RUNNING, status: 'succeeded' as const, progress: 100 };
+    const result = firstValueFrom(service.get(SCAN_RUNNING.id));
+    const request = backend.expectOne(`http://127.0.0.1:8000/api/runs/${SCAN_RUNNING.id}`);
+    expect(request.request.method).toBe('GET');
+    request.flush(ended);
+    await expect(result).resolves.toEqual(ended);
+  });
+
   it('queues a scan', async () => {
     const result = firstValueFrom(service.launchScan());
     const request = backend.expectOne((req) => req.url.endsWith('/api/scans'));
