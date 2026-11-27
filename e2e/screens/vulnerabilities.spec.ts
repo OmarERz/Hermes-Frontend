@@ -1,4 +1,4 @@
-import { asRole, expect, expectScreen, test } from '../support/fixtures';
+import { asRole, expect, expectScreen, settle, test } from '../support/fixtures';
 
 // src/app/features/vulnerabilities/ (lane C · Vulnerabilidades y tickets), against the backend's demo data
 // (`make demo`: CVE-2026-10001 in OpenSSL, critical, and CVE-2026-10002 in nginx, low, with the tickets DEMO-1 and
@@ -28,6 +28,21 @@ test.describe('vulnerabilities as reader', () => {
     await expect(page.getByRole('link', { name: 'Volver a vulnerabilidades' })).toBeVisible();
     // The export is for analysts and admins (ACTION_ROLES.exportStix).
     await expect(page.getByRole('link', { name: 'Exportar STIX' })).toHaveCount(0);
+  });
+
+  test('draws the score charts and their tooltips within the CSP', async ({ page }) => {
+    await page.goto('/vulnerabilidades');
+    await page.getByRole('link', { name: 'CVE-2026-10001' }).click();
+    await page.getByRole('button', { name: 'Historial y cascada' }).first().click();
+    const charts = page.locator('app-grafico-dashboard');
+    await expect(charts).toHaveCount(2);
+    for (const chart of await charts.all()) {
+      await expect(chart.locator('svg')).toBeVisible();
+      // ECharts draws its tooltip as HTML next to the SVG (style set through the CSSOM, content as markup).
+      await chart.hover();
+      await expect(chart.locator('div[style*="z-index: 9999999"]')).toBeVisible();
+    }
+    await settle(page);
   });
 
   test('shows the demo tickets and the threat alerts', async ({ page }) => {

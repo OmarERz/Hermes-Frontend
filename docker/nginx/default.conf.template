@@ -4,12 +4,16 @@
 # and the front starts even when the backend is not up yet.
 
 # Content-Security-Policy: scripts only from this origin (no inline scripts: the build inlines no critical CSS loader
-# and index.html has no inline script); styles also inline, because Angular injects component styles at run time and
-# the prototype templates carry style attributes; fonts are self-hosted (@fontsource). connect-src: this origin (the
-# API behind /api/) and Firebase Auth; CSP_CONNECT_EXTRA adds origins such as the Auth emulator of the e2e suite.
+# and index.html has no inline script). Styles: the stylesheets of this origin plus the <style> elements Angular injects
+# at run time, which carry this request's nonce ($request_id, 16 random bytes): nginx writes it into the ngCspNonce
+# attribute of index.html (sub_filter below) and Angular copies it to each <style>; no inline <style> element runs
+# without it (style-src-elem). Only style *attributes* stay allowed (style-src-attr 'unsafe-inline'): the tooltips of
+# ECharts are HTML with style attributes, and an attribute styles its own element only (no selectors, no imports).
+# Fonts are self-hosted (@fontsource). connect-src: this origin (the API behind /api/) and Firebase Auth; CSP_CONNECT_EXTRA adds
+# origins such as the Auth emulator of the e2e suite.
 # The map has a constant key: it only names the policy for the included header file and never reads the request.
 map "" $hermes_csp {
-    default "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com ${CSP_CONNECT_EXTRA}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+    default "default-src 'self'; script-src 'self'; style-src 'self' 'nonce-$request_id'; style-src-elem 'self' 'nonce-$request_id'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com ${CSP_CONNECT_EXTRA}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
 }
 
 # HSTS like the backend: one year, includeSubDomains only when HSTS_INCLUDE_SUBDOMAINS=true. Browsers honour it only
@@ -54,9 +58,14 @@ server {
         try_files $uri =404;
     }
 
+    # The app's page (also every route of the app: the fallback below redirects here internally). It carries this
+    # request's CSP nonce, so it is never stored or reused (no-store), and no validator survives sub_filter.
     location = /index.html {
         include /etc/nginx/hermes/security-headers.conf;
-        add_header Cache-Control "no-cache" always;
+        add_header Cache-Control "no-store" always;
+        # Every copy: the build also writes the placeholder as the nonce of its entry script (script-src stays 'self').
+        sub_filter_once off;
+        sub_filter 'HERMES_CSP_NONCE' '$request_id';
     }
 
     # Bundles with a content hash in the name (outputHashing: all) never change.
@@ -74,10 +83,10 @@ server {
         try_files $uri =404;
     }
 
-    # Every other path is a route of the app (single-page fallback).
+    # Every other path is a route of the app (single-page fallback to /index.html above).
     location / {
         include /etc/nginx/hermes/security-headers.conf;
-        add_header Cache-Control "no-cache" always;
+        add_header Cache-Control "no-store" always;
         try_files $uri /index.html;
     }
 }
