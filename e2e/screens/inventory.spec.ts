@@ -2,7 +2,8 @@ import { asRole, expect, expectScreen, test } from '../support/fixtures';
 
 // src/app/features/inventory/ (lane B · Inventario), against the backend's demo data (`make demo`): srv-pagos-01
 // (CI-1, Server, 16 vCPU and 64 GB, OpenSSL 3.0.7 with the licence «Soporte OpenSSL»), vm-intranet-02 (CI-2,
-// VirtualMachine, OpenSSL inactive) and srv-web-03 (CI-3, Server without owner, nginx and Redis). Read only.
+// VirtualMachine, OpenSSL inactive) and srv-web-03 (CI-3, Server without owner, nginx and Redis). Read only, except
+// the analyst's CPE mapping, which saves nginx with the CPE it already has (f5:nginx), so the data stay the same.
 test.describe('inventory as reader', () => {
   asRole('reader');
 
@@ -76,5 +77,52 @@ test.describe('inventory as reader', () => {
       'Inactiva',
     );
     await expect(page.getByRole('link', { name: 'Volver a activos' })).toBeVisible();
+  });
+
+  test('shows the software catalogue with categories, statuses and licences', async ({ page }) => {
+    await page.goto('/software');
+    const table = page.getByRole('region', {
+      name: 'Catálogo de software; desplazamiento horizontal',
+    });
+    const openssl = table.getByRole('row').filter({ hasText: 'OpenSSL' });
+    await expect(openssl).toContainText('Otro software');
+    await expect(openssl).toContainText('Activa: 1');
+    await expect(openssl).toContainText('Inactiva: 1');
+    await expect(openssl).toContainText('Soporte OpenSSL');
+    await expect(openssl).toContainText('cpe:2.3:a:openssl:openssl');
+    await expect(table.getByRole('row').filter({ hasText: 'nginx' })).toContainText('Baja');
+    await expect(page.getByRole('article', { name: 'Instalaciones por estado' })).toContainText(
+      /Inactiva\s*1/,
+    );
+    await expect(page.getByRole('article', { name: 'Licencias' })).toContainText('Soporte OpenSSL');
+    // Readers never get the mapping action (ACTION_ROLES.mapCpe).
+    await expect(page.getByRole('button', { name: /CPE de/ })).toHaveCount(0);
+
+    await page
+      .getByRole('combobox', { name: 'Categoría' })
+      .selectOption({ label: 'Otro software' });
+    await expect(table.getByRole('row')).toHaveCount(2);
+    await expect(table).toContainText('OpenSSL');
+  });
+});
+
+test.describe('inventory as analyst', () => {
+  asRole('analyst');
+
+  test('maps a product to a CPE from its candidates', async ({ page }) => {
+    await page.goto('/software');
+    await page.getByRole('button', { name: 'Cambiar CPE de nginx' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Mapear CPE · nginx' });
+    await expect(dialog).toBeVisible();
+    // Without an NVD key the throwaway stack answers with the pairs Hermes already holds.
+    await dialog.getByRole('button', { name: /cpe:2\.3:a:f5:nginx/ }).click();
+    await expect(dialog.getByRole('textbox', { name: 'CPE', exact: true })).toHaveValue(
+      /^cpe:2\.3:a:f5:nginx:/,
+    );
+    await dialog.getByRole('button', { name: 'Guardar CPE' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(
+      page.getByRole('status').filter({ hasText: 'CPE guardado para nginx' }),
+    ).toBeVisible();
   });
 });

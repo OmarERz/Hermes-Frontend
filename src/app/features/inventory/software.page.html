@@ -1,0 +1,412 @@
+<div class="stack-view inventory-software">
+  <app-banner-pagina
+    titulo="Software"
+    descripcion="Catálogo del software instalado en los activos de iTop, con su categoría, su licencia, su CPE y sus vulnerabilidades."
+    [icono]="bannerIcon"
+  />
+
+  <section class="summary-grid" aria-label="Resumen del software">
+    <article>
+      <span class="summary-icon"><svg lucideLayers aria-hidden="true"></svg></span>
+      <div>
+        <small>Software en inventario</small>
+        @if (software(); as health) {
+          <strong>{{ health.total }}</strong>
+        } @else {
+          <strong class="unevaluated">{{
+            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
+          }}</strong>
+        }
+      </div>
+    </article>
+    <article>
+      <span class="summary-icon warning"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
+      <div>
+        <small>Con vulnerabilidades críticas</small>
+        @if (software()) {
+          <strong>{{ withCritical() }}</strong>
+        } @else {
+          <strong class="unevaluated">{{
+            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
+          }}</strong>
+        }
+      </div>
+    </article>
+    <article>
+      <span class="summary-icon"><svg lucideFileCheck aria-hidden="true"></svg></span>
+      <div>
+        <small>Con CPE</small>
+        @if (software(); as health) {
+          <strong>{{ health.with_cpe }}</strong>
+        } @else {
+          <strong class="unevaluated">{{
+            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
+          }}</strong>
+        }
+      </div>
+      @if (software()?.cpe_percent; as share) {
+        <em>{{ share }} %</em>
+      }
+    </article>
+    <article>
+      <span class="summary-icon"><svg lucideActivity aria-hidden="true"></svg></span>
+      <div>
+        <small>Con versión conocida</small>
+        @if (software(); as health) {
+          <strong>{{ health.with_known_version }}</strong>
+        } @else {
+          <strong class="unevaluated">{{
+            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
+          }}</strong>
+        }
+      </div>
+      @if (software()?.known_version_percent; as share) {
+        <em>{{ share }} %</em>
+      }
+    </article>
+  </section>
+
+  <section class="itop-note" aria-label="Registrar software">
+    <p>
+      El software instalado se registra en iTop, en cada activo; Hermes lo toma en la siguiente
+      sincronización. Aquí solo se asigna el CPE con el que Hermes busca sus vulnerabilidades.
+    </p>
+    @if (itopConfigured) {
+      <app-itop-link kind="create" itopClass="Software" />
+    }
+  </section>
+
+  @if (notice()) {
+    <p class="notice" role="status">{{ notice() }}</p>
+  }
+
+  <section class="content-grid">
+    <article class="panel table-panel" aria-labelledby="catalogue-title">
+      <header class="catalog-header">
+        <div>
+          <svg lucideLayers class="section-icon" aria-hidden="true"></svg>
+          <div>
+            <h2 id="catalogue-title">Catálogo de software de iTop</h2>
+            <p>Página {{ pager.pageIndex() + 1 }} · {{ rows().length }} productos</p>
+          </div>
+        </div>
+        <div class="catalog-actions">
+          <button type="button" class="export-button" (click)="refresh()">
+            <svg lucideRefreshCw aria-hidden="true"></svg>Actualizar
+          </button>
+          <button
+            type="button"
+            class="export-button"
+            (click)="exportCsv()"
+            [disabled]="!catalogue.value()?.items?.length"
+          >
+            <svg lucideDownload aria-hidden="true"></svg>Exportar
+          </button>
+        </div>
+      </header>
+
+      <div class="table-tools filters" role="group" aria-label="Filtros">
+        <label class="search-filter"
+          ><svg lucideSearch aria-hidden="true"></svg>
+          <input
+            #queryInput
+            type="search"
+            enterkeyhint="search"
+            maxlength="100"
+            [value]="q()"
+            (change)="setQuery(queryInput.value)"
+            placeholder="Buscar software…"
+            aria-label="Buscar software por nombre"
+        /></label>
+        <label
+          >Categoría
+          <select [ngModel]="category()" (ngModelChange)="setCategory($event)">
+            <option value="">Todas</option>
+            @for (option of categories; track option) {
+              <option [value]="option">{{ categoryLabels[option] }}</option>
+            }
+          </select></label
+        >
+        <label
+          >CPE
+          <select [ngModel]="hasCpe()" (ngModelChange)="setHasCpe($event)">
+            <option value="">Todos</option>
+            <option value="true">Con CPE</option>
+            <option value="false">Sin CPE</option>
+          </select></label
+        >
+        <label
+          >Peor nivel
+          <select [ngModel]="worstLevel()" (ngModelChange)="setWorstLevel($event)">
+            <option value="">Todos</option>
+            @for (option of levels; track option) {
+              <option [value]="option">{{ levelLabels[option] }}</option>
+            }
+          </select></label
+        >
+        <label
+          >Vulnerabilidades
+          <select
+            [ngModel]="withVulnerabilities()"
+            (ngModelChange)="setWithVulnerabilities($event)"
+          >
+            <option value="">Todos</option>
+            <option value="true">Con vulnerabilidades</option>
+            <option value="false">Sin vulnerabilidades</option>
+          </select></label
+        >
+        @if (hasFilters()) {
+          <button type="button" class="export-button" (click)="clearFilters()">
+            Quitar filtros
+          </button>
+        }
+      </div>
+
+      @if (tableState(); as state) {
+        <app-async-state
+          [state]="state"
+          loadingText="Cargando el catálogo…"
+          [emptyText]="emptyText()"
+          [error]="pager.state.error()"
+          (retry)="pager.reload()"
+        />
+      } @else {
+        <div
+          class="table-scroll"
+          role="region"
+          aria-label="Catálogo de software; desplazamiento horizontal"
+          tabindex="0"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Software</th>
+                <th scope="col">Categorías</th>
+                <th scope="col">Versiones</th>
+                <th scope="col">Instalaciones</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Licencias</th>
+                <th scope="col">CPE</th>
+                <th scope="col">Vulnerabilidades</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <td>
+                    <strong>{{ row.name }}</strong>
+                  </td>
+                  <td>
+                    <span class="chip-list">
+                      @for (label of row.categoryLabels; track label) {
+                        <span class="category-chip">{{ label }}</span>
+                      } @empty {
+                        <span class="muted">Sin categoría</span>
+                      }
+                    </span>
+                  </td>
+                  <td>
+                    @if (row.versions.length) {
+                      {{ row.versions.join(', ') }}
+                    } @else {
+                      <span class="muted">Versión desconocida</span>
+                    }
+                  </td>
+                  <td>
+                    {{ row.instances }}
+                    <small>{{ row.ci_count }} activos</small>
+                  </td>
+                  <td>
+                    <span class="chip-list">
+                      @for (status of row.statusCounts; track status.key) {
+                        <span [class]="'state-chip state-' + status.key"
+                          >{{ status.label }}: {{ status.count }}</span
+                        >
+                      }
+                    </span>
+                  </td>
+                  <td>
+                    @for (name of row.licenceNames; track $index) {
+                      <strong>{{ name }}</strong>
+                    } @empty {
+                      <span class="muted">Sin licencias</span>
+                    }
+                    <small>{{ row.licensed }}</small>
+                  </td>
+                  <td>
+                    @if (row.cpe) {
+                      <span class="cpe">{{ row.cpe }}</span>
+                    } @else {
+                      <span class="muted">Sin CPE</span>
+                    }
+                  </td>
+                  <td>
+                    @if (row.worst_level; as level) {
+                      <span [class]="'level-chip level-' + level">{{ levelLabels[level] }}</span>
+                      <small>{{ row.open_vulnerabilities }} abiertas</small>
+                    } @else {
+                      <span class="muted">Sin vulnerabilidades</span>
+                    }
+                  </td>
+                  <td class="actions">
+                    <button
+                      *appIfRole="mapRole"
+                      type="button"
+                      class="row-action"
+                      [attr.aria-label]="
+                        (row.cpe ? 'Cambiar CPE de ' : 'Mapear CPE de ') + row.name
+                      "
+                      (click)="openMapping(row)"
+                    >
+                      {{ row.cpe ? 'Cambiar CPE' : 'Mapear CPE' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <footer class="table-footer">
+        <label
+          >Filas por página
+          <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+            @for (size of pageSizes; track size) {
+              <option [ngValue]="size">{{ size }}</option>
+            }
+          </select>
+        </label>
+        <div class="pagination">
+          <button
+            type="button"
+            [disabled]="!pager.hasPrevious() || pager.state.loading()"
+            (click)="pager.previous()"
+            aria-label="Página anterior"
+          >
+            <svg lucideArrowLeft aria-hidden="true"></svg></button
+          ><span>Página {{ pager.pageIndex() + 1 }}</span
+          ><button
+            type="button"
+            [disabled]="!pager.hasNext()"
+            (click)="pager.next()"
+            aria-label="Página siguiente"
+          >
+            <svg lucideArrowRight aria-hidden="true"></svg>
+          </button>
+        </div>
+      </footer>
+    </article>
+  </section>
+
+  <section class="dashboard-lower-grid" aria-label="Gráfica e indicadores del catálogo">
+    <article class="panel chart-panel">
+      <header class="chart-panel-header">
+        <div>
+          <svg lucideChartColumn class="section-icon" aria-hidden="true"></svg>
+          <h2>{{ chartTitles[chart()] }}</h2>
+        </div>
+        <label class="chart-selector"
+          ><span>Visualización</span
+          ><span class="chart-select-wrap"
+            ><select
+              [ngModel]="chart()"
+              (ngModelChange)="chart.set($event)"
+              aria-label="Seleccionar visualización del catálogo"
+            >
+              @for (option of charts; track option) {
+                <option [value]="option">{{ chartTitles[option] }}</option>
+              }</select
+            ><svg lucideChevronDown aria-hidden="true"></svg></span
+        ></label>
+      </header>
+      @if (catalogueState(); as state) {
+        <app-async-state
+          [state]="state"
+          loadingText="Cargando el catálogo…"
+          [error]="catalogue.error()"
+          (retry)="loadCatalogue()"
+        />
+      } @else if (chartReady()) {
+        <app-grafico-dashboard
+          class="selected-chart"
+          [option]="chartOption()"
+          [label]="chartLabel()"
+        />
+      } @else {
+        <p class="empty-state chart-empty">Aún no hay software para graficar.</p>
+      }
+      @if (catalogue.value()?.complete === false) {
+        <p class="hint">
+          El catálogo es muy grande: los totales cuentan los primeros {{ totals().products }}
+          productos.
+        </p>
+      }
+    </article>
+
+    <div class="right-column">
+      <article class="panel status-panel" aria-labelledby="status-title">
+        <header>
+          <svg lucideActivity class="section-icon" aria-hidden="true"></svg>
+          <div>
+            <h2 id="status-title">Instalaciones por estado</h2>
+            <p>Estado en iTop; una instalación inactiva se sigue escaneando.</p>
+          </div>
+        </header>
+        @if (catalogue.value()) {
+          <ul>
+            @for (status of statuses; track status) {
+              <li>
+                <span>{{ statusLabels[status] }}</span
+                ><strong>{{ totals().byStatus[status] }}</strong>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+      <article class="panel license-panel" aria-labelledby="licence-title">
+        <header>
+          <svg lucideFileCheck class="section-icon" aria-hidden="true"></svg>
+          <div>
+            <h2 id="licence-title">Licencias</h2>
+            @if (catalogue.value()) {
+              <p>
+                {{ totals().licensedInstances }} de {{ totals().instances }} instalaciones tienen
+                licencia en iTop.
+              </p>
+            }
+          </div>
+        </header>
+        @if (catalogue.value()) {
+          <ul>
+            @for (licence of totals().licences; track licence.key) {
+              <li>
+                <span
+                  >{{ licence.name }}
+                  <small
+                    >{{ licence.product }}
+                    @if (licence.usageLimit) {
+                      · Límite: {{ licence.usageLimit }}
+                    }
+                    · {{ licence.validity }}</small
+                  ></span
+                ><strong>{{ licence.instances }}</strong>
+              </li>
+            } @empty {
+              <li><span>iTop no registra licencias de software.</span></li>
+            }
+          </ul>
+        }
+      </article>
+    </div>
+  </section>
+
+  @if (mapping(); as target) {
+    <app-cpe-mapping-dialog
+      [software]="target"
+      (saved)="mapped($event)"
+      (cancelled)="mapping.set(null)"
+    />
+  }
+</div>
