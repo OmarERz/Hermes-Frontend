@@ -1,5 +1,5 @@
 import type { ApiSchema } from '../../core/api/api-client';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 
 export type ConnectionStatus = ApiSchema<'ConnectionStatus'>;
 export type ConnectionName = ConnectionStatus['name'];
@@ -63,4 +63,9 @@ export function formatLatency(ms: number | null): string {
 
 export function formatMoment(iso: string | null | undefined, never: string): string {
   return iso ? formatDateTime(iso) : never;
+}
+
+/** The same moment for a table cell: without the current year (the full one goes in its title). */
+export function formatShortMoment(iso: string | null | undefined, never: string): string {
+  return iso ? formatShortDateTime(iso) : never;
 }

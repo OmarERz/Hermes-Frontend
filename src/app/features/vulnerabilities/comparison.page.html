@@ -136,8 +136,10 @@
         role="region"
         aria-label="Comparación por hallazgo; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table>
+        <table class="data-table sticky-first">
           <thead>
             <tr>
               <th scope="col">CVE</th>
@@ -155,11 +157,11 @@
           <tbody>
             @for (row of pager.items(); track row.cve + '|' + row.product + '|' + row.ci_id) {
               <tr>
-                <td>
+                <td class="cell-nowrap">
                   <strong>{{ row.cve }}</strong>
                 </td>
                 <td>{{ row.product }}</td>
-                <td>{{ row.ci_id }}</td>
+                <td class="cell-nowrap">{{ row.ci_id }}</td>
                 <td class="numeric">{{ row.cvss ?? 'Sin CVSS' }}</td>
                 <td class="numeric">{{ row.raw }}</td>
                 <td class="numeric">{{ row.base }}</td>

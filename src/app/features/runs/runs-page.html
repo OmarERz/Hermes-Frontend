@@ -250,33 +250,35 @@
         role="region"
         aria-label="Corridas; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table class="runs-table">
+        <table class="runs-table data-table sticky-first cards-mobile">
           <thead>
             <tr>
               <th scope="col">Tipo</th>
               <th scope="col">Estado</th>
               <th scope="col">Avance</th>
               <th scope="col">Inicio</th>
-              <th scope="col">Fin</th>
+              <th scope="col" class="col-from-lg">Fin</th>
               <th scope="col">Duración</th>
-              <th scope="col">Motivo</th>
-              <th scope="col">Lanzada por</th>
+              <th scope="col" class="col-from-lg">Motivo</th>
+              <th scope="col" class="col-from-lg">Lanzada por</th>
               <th scope="col"><span class="sr-only">Detalle</span></th>
             </tr>
           </thead>
           <tbody>
             @for (row of rows(); track row.id) {
               <tr [class.selected-row]="selected()?.id === row.id">
-                <td>
+                <td class="card-title">
                   <strong>{{ row.kindLabel }}</strong>
                 </td>
-                <td>
+                <td data-label="Estado">
                   <app-chip class="run-status" [tone]="statusTones[row.status]">{{
                     row.statusLabel
                   }}</app-chip>
                 </td>
-                <td>
+                <td data-label="Avance">
                   <span class="progress-cell">
                     <span
                       class="run-progress"
@@ -290,12 +292,18 @@
                     <span class="numeric">{{ row.progress }} %</span>
                   </span>
                 </td>
-                <td>{{ row.started }}</td>
-                <td>{{ row.finished }}</td>
-                <td class="numeric">{{ row.duration }}</td>
-                <td>{{ row.trigger }}</td>
-                <td>{{ row.launchedBy }}</td>
-                <td class="row-actions">
+                <td class="cell-date" data-label="Inicio" [title]="row.started">
+                  {{ row.startedShort }}
+                </td>
+                <td class="cell-date col-from-lg" data-label="Fin" [title]="row.finished">
+                  {{ row.finishedShort }}
+                </td>
+                <td class="numeric" data-label="Duración">{{ row.duration }}</td>
+                <td class="col-from-lg" data-label="Motivo">{{ row.trigger }}</td>
+                <td class="col-from-lg" data-label="Lanzada por">
+                  <span class="cell-truncate" [title]="row.launchedBy">{{ row.launchedBy }}</span>
+                </td>
+                <td class="row-actions card-full">
                   <button
                     type="button"
                     class="detail-button"

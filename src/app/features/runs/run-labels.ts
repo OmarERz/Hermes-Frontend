@@ -1,6 +1,6 @@
 import { ApiSchema } from '../../core/api/api-client';
 import type { ChipTone } from '../../shared/chip';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 
 export type Run = ApiSchema<'Run'>;
 export type RunKind = Run['kind'];
@@ -85,6 +85,9 @@ export interface RunView {
   active: boolean;
   started: string;
   finished: string;
+  /** The same dates for the table cells: without the current year (the full ones go in their title). */
+  startedShort: string;
+  finishedShort: string;
   duration: string;
   trigger: string;
   launchedBy: string;
@@ -112,6 +115,12 @@ export function toRunView(
     active,
     started: formatDateTime(run.started_at),
     finished: run.finished_at ? formatDateTime(run.finished_at) : active ? 'En curso' : '—',
+    startedShort: formatShortDateTime(run.started_at),
+    finishedShort: run.finished_at
+      ? formatShortDateTime(run.finished_at)
+      : active
+        ? 'En curso'
+        : '—',
     duration: formatDuration(run.started_at, run.finished_at) ?? (active ? 'En curso' : '—'),
     trigger: run.trigger_reason ? labelOf(TRIGGER_LABELS, run.trigger_reason) : '—',
     launchedBy: run.triggered_by ?? '—',

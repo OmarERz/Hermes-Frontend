@@ -6,6 +6,11 @@
 .reviews-log .history-panel {
   margin-bottom: 0;
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
 .filter-actions {
   display: flex;
   align-items: flex-end;

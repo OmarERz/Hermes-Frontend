@@ -45,8 +45,10 @@
         role="region"
         aria-label="Tickets; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table>
+        <table class="data-table sticky-first">
           <thead>
             <tr>
               <th scope="col">Ticket</th>
@@ -61,10 +63,10 @@
           <tbody>
             @for (ticket of ticketRows(); track ticket.itop_id) {
               <tr>
-                <td>
+                <td class="cell-nowrap">
                   <strong>{{ ticket.itop_id }}</strong>
                 </td>
-                <td>{{ ticket.cve }}</td>
+                <td class="cell-nowrap">{{ ticket.cve }}</td>
                 <td>{{ ticket.custodian }}</td>
                 <td>
                   <app-chip [tone]="ticket.urgencyTone">{{ ticket.urgencyLabel }}</app-chip>
@@ -125,6 +127,7 @@
         <svg lucideRadar aria-hidden="true"></svg>
         <h2 id="alerts-title">Alertas de amenazas</h2>
       </div>
+      <app-columns-toggle [(all)]="allAlertColumns" controls="alerts-table" />
       <span>Página {{ alerts.pageIndex() + 1 }}</span>
     </header>
     @if (alertState(); as state) {
@@ -142,8 +145,10 @@
         role="region"
         aria-label="Alertas; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table>
+        <table id="alerts-table" class="data-table" [class.all-columns]="allAlertColumns()">
           <thead>
             <tr>
               <th scope="col">Fecha</th>
@@ -151,24 +156,28 @@
               <th scope="col">Resumen</th>
               <th scope="col">Actor</th>
               <th scope="col">Víctima</th>
-              <th scope="col">Vector</th>
+              <th scope="col" class="col-from-lg">Vector</th>
               <th scope="col">Activo</th>
             </tr>
           </thead>
           <tbody>
             @for (alert of alerts.items(); track alert.id) {
               <tr>
-                <td>{{ formatDateTime(alert.created_at) }}</td>
+                <td class="cell-date" [title]="formatDateTime(alert.created_at)">
+                  {{ formatShortDateTime(alert.created_at) }}
+                </td>
                 <td>
-                  <span class="type-chip" [class.inferred]="alert.inferred">{{
+                  <span class="type-chip relevance-chip" [class.inferred]="alert.inferred">{{
                     relevanceLabels[alert.relevance]
                   }}</span>
                 </td>
-                <td class="summary">{{ alert.summary }}</td>
+                <td class="summary">
+                  <span class="cell-text">{{ alert.summary }}</span>
+                </td>
                 <td>{{ alert.actor ?? '—' }}</td>
                 <td>{{ alert.victim ?? '—' }}</td>
-                <td>{{ alert.vector ?? '—' }}</td>
-                <td>
+                <td class="col-from-lg">{{ alert.vector ?? '—' }}</td>
+                <td class="cell-nowrap">
                   @if (alert.ci_id) {
                     <a class="row-link" [routerLink]="['/activos', alert.ci_id]"
                       ><strong>{{ alert.ci_id }}</strong></a

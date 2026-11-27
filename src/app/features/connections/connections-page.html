@@ -76,6 +76,12 @@
               }
               <h2 [id]="'connections-' + group.id">{{ group.title }}</h2>
             </div>
+            <app-columns-toggle
+              [all]="allColumns()[group.id] ?? false"
+              (allChange)="showAllColumns(group.id, $event)"
+              [controls]="'connections-table-' + group.id"
+              phoneCards
+            />
             <span>{{ group.rows.length }}</span>
           </header>
           <div
@@ -83,15 +89,21 @@
             role="region"
             [attr.aria-label]="group.title + '; desplazamiento horizontal'"
             tabindex="0"
+            appScrollFade
+            [appScrollFadeReveal]="false"
           >
-            <table class="connections-table">
+            <table
+              class="connections-table data-table sticky-first cards-mobile"
+              [id]="'connections-table-' + group.id"
+              [class.all-columns]="allColumns()[group.id] ?? false"
+            >
               <thead>
                 <tr>
                   <th scope="col">Conexión</th>
                   <th scope="col">Estado</th>
                   <th scope="col">Detalle</th>
                   <th scope="col" class="numeric">Latencia</th>
-                  <th scope="col">Comprobada</th>
+                  <th scope="col" class="col-from-lg">Comprobada</th>
                   <th scope="col">Última vez correcta</th>
                   <th *appIfRole="testRole" scope="col"><span class="sr-only">Acciones</span></th>
                 </tr>
@@ -99,20 +111,34 @@
               <tbody>
                 @for (row of group.rows; track row.name) {
                   <tr [attr.data-name]="row.name">
-                    <td>
+                    <td class="card-title">
                       <strong>{{ row.title }}</strong
                       ><small>{{ row.purpose }}</small>
                     </td>
-                    <td>
+                    <td data-label="Estado">
                       <span class="connection-state" [attr.data-state]="row.state"
                         >{{ row.state === 'ok' ? '✅' : '❌' }} {{ row.stateLabel }}</span
                       >
                     </td>
-                    <td class="detail">{{ row.detail }}</td>
-                    <td class="numeric">{{ row.latency }}</td>
-                    <td>{{ row.checkedAt }}</td>
-                    <td>{{ row.lastOkAt }}</td>
-                    <td *appIfRole="testRole" class="row-actions">
+                    <td class="card-full" data-label="Detalle">
+                      <span class="cell-text">{{ row.detail }}</span>
+                    </td>
+                    <td class="numeric" data-label="Latencia">{{ row.latency }}</td>
+                    <td
+                      class="cell-date col-from-lg"
+                      data-label="Comprobada"
+                      [title]="row.checkedAt"
+                    >
+                      {{ row.checkedAtShort }}
+                    </td>
+                    <td
+                      data-label="Última vez correcta"
+                      [class.cell-date]="row.everOk"
+                      [title]="row.lastOkAt"
+                    >
+                      {{ row.lastOkAtShort }}
+                    </td>
+                    <td *appIfRole="testRole" class="row-actions card-full">
                       <button
                         type="button"
                         class="test-one"

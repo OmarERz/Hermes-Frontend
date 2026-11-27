@@ -39,6 +39,32 @@ export function formatDateTime(iso: string): string {
   return Number.isNaN(date.getTime()) ? '—' : DATE_FORMAT.format(date);
 }
 
+const SHORT_DATE_FORMAT = new Intl.DateTimeFormat('es-MX', {
+  day: 'numeric',
+  month: 'short',
+  hour: 'numeric',
+  minute: '2-digit',
+});
+const SHORT_DATE_YEAR_FORMAT = new Intl.DateTimeFormat('es-MX', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
+/**
+ * The same timestamp for a table cell (F19.5, G14): without the year when it is the current one («27 nov, 4:09
+ * p.m.»), same clock as formatDateTime. The cell keeps the full date in its title.
+ */
+export function formatShortDateTime(iso: string, now: Date = new Date()): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  const format =
+    date.getFullYear() === now.getFullYear() ? SHORT_DATE_FORMAT : SHORT_DATE_YEAR_FORMAT;
+  return format.format(date);
+}
+
 /** Chip tone of each finding status (G10: the semantic colours, in the shared chip). */
 export const STATUS_TONES: Record<FindingStatus, ChipTone> = {
   new: 'violet',
