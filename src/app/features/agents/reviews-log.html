@@ -56,7 +56,7 @@
         appScrollFade
         [appScrollFadeReveal]="false"
       >
-        <table class="data-table">
+        <table class="data-table cards-mobile">
           <thead>
             <tr>
               <th scope="col">Fecha y hora</th>
@@ -75,30 +75,34 @@
           <tbody>
             @for (row of rows(); track row.id) {
               <tr>
-                <td class="cell-date" [title]="row.at">
+                <td class="cell-date" data-label="Fecha y hora" [title]="row.at">
                   {{ row.atShort }}
                 </td>
-                <td>
+                <td class="card-title">
                   {{ row.agent }}
                   @if (row.secondReview) {
                     <span class="tag">Segunda revisión</span>
                   }
                 </td>
-                <td class="col-from-lg">{{ row.mode }}</td>
-                <td class="col-from-lg">
+                <td class="col-from-lg" data-label="Modo">{{ row.mode }}</td>
+                <td class="col-from-lg" data-label="Modelo">
                   <span class="cell-truncate" [title]="row.model">{{ row.model }}</span>
                 </td>
-                <td>
+                <td data-label="Estado">
                   <span [class]="'status status-' + row.statusKey">{{ row.status }}</span>
                 </td>
-                <td class="numeric col-from-lg">{{ row.attempts }}</td>
-                <td class="numeric">{{ row.latency }}</td>
-                <td class="numeric col-from-lg" [attr.title]="row.tokensDetail">
+                <td class="numeric col-from-lg" data-label="Intentos">{{ row.attempts }}</td>
+                <td class="numeric" data-label="Latencia">{{ row.latency }}</td>
+                <td
+                  class="numeric col-from-lg"
+                  data-label="Tokens (entrada / salida)"
+                  [attr.title]="row.tokensDetail"
+                >
                   {{ row.tokens }}
                 </td>
-                <td class="numeric col-from-lg">{{ row.cost }}</td>
-                <td>{{ row.reasons }}</td>
-                <td>
+                <td class="numeric col-from-lg" data-label="Costo">{{ row.cost }}</td>
+                <td data-label="Motivos del juez">{{ row.reasons }}</td>
+                <td data-label="Evaluación">
                   @if (row.assessmentId) {
                     <a
                       class="row-link"

@@ -86,7 +86,7 @@
             appScrollFade
             [appScrollFadeReveal]="false"
           >
-            <table class="connections-table data-table sticky-first">
+            <table class="connections-table data-table sticky-first cards-mobile">
               <thead>
                 <tr>
                   <th scope="col">Conexión</th>
@@ -101,26 +101,34 @@
               <tbody>
                 @for (row of group.rows; track row.name) {
                   <tr [attr.data-name]="row.name">
-                    <td>
+                    <td class="card-title">
                       <strong>{{ row.title }}</strong
                       ><small>{{ row.purpose }}</small>
                     </td>
-                    <td>
+                    <td data-label="Estado">
                       <span class="connection-state" [attr.data-state]="row.state"
                         >{{ row.state === 'ok' ? '✅' : '❌' }} {{ row.stateLabel }}</span
                       >
                     </td>
-                    <td>
+                    <td class="card-full" data-label="Detalle">
                       <span class="cell-text">{{ row.detail }}</span>
                     </td>
-                    <td class="numeric">{{ row.latency }}</td>
-                    <td class="cell-date col-from-lg" [title]="row.checkedAt">
+                    <td class="numeric" data-label="Latencia">{{ row.latency }}</td>
+                    <td
+                      class="cell-date col-from-lg"
+                      data-label="Comprobada"
+                      [title]="row.checkedAt"
+                    >
                       {{ row.checkedAtShort }}
                     </td>
-                    <td [class.cell-date]="row.everOk" [title]="row.lastOkAt">
+                    <td
+                      data-label="Última vez correcta"
+                      [class.cell-date]="row.everOk"
+                      [title]="row.lastOkAt"
+                    >
                       {{ row.lastOkAtShort }}
                     </td>
-                    <td *appIfRole="testRole" class="row-actions">
+                    <td *appIfRole="testRole" class="row-actions card-full">
                       <button
                         type="button"
                         class="test-one"

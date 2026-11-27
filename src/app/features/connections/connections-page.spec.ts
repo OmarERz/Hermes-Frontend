@@ -13,6 +13,7 @@ import {
 } from './connection-labels';
 import { ConnectionsPage, mergeStatuses } from './connections.page';
 import { ConnectionsService } from './connections.service';
+import { cardLabelMismatches } from '../../testing/card-labels';
 
 const CHECKED = '2026-11-24T06:00:00Z';
 
@@ -104,6 +105,7 @@ describe('ConnectionsPage', () => {
     const itopCells = element.querySelectorAll('tr[data-name="itop"] td');
     expect(itopCells[4].getAttribute('title')).toBe(formatDateTime(CHECKED));
     expect(itopCells[5].getAttribute('title')).toBe(formatDateTime(CHECKED));
+    expect(itopCells[2].getAttribute('data-label')).toBe('Detalle');
     // A last success is a one-line date; «never» is a sentence that may wrap.
     expect(itopCells[5].classList).toContain('cell-date');
     const deepseekCells = element.querySelectorAll('tr[data-name="deepseek"] td');
@@ -124,6 +126,18 @@ describe('ConnectionsPage', () => {
       formatDateTime(CHECKED),
     ]);
     expect(text(element.querySelector('.connections-footnote'))).toContain('nunca se capturan');
+  });
+
+  it('labels each field of the phone cards with its column header', async () => {
+    const { element } = await render();
+    for (const table of Array.from(
+      element.querySelectorAll<HTMLTableElement>('table.connections-table'),
+    )) {
+      expect(table.classList).toContain('cards-mobile');
+      const { labelled, mismatches } = cardLabelMismatches(table);
+      expect(labelled).toBeGreaterThan(0);
+      expect(mismatches).toEqual([]);
+    }
   });
 
   it('checks one connection again and puts its new result in place', async () => {

@@ -96,3 +96,49 @@ test.describe('data tables as admin', () => {
     await expectDense(page, 'vulnerabilities by asset');
   });
 });
+
+/**
+ * At 375 px the operation tables (Runs, Error queue, Connections and the AI reviews of the agents panel) are cards of
+ * label/value pairs: the header row out of view, each field labelled, nothing to scroll sideways. Back at 1280 px,
+ * the same markup is a table again.
+ */
+const PHONE = { width: 375, height: 812 };
+const CARDS = ['runs', 'error-queue', 'connections', 'agents'] as const;
+
+async function expectCards(page: Page, id: string): Promise<void> {
+  const tables = page.locator('.data-table.cards-mobile');
+  expect(await tables.count(), `${id}: card tables`).toBeGreaterThan(0);
+  for (const table of await tables.all()) {
+    const card = table.locator('tbody tr').first();
+    await expect(card).toBeVisible();
+    expect(await card.evaluate((row) => getComputedStyle(row).display), `${id}: a card`).toBe(
+      'grid',
+    );
+    const header = await table.locator('thead').boundingBox();
+    expect(header?.width ?? 0, `${id}: the header row out of view`).toBeLessThanOrEqual(1);
+    const field = card.locator('td[data-label]').first();
+    const label = await field.getAttribute('data-label');
+    expect(
+      await field.evaluate((cell) => getComputedStyle(cell, '::before').content),
+      `${id}: each field shows its label`,
+    ).toBe(`"${label}"`);
+    const overflow = await table.evaluate(
+      (element) => element.parentElement!.scrollWidth - element.parentElement!.clientWidth,
+    );
+    expect(overflow, `${id}: nothing to scroll sideways`).toBeLessThanOrEqual(1);
+  }
+}
+
+test.describe('operation tables as admin on a phone', () => {
+  asRole('admin');
+
+  for (const id of CARDS) {
+    test(`${id} shows its rows as cards at 375 px and a table at 1280 px`, async ({ page }) => {
+      await page.setViewportSize(PHONE);
+      await open(page, id);
+      await expectCards(page, id);
+      await page.setViewportSize(DESKTOP);
+      await expectTable(page.locator('.data-table.cards-mobile').first());
+    });
+  }
+});

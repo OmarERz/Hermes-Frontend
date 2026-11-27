@@ -253,7 +253,7 @@
         appScrollFade
         [appScrollFadeReveal]="false"
       >
-        <table class="runs-table data-table sticky-first">
+        <table class="runs-table data-table sticky-first cards-mobile">
           <thead>
             <tr>
               <th scope="col">Tipo</th>
@@ -270,15 +270,15 @@
           <tbody>
             @for (row of rows(); track row.id) {
               <tr [class.selected-row]="selected()?.id === row.id">
-                <td>
+                <td class="card-title">
                   <strong>{{ row.kindLabel }}</strong>
                 </td>
-                <td>
+                <td data-label="Estado">
                   <app-chip class="run-status" [tone]="statusTones[row.status]">{{
                     row.statusLabel
                   }}</app-chip>
                 </td>
-                <td>
+                <td data-label="Avance">
                   <span class="progress-cell">
                     <span
                       class="run-progress"
@@ -292,18 +292,18 @@
                     <span class="numeric">{{ row.progress }} %</span>
                   </span>
                 </td>
-                <td class="cell-date" [title]="row.started">
+                <td class="cell-date" data-label="Inicio" [title]="row.started">
                   {{ row.startedShort }}
                 </td>
-                <td class="cell-date col-from-lg" [title]="row.finished">
+                <td class="cell-date col-from-lg" data-label="Fin" [title]="row.finished">
                   {{ row.finishedShort }}
                 </td>
-                <td class="numeric">{{ row.duration }}</td>
-                <td class="col-from-lg">{{ row.trigger }}</td>
-                <td class="col-from-lg">
+                <td class="numeric" data-label="Duración">{{ row.duration }}</td>
+                <td class="col-from-lg" data-label="Motivo">{{ row.trigger }}</td>
+                <td class="col-from-lg" data-label="Lanzada por">
                   <span class="cell-truncate" [title]="row.launchedBy">{{ row.launchedBy }}</span>
                 </td>
-                <td class="row-actions">
+                <td class="row-actions card-full">
                   <button
                     type="button"
                     class="detail-button"

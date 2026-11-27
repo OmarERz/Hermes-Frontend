@@ -6,6 +6,7 @@ import { provideFakeSession } from '../../testing/fake-session';
 import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 import { ErrorQueuePage } from './error-queue.page';
 import { ErrorQueueItem, ErrorQueueService, NotificationEventRow } from './error-queue.service';
+import { cardLabelMismatches } from '../../testing/card-labels';
 
 const NOTIFICATION: ErrorQueueItem = {
   id: '0196a6f0-0000-7000-8000-0000000000aa',
@@ -140,6 +141,15 @@ describe('ErrorQueuePage', () => {
     expect(llm.querySelector('app-chip')?.getAttribute('data-tone')).toBe('danger');
     // The raw value of the API stays in the tooltip.
     expect(llm.querySelector('small[title]')?.getAttribute('title')).toBe('news_analyst');
+  });
+
+  it('labels each field of the phone cards with its column header', async () => {
+    const { element } = await render();
+    const table = element.querySelector('table.errors-table') as HTMLTableElement;
+    expect(table.classList).toContain('cards-mobile');
+    const { labelled, mismatches } = cardLabelMismatches(table);
+    expect(labelled).toBeGreaterThan(0);
+    expect(mismatches).toEqual([]);
   });
 
   it('says a retry is scheduled only when the API gives its date', async () => {

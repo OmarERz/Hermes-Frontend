@@ -67,6 +67,17 @@
 .run-progress > span.bar-failed {
   background: #dc2626;
 }
+/* A phone card: the bar takes the width its field has. */
+@media (max-width: 560px) {
+  .runs-table .progress-cell {
+    display: flex;
+  }
+  .runs-table .progress-cell .run-progress {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .run-progress > span {
     transition: none;

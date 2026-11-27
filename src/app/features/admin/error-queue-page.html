@@ -68,7 +68,7 @@
         appScrollFade
         [appScrollFadeReveal]="false"
       >
-        <table class="errors-table data-table">
+        <table class="errors-table data-table cards-mobile">
           <thead>
             <tr>
               <th scope="col">Fecha</th>
@@ -84,24 +84,28 @@
           <tbody>
             @for (row of rows(); track row.id) {
               <tr>
-                <td class="cell-date" [title]="row.when">{{ row.whenShort }}</td>
-                <td>
+                <td class="cell-date" data-label="Fecha" [title]="row.when">{{ row.whenShort }}</td>
+                <td class="card-title">
                   <strong>{{ row.kindLabel }}</strong>
                   <small [attr.title]="row.componentCode">{{ row.component }}</small>
                 </td>
-                <td>
+                <td data-label="Estado">
                   <app-chip [tone]="row.scheduled ? 'warning' : 'danger'">{{
                     row.statusLabel
                   }}</app-chip>
                 </td>
-                <td class="numeric col-from-lg">{{ row.attempts }}</td>
-                <td class="cell-date col-from-lg" [title]="row.nextAttempt">
+                <td class="numeric col-from-lg" data-label="Intentos">{{ row.attempts }}</td>
+                <td
+                  class="cell-date col-from-lg"
+                  data-label="Próximo intento"
+                  [title]="row.nextAttempt"
+                >
                   {{ row.nextAttemptShort }}
                 </td>
-                <td class="error-text">
+                <td class="error-text card-full" data-label="Error">
                   <span class="cell-text cell-clamp-3" [title]="row.error">{{ row.error }}</span>
                 </td>
-                <td class="related">
+                <td class="related" data-label="Relacionado">
                   @if (row.cve) {
                     <span class="code">{{ row.cve }}</span>
                   }
@@ -120,7 +124,7 @@
                     —
                   }
                 </td>
-                <td class="row-actions">
+                <td class="row-actions card-full">
                   @if (row.retryable) {
                     <button
                       type="button"

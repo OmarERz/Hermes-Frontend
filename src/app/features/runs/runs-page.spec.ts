@@ -11,6 +11,7 @@ import type { Run } from './run-labels';
 import { NEWS_DONE, RECALC_FAILED, SCAN_RUNNING, SUMMARY } from './runs.fixtures';
 import { RunsPage } from './runs.page';
 import { RunsService } from './runs.service';
+import { cardLabelMismatches } from '../../testing/card-labels';
 
 class FakeRuns {
   list = vi.fn<RunsService['list']>((): Observable<CursorPage<Run>> =>
@@ -85,6 +86,18 @@ describe('RunsPage', () => {
     expect(cells(rows[1])).toContain('Agenda');
     expect(cells(rows[1])[7]).toBe('—');
     expect(rows[2].querySelector('.run-status')?.getAttribute('data-tone')).toBe('danger');
+  });
+
+  it('labels each field of the phone cards with its column header', async () => {
+    const { element } = await render();
+    const table = element.querySelector('table.runs-table') as HTMLTableElement;
+    expect(table.classList).toContain('cards-mobile');
+    const { labelled, mismatches } = cardLabelMismatches(table);
+    expect(labelled).toBeGreaterThan(0);
+    expect(mismatches).toEqual([]);
+    expect(table.querySelector('tbody tr td.card-title')?.textContent?.trim()).toBe(
+      'Escaneo de vulnerabilidades',
+    );
   });
 
   it('shows the counts of the last 24 hours', async () => {
