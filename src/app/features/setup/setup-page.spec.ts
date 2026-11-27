@@ -37,7 +37,11 @@ class FakeSetup {
   status = vi.fn<() => Observable<SetupStep[]>>(() => of(this.current));
   mark = vi.fn<(n: number, update: SetupStepUpdate) => Observable<SetupStep>>((n, update) => {
     const known = this.current.find((step) => step.n === n)!;
-    const marked = { ...known, done: !!update.done && !update.skipped, skipped: !!update.skipped };
+    const done = !!update.done && !update.skipped;
+    // Like the API: the data wins over a mark; a mark alone is `manual`.
+    const source = known.done_source === 'data' ? 'data' : done ? 'manual' : null;
+    const marked = { ...known, done: done || source === 'data', skipped: !!update.skipped };
+    marked.done_source = marked.done ? source : null;
     this.current = this.current.map((step) => (step.n === n ? marked : step));
     return of(marked);
   });
@@ -213,6 +217,34 @@ describe('SetupPage', () => {
     expect(text(element.querySelector('.setup-notice[role="status"]'))).toBe(
       '«Empresas pares» volvió a quedar pendiente.',
     );
+  });
+
+  it('says where a done step comes from and takes back only a manual mark', async () => {
+    const setup = new FakeSetup();
+    setup.current = steps({ 1: 'done', 2: 'done', 3: 'skipped' }).map((step) =>
+      step.n === 1
+        ? { ...step, done_source: 'data' as const }
+        : step.n === 2
+          ? { ...step, done_source: 'manual' as const }
+          : step,
+    );
+    const { element, press, goTo, button } = await render(setup);
+    await goTo(1);
+    expect(text(element.querySelector('.step-state'))).toBe('Hecho · detectado');
+    // The data shows it: taking the mark back would change nothing, so it is not offered.
+    expect(button('Desmarcar')).toBeUndefined();
+
+    await goTo(2);
+    expect(text(element.querySelector('.step-state'))).toBe('Hecho · marcado');
+    await press('Desmarcar');
+    expect(setup.mark).toHaveBeenLastCalledWith(2, { done: false, skipped: false });
+    expect(title(element)).toBe('Paso 2 · Perfil de la empresa');
+    expect(text(element.querySelector('.step-state'))).toBe('Pendiente');
+    expect(text(element.querySelector('.setup-notice[role="status"]'))).toBe(
+      '«Perfil de la empresa» volvió a quedar pendiente.',
+    );
+    expect(button('Desmarcar')).toBeUndefined();
+    expect(button('Marcar como hecho')).not.toBeUndefined();
   });
 
   it('never lets an older reading of the steps put back what a mark saved', async () => {

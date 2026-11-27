@@ -1,8 +1,10 @@
 import {
+  canUnmark,
   firstOpenStep,
   markNotice,
   nextOpenStep,
   SetupStep,
+  stateText,
   STEP_GUIDES,
   stepGuide,
   stepState,
@@ -43,6 +45,28 @@ describe('setup steps', () => {
     // A skip the data already overrides reads as done.
     expect(markNotice(step(5, true), 'skipped')).toBe('«Paso 5» quedó como hecho.');
     expect(markNotice(step(4), 'reset')).toBe('«Paso 4» volvió a quedar pendiente.');
+    // Taking back a mark the data meanwhile backs leaves the step done.
+    expect(markNotice({ ...step(4, true), done_source: 'data' }, 'reset')).toBe(
+      '«Paso 4» sigue hecho: los datos ya lo muestran.',
+    );
+  });
+
+  it('says where a done step comes from, and lets only a manual mark be taken back', () => {
+    expect(stateText({ done: true, skipped: false, done_source: 'data' })).toBe(
+      'Hecho · detectado',
+    );
+    expect(stateText({ done: true, skipped: false, done_source: 'manual' })).toBe(
+      'Hecho · marcado',
+    );
+    // Without `done_source` (a backend before F18.6), or for a step not done, only the state.
+    expect(stateText({ done: true, skipped: false })).toBe('Hecho');
+    expect(stateText({ done: false, skipped: true, done_source: 'manual' })).toBe('Omitido');
+    expect(stateText({ done: false, skipped: false, done_source: null })).toBe('Pendiente');
+
+    expect(canUnmark({ done: true, done_source: 'manual' })).toBe(true);
+    expect(canUnmark({ done: true, done_source: 'data' })).toBe(false);
+    expect(canUnmark({ done: true })).toBe(false);
+    expect(canUnmark({ done: false, done_source: 'manual' })).toBe(false);
   });
 
   it('guides the seven steps of docs/13 §9 and still shows a step it does not know', () => {

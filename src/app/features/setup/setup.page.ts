@@ -23,12 +23,14 @@ import { SetupInventoryStep } from './inventory-step';
 import { SetupScanStep } from './scan-step';
 import { SetupSensitivityStep } from './sensitivity-step';
 import {
+  canUnmark,
   firstOpenStep,
   MARK_BODIES,
   markNotice,
   nextOpenStep,
   SetupStep,
   STATE_LABELS,
+  stateText,
   stepGuide,
   StepMark,
   StepState,
@@ -42,7 +44,8 @@ import { SetupSourcesStep } from './sources-step';
  * done, skipped or pending, in the Activos design. Every step says what it does and what happens if it is skipped,
  * and embeds or summarises its screen (connections, company profile, peers, sources, inventory, sensitivity, first
  * scan); everything can be changed later in those screens. A step is done when the data shows it or the admin marks
- * it (`PUT /api/setup/steps/{n}`). The wizard never captures a key: keys live on the server (SEG-23).
+ * it (`PUT /api/setup/steps/{n}`); `done_source` says which, and only a manual mark can be taken back («Desmarcar»).
+ * The wizard never captures a key: keys live on the server (SEG-23).
  */
 @Component({
   selector: 'app-setup-page',
@@ -88,7 +91,14 @@ export class SetupPage {
   readonly views = computed(() =>
     this.steps().map((step) => {
       const state = stepState(step);
-      return { ...step, state, stateLabel: STATE_LABELS[state], guide: stepGuide(step.n) };
+      return {
+        ...step,
+        state,
+        stateLabel: STATE_LABELS[state],
+        stateText: stateText(step),
+        unmarkable: canUnmark(step),
+        guide: stepGuide(step.n),
+      };
     }),
   );
   readonly current = computed(
