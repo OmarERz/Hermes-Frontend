@@ -1,0 +1,380 @@
+<div class="feeds-page sources-view">
+  <header class="feeds-header">
+    <div class="heading-copy">
+      <div class="title-line">
+        <svg lucideRss aria-hidden="true"></svg>
+        <h1 id="feeds-title">Fuentes</h1>
+      </div>
+      <p>
+        Fuentes de vulnerabilidades y amenazas que Hermes lee: su clase, su nivel de confianza, su
+        salud y si están activas. Las estructurales (🔒) no se pueden desactivar.
+      </p>
+    </div>
+    <section class="feed-stats" aria-label="Indicadores de fuentes">
+      <article class="stat-card">
+        <svg lucideLayers aria-hidden="true"></svg>
+        <div>
+          <strong>{{ total() ?? '—' }}</strong
+          ><span>Fuentes totales</span>
+        </div>
+      </article>
+      <article class="stat-card active-stat">
+        <svg lucideCircleCheck aria-hidden="true"></svg>
+        <div>
+          <strong>{{ activeCount() ?? '—' }}</strong
+          ><span>Activas</span>
+        </div>
+      </article>
+      <article class="stat-card inactive-stat">
+        <svg lucideCirclePause aria-hidden="true"></svg>
+        <div>
+          <strong>{{ inactiveCount() ?? '—' }}</strong
+          ><span>Inactivas</span>
+        </div>
+      </article>
+      <article class="stat-card sync-stat">
+        <svg lucideRefreshCw aria-hidden="true"></svg>
+        <div>
+          <strong>{{ capturedToday() ?? '—' }}</strong
+          ><span>Con captura · últimas 24 h</span>
+        </div>
+      </article>
+    </section>
+  </header>
+
+  <app-section-tabs />
+
+  @if (notice(); as message) {
+    <p
+      class="integration-note"
+      [class.notice-error]="message.kind === 'error'"
+      [attr.role]="message.kind === 'error' ? 'alert' : 'status'"
+    >
+      <svg lucideSignal aria-hidden="true"></svg>{{ message.text }}
+    </p>
+  }
+
+  <div class="sources-toolbar">
+    <div class="feed-filters" role="group" aria-label="Filtrar por clase">
+      <button
+        type="button"
+        [attr.aria-pressed]="typeFilter() === ''"
+        [class.selected]="typeFilter() === ''"
+        (click)="setTypeFilter('')"
+      >
+        <svg lucideLayers aria-hidden="true"></svg>Todas <span>{{ allTypesCount() }}</span>
+      </button>
+      @for (type of types; track type) {
+        <button
+          type="button"
+          [attr.aria-pressed]="typeFilter() === type"
+          [class.selected]="typeFilter() === type"
+          (click)="setTypeFilter(type)"
+        >
+          <svg lucideShield aria-hidden="true"></svg>{{ typeLabels[type] }}
+          <span>{{ typeCounts()[type] }}</span>
+        </button>
+      }
+    </div>
+    <div class="feed-filters level-filters" role="group" aria-label="Filtrar por nivel">
+      <button
+        type="button"
+        [attr.aria-pressed]="levelFilter() === ''"
+        [class.selected]="levelFilter() === ''"
+        (click)="setLevelFilter('')"
+      >
+        Todos los niveles <span>{{ allLevelsCount() }}</span>
+      </button>
+      @for (level of levels; track level) {
+        <button
+          type="button"
+          [attr.aria-pressed]="levelFilter() === level"
+          [class.selected]="levelFilter() === level"
+          (click)="setLevelFilter(level)"
+        >
+          {{ level }} <span>{{ levelCounts()[level] }}</span>
+        </button>
+      }
+    </div>
+    <button
+      *appIfRole="addRole"
+      type="button"
+      class="add-source-button"
+      [attr.aria-expanded]="adding()"
+      aria-controls="add-source-panel"
+      (click)="adding.set(!adding())"
+    >
+      <svg lucidePlus aria-hidden="true"></svg>Agregar fuente
+    </button>
+  </div>
+
+  @if (adding()) {
+    <app-add-source-form
+      id="add-source-panel"
+      (created)="sourceAdded($event)"
+      (cancelled)="adding.set(false)"
+    />
+  }
+
+  <section
+    class="carousel-section"
+    aria-label="Carrusel de fuentes"
+    (pointerdown)="startDrag($event)"
+    (pointermove)="updateDrag($event)"
+    (pointerup)="endDrag($event)"
+    (pointercancel)="endDrag($event)"
+    (wheel)="wheel($event)"
+  >
+    <img
+      class="holographic-globe"
+      src="/assets/hermes-intelligence-globe.png"
+      alt=""
+      aria-hidden="true"
+      loading="lazy"
+    />
+    <div class="carousel-stage">
+      @for (card of carousel.cards(); track card.virtualIndex) {
+        <article
+          class="carousel-card"
+          [attr.data-offset]="card.offset"
+          [class.center-card]="card.offset === 0"
+          [class.side-card]="card.offset !== 0"
+        >
+          <button
+            class="feed-card-select"
+            type="button"
+            [attr.aria-pressed]="card.offset === 0"
+            [attr.aria-label]="'Seleccionar fuente ' + card.item.name"
+            (click)="selectCard(card.item.id, card.virtualIndex)"
+          >
+            <span class="feed-brand" aria-hidden="true">{{ card.item.initials }}</span>
+            <span class="feed-card-heading"
+              ><strong>{{ card.item.name }}</strong>
+              @if (card.item.source.structural) {
+                <span class="lock-chip" title="Fuente estructural: no se puede desactivar"
+                  >🔒<span class="sr-only"> Estructural</span></span
+                >
+              }
+              <span class="category-chip">{{ card.item.typeLabel }}</span
+              ><span class="category-chip level-chip">{{ card.item.source.level }}</span></span
+            >
+            <span class="feed-description">{{
+              card.item.description ?? card.item.levelMeaning
+            }}</span>
+            @if (card.item.provider) {
+              <span class="feed-provider"
+                ><small>Proveedor</small><strong>{{ card.item.provider }}</strong></span
+              >
+            }
+            @if (card.offset === 0) {
+              <span class="feed-sync-state">{{
+                card.item.lastCapture
+                  ? 'Última captura: ' + card.item.lastCapture
+                  : 'Sin capturas todavía'
+              }}</span>
+            }
+            <span class="feed-demo-tag health" [attr.data-health]="card.item.source.health">{{
+              card.item.healthLabel
+            }}</span>
+          </button>
+          @if (card.item.source.structural && card.item.source.active) {
+            <span class="feed-toggle toggle-label">🔒 Siempre activa</span>
+          } @else if (session.hasRole(toggleRole)) {
+            <label
+              class="feed-toggle"
+              [attr.aria-label]="
+                (card.item.source.active ? 'Desactivar ' : 'Activar ') + card.item.name
+              "
+            >
+              <input
+                type="checkbox"
+                role="switch"
+                [checked]="card.item.source.active"
+                [disabled]="isPending(card.item.id)"
+                (click)="$event.stopPropagation()"
+                (change)="toggle(card.item, $event)"
+              />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">{{
+                card.item.source.active ? 'Activa' : 'Inactiva'
+              }}</span>
+            </label>
+          } @else {
+            <span class="feed-toggle toggle-label">{{
+              card.item.source.active ? 'Activa' : 'Inactiva'
+            }}</span>
+          }
+        </article>
+      }
+      @switch (load.status()) {
+        @case ('error') {
+          <div class="empty-carousel">
+            <app-async-state state="error" [error]="load.error()" (retry)="reload()" />
+          </div>
+        }
+        @case ('ready') {
+          @if (!filteredRows().length) {
+            <div class="empty-carousel">
+              <svg lucideLayers aria-hidden="true"></svg>
+              <strong>{{
+                sources().length ? 'No hay fuentes con estos filtros' : 'Aún no hay fuentes'
+              }}</strong>
+              <span>{{
+                sources().length
+                  ? 'Cambia la clase o el nivel para ver otras fuentes.'
+                  : 'Las fuentes aparecerán aquí cuando el backend las registre.'
+              }}</span>
+            </div>
+          }
+        }
+        @default {
+          <div class="empty-carousel">
+            <app-async-state state="loading" loadingText="Cargando fuentes…" />
+          </div>
+        }
+      }
+    </div>
+  </section>
+
+  <section #details class="feed-details" aria-live="polite" aria-labelledby="feed-details-title">
+    <header>
+      <svg lucideLayers aria-hidden="true"></svg>
+      <h2 id="feed-details-title">
+        Detalles de la fuente{{ carousel.selected() ? ': ' + carousel.selected()!.name : '' }}
+      </h2>
+    </header>
+    @if (carousel.selected(); as row) {
+      <div class="details-grid">
+        @if (row.provider) {
+          <div class="detail-row">
+            <svg lucideShield aria-hidden="true"></svg><strong>Proveedor</strong
+            ><span>{{ row.provider }}</span>
+          </div>
+        }
+        @if (row.refresh) {
+          <div class="detail-row">
+            <svg lucideRefreshCw aria-hidden="true"></svg><strong>Frecuencia</strong
+            ><span>{{ row.refresh }}</span>
+          </div>
+        }
+        <div class="detail-row">
+          <svg lucideGauge aria-hidden="true"></svg><strong>Nivel de confianza</strong
+          ><span class="level-cell"
+            ><span>{{ row.source.level }} · {{ row.levelMeaning }}</span>
+            <label *appIfRole="levelRole" class="level-select"
+              ><span class="sr-only">Cambiar el nivel de {{ row.name }}</span>
+              <select [disabled]="isPending(row.id)" (change)="askLevel(row, $event)">
+                @for (level of levelOptions(row.source); track level) {
+                  <option [value]="level" [selected]="level === row.source.level">
+                    {{ level }}
+                  </option>
+                }
+              </select></label
+            ></span
+          >
+        </div>
+        <div class="detail-row">
+          <svg lucideTag aria-hidden="true"></svg><strong>Clase</strong
+          ><span>{{ row.typeLabel }}{{ row.source.structural ? ' · Estructural 🔒' : '' }}</span>
+        </div>
+        <div class="detail-row">
+          <svg lucideActivity aria-hidden="true"></svg><strong>Salud</strong
+          ><span class="health" [attr.data-health]="row.source.health">{{ row.healthLabel }}</span>
+        </div>
+        <div class="detail-row">
+          <svg lucideClock aria-hidden="true"></svg><strong>Última captura</strong
+          ><span>{{ row.lastCapture ?? 'Sin capturas todavía' }}</span>
+        </div>
+        <div class="detail-row">
+          <svg lucideHash aria-hidden="true"></svg><strong>Elementos por corrida</strong
+          ><span>{{ row.source.items_per_run }}</span>
+        </div>
+        <div class="detail-row">
+          <svg lucideCircleCheck aria-hidden="true"></svg><strong>Estado</strong
+          ><span>{{ row.source.active ? 'Activa' : 'Inactiva' }}</span>
+        </div>
+      </div>
+      @if (row.description) {
+        <p class="source-description">{{ row.description }}</p>
+      }
+    } @else {
+      <p class="details-empty">
+        {{
+          load.status() === 'ready'
+            ? 'Selecciona una fuente para consultar sus detalles.'
+            : 'Los detalles aparecerán cuando carguen las fuentes.'
+        }}
+      </p>
+    }
+  </section>
+
+  @if (load.status() === 'ready' && filteredRows().length) {
+    <section class="feed-details sources-health" aria-labelledby="sources-health-title">
+      <header>
+        <svg lucideActivity aria-hidden="true"></svg>
+        <h2 id="sources-health-title">Salud de las fuentes</h2>
+        <span class="health-count">{{ filteredRows().length }} de {{ sources().length }}</span>
+      </header>
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Salud de las fuentes; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Fuente</th>
+              <th scope="col">Clase</th>
+              <th scope="col">Nivel</th>
+              <th scope="col">Salud</th>
+              <th scope="col">Última captura</th>
+              <th scope="col" class="numeric">Elementos por corrida</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filteredRows(); track row.id) {
+              <tr [class.selected-row]="carousel.selected()?.id === row.id">
+                <td>
+                  <button type="button" class="row-link" (click)="showDetails(row)">
+                    {{ row.name }}
+                  </button>
+                  @if (row.source.structural) {
+                    <span class="lock-chip" title="Fuente estructural: no se puede desactivar"
+                      >🔒<span class="sr-only"> Estructural</span></span
+                    >
+                  }
+                </td>
+                <td>{{ row.typeLabel }}</td>
+                <td>
+                  <span class="level-pill" [title]="row.levelMeaning">{{ row.source.level }}</span>
+                </td>
+                <td>
+                  <span class="health" [attr.data-health]="row.source.health">{{
+                    row.healthLabel
+                  }}</span>
+                </td>
+                <td>{{ row.lastCapture ?? 'Sin capturas todavía' }}</td>
+                <td class="numeric">{{ row.source.items_per_run }}</td>
+                <td>{{ row.source.active ? 'Activa' : 'Inactiva' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  @if (levelChange()) {
+    <app-confirm-changes-dialog
+      title="Cambiar nivel de confianza"
+      [changes]="levelRows()"
+      [saving]="levelSaving()"
+      [error]="levelError()"
+      (confirmed)="confirmLevel()"
+      (cancelled)="cancelLevel()"
+      (reloadRequested)="cancelLevel(); reload()"
+    />
+  }
+</div>

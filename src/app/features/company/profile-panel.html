@@ -1,0 +1,167 @@
+<section class="panel inventory company-panel" aria-labelledby="profile-title">
+  <header>
+    <div class="inventory-title">
+      <svg lucideBuilding2 aria-hidden="true"></svg>
+      <h2 id="profile-title">Perfil de la empresa</h2>
+    </div>
+    @if (profile(); as current) {
+      <span>Versión {{ current.version }}</span>
+    }
+    @if (load.status() === 'ready' && profile() && !editing()) {
+      <button *appIfRole="editRole" type="button" class="panel-action" (click)="startEdit()">
+        <svg lucidePencil aria-hidden="true"></svg> Editar perfil
+      </button>
+    }
+  </header>
+  <p class="panel-hint">
+    El sector, los países y las empresas pares le dicen a Hermes qué ataques se parecen a tu empresa
+    (relevancia R3 y contexto de amenaza T).
+  </p>
+  @if (notice(); as message) {
+    <p class="panel-notice" role="status">{{ message }}</p>
+  }
+
+  @switch (load.status()) {
+    @case ('error') {
+      <app-async-state state="error" [error]="load.error()" (retry)="reload()" />
+    }
+    @case ('ready') {
+      @if (profile(); as current) {
+        @if (editing()) {
+          <form class="company-form" novalidate (ngSubmit)="review()">
+            <label
+              >Sector principal
+              <select
+                name="sector"
+                [ngModel]="sector()"
+                (ngModelChange)="setSector($event)"
+                [attr.aria-invalid]="!!sectorError()"
+                [attr.aria-describedby]="sectorError() ? 'profile-sector-error' : null"
+              >
+                <option value="" disabled>Elige un sector</option>
+                @for (code of sectorOptions(); track code) {
+                  <option [value]="code">{{ sectorName(code) }}</option>
+                }
+              </select>
+              @if (sectorError(); as problem) {
+                <small class="field-error" id="profile-sector-error">{{ problem }}</small>
+              }
+            </label>
+
+            <label
+              >Idioma de salida
+              <select name="language" [ngModel]="language()" (ngModelChange)="language.set($event)">
+                @for (code of languageOptions(); track code) {
+                  <option [value]="code">{{ languageName(code) }}</option>
+                }
+              </select>
+            </label>
+
+            <fieldset class="wide">
+              <legend>Subsectores</legend>
+              <div class="check-list">
+                @for (code of subsectorOptions(); track code) {
+                  <label class="check"
+                    ><input
+                      type="checkbox"
+                      [checked]="subsectors().includes(code)"
+                      (change)="toggleSubsector(code, $event)"
+                    />
+                    {{ sectorName(code) }}</label
+                  >
+                }
+              </div>
+            </fieldset>
+
+            <fieldset class="wide">
+              <legend>Países de operación</legend>
+              <div class="chips" aria-live="polite">
+                @for (code of countries(); track code) {
+                  <span class="chip"
+                    >{{ countryName(code) }} ({{ code }})
+                    <button
+                      type="button"
+                      [attr.aria-label]="'Quitar ' + countryName(code)"
+                      (click)="removeCountry(code)"
+                    >
+                      <svg lucideX aria-hidden="true"></svg></button
+                  ></span>
+                } @empty {
+                  <span class="muted">Ningún país todavía.</span>
+                }
+              </div>
+              <div class="inline-add">
+                <label
+                  >Código ISO de dos letras
+                  <input
+                    name="country"
+                    maxlength="2"
+                    autocomplete="off"
+                    placeholder="MX"
+                    [ngModel]="countryInput()"
+                    (ngModelChange)="countryInput.set($event)"
+                    (keydown.enter)="addCountry($event)"
+                    [attr.aria-invalid]="!!countryError()"
+                    [attr.aria-describedby]="countryError() ? 'profile-country-error' : null"
+                  />
+                </label>
+                <button type="button" class="secondary-button" (click)="addCountry()">
+                  Agregar país
+                </button>
+              </div>
+              @if (countryError(); as problem) {
+                <small class="field-error" id="profile-country-error" role="alert">{{
+                  problem
+                }}</small>
+              }
+            </fieldset>
+
+            @if (formNote(); as note) {
+              <p class="form-note wide" role="status">{{ note }}</p>
+            }
+            <footer class="wide">
+              <button type="button" class="secondary-button" (click)="cancelEdit()">
+                Cancelar
+              </button>
+              <button type="submit" class="primary-button">Revisar cambios</button>
+            </footer>
+          </form>
+        } @else {
+          <dl class="facts">
+            <div>
+              <dt>Sector principal</dt>
+              <dd>{{ sectorName(current.sector) }}</dd>
+            </div>
+            <div>
+              <dt>Subsectores</dt>
+              <dd>{{ sectorList(current.subsectors) }}</dd>
+            </div>
+            <div>
+              <dt>Países de operación</dt>
+              <dd>{{ countryList(current.countries) }}</dd>
+            </div>
+            <div>
+              <dt>Idioma de salida</dt>
+              <dd>{{ languageName(current.language) }}</dd>
+            </div>
+          </dl>
+        }
+      }
+    }
+    @default {
+      <app-async-state state="loading" loadingText="Cargando el perfil…" />
+    }
+  }
+</section>
+
+@if (confirming()) {
+  <app-confirm-changes-dialog
+    title="Guardar el perfil de la empresa"
+    [changes]="changes()"
+    [saving]="saving()"
+    [error]="saveError()"
+    (confirmed)="save()"
+    (cancelled)="closeConfirm()"
+    (reloadRequested)="reloadAfterConflict()"
+  />
+}

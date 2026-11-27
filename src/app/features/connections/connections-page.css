@@ -1,0 +1,104 @@
+/* Conexiones: the stat cards, panels and table come from the Activos design (assets-view). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.stat-card strong.moment:not(.unknown) {
+  font-size: calc(15px + var(--font-size-increase));
+}
+.action-row {
+  margin: 18px 0 14px;
+}
+.test-all:disabled,
+.test-one:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.connections-notice {
+  margin: 0 0 14px;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: calc(12px + var(--font-size-increase));
+}
+.connections-notice.error {
+  border-color: color-mix(in srgb, var(--danger-text) 55%, var(--border));
+  color: var(--danger-text);
+}
+.connections-panel {
+  margin-bottom: 15px;
+}
+table.connections-table {
+  min-width: 860px;
+}
+.connections-table td.detail {
+  max-width: 260px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.connections-table .numeric {
+  text-align: right;
+  white-space: nowrap;
+}
+.connection-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.connection-state[data-state='ok'] {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+.connection-state[data-state='missing'] {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+.row-actions {
+  text-align: right;
+}
+.test-one {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: calc(11px + var(--font-size-increase));
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.test-one svg {
+  width: 14px;
+  height: 14px;
+}
+.test-one:focus-visible,
+.test-all:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.connections-footnote {
+  margin: 4px 2px 0;
+  color: var(--text-muted);
+  font-size: calc(11px + var(--font-size-increase));
+  line-height: 1.5;
+}
