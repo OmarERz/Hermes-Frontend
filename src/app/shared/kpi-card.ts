@@ -148,6 +148,7 @@ export function kpiState(status: LoadStatus): KpiState {
     }
     /* Block text with the help button inline at its end (it never drops to a line of its own). */
     .kpi-label {
+      grid-row: 1;
       display: block;
       min-width: 0;
       color: var(--text-secondary);
@@ -160,12 +161,15 @@ export function kpiState(status: LoadStatus): KpiState {
       margin-left: var(--space-0-5);
     }
     .kpi-note {
+      grid-row: 2;
       color: var(--text-muted);
       font-size: var(--text-xs);
       line-height: var(--leading-snug);
       text-wrap: pretty;
     }
+    /* Always the last row, which takes the spare height: the values of a row of cards line up (COR-2). */
     .kpi-value-row {
+      grid-row: 3;
       align-self: end;
       display: flex;
       flex-wrap: wrap;
@@ -222,7 +226,7 @@ export function kpiState(status: LoadStatus): KpiState {
      */
     @container (max-width: 180px) {
       .kpi-icon {
-        grid-row: auto;
+        grid-row: 1;
         width: 32px;
         height: 32px;
         border-radius: var(--radius-sm);
