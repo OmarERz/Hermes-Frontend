@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { GraficoDashboard } from '../../componentes/grafico-dashboard/grafico-dashboard';
 import { ApiError } from '../../core/api/api-error';
 import { provideFakeSession } from '../../testing/fake-session';
@@ -224,7 +224,7 @@ describe('AgentsDashboardPage', () => {
     );
     expect(metricValues(element)[0]).toBe('Sin datos');
     expect(metricValues(element)[2]).toBe('Sin datos p95 Sin datos');
-    expect(metricValues(element)[4]).toBe('0');
+    expect(metricValues(element)[4]).toBe('0 Cola de error: sin calcular');
   });
 
   it('marks a judge on a higher ladder level', async () => {
@@ -284,11 +284,26 @@ describe('AgentsDashboardPage', () => {
     expect(element.querySelectorAll('.ticket-kpis > div').length).toBe(9);
   });
 
-  it('leaves the error queue out when the metrics cannot be read', async () => {
+  it('says the error queue is unavailable when the metrics fail, and retries them', async () => {
     const service = new FakeService();
     service.metrics.mockReturnValue(failure());
+    const { fixture, element } = await render(service);
+    const retry = element.querySelector('.metric .queue-retry') as HTMLButtonElement;
+    expect(retry.getAttribute('aria-label')).toBe(
+      'La cola de error no está disponible. Reintentar',
+    );
+    service.metrics.mockReturnValue(of(METRICS));
+    retry.click();
+    await fixture.whenStable();
+    expect(service.metrics).toHaveBeenCalledTimes(2);
+    expect(metricValues(element)[4]).toBe('1 Cola de error: 2');
+  });
+
+  it('marks the error queue as loading until the metrics answer', async () => {
+    const service = new FakeService();
+    service.metrics.mockReturnValue(NEVER);
     const { element } = await render(service);
-    expect(metricValues(element)[4]).toBe('1');
+    expect(metricValues(element)[4]).toBe('1 Cola de error: …');
   });
 });
 

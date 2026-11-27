@@ -187,12 +187,19 @@ export class AgentsDashboardPage {
       : NO_DATA;
   });
 
-  /** Size of the error queue (MET-18) from the metrics board, when it has been calculated. */
-  readonly errorQueue = computed(() => {
-    if (this.metrics.status() !== 'ready') return null;
-    return (
-      this.metrics.value()?.metrics.find((metric) => metric.key === 'error_queue_size') ?? null
-    );
+  /**
+   * Size of the error queue (MET-18) from the metrics board: loading, not calculated yet (the board has no value),
+   * unavailable (the board failed: the tag offers a retry) or its value.
+   */
+  readonly errorQueue = computed<{
+    state: 'loading' | 'missing' | 'error' | 'ready';
+    value: string;
+  }>(() => {
+    const status = this.metrics.status();
+    if (status === 'error') return { state: 'error', value: '' };
+    if (status !== 'ready') return { state: 'loading', value: '' };
+    const metric = this.metrics.value()?.metrics.find((entry) => entry.key === 'error_queue_size');
+    return metric ? { state: 'ready', value: metric.value } : { state: 'missing', value: '' };
   });
 
   /** Runs that ended well today: the last point of the daily series is today (UTC). */
@@ -273,7 +280,7 @@ export class AgentsDashboardPage {
     this.loadTelemetry();
     this.loadTickets();
     this.loadLatestRun();
-    this.metrics.run(this.service.metrics());
+    this.loadMetrics();
     inject(DestroyRef).onDestroy(() => {
       for (const state of [this.summary, this.daily, this.tickets, this.latestRun, this.metrics]) {
         state.cancel();
@@ -292,6 +299,10 @@ export class AgentsDashboardPage {
 
   loadDaily(): void {
     this.daily.run(this.service.daily(this.days()));
+  }
+
+  loadMetrics(): void {
+    this.metrics.run(this.service.metrics());
   }
 
   loadTickets(): void {

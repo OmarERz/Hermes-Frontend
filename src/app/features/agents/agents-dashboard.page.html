@@ -88,8 +88,29 @@
           /></span>
           <div>
             <strong>{{ formatCount(summary.runs_failed) }}</strong>
-            @if (errorQueue(); as queue) {
-              <em [class.warn]="queue.value !== '0'">Cola de error: {{ queue.value }}</em>
+            @switch (errorQueue().state) {
+              @case ('ready') {
+                <em [class.warn]="errorQueue().value !== '0'"
+                  >Cola de error: {{ errorQueue().value }}</em
+                >
+              }
+              @case ('missing') {
+                <em class="muted">Cola de error: sin calcular</em>
+              }
+              @case ('error') {
+                <button
+                  type="button"
+                  class="queue-retry"
+                  title="La cola de error no está disponible"
+                  aria-label="La cola de error no está disponible. Reintentar"
+                  (click)="loadMetrics()"
+                >
+                  Cola de error: reintentar
+                </button>
+              }
+              @default {
+                <em class="muted">Cola de error: …</em>
+              }
             }
           </div>
         </article>
