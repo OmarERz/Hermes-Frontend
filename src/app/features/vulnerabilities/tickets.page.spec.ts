@@ -91,6 +91,19 @@ describe('TicketsPage', () => {
     expect(row.querySelector('a.row-link')?.getAttribute('href')).toBe('/activos/SRV-01');
   });
 
+  it('labels an R3 alert without claiming more than the contract (peer, sector or vector)', async () => {
+    const service = new FakeService();
+    service.listAlerts.mockReturnValue(
+      of({ items: [{ ...ALERT, relevance: 'R3', inferred: false }], nextCursor: null }),
+    );
+    const { element } = await render(service);
+    const row = element.querySelectorAll('section.inventory')[1].querySelector('tbody tr')!;
+    expect(row.textContent).toContain(
+      'Ataque a una empresa par, del mismo sector o con el mismo vector',
+    );
+    expect(row.querySelector('.type-chip')?.classList).not.toContain('inferred');
+  });
+
   it('shows the error of one list without hiding the other', async () => {
     const service = new FakeService();
     service.listAlerts.mockReturnValue(
