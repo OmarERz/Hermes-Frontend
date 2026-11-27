@@ -1,4 +1,5 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { LucideDownload } from '@lucide/angular';
@@ -35,6 +36,7 @@ const PICKER_LIMIT = 200;
 export class StixExportPage {
   private readonly stix = inject(StixService);
   private readonly vulnerabilities = inject(VulnerabilitiesService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly bannerIcon = LucideDownload;
   readonly scopes = Object.keys(SCOPE_LABELS) as StixScope[];
@@ -83,7 +85,7 @@ export class StixExportPage {
       this.vulnerabilities.listGroups({}, null, PICKER_LIMIT).pipe(map((page) => page.items)),
     );
     this.runs.run(this.stix.latestRuns(PICKER_LIMIT));
-    inject(DestroyRef).onDestroy(() => {
+    this.destroyRef.onDestroy(() => {
       this.groups.cancel();
       this.runs.cancel();
     });
@@ -119,19 +121,23 @@ export class StixExportPage {
     this.error.set(null);
     this.result.set('');
     const request = this.request();
-    this.stix.exportBundle(request).subscribe({
-      next: (bundle: StixBundle) => {
-        this.stix.download(bundle, `hermes-stix-${request.scope}-${fileStamp(new Date())}.json`);
-        this.result.set(
-          `Bundle descargado con ${bundle.objects.length} ${bundle.objects.length === 1 ? 'objeto' : 'objetos'}.`,
-        );
-        this.exporting.set(false);
-      },
-      error: (failure: unknown) => {
-        this.error.set(toApiError(failure));
-        this.exporting.set(false);
-      },
-    });
+    // A late answer after leaving the screen (or signing out) must not start a download.
+    this.stix
+      .exportBundle(request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (bundle: StixBundle) => {
+          this.stix.download(bundle, `hermes-stix-${request.scope}-${fileStamp(new Date())}.json`);
+          this.result.set(
+            `Bundle descargado con ${bundle.objects.length} ${bundle.objects.length === 1 ? 'objeto' : 'objetos'}.`,
+          );
+          this.exporting.set(false);
+        },
+        error: (failure: unknown) => {
+          this.error.set(toApiError(failure));
+          this.exporting.set(false);
+        },
+      });
   }
 }
 

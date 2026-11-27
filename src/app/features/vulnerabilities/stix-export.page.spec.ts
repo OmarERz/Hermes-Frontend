@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import { provideFakeSession } from '../../testing/fake-session';
 import { StixExportPage } from './stix-export.page';
-import { StixService } from './stix.service';
+import { StixBundle, StixService } from './stix.service';
 import { VulnerabilitiesService } from './vulnerabilities.service';
 
 class FakeStix {
@@ -48,7 +48,10 @@ async function render(stixService: FakeStix, url = '/exportacion-stix') {
       { provide: StixService, useValue: stixService },
       { provide: VulnerabilitiesService, useValue: new FakeVulnerabilities() },
       ...provideFakeSession('analyst'),
-      provideRouter([{ path: 'exportacion-stix', component: StixExportPage }]),
+      provideRouter([
+        { path: 'exportacion-stix', component: StixExportPage },
+        { path: 'otra', children: [] },
+      ]),
     ],
   });
   const harness = await RouterTestingHarness.create();
@@ -123,6 +126,19 @@ describe('StixExportPage', () => {
     const { page } = await render(new FakeStix());
     expect(page.runOptions()[0].label).toContain('Escaneo');
     expect(page.runOptions()[0].label).toContain('succeeded');
+  });
+
+  it('drops a late bundle once the person has left the screen', async () => {
+    const service = new FakeStix();
+    const pending = new Subject<StixBundle>();
+    service.exportBundle.mockReturnValue(pending);
+    const { page, harness } = await render(service, '/exportacion-stix?grupo=g-1');
+    page.export();
+    expect(pending.observed).toBe(true);
+    await harness.navigateByUrl('/otra');
+    expect(pending.observed).toBe(false);
+    pending.next({ type: 'bundle', id: 'bundle--late', objects: [] });
+    expect(service.download).not.toHaveBeenCalled();
   });
 
   it('shows the API message when the export fails', async () => {
