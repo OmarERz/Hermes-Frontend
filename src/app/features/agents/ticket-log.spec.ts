@@ -69,9 +69,16 @@ describe('TicketLog', () => {
       'CVE-2026-10001',
       'Infraestructura Linux',
       'Urgencia subida',
-      'Sin dato (purgado)',
+      'Sin registro de escritura',
       '—',
     ]);
+  });
+
+  it('does not claim why a record has no iTop write', () => {
+    const row = ticketRow({ ...TICKET_UPDATE, itop_status: null });
+    expect(row.write).toBe('Sin registro de escritura');
+    expect(row.writeTitle).toContain('ya se purgó o la acción no la necesitó');
+    expect(ticketRow(TICKET_UPDATE).writeTitle).toBeNull();
   });
 
   it('never links a ticket URL that is not http(s)', () => {

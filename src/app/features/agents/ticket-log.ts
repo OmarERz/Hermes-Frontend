@@ -44,10 +44,16 @@ export function ticketRow(update: TicketUpdate) {
     cve: update.cve,
     custodian: update.custodian,
     action: update.label || labelOf(TICKET_ACTION_LABELS, update.action),
+    // No write record: it was purged (90 days) or the action only went to the audit log (a suggestion); the value
+    // does not say which, so the label claims neither.
     write:
       update.itop_status === null
-        ? 'Sin dato (purgado)'
+        ? 'Sin registro de escritura'
         : labelOf(ITOP_WRITE_LABELS, update.itop_status),
+    writeTitle:
+      update.itop_status === null
+        ? 'No hay una escritura en iTop ligada a este registro: ya se purgó o la acción no la necesitó.'
+        : null,
     writeKey: update.itop_status ?? 'none',
     assessmentId: update.assessment_id,
   };

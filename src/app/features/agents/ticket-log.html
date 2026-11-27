@@ -89,7 +89,9 @@
               <td>{{ row.custodian }}</td>
               <td>{{ row.action }}</td>
               <td>
-                <span [class]="'status write-' + row.writeKey">{{ row.write }}</span>
+                <span [class]="'status write-' + row.writeKey" [attr.title]="row.writeTitle">{{
+                  row.write
+                }}</span>
               </td>
               <td>
                 @if (row.assessmentId) {
