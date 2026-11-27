@@ -1,0 +1,316 @@
+<div class="assets-view runs-view">
+  <app-banner-pagina
+    titulo="Corridas"
+    descripcion="Escaneos, ingestas de noticias y recálculos de Hermes: su estado, su avance, por qué se lanzaron y quién los lanzó."
+    [icono]="bannerIcon"
+  />
+
+  <section class="stats-grid" aria-label="Resumen de corridas">
+    <article class="stat-card">
+      <span><svg lucideClock aria-hidden="true"></svg></span><small>En cola ahora</small>
+      <strong class="numeric" [class.unknown]="queued() === null">{{ queued() ?? '—' }}</strong>
+    </article>
+    <article class="stat-card">
+      <span><svg lucideLoader aria-hidden="true"></svg></span><small>En ejecución ahora</small>
+      <strong class="numeric" [class.unknown]="running() === null">{{ running() ?? '—' }}</strong>
+    </article>
+    <article class="stat-card">
+      <span><svg lucideCircleCheck aria-hidden="true"></svg></span
+      ><small>Terminaron bien · últimas 24 h</small>
+      <strong class="numeric" [class.unknown]="succeeded() === null">{{
+        succeeded() ?? '—'
+      }}</strong>
+    </article>
+    <article class="stat-card">
+      <span class="warning"><svg lucideCircleAlert aria-hidden="true"></svg></span
+      ><small>Terminaron con error · últimas 24 h</small>
+      <strong class="numeric" [class.unknown]="failed() === null">{{ failed() ?? '—' }}</strong>
+    </article>
+  </section>
+  @if (summary.error(); as failure) {
+    <p class="runs-notice" role="status">
+      No se pudieron leer los conteos de las últimas 24 horas: {{ failure.message }}
+    </p>
+  }
+
+  <div class="action-row" *appIfRole="launchRole">
+    <button
+      type="button"
+      class="primary-action launch-scan"
+      [disabled]="launching()"
+      [attr.aria-busy]="launching()"
+      (click)="launchScan()"
+    >
+      <svg lucideRadar aria-hidden="true"></svg>
+      {{ launching() ? 'Lanzando escaneo…' : 'Lanzar escaneo' }}
+    </button>
+  </div>
+
+  @if (notice(); as message) {
+    <p
+      class="runs-notice"
+      [class.error]="message.kind === 'error'"
+      [attr.role]="message.kind === 'error' ? 'alert' : 'status'"
+    >
+      {{ message.text }}
+    </p>
+  }
+
+  <section class="filters" aria-label="Filtros de corridas">
+    <label class="select-filter"
+      ><svg lucideLayers aria-hidden="true"></svg>
+      <select
+        #kindSelect
+        [value]="kind()"
+        (change)="setKind(kindSelect.value)"
+        aria-label="Tipo de corrida"
+      >
+        <option value="">Todos los tipos</option>
+        @for (value of kinds; track value) {
+          <option [value]="value" [selected]="kind() === value">{{ kindLabels[value] }}</option>
+        }
+      </select>
+      <svg lucideChevronDown aria-hidden="true"></svg>
+    </label>
+    <label class="select-filter"
+      ><svg lucideFunnel aria-hidden="true"></svg>
+      <select
+        #statusSelect
+        [value]="status()"
+        (change)="setStatus(statusSelect.value)"
+        aria-label="Estado de la corrida"
+      >
+        <option value="">Todos los estados</option>
+        @for (value of statuses; track value) {
+          <option [value]="value" [selected]="status() === value">
+            {{ statusLabels[value] }}
+          </option>
+        }
+      </select>
+      <svg lucideChevronDown aria-hidden="true"></svg>
+    </label>
+    <label class="asset-search date-filter"
+      ><svg lucideCalendar aria-hidden="true"></svg>
+      <span aria-hidden="true">Desde</span>
+      <input
+        #fromInput
+        type="date"
+        [value]="dateFrom()"
+        [attr.max]="dateTo() || null"
+        (change)="setDateFrom(fromInput.value)"
+        aria-label="Iniciadas desde"
+      />
+    </label>
+    <label class="asset-search date-filter"
+      ><svg lucideCalendar aria-hidden="true"></svg>
+      <span aria-hidden="true">hasta</span>
+      <input
+        #toInput
+        type="date"
+        [value]="dateTo()"
+        [attr.min]="dateFrom() || null"
+        (change)="setDateTo(toInput.value)"
+        aria-label="Iniciadas hasta"
+      />
+    </label>
+    @if (hasFilters()) {
+      <button type="button" class="more-filter" (click)="clearFilters()">Quitar filtros</button>
+    }
+    <button type="button" class="more-filter" (click)="refresh()">
+      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+    </button>
+  </section>
+
+  @if (detail(); as run) {
+    <section class="panel run-detail" aria-labelledby="run-detail-title" #detailPanel>
+      <header>
+        <div class="inventory-title">
+          <svg lucideRadar aria-hidden="true"></svg>
+          <h2 id="run-detail-title">{{ run.kindLabel }}</h2>
+        </div>
+        <button
+          type="button"
+          class="close-detail"
+          (click)="closeDetail()"
+          aria-label="Cerrar el detalle de la corrida"
+        >
+          <svg lucideX aria-hidden="true"></svg>
+        </button>
+      </header>
+
+      <div class="live-progress">
+        <div class="live-line">
+          <span [class]="'run-status status-' + run.status">{{ run.statusLabel }}</span>
+          <strong class="numeric">{{ run.progress }} %</strong>
+          @switch (liveState()) {
+            @case ('live') {
+              <span class="live-badge" role="status"
+                ><svg lucideLoader aria-hidden="true"></svg>En vivo</span
+              >
+            }
+            @case ('ended') {
+              <span class="live-note" role="status">La corrida terminó.</span>
+            }
+          }
+        </div>
+        <span
+          class="run-progress large"
+          role="progressbar"
+          aria-label="Avance de la corrida"
+          [attr.aria-valuenow]="run.progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuetext]="run.progress + ' %, ' + run.statusLabel"
+          ><span [style.width.%]="run.progress" [class]="'bar-' + run.status"></span
+        ></span>
+        @if (liveState() === 'error') {
+          <div class="live-error" role="alert">
+            <p>
+              Se perdió el seguimiento en vivo: {{ liveError()?.message }} El estado de la tabla
+              sigue siendo el que dio la API.
+            </p>
+            @if (run.active) {
+              <button type="button" class="more-filter" (click)="followAgain()">
+                <svg lucideRefreshCw aria-hidden="true"></svg> Seguir de nuevo
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <dl class="run-facts">
+        <div>
+          <dt>Motivo</dt>
+          <dd>{{ run.trigger }}</dd>
+        </div>
+        <div>
+          <dt>Lanzada por</dt>
+          <dd>{{ run.launchedBy }}</dd>
+        </div>
+        <div>
+          <dt>Inicio</dt>
+          <dd>{{ run.started }}</dd>
+        </div>
+        <div>
+          <dt>Fin</dt>
+          <dd>{{ run.finished }}</dd>
+        </div>
+        <div>
+          <dt>Duración</dt>
+          <dd>{{ run.duration }}</dd>
+        </div>
+        <div>
+          <dt>Identificador</dt>
+          <dd class="run-id">{{ run.id }}</dd>
+        </div>
+      </dl>
+    </section>
+  }
+
+  <section class="panel inventory" aria-labelledby="runs-title">
+    <header>
+      <div class="inventory-title">
+        <svg lucidePlay aria-hidden="true"></svg>
+        <h2 id="runs-title">Corridas</h2>
+      </div>
+      <span>Página {{ pager.pageIndex() + 1 }}</span>
+    </header>
+    @if (tableState(); as state) {
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando corridas…"
+        [emptyText]="hasFilters() ? 'No hay corridas con estos filtros.' : 'Aún no hay corridas.'"
+        [error]="pager.state.error()"
+        (retry)="pager.reload()"
+      />
+    } @else {
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Corridas; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table class="runs-table">
+          <thead>
+            <tr>
+              <th scope="col">Tipo</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Avance</th>
+              <th scope="col">Inicio</th>
+              <th scope="col">Fin</th>
+              <th scope="col">Duración</th>
+              <th scope="col">Motivo</th>
+              <th scope="col">Lanzada por</th>
+              <th scope="col"><span class="sr-only">Detalle</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr [class.selected-row]="selected()?.id === row.id">
+                <td>
+                  <strong>{{ row.kindLabel }}</strong>
+                </td>
+                <td>
+                  <span [class]="'run-status status-' + row.status">{{ row.statusLabel }}</span>
+                </td>
+                <td>
+                  <span class="progress-cell">
+                    <span
+                      class="run-progress"
+                      role="progressbar"
+                      [attr.aria-label]="'Avance de ' + row.kindLabel + ' del ' + row.started"
+                      [attr.aria-valuenow]="row.progress"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      ><span [style.width.%]="row.progress" [class]="'bar-' + row.status"></span
+                    ></span>
+                    <span class="numeric">{{ row.progress }} %</span>
+                  </span>
+                </td>
+                <td>{{ row.started }}</td>
+                <td>{{ row.finished }}</td>
+                <td class="numeric">{{ row.duration }}</td>
+                <td>{{ row.trigger }}</td>
+                <td>{{ row.launchedBy }}</td>
+                <td class="row-actions">
+                  <button
+                    type="button"
+                    class="detail-button"
+                    [attr.aria-pressed]="selected()?.id === row.id"
+                    (click)="select(row.run)"
+                  >
+                    {{ row.active ? 'Seguir en vivo' : 'Ver detalle' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <footer>
+      <span></span>
+      <div class="pagination">
+        <button
+          type="button"
+          [disabled]="!pager.hasPrevious() || pager.state.loading()"
+          (click)="pager.previous()"
+          aria-label="Página anterior de corridas"
+        >
+          <svg lucideArrowLeft aria-hidden="true"></svg>
+        </button>
+        <button type="button" class="selected" aria-current="page">
+          {{ pager.pageIndex() + 1 }}
+        </button>
+        <button
+          type="button"
+          [disabled]="!pager.hasNext()"
+          (click)="pager.next()"
+          aria-label="Página siguiente de corridas"
+        >
+          <svg lucideArrowRight aria-hidden="true"></svg>
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>
