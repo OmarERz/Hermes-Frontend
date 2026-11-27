@@ -35,6 +35,17 @@ import { LockedProtections } from './locked-protections';
 import { SimulationPanel } from './simulation-panel';
 
 const PROFILE_KEY = 'sensitivity_profile';
+const DEAD_ZONE_KEY = 'dead_zone';
+
+/**
+ * Dead zone of each profile (docs/07 §12, D-091). Saving only `sensitivity_profile` keeps the current `dead_zone`,
+ * so choosing a profile also drafts its dead zone: the simulation and the save send both.
+ */
+export const PROFILE_DEAD_ZONES: Readonly<Record<string, number>> = {
+  minimal: 6,
+  normal: 4,
+  broad: 2,
+};
 
 /** What each profile of docs/07 §12 does, for the profile cards; an unknown option shows only its name. */
 const PROFILE_TEXT: Record<string, string> = {
@@ -126,6 +137,7 @@ export class JudgeSettingsPage {
       value: option,
       label: optionLabel(PROFILE_KEY, option),
       text: PROFILE_TEXT[option] ?? '',
+      deadZone: PROFILE_DEAD_ZONES[option] ?? null,
       icon: PROFILE_ICONS[option] ?? LucideSlidersHorizontal,
     })),
   );
@@ -142,9 +154,14 @@ export class JudgeSettingsPage {
   readonly activeReasons = computed(
     () => this.reasons().filter((param) => this.editor.value(param.key) === 'true').length,
   );
-  /** Advanced changes keep the advanced mode open, so nothing unsaved is hidden. */
+  /**
+   * Advanced changes keep the advanced mode open, so nothing unsaved is hidden. The dead zone a chosen profile brought
+   * along is part of the profile change (its card shows it), not an advanced one.
+   */
   readonly advancedChanged = computed(() =>
-    [...this.advancedParams(), ...this.reasons()].some((param) => this.editor.isChanged(param.key)),
+    [...this.advancedParams(), ...this.reasons()].some(
+      (param) => this.editor.isChanged(param.key) && !this.followsProfile(param.key),
+    ),
   );
   readonly showAdvanced = computed(() => this.advanced() || this.advancedChanged());
 
@@ -156,6 +173,31 @@ export class JudgeSettingsPage {
 
   constructor() {
     this.store.load();
+  }
+
+  /**
+   * Drafts a profile together with its dead zone (D-091). Going back to the saved profile restores the saved dead
+   * zone, so clicking around never leaves a dead zone change behind; an unknown profile keeps the dead zone.
+   */
+  selectProfile(profile: string): void {
+    this.editor.set(PROFILE_KEY, profile);
+    const deadZone = this.editor.parameters().find((param) => param.key === DEAD_ZONE_KEY);
+    if (!deadZone) return;
+    const target =
+      profile === this.editor.current(PROFILE_KEY)
+        ? this.editor.current(DEAD_ZONE_KEY)
+        : PROFILE_DEAD_ZONES[profile]?.toString();
+    if (target !== undefined) this.editor.set(DEAD_ZONE_KEY, target);
+  }
+
+  private followsProfile(key: string): boolean {
+    const deadZone = PROFILE_DEAD_ZONES[this.editor.value(PROFILE_KEY)];
+    return (
+      key === DEAD_ZONE_KEY &&
+      this.editor.isChanged(PROFILE_KEY) &&
+      deadZone !== undefined &&
+      this.editor.value(DEAD_ZONE_KEY) === String(deadZone)
+    );
   }
 
   hint(param: ConfigParameter): string {
