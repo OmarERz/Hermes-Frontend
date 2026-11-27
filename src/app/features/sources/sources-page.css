@@ -33,7 +33,7 @@
 }
 /*
  * The filters are the shared segmented control (src/styles/segmented.css). The selected one keeps the prototype's
- * gradient: D-093 leaves the gradients as they are until the user decides on them.
+ * gradient, its first stop darkened to --accent-strong for the white text (D-097: 5.54:1, 5.48:1 at the violet end).
  */
 .feed-filters.segmented > button > svg {
   color: var(--accent-lilac);
@@ -44,7 +44,7 @@
 .feed-filters.segmented > button[aria-pressed='true'],
 .feed-filters.segmented > button[aria-pressed='true']:hover {
   border-color: var(--accent);
-  background: linear-gradient(110deg, #ed079b, #a90be2);
+  background: linear-gradient(110deg, var(--accent-strong), #a90be2);
   color: #fff;
   box-shadow: 0 0 18px rgba(255, 0, 157, 0.28);
 }
@@ -177,7 +177,7 @@ td:first-child {
   padding: 8px 17px;
   border: 1px solid var(--accent);
   border-radius: 12px;
-  background: linear-gradient(110deg, #ed079b, #a90be2);
+  background: linear-gradient(110deg, var(--accent-strong), #a90be2); /* D-097: white text */
   color: #fff;
   font: inherit;
   font-weight: 700;

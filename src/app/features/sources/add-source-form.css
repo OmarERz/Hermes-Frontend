@@ -86,7 +86,7 @@ footer button {
 }
 footer .primary-button {
   border-color: var(--accent);
-  background: linear-gradient(110deg, #ed079b, #a90be2);
+  background: linear-gradient(110deg, var(--accent-strong), #a90be2); /* D-097: white text */
   color: #fff;
 }
 footer button:disabled {
