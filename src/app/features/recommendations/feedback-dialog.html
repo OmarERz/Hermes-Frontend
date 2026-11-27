@@ -154,13 +154,14 @@
         Recomendado: un comentario ayuda a calibrar el sistema. {{ comment().length }} de
         {{ commentMaxLength }} caracteres.
       </p>
-      @if (problem()) {
-        <p class="review-error" role="alert">{{ problem() }}</p>
-      }
     </section>
   </div>
 
   <footer class="review-modal-actions">
+    <!-- Next to the button that failed, so it is in view however far the body scrolled (REC-6). -->
+    @if (problem()) {
+      <p class="review-error review-save-error" role="alert">{{ problem() }}</p>
+    }
     <button
       type="button"
       class="btn btn-secondary review-cancel"

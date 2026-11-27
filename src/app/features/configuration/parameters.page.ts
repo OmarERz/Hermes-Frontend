@@ -118,9 +118,9 @@ interface ParameterGroup {
             </section>
           }
         </div>
-        <app-config-save-bar title="Confirmar cambios de parámetros" [editor]="editor" />
         <app-config-versions class="block" (restored)="editor.discard()" />
         <app-locked-protections class="block" summary [parameters]="editor.parameters()" />
+        <app-config-save-bar title="Confirmar cambios de parámetros" [editor]="editor" />
       }
     </div>
   `,

@@ -61,6 +61,9 @@ test.describe('configuration as admin', () => {
     await page.getByRole('spinbutton', { name: 'S · Severidad' }).fill('0.3');
     await expect(page.locator('app-config-save-bar')).toHaveClass(/is-dirty/);
     await expect(save).toBeInViewport();
+    // Still there at the end of the screen (it is its last block), past the version history.
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect(save).toBeInViewport();
     await expect(page.getByRole('link', { name: 'Ver permisos y protecciones' })).toBeVisible();
     await page.getByRole('button', { name: 'Descartar cambios' }).click();
     await expect(page.locator('app-config-save-bar')).not.toHaveClass(/is-dirty/);

@@ -173,6 +173,31 @@ describe('FormulaPage', () => {
     expect(bar.classList).not.toContain('is-dirty');
   });
 
+  it('says in the save bar how the simulation went, with a way to its result', async () => {
+    const { fixture, element, api, button, type } = await render('admin');
+    const note = () =>
+      element.querySelector('app-config-save-bar .save-simulation')?.textContent?.trim() ?? null;
+    await type('weights.S', '0.30');
+    await type('weights.P', '0.25');
+    expect(note()).toBeNull();
+
+    button('Simular')?.click();
+    await fixture.whenStable();
+    expect(note()).toContain('Simulación lista: 2 hallazgos cambiarían de nivel.');
+    button('Ver la simulación')?.click();
+    expect(document.activeElement).toBe(element.querySelector('#simulation-title'));
+
+    api.simulate.mockReturnValueOnce(
+      throwError(() => new ApiError(503, 'unavailable', 'El servicio no está disponible.')),
+    );
+    await type('weights.S', '0.20');
+    await type('weights.P', '0.35');
+    button('Simular')?.click();
+    await fixture.whenStable();
+    expect(note()).toContain('No se pudo simular: El servicio no está disponible.');
+    expect(element.querySelector('.save-simulation')?.classList).toContain('is-error');
+  });
+
   it('shows the simulation and saves the simulated draft with the version read', async () => {
     const { fixture, element, api, button, type } = await render('admin');
     await type('weights.S', '0.30');

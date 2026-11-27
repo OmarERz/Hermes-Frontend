@@ -124,6 +124,9 @@ export class AgentsHistoryPage {
   private readonly service = inject(AgentsService);
   private readonly injector = inject(Injector);
   private readonly detailPanel = viewChild<ElementRef<HTMLElement>>('detailPanel');
+  private readonly detailHeading = viewChild<ElementRef<HTMLElement>>('detailHeading');
+  /** The «Detalle» button that opened the panel: focus goes back to it when the panel closes. */
+  private opener: HTMLElement | null = null;
 
   readonly bannerIcon = LucideActivity;
   readonly types = HISTORY_TYPES;
@@ -195,14 +198,26 @@ export class AgentsHistoryPage {
 
   /**
    * Opens the detail of an event (HIS-2): beside the list from 1440 px, below it on narrower screens, where it is
-   * scrolled into view once it is drawn (smoothly unless the person asked for reduced motion).
+   * scrolled into view once it is drawn (smoothly unless the person asked for reduced motion). Focus moves to its
+   * heading, so the next Tab goes through the detail and not back through the table.
    */
-  select(event: HistoryEvent): void {
+  select(event: HistoryEvent, click?: Event): void {
+    const button = click?.currentTarget;
+    this.opener = button instanceof HTMLElement ? button : null;
     this.selected.set(event);
     afterNextRender(() => this.revealDetail(), { injector: this.injector });
   }
 
+  /** Closes the detail and gives the focus back to the «Detalle» button that opened it, if it is still there. */
+  closeDetail(): void {
+    this.selected.set(null);
+    const opener = this.opener;
+    this.opener = null;
+    if (opener?.isConnected) opener.focus();
+  }
+
   private revealDetail(): void {
+    this.detailHeading()?.nativeElement.focus({ preventScroll: true });
     const panel = this.detailPanel()?.nativeElement;
     if (!panel || typeof panel.scrollIntoView !== 'function') return;
     const reduced =
@@ -218,6 +233,7 @@ export class AgentsHistoryPage {
   /** The selected event belongs to the old list, so the detail closes with every new filter. */
   private reload(): void {
     this.selected.set(null);
+    this.opener = null;
     this.pager.first();
   }
 }

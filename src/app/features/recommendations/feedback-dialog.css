@@ -31,9 +31,14 @@
 }
 .review-modal-actions {
   flex: none;
+  flex-wrap: wrap;
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--border);
   background: var(--surface);
+}
+.review-save-error {
+  flex-basis: 100%;
+  text-align: right;
 }
 .human-decision fieldset {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));

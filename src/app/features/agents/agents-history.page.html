@@ -98,7 +98,7 @@
                       <button
                         type="button"
                         [attr.aria-pressed]="isSelected(row.event)"
-                        (click)="select(row.event)"
+                        (click)="select(row.event, $event)"
                       >
                         Detalle
                       </button>
@@ -139,8 +139,8 @@
     >
       @if (selected(); as event) {
         <header>
-          <h2>Detalle · {{ event.title }}</h2>
-          <button type="button" (click)="selected.set(null)" aria-label="Limpiar detalle">×</button>
+          <h2 #detailHeading tabindex="-1">Detalle · {{ event.title }}</h2>
+          <button type="button" (click)="closeDetail()" aria-label="Limpiar detalle">×</button>
         </header>
         <dl>
           @for (fact of detail(); track fact.term) {

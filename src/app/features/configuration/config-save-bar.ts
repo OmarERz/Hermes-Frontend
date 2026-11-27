@@ -1,4 +1,5 @@
-import { Component, computed, input } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, computed, inject, input } from '@angular/core';
 import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
 import { ConfirmChangesDialog } from '../../shared/confirm-changes-dialog';
@@ -9,7 +10,8 @@ import type { ConfigEditor } from './config-editor';
  * the screen simulates) and "Guardar cambios", which opens the shared before/after confirmation. The actions show
  * only for the role that can save a parameter of the screen; a 409 in the dialog offers to reload. With unsaved
  * changes it sticks to the bottom of the window (above the bottom bar on phones), so saving never needs a scroll
- * back to the middle of a long screen (FOR-3).
+ * back to the middle of a long screen (FOR-3); it is the last block of each screen, so it stays there down to the
+ * end. Since «Simular» can be pressed from it, it also says how the simulation went, with a way to its result.
  */
 @Component({
   selector: 'app-config-save-bar',
@@ -51,6 +53,16 @@ import type { ConfigEditor } from './config-editor';
         </ng-container>
       }
     </div>
+    @if (simulationNote(); as note) {
+      <p class="save-simulation" [class.is-error]="note.error" role="status">
+        <span>{{ note.text }}</span>
+        @if (note.link) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="showSimulation()">
+            Ver la simulación
+          </button>
+        }
+      </p>
+    }
     @if (needsSimulation()) {
       <p class="save-hint">
         Simula los cambios antes de guardar: el botón se activa con la simulación.
@@ -99,6 +111,19 @@ import type { ConfigEditor } from './config-editor';
         flex-basis: 100%;
       }
     }
+    .save-simulation {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--space-1) var(--space-3);
+      margin: var(--space-2) 0 0;
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+    }
+    .save-simulation.is-error {
+      color: var(--danger-text);
+    }
     .save-hint {
       margin: 6px 0 0;
       color: var(--text-muted);
@@ -108,10 +133,54 @@ import type { ConfigEditor } from './config-editor';
   `,
 })
 export class ConfigSaveBar {
+  private readonly document = inject(DOCUMENT);
   readonly editor = input.required<ConfigEditor>();
   readonly title = input('Confirmar cambios');
 
   readonly simulateRole = ACTION_ROLES.simulateFormula;
+  /** How the last simulation of the draft went, while there are changes (null when there is nothing to say). */
+  readonly simulationNote = computed(() => {
+    const editor = this.editor();
+    if (!editor.simulates || editor.changeCount() === 0) return null;
+    const simulation = editor.simulation;
+    switch (simulation.status()) {
+      case 'loading':
+        return { text: 'Simulando…', error: false, link: false };
+      case 'error':
+        return {
+          text: `No se pudo simular: ${simulation.error()?.message ?? 'error desconocido.'}`,
+          error: true,
+          link: true,
+        };
+      case 'ready': {
+        // A draft changed after simulating: the hint below already asks to simulate again.
+        if (editor.simulationStale()) return null;
+        const changed = simulation.value()?.result?.changed_findings;
+        const text =
+          changed === undefined
+            ? 'Simulación lista.'
+            : `Simulación lista: ${changed} ${changed === 1 ? 'hallazgo cambiaría' : 'hallazgos cambiarían'} de nivel.`;
+        return { text, error: false, link: true };
+      }
+      default:
+        return null;
+    }
+  });
+
+  /** Scrolls to the simulation panel of the screen and puts the focus on its title. */
+  showSimulation(): void {
+    const title = this.document.getElementById('simulation-title');
+    if (!title) return;
+    const reduced = this.document.defaultView?.matchMedia?.(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    const section = title.closest('section') ?? title;
+    if (typeof section.scrollIntoView === 'function') {
+      section.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
+    }
+    title.focus({ preventScroll: true });
+  }
+
   readonly needsSimulation = computed(() => {
     const editor = this.editor();
     return (

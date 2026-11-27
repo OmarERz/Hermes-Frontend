@@ -163,18 +163,22 @@ describe('AgentsHistoryPage', SCREEN, () => {
       expect(layout.classList).not.toContain('has-detail');
       expect(panel.classList).toContain('is-empty');
 
-      (eventRows(element)[0].querySelector('button') as HTMLButtonElement).click();
+      const opener = eventRows(element)[0].querySelector('button') as HTMLButtonElement;
+      opener.click();
       fixture.detectChanges();
       await fixture.whenStable();
       expect(layout.classList).toContain('has-detail');
       expect(panel.classList).not.toContain('is-empty');
       expect(scroll).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
+      // Focus goes to the detail, and back to its «Detalle» button when it closes.
+      expect(document.activeElement).toBe(panel.querySelector('h2'));
 
       (element.querySelector('.detail-panel header button') as HTMLButtonElement).click();
       fixture.detectChanges();
       await fixture.whenStable();
       expect(layout.classList).not.toContain('has-detail');
       expect(panel.classList).toContain('is-empty');
+      expect(document.activeElement).toBe(opener);
     } finally {
       HTMLElement.prototype.scrollIntoView = original;
     }

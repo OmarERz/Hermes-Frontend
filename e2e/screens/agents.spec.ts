@@ -122,6 +122,8 @@ test.describe('agents as reader', () => {
     await run.getByRole('button', { name: 'Detalle' }).click();
     await expect(layout).toHaveClass(/has-detail/);
     await expect(detail.getByRole('heading', { name: /^Detalle · / })).toBeInViewport();
+    // The focus follows: the next Tab goes through the detail, not back through the table.
+    await expect(detail.getByRole('heading', { name: /^Detalle · / })).toBeFocused();
     // Both boxes in one read: the page is still scrolling the detail into view.
     const gaps = () =>
       page.evaluate(() => {
