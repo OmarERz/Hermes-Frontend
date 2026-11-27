@@ -118,7 +118,7 @@ test.describe('agents as reader', () => {
   test('shows the metrics board by section and the daily cost chart', async ({ page }) => {
     await page.goto('/metricas');
     await expect(page.getByRole('heading', { name: 'Juez', exact: true })).toBeVisible();
-    await expect(page.locator('[data-metric="judge_ladder_level"] strong')).toHaveText(/·/);
+    await expect(page.locator('[data-metric="judge_ladder_level"] .kpi-value')).toHaveText(/·/);
     await expect(page.getByRole('heading', { name: 'Costo de IA por día' })).toBeVisible();
     await expect(page.locator('.cost-chart svg')).toBeVisible();
     await settle(page);

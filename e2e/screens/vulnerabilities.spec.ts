@@ -84,9 +84,11 @@ test.describe('vulnerabilities as reader', () => {
 
   test('compares raw cvss with the final urgency', async ({ page }) => {
     await page.goto('/comparacion');
-    await expect(page.getByRole('region', { name: 'Indicadores' })).toContainText(
-      /Reclasificados\s*\d+(\.\d+)? %/,
-    );
+    const reclassified = page
+      .getByRole('region', { name: 'Indicadores' })
+      .locator('app-kpi-card')
+      .filter({ hasText: 'Reclasificados' });
+    await expect(reclassified.locator('.kpi-value')).toHaveText(/^\d+(\.\d+)? %$/);
     const matrix = page.getByRole('region', { name: 'Matriz de reclasificación' });
     await expect(matrix.getByRole('rowheader', { name: 'Crítica' })).toBeVisible();
   });
