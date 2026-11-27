@@ -1,0 +1,185 @@
+/* Only what the prototype's Feeds design (feeds-inteligencia.css, global) does not have. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.notice-error {
+  border-color: color-mix(in srgb, var(--danger-text) 55%, var(--border));
+  color: var(--danger-text);
+}
+.notice-error svg {
+  color: var(--danger-text);
+}
+.sources-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+}
+.level-filters button {
+  min-height: 38px;
+  padding: 6px 13px;
+}
+.lock-chip {
+  font-size: calc(13px + var(--font-size-increase));
+  line-height: 1;
+}
+.level-chip {
+  font-weight: 700;
+}
+.health {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.health::before {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: #16bf77;
+  content: '';
+}
+.health[data-health='degraded']::before {
+  background: #f5a524;
+}
+.health[data-health='failing']::before {
+  background: #ff4d6d;
+}
+.feed-demo-tag.health {
+  font-size: calc(10px + var(--font-size-increase));
+}
+.source-description {
+  margin: 12px 4px 0;
+  color: var(--text-secondary);
+  font-size: calc(13px + var(--font-size-increase));
+  line-height: 1.5;
+}
+.sources-health > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sources-health .health-count {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: calc(11px + var(--font-size-increase));
+}
+.table-scroll {
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+.table-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: calc(12px + var(--font-size-increase));
+}
+th {
+  padding: 9px 8px;
+  background: var(--surface-soft);
+  color: var(--text-primary);
+  font-size: calc(11px + var(--font-size-increase));
+  white-space: nowrap;
+}
+th:first-child {
+  border-radius: 7px 0 0 7px;
+}
+th:last-child {
+  border-radius: 0 7px 7px 0;
+}
+td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+td:first-child {
+  white-space: nowrap;
+}
+.numeric {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.selected-row td {
+  background: var(--accent-wash);
+}
+.row-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.row-link:hover {
+  color: var(--accent);
+}
+.row-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.level-pill {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--violet-wash);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.add-source-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 8px 17px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: linear-gradient(110deg, #ed079b, #a90be2);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.add-source-button svg {
+  width: 19px;
+  height: 19px;
+}
+.add-source-button:focus-visible {
+  outline: 3px solid var(--accent-lilac);
+  outline-offset: 3px;
+}
+.level-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.level-select select {
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 700;
+}
+.level-select select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

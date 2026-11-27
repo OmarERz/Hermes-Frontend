@@ -1,0 +1,145 @@
+<div class="assets-view connections-view">
+  <app-banner-pagina
+    titulo="Conexiones"
+    descripcion="Estado de los servicios externos de Hermes: iTop, el modelo de IA, Firebase y las fuentes de datos. Aquí solo se verifican; las llaves se configuran en el servidor."
+    [icono]="bannerIcon"
+  />
+
+  <section class="stats-grid" aria-label="Resumen de conexiones">
+    <article class="stat-card">
+      <span><svg lucidePlug aria-hidden="true"></svg></span><small>Conexiones</small>
+      <strong [class.unknown]="total() === null">{{ total() ?? '—' }}</strong>
+    </article>
+    <article class="stat-card">
+      <span><svg lucideCircleCheck aria-hidden="true"></svg></span><small>Funcionan</small>
+      <strong [class.unknown]="okCount() === null">{{ okCount() ?? '—' }}</strong>
+    </article>
+    <article class="stat-card">
+      <span class="warning"><svg lucideCircleAlert aria-hidden="true"></svg></span
+      ><small>Con falla o sin configurar</small>
+      <strong [class.unknown]="problemCount() === null">{{ problemCount() ?? '—' }}</strong>
+    </article>
+    <article class="stat-card">
+      <span><svg lucideClock aria-hidden="true"></svg></span><small>Última comprobación</small>
+      <strong class="moment" [class.unknown]="lastCheck() === null">{{
+        lastCheck() ?? '—'
+      }}</strong>
+    </article>
+  </section>
+
+  <div class="action-row" *appIfRole="testRole">
+    <button
+      type="button"
+      class="primary-action test-all"
+      [disabled]="busy() || load.status() !== 'ready'"
+      [attr.aria-busy]="testing() === 'all'"
+      (click)="test(null)"
+    >
+      <svg lucideRefreshCw aria-hidden="true"></svg>
+      {{ testing() === 'all' ? 'Probando todas…' : 'Probar todas' }}
+    </button>
+  </div>
+
+  @if (notice(); as message) {
+    <p class="connections-notice" role="status">{{ message }}</p>
+  }
+  @if (testError(); as problem) {
+    <p class="connections-notice error" role="alert">{{ problem }}</p>
+  }
+
+  @switch (load.status()) {
+    @case ('error') {
+      <section class="panel">
+        <app-async-state state="error" [error]="load.error()" (retry)="reload()" />
+      </section>
+    }
+    @case ('ready') {
+      @for (group of groups(); track group.id) {
+        <section
+          class="panel inventory connections-panel"
+          [attr.aria-labelledby]="'connections-' + group.id"
+        >
+          <header>
+            <div class="inventory-title">
+              @if (group.id === 'services') {
+                <svg lucideServer aria-hidden="true"></svg>
+              } @else {
+                <svg lucideDatabase aria-hidden="true"></svg>
+              }
+              <h2 [id]="'connections-' + group.id">{{ group.title }}</h2>
+            </div>
+            <span>{{ group.rows.length }}</span>
+          </header>
+          <div
+            class="table-scroll"
+            role="region"
+            [attr.aria-label]="group.title + '; desplazamiento horizontal'"
+            tabindex="0"
+          >
+            <table class="connections-table">
+              <thead>
+                <tr>
+                  <th scope="col">Conexión</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Detalle</th>
+                  <th scope="col" class="numeric">Latencia</th>
+                  <th scope="col">Comprobada</th>
+                  <th scope="col">Última vez correcta</th>
+                  <th *appIfRole="testRole" scope="col"><span class="sr-only">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of group.rows; track row.name) {
+                  <tr [attr.data-name]="row.name">
+                    <td>
+                      <strong>{{ row.title }}</strong
+                      ><small>{{ row.purpose }}</small>
+                    </td>
+                    <td>
+                      <span class="connection-state" [attr.data-state]="row.state"
+                        >{{ row.state === 'ok' ? '✅' : '❌' }} {{ row.stateLabel }}</span
+                      >
+                    </td>
+                    <td class="detail">{{ row.detail }}</td>
+                    <td class="numeric">{{ row.latency }}</td>
+                    <td>{{ row.checkedAt }}</td>
+                    <td>{{ row.lastOkAt }}</td>
+                    <td *appIfRole="testRole" class="row-actions">
+                      <button
+                        type="button"
+                        class="test-one"
+                        [disabled]="isTesting(row.name)"
+                        [attr.aria-busy]="isTesting(row.name)"
+                        [attr.aria-label]="'Probar de nuevo ' + row.title"
+                        (click)="test(row.name)"
+                      >
+                        <svg lucideRefreshCw aria-hidden="true"></svg>
+                        {{ isTesting(row.name) ? 'Probando…' : 'Probar de nuevo' }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      } @empty {
+        <section class="panel">
+          <app-async-state state="empty" emptyText="La API no reportó conexiones." />
+        </section>
+      }
+    }
+    @default {
+      <section class="panel">
+        <app-async-state state="loading" loadingText="Cargando el estado de las conexiones…" />
+      </section>
+    }
+  }
+
+  <p class="connections-footnote">
+    Hermes solo verifica las conexiones: las llaves se configuran en el servidor (<code>.env</code>
+    o Docker secrets) y nunca se capturan ni se muestran aquí. El estado se reutiliza hasta 5
+    minutos; «Probar de nuevo» repite la comprobación, y una conexión comprobada hace menos de 30
+    segundos conserva su resultado.
+  </p>
+</div>

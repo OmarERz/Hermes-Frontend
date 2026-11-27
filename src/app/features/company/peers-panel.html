@@ -1,0 +1,268 @@
+<section class="panel inventory company-panel" aria-labelledby="peers-title">
+  <header>
+    <div class="inventory-title">
+      <svg lucideUsers aria-hidden="true"></svg>
+      <h2 id="peers-title">Empresas pares</h2>
+    </div>
+    @if (mode() === 'closed') {
+      <button *appIfRole="editRole" type="button" class="panel-action" (click)="startNew()">
+        <svg lucidePlus aria-hidden="true"></svg> Agregar empresa
+      </button>
+    }
+  </header>
+  <p class="panel-hint">
+    Empresas del mismo sector que Hermes vigila en las noticias: su nombre y sus alias entran al
+    filtro de noticias, y un ataque contra una de ellas cuenta como relevante (R3).
+  </p>
+  @if (notice(); as message) {
+    <p class="panel-notice" role="status">{{ message }}</p>
+  }
+
+  @if (mode() !== 'closed') {
+    <form
+      class="company-form peer-form"
+      novalidate
+      (ngSubmit)="save()"
+      aria-labelledby="peer-form-title"
+    >
+      <h3 id="peer-form-title" class="wide">
+        {{ mode() === 'new' ? 'Nueva empresa par' : 'Editar empresa par' }}
+      </h3>
+      <label
+        >Nombre
+        <input
+          name="peer-name"
+          maxlength="200"
+          autocomplete="off"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)"
+          [attr.aria-invalid]="invalid('name')"
+          [attr.aria-describedby]="problems().name ? 'peer-name-error' : null"
+        />
+        @if (problems().name; as problem) {
+          <small class="field-error" id="peer-name-error">{{ problem }}</small>
+        }
+      </label>
+      <label
+        >Dominio (opcional)
+        <input
+          name="peer-domain"
+          maxlength="253"
+          autocomplete="off"
+          placeholder="pagos.example"
+          [ngModel]="domain()"
+          (ngModelChange)="domain.set($event)"
+          [attr.aria-invalid]="invalid('domain')"
+          [attr.aria-describedby]="problems().domain ? 'peer-domain-error' : null"
+        />
+        @if (problems().domain; as problem) {
+          <small class="field-error" id="peer-domain-error">{{ problem }}</small>
+        }
+      </label>
+      <label
+        >Sector
+        <select
+          name="peer-sector"
+          [ngModel]="sector()"
+          (ngModelChange)="sector.set($event)"
+          [attr.aria-invalid]="invalid('sector')"
+          [attr.aria-describedby]="problems().sector ? 'peer-sector-error' : null"
+        >
+          <option value="" disabled>Elige un sector</option>
+          @for (code of sectorOptions(); track code) {
+            <option [value]="code">{{ sectorName(code) }}</option>
+          }
+        </select>
+        @if (problems().sector; as problem) {
+          <small class="field-error" id="peer-sector-error">{{ problem }}</small>
+        }
+      </label>
+      <label
+        >País (código ISO de dos letras)
+        <input
+          name="peer-country"
+          maxlength="2"
+          autocomplete="off"
+          placeholder="MX"
+          [ngModel]="country()"
+          (ngModelChange)="country.set($event)"
+          [attr.aria-invalid]="invalid('country')"
+          [attr.aria-describedby]="problems().country ? 'peer-country-error' : null"
+        />
+        @if (problems().country; as problem) {
+          <small class="field-error" id="peer-country-error">{{ problem }}</small>
+        }
+      </label>
+
+      <fieldset class="wide">
+        <legend>Alias en las noticias</legend>
+        <div class="chips" aria-live="polite">
+          @for (alias of aliases(); track alias) {
+            <span class="chip"
+              >{{ alias }}
+              <button
+                type="button"
+                [attr.aria-label]="'Quitar alias ' + alias"
+                (click)="removeAlias(alias)"
+              >
+                <svg lucideX aria-hidden="true"></svg></button
+            ></span>
+          } @empty {
+            <span class="muted">Sin alias.</span>
+          }
+        </div>
+        <div class="inline-add">
+          <label
+            >Alias
+            <input
+              name="peer-alias"
+              maxlength="200"
+              autocomplete="off"
+              [ngModel]="aliasInput()"
+              (ngModelChange)="aliasInput.set($event)"
+              (keydown.enter)="addAlias($event)"
+              [attr.aria-invalid]="!!aliasError() || invalid('aliases')"
+              [attr.aria-describedby]="aliasError() ? 'peer-alias-error' : null"
+            />
+          </label>
+          <button type="button" class="secondary-button" (click)="addAlias()">Agregar alias</button>
+        </div>
+        @if (aliasError(); as problem) {
+          <small class="field-error" id="peer-alias-error" role="alert">{{ problem }}</small>
+        }
+      </fieldset>
+
+      @if (saveError(); as failure) {
+        <p class="panel-notice error wide" role="alert">{{ failure.message }}</p>
+      }
+      <footer class="wide">
+        <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelForm()">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="saving()"
+          [attr.aria-busy]="saving()"
+        >
+          {{ saving() ? 'Guardando…' : mode() === 'new' ? 'Agregar empresa' : 'Guardar empresa' }}
+        </button>
+      </footer>
+    </form>
+  }
+
+  @switch (pager.state.status()) {
+    @case ('error') {
+      <app-async-state state="error" [error]="pager.state.error()" (retry)="pager.reload()" />
+    }
+    @case ('ready') {
+      @if (pager.items().length) {
+        <div class="table-scroll" role="region" aria-label="Empresas pares" tabindex="0">
+          <table class="peers-table">
+            <thead>
+              <tr>
+                <th scope="col">Empresa</th>
+                <th scope="col">Alias</th>
+                <th scope="col">Sector</th>
+                <th scope="col">País</th>
+                <th *appIfRole="editRole" scope="col"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (peer of pager.items(); track peer.id) {
+                <tr>
+                  <td>
+                    <strong>{{ peer.name }}</strong>
+                    @if (peer.domain) {
+                      <small>{{ peer.domain }}</small>
+                    }
+                  </td>
+                  <td>{{ peer.aliases?.length ? peer.aliases!.join(', ') : '—' }}</td>
+                  <td>{{ sectorName(peer.sector) }}</td>
+                  <td>{{ countryName(peer.country) }} ({{ peer.country }})</td>
+                  <td *appIfRole="editRole" class="row-actions">
+                    @if (removingId() === peer.id) {
+                      <span class="remove-question">¿Quitar {{ peer.name }}?</span>
+                      <button
+                        type="button"
+                        class="row-action danger confirm-remove"
+                        [disabled]="removing()"
+                        [attr.aria-busy]="removing()"
+                        (click)="confirmRemove(peer)"
+                      >
+                        {{ removing() ? 'Quitando…' : 'Quitar' }}
+                      </button>
+                      <button
+                        type="button"
+                        class="row-action cancel-remove"
+                        [disabled]="removing()"
+                        (click)="cancelRemove()"
+                      >
+                        Cancelar
+                      </button>
+                      @if (removeError(); as problem) {
+                        <small class="field-error" role="alert">{{ problem }}</small>
+                      }
+                    } @else {
+                      <button
+                        type="button"
+                        class="row-action"
+                        [attr.aria-label]="'Editar ' + peer.name"
+                        (click)="startEdit(peer)"
+                      >
+                        <svg lucidePencil aria-hidden="true"></svg> Editar
+                      </button>
+                      <button
+                        type="button"
+                        class="row-action danger"
+                        [attr.aria-label]="'Quitar ' + peer.name"
+                        (click)="askRemove(peer)"
+                      >
+                        <svg lucideTrash2 aria-hidden="true"></svg> Quitar
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <app-async-state
+          state="empty"
+          [emptyText]="
+            pager.hasPrevious()
+              ? 'No hay más empresas pares.'
+              : 'Todavía no hay empresas pares: R3 solo usa el sector del perfil.'
+          "
+        />
+      }
+      @if (pager.hasPrevious() || pager.hasNext()) {
+        <footer class="peers-pages">
+          <span>Página {{ pager.pageIndex() + 1 }}</span>
+          <div class="pagination">
+            <button
+              type="button"
+              aria-label="Página anterior"
+              [disabled]="!pager.hasPrevious()"
+              (click)="pager.previous()"
+            >
+              <svg lucideChevronLeft aria-hidden="true"></svg>
+            </button>
+            <button
+              type="button"
+              aria-label="Página siguiente"
+              [disabled]="!pager.hasNext()"
+              (click)="pager.next()"
+            >
+              <svg lucideChevronRight aria-hidden="true"></svg>
+            </button>
+          </div>
+        </footer>
+      }
+    }
+    @default {
+      <app-async-state state="loading" loadingText="Cargando las empresas pares…" />
+    }
+  }
+</section>

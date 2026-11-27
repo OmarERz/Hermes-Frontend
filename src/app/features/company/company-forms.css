@@ -1,0 +1,229 @@
+/* Forms and facts of the Empresa panels; the panel, header and table come from the Activos design (assets-view). */
+:host {
+  display: block;
+  min-width: 0;
+}
+.company-panel {
+  height: 100%;
+}
+.panel-hint {
+  margin: -4px 0 14px;
+  color: var(--text-muted);
+  font-size: calc(12px + var(--font-size-increase));
+  line-height: 1.45;
+}
+.panel-notice,
+.form-note {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: calc(12px + var(--font-size-increase));
+}
+.panel-notice.error {
+  border-color: color-mix(in srgb, var(--danger-text) 55%, var(--border));
+  color: var(--danger-text);
+}
+.panel-action,
+.primary-button,
+.secondary-button,
+.row-action {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: calc(12px + var(--font-size-increase));
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.panel-action,
+.primary-button {
+  border-color: transparent;
+  background: var(--accent);
+  color: #fff;
+}
+.panel-action svg,
+.row-action svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+.row-action {
+  min-height: 30px;
+  padding: 0 9px;
+}
+.row-action.danger {
+  color: var(--danger-text);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+}
+.facts div {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+.facts dt {
+  color: var(--text-muted);
+  font-size: calc(11px + var(--font-size-increase));
+  font-weight: 600;
+}
+.facts dd {
+  margin: 4px 0 0;
+  color: var(--text-primary);
+  font-size: calc(13px + var(--font-size-increase));
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.company-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+.company-form .wide {
+  grid-column: 1 / -1;
+}
+.company-form label,
+.dialog-form label {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: calc(12px + var(--font-size-increase));
+  font-weight: 650;
+}
+.company-form input,
+.company-form select {
+  min-width: 0;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 400;
+}
+[aria-invalid='true'] {
+  border-color: var(--danger-text) !important;
+}
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+legend {
+  padding: 0 5px;
+  color: var(--text-primary);
+  font-size: calc(12px + var(--font-size-increase));
+  font-weight: 700;
+}
+.check-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.company-form label.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 500;
+}
+.company-form label.check input {
+  min-height: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 4px 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--violet-wash);
+  color: var(--text-primary);
+  font-size: calc(12px + var(--font-size-increase));
+  font-weight: 600;
+}
+.chip button {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.chip button svg {
+  width: 13px;
+  height: 13px;
+}
+.muted {
+  color: var(--text-muted);
+  font-size: calc(12px + var(--font-size-increase));
+}
+.inline-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 9px;
+}
+.inline-add label {
+  flex: 0 1 220px;
+}
+.field-error {
+  color: var(--danger-text);
+  font-size: calc(11px + var(--font-size-increase));
+  font-weight: 600;
+}
+.company-form footer,
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+}
+@media (max-width: 760px) {
+  .facts,
+  .company-form {
+    grid-template-columns: 1fr;
+  }
+}
