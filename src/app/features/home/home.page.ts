@@ -72,11 +72,9 @@ export class HomePage {
   readonly assetCount = computed(() =>
     cardValue(this.inventory, (summary) => formatCount(summary.total_assets)),
   );
-  /** Tickets not resolved yet: open in iTop plus the ones waiting to be created there. */
+  /** Tickets open in iTop (`open`); the ones still waiting to be created there are not open tickets yet. */
   readonly openTickets = computed(() =>
-    cardValue(this.tickets, (summary) =>
-      formatCount((summary.by_status['open'] ?? 0) + (summary.by_status['pending_creation'] ?? 0)),
-    ),
+    cardValue(this.tickets, (summary) => formatCount(summary.by_status['open'] ?? 0)),
   );
   readonly runSuccess = computed(() =>
     cardValue(this.telemetry, (summary) => formatPercent(summary.run_success_percent)),

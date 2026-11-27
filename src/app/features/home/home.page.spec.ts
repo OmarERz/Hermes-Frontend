@@ -52,7 +52,7 @@ describe('HomePage', () => {
     expect(cards(element)).toEqual([
       '32 Software instalado',
       '28 Activos en iTop',
-      '9 Tickets abiertos',
+      '7 Tickets abiertos',
       '88.9 % Éxito de las corridas (7 días)',
     ]);
     expect(element.querySelector('.data-origin')?.textContent).toContain(
@@ -128,6 +128,15 @@ describe('HomePage', () => {
     expect(service.ticketSummary).toHaveBeenCalledTimes(2);
     expect(service.telemetrySummary).toHaveBeenCalledTimes(2);
     expect(service.inventorySummary).toHaveBeenCalledTimes(1);
+  });
+
+  it('counts only the tickets open in iTop, not the ones waiting to be created', async () => {
+    const service = new FakeService();
+    service.ticketSummary.mockReturnValue(
+      of({ ...TICKET_SUMMARY, by_status: { pending_creation: 4, resolved: 1 } }),
+    );
+    const { element } = await render(service);
+    expect(cards(element)[2]).toBe('0 Tickets abiertos');
   });
 
   it('links the four main modules', async () => {
