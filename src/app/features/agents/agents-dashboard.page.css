@@ -94,8 +94,11 @@
   font-size: calc((13px) + var(--font-size-increase));
 }
 
-:host-context(.app-shell[data-theme='dark']) .chart-select {
+:host-context(.app-shell[data-theme='dark']) .chart-select,
+:host-context(.app-shell[data-theme='dark']) .performance-heading select {
   border-color: rgba(217, 168, 255, 0.28);
+  background: var(--surface-raised);
+  color: var(--text-primary);
 }
 :host-context(.app-shell[data-theme='dark']) .budget,
 :host-context(.app-shell[data-theme='dark']) .last-run,
