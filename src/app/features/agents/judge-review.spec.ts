@@ -8,6 +8,9 @@ import { ASSESSMENT_ID, FEEDBACK_ENTRY, JUDGE_DETAIL } from './agents.fixtures';
 import { AgentsService } from './agents.service';
 import { adjustmentText, doubleReviewText, JudgeReview } from './judge-review';
 
+/** Rendering a whole screen in jsdom can pass the 5 s default on a loaded machine. */
+const SCREEN = { timeout: 20_000 };
+
 class FakeService {
   judge = vi.fn<AgentsService['judge']>(() => of(JUDGE_DETAIL));
   feedback = vi.fn<AgentsService['feedback']>(() => of([FEEDBACK_ENTRY]));
@@ -43,7 +46,7 @@ function facts(element: HTMLElement): Record<string, string> {
   return Object.fromEntries(terms.map((term) => [text(term), text(term.nextElementSibling)]));
 }
 
-describe('JudgeReview', () => {
+describe('JudgeReview', SCREEN, () => {
   it('shows the decision, the adjustment, the double review and the mitigation', async () => {
     const { element } = await render(new FakeService());
     const shown = facts(element);

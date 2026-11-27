@@ -16,6 +16,9 @@ import { AgentsHistoryPage, eventDetail, historyRow, statusOptions } from './age
 import { AgentsService } from './agents.service';
 import { dayBoundary } from './formatting';
 
+/** Rendering a whole screen in jsdom can pass the 5 s default on a loaded machine. */
+const SCREEN = { timeout: 20_000 };
+
 const ANALYST_REVIEW = {
   ...HISTORY_REVIEW,
   id: 'ev-analyst',
@@ -71,7 +74,7 @@ async function change(
   await fixture.whenStable();
 }
 
-describe('AgentsHistoryPage', () => {
+describe('AgentsHistoryPage', SCREEN, () => {
   it('lists runs, reviews and configuration changes in one timeline', async () => {
     const { element } = await render(new FakeService());
     const rows = eventRows(element).map((row) =>

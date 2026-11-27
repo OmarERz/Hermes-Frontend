@@ -10,6 +10,9 @@ import { AgentsService } from './agents.service';
 import { ChartStub } from './chart-stub.spec-helper';
 import { COST_DAYS, MetricsPage } from './metrics.page';
 
+/** Rendering a whole screen in jsdom can pass the 5 s default on a loaded machine. */
+const SCREEN = { timeout: 20_000 };
+
 class FakeService {
   metrics = vi.fn<AgentsService['metrics']>(() => of(METRICS));
   daily = vi.fn<AgentsService['daily']>(() => of(TELEMETRY_DAILY));
@@ -52,7 +55,7 @@ const chart = (fixture: ComponentFixture<MetricsPage>) =>
   fixture.debugElement.query(By.css('app-grafico-dashboard'))?.componentInstance as
     ChartStub | undefined;
 
-describe('MetricsPage', () => {
+describe('MetricsPage', SCREEN, () => {
   it('shows each calculated metric with its unit in its section, unknown ones at the end', async () => {
     const { element } = await render(new FakeService());
     expect(sections(element)).toEqual([

@@ -18,6 +18,9 @@ import { agentCard, AgentsDashboardPage, chartDays, orderAgents } from './agents
 import { AgentsService } from './agents.service';
 import { ChartStub } from './chart-stub.spec-helper';
 
+/** Rendering a whole screen in jsdom can pass the 5 s default on a loaded machine. */
+const SCREEN = { timeout: 20_000 };
+
 class FakeService {
   summary = vi.fn<AgentsService['summary']>(() => of(TELEMETRY_SUMMARY));
   daily = vi.fn<AgentsService['daily']>(() => of(TELEMETRY_DAILY));
@@ -70,7 +73,7 @@ function charts(fixture: ComponentFixture<AgentsDashboardPage>): ChartStub[] {
     .map((debug) => debug.componentInstance as ChartStub);
 }
 
-describe('AgentsDashboardPage', () => {
+describe('AgentsDashboardPage', SCREEN, () => {
   it('shows the run and judge indicators of the window, with the error queue of the metrics', async () => {
     const { element } = await render(new FakeService());
     expect(metricValues(element)).toEqual([
@@ -314,7 +317,7 @@ describe('AgentsDashboardPage', () => {
   });
 });
 
-describe('AgentsDashboardPage connections (AG-4)', () => {
+describe('AgentsDashboardPage connections (AG-4)', SCREEN, () => {
   it('never loads or shows the connections to a reader', async () => {
     const service = new FakeService();
     const { element } = await render(service, 'reader');

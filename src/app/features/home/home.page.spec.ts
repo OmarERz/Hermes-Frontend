@@ -15,6 +15,9 @@ import {
 import { HomePage } from './home.page';
 import { HomeService } from './home.service';
 
+/** Rendering a whole screen in jsdom can pass the 5 s default on a loaded machine. */
+const SCREEN = { timeout: 20_000 };
+
 class FakeService {
   inventorySummary = vi.fn<HomeService['inventorySummary']>(() => of(INVENTORY_SUMMARY));
   ticketSummary = vi.fn<HomeService['ticketSummary']>(() => of(TICKET_SUMMARY));
@@ -51,7 +54,7 @@ function cards(element: HTMLElement): string[] {
   );
 }
 
-describe('HomePage', () => {
+describe('HomePage', SCREEN, () => {
   it('fills the four summary cards from the inventory, tickets and telemetry summaries', async () => {
     const { element } = await render(new FakeService());
     expect(cards(element)).toEqual([

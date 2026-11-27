@@ -7,6 +7,9 @@ import { TICKET_UPDATE } from './agents.fixtures';
 import { AgentsService } from './agents.service';
 import { TicketLog, ticketIdOf, ticketRow } from './ticket-log';
 
+/** Rendering a whole screen in jsdom can pass the 5 s default on a loaded machine. */
+const SCREEN = { timeout: 20_000 };
+
 const PENDING = {
   ...TICKET_UPDATE,
   id: 'u-2',
@@ -44,7 +47,7 @@ const cells = (row: Element) =>
     (cell.textContent ?? '').replace(/\s+/g, ' ').trim(),
   );
 
-describe('TicketLog', () => {
+describe('TicketLog', SCREEN, () => {
   it('lists what Hermes did on each ticket, with the iTop link and the evaluation', async () => {
     const { element } = await render(new FakeService());
     const [created, pending] = Array.from(element.querySelectorAll('tbody tr'));

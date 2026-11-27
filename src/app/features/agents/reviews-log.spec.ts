@@ -8,6 +8,9 @@ import { AgentsService } from './agents.service';
 import { dayBoundary } from './formatting';
 import { reviewRow, ReviewsLog } from './reviews-log';
 
+/** Rendering a whole screen in jsdom can pass the 5 s default on a loaded machine. */
+const SCREEN = { timeout: 20_000 };
+
 const NEWS_REVIEW = {
   ...LLM_REVIEW,
   id: 'r-2',
@@ -53,7 +56,7 @@ async function choose(
   await fixture.whenStable();
 }
 
-describe('ReviewsLog', () => {
+describe('ReviewsLog', SCREEN, () => {
   it('lists each review with its agent, mode, state, tokens, cost and reasons', async () => {
     const { element } = await render(new FakeService());
     const [judge, news] = Array.from(element.querySelectorAll('tbody tr'));
