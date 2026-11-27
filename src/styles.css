@@ -655,6 +655,14 @@ h3 {
   overscroll-behavior-inline: contain;
 }
 
+/*
+ * Every horizontal scroller of a table is the containing block of what it holds: the screen-reader-only texts of
+ * wide tables (.sr-only, .visually-hidden: position absolute) otherwise escape it and widen the page (G13).
+ */
+.table-scroll {
+  position: relative;
+}
+
 @media (max-width: 560px) {
   .page-content {
     overflow-x: clip;
