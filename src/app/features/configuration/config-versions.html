@@ -46,7 +46,7 @@
                   <button
                     *appIfRole="restoreRole"
                     type="button"
-                    class="cancel-button"
+                    class="btn btn-secondary btn-sm"
                     [attr.aria-label]="'Restaurar la versión ' + row.version"
                     (click)="ask(row)"
                   >
@@ -64,7 +64,7 @@
     <nav class="versions-pager" aria-label="Páginas del historial">
       <button
         type="button"
-        class="cancel-button"
+        class="btn btn-secondary btn-sm btn-icon"
         aria-label="Página anterior"
         [disabled]="!pager.hasPrevious() || pager.state.loading()"
         (click)="pager.previous()"
@@ -74,7 +74,7 @@
       <span>Página {{ pager.pageIndex() + 1 }}</span>
       <button
         type="button"
-        class="cancel-button"
+        class="btn btn-secondary btn-sm btn-icon"
         aria-label="Página siguiente"
         [disabled]="!pager.hasNext()"
         (click)="pager.next()"

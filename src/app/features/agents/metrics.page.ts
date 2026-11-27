@@ -1,12 +1,12 @@
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { LucideChartColumn, LucideCoins, LucideDynamicIcon } from '@lucide/angular';
-import { AyudaTooltip } from '../../componentes/ayuda-tooltip/ayuda-tooltip';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { GraficoDashboard } from '../../componentes/grafico-dashboard/grafico-dashboard';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { KpiCard } from '../../shared/kpi-card';
 import { formatDateTime } from '../../shared/labels';
-import { dailyCostChart } from './agents-charts';
+import { dailyCostChart, hasCost } from './agents-charts';
 import { AgentsService, MetricsDashboard, TelemetryDaily } from './agents.service';
 import { groupMetrics } from './metric-groups';
 import { loadState } from './view-state';
@@ -24,9 +24,9 @@ export const COST_DAYS = 30;
   selector: 'app-metrics-page',
   imports: [
     AsyncStateComponent,
-    AyudaTooltip,
     BannerPagina,
     GraficoDashboard,
+    KpiCard,
     LucideCoins,
     LucideDynamicIcon,
   ],
@@ -54,10 +54,18 @@ export class MetricsPage {
     return metrics.every((metric) => metric.key === 'judge_ladder_level');
   });
 
-  readonly costChart = computed(() => {
-    const series = this.daily.status() === 'ready' ? (this.daily.value()?.series ?? []) : [];
-    return series.length ? dailyCostChart(series) : null;
-  });
+  private readonly costSeries = computed(() =>
+    this.daily.status() === 'ready' ? (this.daily.value()?.series ?? []) : [],
+  );
+  /** Null when no agent cost anything: a zero-filled chart would draw only its axes (G11, MET-3). */
+  readonly costChart = computed(() =>
+    hasCost(this.costSeries()) ? dailyCostChart(this.costSeries()) : null,
+  );
+  readonly costEmptyText = computed(() =>
+    this.costSeries().length
+      ? `La IA no tuvo costo en los últimos ${COST_DAYS} días.`
+      : 'No hay datos diarios.',
+  );
 
   constructor() {
     this.loadBoard();

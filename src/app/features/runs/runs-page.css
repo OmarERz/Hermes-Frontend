@@ -13,20 +13,6 @@
 .action-row {
   margin: 18px 0 14px;
 }
-.launch-scan:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
-.filters {
-  flex-wrap: wrap;
-}
-.filters .date-filter {
-  flex: 0 1 auto;
-  white-space: nowrap;
-}
-.filters .date-filter input {
-  width: auto;
-}
 .panel {
   margin-top: 15px;
 }
@@ -53,30 +39,7 @@ table.runs-table {
 .runs-table tr.selected-row td {
   background: var(--accent-wash, #fff0f9);
 }
-.run-status {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 10px;
-  font-size: calc(10px + var(--font-size-increase, 0px));
-  font-weight: 700;
-  white-space: nowrap;
-}
-.status-queued {
-  background: var(--surface-soft);
-  color: var(--text-secondary);
-}
-.status-running {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-.status-succeeded {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
-.status-failed {
-  background: var(--danger-bg);
-  color: var(--danger-text);
-}
+/* The run status is the shared <app-chip> (src/styles/chips.css). */
 .progress-cell {
   display: inline-flex;
   align-items: center;

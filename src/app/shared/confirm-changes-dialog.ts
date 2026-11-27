@@ -46,20 +46,24 @@ import { ChangeRow, isVersionConflict, VERSION_CONFLICT_MESSAGE } from './versio
         <footer>
           <button
             type="button"
-            class="cancel-button"
+            class="btn btn-secondary cancel-button"
             [disabled]="saving()"
             (click)="cancelled.emit()"
           >
             Cancelar
           </button>
           @if (conflict()) {
-            <button type="button" class="save-button" (click)="reloadRequested.emit()">
+            <button
+              type="button"
+              class="btn btn-primary save-button"
+              (click)="reloadRequested.emit()"
+            >
               Recargar
             </button>
           } @else {
             <button
               type="button"
-              class="save-button"
+              class="btn btn-primary save-button"
               [disabled]="saving()"
               [attr.aria-busy]="saving()"
               (click)="confirmed.emit()"

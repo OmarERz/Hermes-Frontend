@@ -2,9 +2,11 @@ import { Component, computed, input, output, signal } from '@angular/core';
 import { LucideGitCompareArrows } from '@lucide/angular';
 import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
+import { Chip } from '../../shared/chip';
 import { ItopLink } from '../../shared/itop-links';
 import {
   CLASSIFICATION_LABELS,
+  criticalityLabel,
   formatDateTime,
   LEVEL_LABELS,
   STATUS_LABELS,
@@ -12,13 +14,6 @@ import {
 import { ticketItopId, type Recommendation } from './feedback';
 import { FeedbackHistory } from './feedback-history';
 import { JudgeDetail } from './judge-detail';
-
-/** Spanish names of the iTop business criticality values; any other value is shown as iTop sends it. */
-const CRITICALITY_LABELS: Readonly<Record<string, string>> = {
-  high: 'Alta',
-  medium: 'Media',
-  low: 'Baja',
-};
 
 /** A score change with its sign, as FRO-13 writes it (`Juez +12`). */
 export function signed(points: number): string {
@@ -33,7 +28,7 @@ export function signed(points: number): string {
  */
 @Component({
   selector: 'app-recommendation-card',
-  imports: [FeedbackHistory, IfRoleDirective, ItopLink, JudgeDetail, LucideGitCompareArrows],
+  imports: [Chip, FeedbackHistory, IfRoleDirective, ItopLink, JudgeDetail, LucideGitCompareArrows],
   templateUrl: './recommendation-card.html',
   styleUrl: './recommendation-card.css',
 })
@@ -78,7 +73,7 @@ export class RecommendationCard {
     const today = CLASSIFICATION_LABELS[asset.classification];
     return {
       ...asset,
-      criticalityLabel: CRITICALITY_LABELS[asset.criticality] ?? asset.criticality,
+      criticalityLabel: criticalityLabel(asset.criticality),
       classificationLabel: atEvaluation,
       classificationToday:
         asset.classification === asset.classification_at_evaluation ? null : today,

@@ -18,6 +18,11 @@ describe('ForbiddenPage', () => {
     expect(alert?.textContent).toContain('No tienes permiso para ver esta sección');
     expect(alert?.querySelector('strong')?.textContent).toBe('Lector');
     expect(alert?.querySelector('a')?.getAttribute('href')).toBe('/inicio');
+    // Said once (SIN-1): the banner gives the reason, the card the role and the way back, as a button.
+    expect(element.querySelector('app-banner-pagina')?.textContent).not.toContain(
+      'No tienes permiso',
+    );
+    expect(alert?.querySelector('a')?.classList).toContain('btn-primary');
   });
 
   it('says so when there is no role', async () => {

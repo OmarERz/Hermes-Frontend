@@ -14,6 +14,7 @@ import {
   LucideLock,
   LucideRefreshCw,
   LucideShieldAlert,
+  LucideSlidersHorizontal,
   LucideTriangleAlert,
   LucideUser,
   LucideUsers,
@@ -22,6 +23,8 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
+import { Chip } from '../../shared/chip';
+import { KpiCard, kpiState } from '../../shared/kpi-card';
 import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   AssetRisk,
@@ -41,6 +44,7 @@ import {
   LEVEL_LABELS,
   LEVELS,
   STATUS_LABELS,
+  STATUS_TONES,
   STATUSES,
 } from '../../shared/labels';
 
@@ -104,6 +108,8 @@ function groupRow(group: VulnerabilityGroup, key: string): GroupTableRow {
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    Chip,
+    KpiCard,
     ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
@@ -115,6 +121,7 @@ function groupRow(group: VulnerabilityGroup, key: string): GroupTableRow {
     LucideLayers,
     LucideLock,
     LucideRefreshCw,
+    LucideSlidersHorizontal,
     LucideTriangleAlert,
     LucideUser,
     LucideUsers,
@@ -128,10 +135,12 @@ export class VulnerabilitiesPage {
   private readonly route = inject(ActivatedRoute);
 
   readonly bannerIcon = LucideShieldAlert;
+  readonly levelIcon = LucideTriangleAlert;
   readonly levels = LEVELS;
   readonly statuses = STATUSES;
   readonly levelLabels = LEVEL_LABELS;
   readonly statusLabels = STATUS_LABELS;
+  readonly statusTones = STATUS_TONES;
   readonly classificationLabels = CLASSIFICATION_LABELS;
   readonly classifications = CLASSIFICATIONS;
   readonly views = Object.keys(VIEW_LABELS) as VulnerabilityView[];
@@ -153,6 +162,19 @@ export class VulnerabilitiesPage {
   readonly dateFrom = signal('');
   readonly dateTo = signal('');
   readonly pageSize = signal(25);
+  /** «Más filtros» shows the five filters past the first four (VUL-1); they apply also while hidden. */
+  readonly moreOpen = signal(false);
+  /** Filters behind «Más filtros» with a value: the button counts them while they are hidden. */
+  readonly moreActive = computed(
+    () =>
+      [
+        this.classification(),
+        this.owner(),
+        this.custodian(),
+        this.dateFrom(),
+        this.dateTo(),
+      ].filter(Boolean).length,
+  );
 
   readonly filters = computed<VulnerabilityFilters>(() => ({
     band: this.band() || null,
@@ -176,6 +198,7 @@ export class VulnerabilitiesPage {
     this.service.listBands(this.filters(), cursor, this.pageSize()),
   );
   readonly counts = new AsyncState<LevelCounts>();
+  readonly countState = computed(() => kpiState(this.counts.status()));
 
   /** The pager of the current view (each view pages with its own cursors). */
   readonly pager = computed<CursorPager<unknown>>(() => {
@@ -262,6 +285,10 @@ export class VulnerabilitiesPage {
   refresh(): void {
     this.pager().first();
     this.counts.run(this.service.levelCounts(this.filters()));
+  }
+
+  toggleMore(): void {
+    this.moreOpen.update((open) => !open);
   }
 
   setView(view: VulnerabilityView): void {

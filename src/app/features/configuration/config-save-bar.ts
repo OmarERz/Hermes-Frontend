@@ -19,7 +19,7 @@ import type { ConfigEditor } from './config-editor';
         <ng-container *appIfRole="minimum">
           <button
             type="button"
-            class="cancel-button"
+            class="btn btn-secondary cancel-button"
             [disabled]="!editor().changeCount() || editor().saving()"
             (click)="editor().discard()"
           >
@@ -29,7 +29,7 @@ import type { ConfigEditor } from './config-editor';
             <button
               *appIfRole="simulateRole"
               type="button"
-              class="cancel-button"
+              class="btn btn-secondary cancel-button"
               [disabled]="!editor().canSimulate()"
               [attr.aria-busy]="editor().simulation.loading()"
               (click)="editor().simulate()"
@@ -39,7 +39,7 @@ import type { ConfigEditor } from './config-editor';
           }
           <button
             type="button"
-            class="save-button"
+            class="btn btn-primary save-button"
             [disabled]="!editor().canSave()"
             (click)="editor().openConfirm()"
           >

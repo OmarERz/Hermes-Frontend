@@ -158,9 +158,19 @@
   </section>
 
   <footer class="review-modal-actions">
-    <button type="button" class="review-cancel" [disabled]="sending()" (click)="close()">
+    <button
+      type="button"
+      class="btn btn-secondary review-cancel"
+      [disabled]="sending()"
+      (click)="close()"
+    >
       Cancelar</button
-    ><button type="button" class="review-save" [disabled]="sending()" (click)="save()">
+    ><button
+      type="button"
+      class="btn btn-primary review-save"
+      [disabled]="sending()"
+      (click)="save()"
+    >
       {{ sending() ? 'Guardando…' : 'Guardar feedback' }}
     </button>
   </footer>

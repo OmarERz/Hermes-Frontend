@@ -128,19 +128,18 @@ export const SCREENS: readonly Screen[] = [
   { id: 'comparison', path: '/comparacion', minRole: 'reader' },
   { id: 'tickets', path: '/tickets', minRole: 'reader' },
   { id: 'stix-export', path: '/exportacion-stix', minRole: 'analyst' },
-  { id: 'assets', path: '/activos', minRole: 'reader', pending: true },
+  { id: 'assets', path: '/activos', minRole: 'reader' },
   {
     id: 'asset-detail',
     path: '/activos',
     minRole: 'reader',
-    pending: true,
     open: async (page) => {
       await page.locator('main a[href^="/activos/"]').first().click();
       await page.waitForURL(/\/activos\/[^/]+$/);
     },
   },
-  { id: 'software', path: '/software', minRole: 'reader', pending: true },
-  { id: 'pending-inventory', path: '/pendientes-inventario', minRole: 'reader', pending: true },
+  { id: 'software', path: '/software', minRole: 'reader' },
+  { id: 'pending-inventory', path: '/pendientes-inventario', minRole: 'reader' },
   { id: 'judge-settings', path: '/configuracion-agente', minRole: 'reader' },
   { id: 'formula', path: '/formula', minRole: 'reader' },
   { id: 'parameters', path: '/parametros', minRole: 'reader' },

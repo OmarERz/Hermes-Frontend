@@ -12,18 +12,23 @@ import {
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { Chip } from '../../shared/chip';
 import { ItopLink } from '../../shared/itop-links';
+import { KpiCard, kpiState } from '../../shared/kpi-card';
 import {
   CLASSIFICATION_LABELS,
   formatDateTime,
   LEVEL_LABELS,
   STATUS_LABELS,
+  STATUS_TONES,
 } from '../../shared/labels';
 import {
   CATEGORY_LABELS,
   CRITICALITY_LABELS,
   exposureLabel,
   INSTALL_STATUS_LABELS,
+  INSTALL_STATUS_TONES,
+  InstallStatus,
   itopClassLabel,
   licenceValidity,
   text,
@@ -52,12 +57,12 @@ interface Fact {
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    Chip,
     ItopLink,
+    KpiCard,
     LucideArrowLeft,
-    LucideFlame,
     LucideLayers,
     LucideShieldAlert,
-    LucideTriangleAlert,
   ],
   templateUrl: './asset-detail.page.html',
   styleUrls: ['./inventory-chips.css', './asset-detail.page.css'],
@@ -68,6 +73,15 @@ export class AssetDetailPage {
   readonly bannerIcon = LucideMonitor;
   readonly levelLabels = LEVEL_LABELS;
   readonly statusLabels = STATUS_LABELS;
+  readonly statusTones = STATUS_TONES;
+  readonly stateTones = INSTALL_STATUS_TONES;
+  /** Icons of the indicator cards. */
+  readonly kpiIcons = {
+    risk: LucideShieldAlert,
+    findings: LucideTriangleAlert,
+    kev: LucideFlame,
+    software: LucideLayers,
+  };
   readonly formatDateTime = formatDateTime;
 
   readonly ciId = signal('');
@@ -132,7 +146,7 @@ export class AssetDetailPage {
       // One row per iTop installation: two of the same product and version on a CI are still two rows.
       key: `${index}-${item.software_id}-${item.version}`,
       categoryLabel: item.category ? CATEGORY_LABELS[item.category] : 'Sin dato',
-      statusKey: item.status ?? 'unknown',
+      statusKey: (item.status ?? 'unknown') as InstallStatus,
       statusLabel: INSTALL_STATUS_LABELS[item.status ?? 'unknown'],
       validity: item.licence ? licenceValidity(item.licence) : null,
     })),
@@ -140,6 +154,7 @@ export class AssetDetailPage {
   readonly softwareState = computed(() =>
     viewState(this.software, this.softwareRows().length === 0),
   );
+  readonly softwareKpiState = computed(() => kpiState(this.software.status()));
 
   constructor() {
     inject(ActivatedRoute)

@@ -1,0 +1,48 @@
+/*
+ * Indicator grid and the chip next to a value (F19.4, docs/front/diseno-ronda-1.md VUL-3, COM-1, COR-2, MET-1, AGE-1).
+ * The card itself is <app-kpi-card> (src/app/shared/kpi-card.ts). The grid fits as many columns of at least 160 px as
+ * the width allows, without holes (auto-fit), and two columns on phones. The chip (.kpi-detail) is projected into the
+ * card, so its rule lives here and not in the component.
+ */
+.app-shell .page-content .kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  gap: var(--grid-gap);
+  min-width: 0;
+}
+@media (max-width: 560px) {
+  .app-shell .page-content .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+}
+.app-shell .page-content .kpi-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--chip-pad-y) var(--chip-pad-x);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--success-bg);
+  color: var(--success-text);
+  font: inherit;
+  font-size: var(--text-2xs);
+  font-style: normal;
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--leading-snug);
+  white-space: nowrap;
+}
+.app-shell .page-content .kpi-detail.warn {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+.app-shell .page-content .kpi-detail.muted {
+  background: var(--violet-wash);
+  color: var(--text-secondary);
+}
+/* A chip that is a button (a retry) keeps a dashed border, so it reads as something to press. */
+.app-shell .page-content button.kpi-detail {
+  border: 1px dashed currentColor;
+  cursor: pointer;
+}

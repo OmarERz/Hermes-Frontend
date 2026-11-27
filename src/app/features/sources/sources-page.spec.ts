@@ -73,8 +73,8 @@ describe('SourcesPage', () => {
     const { element } = await render();
     const banner = element.querySelector('.feeds-page > app-banner-pagina')!;
     expect(text(banner.querySelector('h1'))).toBe('Fuentes');
-    expect(banner.querySelector('.feed-stats')).toBeNull();
-    expect(banner.nextElementSibling?.matches('section.feed-stats')).toBe(true);
+    expect(banner.querySelector('.kpi-grid')).toBeNull();
+    expect(banner.nextElementSibling?.matches('section.kpi-grid')).toBe(true);
   });
 
   it('draws the class and level filters as segmented controls that say which one is on', async () => {
@@ -93,7 +93,7 @@ describe('SourcesPage', () => {
 
   it('shows the real sources with their totals and never the invented feeds', async () => {
     const { element } = await render();
-    expect(all(element, '.feed-stats strong').map(text)).toEqual(['4', '3', '1', '2']);
+    expect(all(element, '.kpi-value').map(text)).toEqual(['4', '3', '1', '2']);
     expect(tableNames(element)).toEqual(['CISA KEV', 'NVD', 'The Hacker News', 'Boletín propio']);
     for (const invented of ['AlienVault', 'OTX', 'AbuseIPDB', 'MISP', 'Snyk']) {
       expect(element.textContent).not.toContain(invented);
@@ -180,7 +180,7 @@ describe('SourcesPage', () => {
     expect(text(element.querySelector('[role="status"].integration-note'))).toBe(
       'Boletín propio quedó activa.',
     );
-    expect(all(element, '.feed-stats strong').map(text).slice(1, 3)).toEqual(['4', '0']);
+    expect(all(element, '.kpi-value').map(text).slice(1, 3)).toEqual(['4', '0']);
   });
 
   it('shows the API refusal and leaves the source as it was', async () => {
@@ -273,7 +273,12 @@ describe('SourcesPage', () => {
     service.listAll.mockReturnValueOnce(pending);
     const { fixture, element } = await render('reader', service);
     expect(text(element.querySelector('.empty-carousel'))).toBe('Cargando fuentes…');
-    expect(all(element, '.feed-stats strong').map(text)).toEqual(['—', '—', '—', '—']);
+    expect(all(element, '.kpi-value').map(text)).toEqual([
+      'Cargando…',
+      'Cargando…',
+      'Cargando…',
+      'Cargando…',
+    ]);
 
     pending.error(new ApiError(503, 'auth_unavailable', 'El servicio de identidad no responde.'));
     await fixture.whenStable();

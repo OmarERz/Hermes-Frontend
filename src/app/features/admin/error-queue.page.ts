@@ -14,6 +14,7 @@ import { finalize } from 'rxjs';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { toApiError } from '../../core/api/api-error';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
+import { Chip } from '../../shared/chip';
 import { CursorPager } from '../../shared/cursor-pager';
 import { formatDateTime } from '../../shared/labels';
 import {
@@ -22,6 +23,7 @@ import {
   ErrorQueueItem,
   ErrorQueueService,
   ErrorStatus,
+  COMPONENT_LABELS,
   KIND_LABELS,
   retryScheduled,
   statusText,
@@ -36,6 +38,8 @@ export interface ErrorRow {
   when: string;
   kindLabel: string;
   component: string;
+  /** The raw value of the API, for the tooltip. */
+  componentCode: string;
   status: ErrorStatus;
   statusLabel: string;
   scheduled: boolean;
@@ -58,7 +62,8 @@ function toRow(item: ErrorQueueItem): ErrorRow {
     id: item.id,
     when: formatDateTime(item.created_at),
     kindLabel: labelOf(KIND_LABELS, item.kind),
-    component: item.component,
+    component: labelOf(COMPONENT_LABELS, item.component),
+    componentCode: item.component,
     status: item.status,
     statusLabel: statusText(item),
     scheduled: retryScheduled(item),
@@ -87,6 +92,7 @@ const GONE_CODES = new Set(['not_in_error', 'not_found']);
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    Chip,
     LucideArrowLeft,
     LucideArrowRight,
     LucideChevronDown,
@@ -157,7 +163,7 @@ export class ErrorQueuePage {
         next: () => {
           this.notice.set({
             kind: 'ok',
-            text: `La notificación ${row.component} volvió a la cola: Hermes intentará entregarla de nuevo.`,
+            text: `La notificación «${row.component}» volvió a la cola: Hermes intentará entregarla de nuevo.`,
           });
           this.pager.reload();
         },

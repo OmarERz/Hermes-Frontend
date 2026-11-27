@@ -64,7 +64,7 @@ const text = (node: Element | null | undefined) =>
 const parts = (node: Element) => Array.from(node.children).map(text).filter(Boolean).join(' ');
 
 function metricValues(element: HTMLElement): string[] {
-  return Array.from(element.querySelectorAll('.metric > div')).map(parts);
+  return Array.from(element.querySelectorAll('.kpi-grid > app-kpi-card .kpi-value-row')).map(parts);
 }
 
 function charts(fixture: ComponentFixture<AgentsDashboardPage>): ChartStub[] {
@@ -83,7 +83,7 @@ describe('AgentsDashboardPage', SCREEN, () => {
       'Normal Nivel 0',
       '1 Cola de error: 2',
     ]);
-    expect(element.querySelector('.metric em.warn')?.textContent).toContain('Cola de error');
+    expect(element.querySelector('.kpi-detail.warn')?.textContent).toContain('Cola de error');
     expect(text(element.querySelector('.source-badge'))).toContain('Datos reales · calculado');
   });
 
@@ -107,6 +107,43 @@ describe('AgentsDashboardPage', SCREEN, () => {
     await fixture.whenStable();
     expect(fixture.componentInstance.chartAgent()).toBe('news_analyst');
     expect(charts(fixture)[1].label()).toContain('Analista de noticias');
+  });
+
+  it('says an agent without reviews in the days has nothing to draw, instead of empty axes', async () => {
+    const { fixture, element } = await render(new FakeService());
+    fixture.componentInstance.chartAgent.set('cve_analyst');
+    await fixture.whenStable();
+    expect(charts(fixture).length).toBe(3);
+    expect(text(element.querySelector('.agent-chart'))).toContain(
+      'Analista de CVE no tuvo revisiones en los últimos',
+    );
+  });
+
+  it('says once, at the top, that every read failed, with one retry for all', async () => {
+    const service = new FakeService();
+    for (const read of [
+      service.summary,
+      service.daily,
+      service.ticketSummary,
+      service.latestRun,
+      service.metrics,
+    ]) {
+      read.mockReturnValue(failure());
+    }
+    const { fixture, element } = await render(service);
+    const notice = element.querySelector('app-async-state.page-notice') as HTMLElement;
+    expect(text(notice)).toContain('Telemetría no disponible.');
+    // The panels say only «No disponible», with no retry of their own (AGE-5).
+    expect(element.querySelectorAll('[role="alert"] button')).toHaveLength(1);
+    expect(text(element.querySelector('.performance [role="alert"]'))).toBe('No disponible.');
+
+    // One read answers this time: the notice goes away and the other panels show their own error.
+    service.summary.mockReturnValue(of(TELEMETRY_SUMMARY));
+    (notice.querySelector('button') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(service.metrics).toHaveBeenCalledTimes(2);
+    expect(service.latestRun).toHaveBeenCalledTimes(2);
+    expect(element.querySelector('app-async-state.page-notice')).toBeNull();
   });
 
   it('reloads the summary and the series when the window changes', async () => {
@@ -153,9 +190,9 @@ describe('AgentsDashboardPage', SCREEN, () => {
 
   it('shows the ticket summary with the real states of Hermes', async () => {
     const { element } = await render(new FakeService());
-    const kpis = Array.from(element.querySelectorAll('.ticket-kpis > div')).map((kpi) => [
-      text(kpi.querySelector('small')),
-      text(kpi.querySelector('strong')),
+    const kpis = Array.from(element.querySelectorAll('.ticket-kpis > app-kpi-card')).map((kpi) => [
+      text(kpi.querySelector('.kpi-label')),
+      text(kpi.querySelector('.kpi-value')),
     ]);
     expect(kpis).toEqual([
       ['Total', '14'],
@@ -258,7 +295,7 @@ describe('AgentsDashboardPage', SCREEN, () => {
     );
     expect(alerts.length).toBe(2);
     expect(alerts[0].textContent).toContain('Telemetría no disponible.');
-    expect(element.querySelectorAll('.ticket-kpis > div').length).toBe(9);
+    expect(element.querySelectorAll('.ticket-kpis > app-kpi-card').length).toBe(9);
 
     service.summary.mockReturnValue(of(TELEMETRY_SUMMARY));
     (alerts[0].querySelector('button') as HTMLButtonElement).click();
@@ -291,14 +328,14 @@ describe('AgentsDashboardPage', SCREEN, () => {
     service.ticketSummary.mockReturnValue(of(TICKET_SUMMARY));
     (alert.querySelector('button') as HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(element.querySelectorAll('.ticket-kpis > div').length).toBe(9);
+    expect(element.querySelectorAll('.ticket-kpis > app-kpi-card').length).toBe(9);
   });
 
   it('says the error queue is unavailable when the metrics fail, and retries them', async () => {
     const service = new FakeService();
     service.metrics.mockReturnValue(failure());
     const { fixture, element } = await render(service);
-    const retry = element.querySelector('.metric .queue-retry') as HTMLButtonElement;
+    const retry = element.querySelector('app-kpi-card .queue-retry') as HTMLButtonElement;
     expect(retry.getAttribute('aria-label')).toBe(
       'La cola de error no está disponible. Reintentar',
     );

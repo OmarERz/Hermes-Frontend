@@ -236,7 +236,7 @@ describe('CompanyPage', () => {
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('h1')?.textContent).toContain('Empresa');
-    expect(Array.from(element.querySelectorAll('.stat-card strong')).map(text)).toEqual([
+    expect(Array.from(element.querySelectorAll('.kpi-value')).map(text)).toEqual([
       'Tecnología financiera',
       '1',
       '1',

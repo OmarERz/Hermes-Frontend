@@ -106,7 +106,7 @@ describe('VulnerabilitiesPage', () => {
       'Clasificada',
       'Nuevo',
     ]);
-    const cards = Array.from(element.querySelectorAll('.stat-card strong')).map((s) =>
+    const cards = Array.from(element.querySelectorAll('.kpi-value')).map((s) =>
       s.textContent?.trim(),
     );
     expect(cards).toEqual(['1', '0', '2', '0']);
@@ -142,7 +142,7 @@ describe('VulnerabilitiesPage', () => {
     const service = new FakeService();
     const { fixture, element } = await render(service);
     const cards = () =>
-      Array.from(element.querySelectorAll('.stat-card strong')).map((s) => s.textContent?.trim());
+      Array.from(element.querySelectorAll('.kpi-value')).map((s) => s.textContent?.trim());
     expect(cards()).toEqual(['1', '0', '2', '0']);
 
     const pending = new Subject<{ critical: number; high: number; medium: number; low: number }>();
@@ -303,6 +303,39 @@ describe('VulnerabilitiesPage', () => {
     expect(service.listBands).toHaveBeenLastCalledWith(NO_FILTERS, null, 25);
     expect(owner.value).toBe('');
     expect(page.hasFilters()).toBe(false);
+  });
+
+  it('folds the less used filters behind «Más filtros» and counts the ones with a value', async () => {
+    const service = new FakeService();
+    const { fixture, element } = await render(service);
+    const page = fixture.componentInstance;
+    const toggle = element.querySelector('.more-toggle') as HTMLButtonElement;
+    const more = element.querySelector('#vulnerability-more-filters') as HTMLElement;
+    // Every main filter has a visible label above its control (G8).
+    expect(
+      Array.from(element.querySelectorAll('.filter-bar > .field .field-label')).map((label) =>
+        label.textContent?.trim(),
+      ),
+    ).toEqual(['Nivel', 'Estado', 'Catálogo KEV', 'Exposición']);
+    expect(more.hidden).toBe(true);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.getAttribute('aria-controls')).toBe('vulnerability-more-filters');
+
+    toggle.click();
+    await fixture.whenStable();
+    expect(more.hidden).toBe(false);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(toggle.textContent).toContain('Menos filtros');
+
+    page.setCustodian('Plataforma');
+    toggle.click();
+    await fixture.whenStable();
+    expect(toggle.textContent?.replace(/\s+/g, ' ').trim()).toBe('Más filtros (1 activo)');
+    page.setDateFrom('2026-11-01');
+    await fixture.whenStable();
+    expect(toggle.textContent).toContain('(2 activos)');
+    // A hidden filter still applies.
+    expect(page.filters().custodian).toBe('Plataforma');
   });
 
   it('does not reload when a filter keeps its value and ignores a malformed day', async () => {

@@ -83,7 +83,8 @@ app-sidebar-principal {
   outline-offset: var(--focus-offset);
 }
 .main-nav a.active {
-  background: linear-gradient(100deg, #ff009d, #a90be2);
+  /* D-097: first stop darkened for the white text (5.54:1; 5.48:1 at the violet end). */
+  background: linear-gradient(100deg, var(--accent-strong), #a90be2);
   color: #fff;
   box-shadow: var(--glow-accent);
 }

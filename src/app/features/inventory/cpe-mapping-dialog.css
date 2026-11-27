@@ -114,28 +114,4 @@ footer {
   justify-content: flex-end;
   gap: 8px;
 }
-.primary-button,
-.secondary-button {
-  min-height: 39px;
-  padding: 8px 14px;
-  border: 0;
-  border-radius: 8px;
-  background: #e9089b;
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-.secondary-button {
-  border: 1px solid var(--border, #e4e3ee);
-  background: var(--surface-raised, #fff);
-  color: var(--text-primary, #51465e);
-}
-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-button:focus-visible {
-  outline: 2px solid var(--accent, #ff009d);
-  outline-offset: 3px;
-}
+/* The actions are the shared .btn (src/styles/buttons.css). */

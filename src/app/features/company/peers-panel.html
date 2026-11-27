@@ -5,7 +5,12 @@
       <h2 id="peers-title">Empresas pares</h2>
     </div>
     @if (mode() === 'closed') {
-      <button *appIfRole="editRole" type="button" class="panel-action" (click)="startNew()">
+      <button
+        *appIfRole="editRole"
+        type="button"
+        class="btn btn-primary btn-sm panel-action"
+        (click)="startNew()"
+      >
         <svg lucidePlus aria-hidden="true"></svg> Agregar empresa
       </button>
     }
@@ -125,7 +130,9 @@
               [attr.aria-describedby]="aliasError() ? 'peer-alias-error' : null"
             />
           </label>
-          <button type="button" class="secondary-button" (click)="addAlias()">Agregar alias</button>
+          <button type="button" class="btn btn-secondary" (click)="addAlias()">
+            Agregar alias
+          </button>
         </div>
         @if (aliasError(); as problem) {
           <small class="field-error" id="peer-alias-error" role="alert">{{ problem }}</small>
@@ -136,12 +143,17 @@
         <p class="panel-notice error wide" role="alert">{{ failure.message }}</p>
       }
       <footer class="wide">
-        <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelForm()">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="saving()"
+          (click)="cancelForm()"
+        >
           Cancelar
         </button>
         <button
           type="submit"
-          class="primary-button"
+          class="btn btn-primary"
           [disabled]="saving()"
           [attr.aria-busy]="saving()"
         >

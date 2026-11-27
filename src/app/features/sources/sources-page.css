@@ -33,7 +33,7 @@
 }
 /*
  * The filters are the shared segmented control (src/styles/segmented.css). The selected one keeps the prototype's
- * gradient: D-093 leaves the gradients as they are until the user decides on them.
+ * gradient, its first stop darkened to --accent-strong for the white text (D-097: 5.54:1, 5.48:1 at the violet end).
  */
 .feed-filters.segmented > button > svg {
   color: var(--accent-lilac);
@@ -44,7 +44,7 @@
 .feed-filters.segmented > button[aria-pressed='true'],
 .feed-filters.segmented > button[aria-pressed='true']:hover {
   border-color: var(--accent);
-  background: linear-gradient(110deg, #ed079b, #a90be2);
+  background: var(--accent-gradient);
   color: #fff;
   box-shadow: 0 0 18px rgba(255, 0, 157, 0.28);
 }
@@ -168,28 +168,9 @@ td:first-child {
   color: var(--text-primary);
   font-weight: 700;
 }
+/* «Agregar fuente» is the shared .btn .btn-gradient (src/styles/buttons.css, D-097). */
 .add-source-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
   margin-left: auto;
-  padding: 8px 17px;
-  border: 1px solid var(--accent);
-  border-radius: 12px;
-  background: linear-gradient(110deg, #ed079b, #a90be2);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-.add-source-button svg {
-  width: 19px;
-  height: 19px;
-}
-.add-source-button:focus-visible {
-  outline: 3px solid var(--accent-lilac);
-  outline-offset: 3px;
 }
 .level-cell {
   display: flex;

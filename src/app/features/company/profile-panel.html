@@ -8,7 +8,12 @@
       <span>Versión {{ current.version }}</span>
     }
     @if (load.status() === 'ready' && profile() && !editing()) {
-      <button *appIfRole="editRole" type="button" class="panel-action" (click)="startEdit()">
+      <button
+        *appIfRole="editRole"
+        type="button"
+        class="btn btn-primary btn-sm panel-action"
+        (click)="startEdit()"
+      >
         <svg lucidePencil aria-hidden="true"></svg> Editar perfil
       </button>
     }
@@ -105,7 +110,7 @@
                     [attr.aria-describedby]="countryError() ? 'profile-country-error' : null"
                   />
                 </label>
-                <button type="button" class="secondary-button" (click)="addCountry()">
+                <button type="button" class="btn btn-secondary" (click)="addCountry()">
                   Agregar país
                 </button>
               </div>
@@ -120,10 +125,10 @@
               <p class="form-note wide" role="status">{{ note }}</p>
             }
             <footer class="wide">
-              <button type="button" class="secondary-button" (click)="cancelEdit()">
+              <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
                 Cancelar
               </button>
-              <button type="submit" class="primary-button">Revisar cambios</button>
+              <button type="submit" class="btn btn-primary">Revisar cambios</button>
             </footer>
           </form>
         } @else {

@@ -20,6 +20,7 @@ import { GraficoDashboard } from '../../componentes/grafico-dashboard/grafico-da
 import { SessionService } from '../../core/auth/session.service';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { KpiCard } from '../../shared/kpi-card';
 import { formatDateTime } from '../../shared/labels';
 import {
   Agent,
@@ -35,6 +36,7 @@ import {
 } from './agent-labels';
 import {
   agentPerformanceChart,
+  hasReviews,
   reasonsChart,
   runsTrendChart,
   runSuccessChart,
@@ -123,18 +125,15 @@ export function orderAgents(agents: readonly AgentTelemetry[]): AgentTelemetry[]
     AyudaTooltip,
     BannerPagina,
     GraficoDashboard,
+    KpiCard,
     ReviewsLog,
     LucideActivity,
     LucideBot,
     LucideChartColumn,
     LucideChartNoAxesCombined,
-    LucideCircleCheck,
     LucideClock,
     LucideCpu,
     LucideLayers,
-    LucideScale,
-    LucideTriangleAlert,
-    LucideZap,
   ],
   templateUrl: './agents-dashboard.page.html',
   styleUrl: './agents-dashboard.page.css',
@@ -144,6 +143,14 @@ export class AgentsDashboardPage {
   private readonly session = inject(SessionService);
 
   readonly bannerIcon = LucideBot;
+  /** Icons of the indicator cards. */
+  readonly kpiIcons = {
+    success: LucideCircleCheck,
+    runs: LucideLayers,
+    latency: LucideZap,
+    ladder: LucideScale,
+    failed: LucideTriangleAlert,
+  };
   readonly windows = WINDOWS;
   readonly windowLabels = WINDOW_LABELS;
   readonly agentOptions = AGENTS;
@@ -167,6 +174,12 @@ export class AgentsDashboardPage {
    * and loads them.
    */
   readonly showConnections = computed(() => this.session.hasRole('admin'));
+  /** Every read of the panel failed: one notice for the page and short errors in the panels (G11, AGE-5). */
+  readonly allFailed = computed(() =>
+    [this.summary, this.daily, this.tickets, this.latestRun, this.metrics].every(
+      (state) => state.status() === 'error',
+    ),
+  );
   readonly connectionSummary = computed(() => {
     if (this.connections.status() !== 'ready') return null;
     const list = this.connections.value() ?? [];
@@ -228,8 +241,16 @@ export class AgentsDashboardPage {
   readonly trendChart = computed(() =>
     this.series().length ? runsTrendChart(this.series()) : null,
   );
+  /** Null when the agent has no review in the days: an empty chart would draw only its axes (G11). */
   readonly performanceChart = computed(() =>
-    this.series().length ? agentPerformanceChart(this.series(), this.chartAgent()) : null,
+    hasReviews(this.series(), this.chartAgent())
+      ? agentPerformanceChart(this.series(), this.chartAgent())
+      : null,
+  );
+  readonly performanceEmptyText = computed(() =>
+    this.series().length
+      ? `${AGENT_LABELS[this.chartAgent()]} no tuvo revisiones en los últimos ${this.days()} días.`
+      : 'No hay datos diarios.',
   );
   readonly successChart = computed(() => {
     const summary = this.current();
@@ -340,6 +361,15 @@ export class AgentsDashboardPage {
 
   loadLatestRun(): void {
     this.latestRun.run(this.service.latestRun());
+  }
+
+  /** One retry for every read of the panel, from the page notice shown when they all failed (AGE-5). */
+  reloadAll(): void {
+    this.loadTelemetry();
+    this.loadTickets();
+    this.loadLatestRun();
+    this.loadMetrics();
+    if (this.showConnections()) this.loadConnections();
   }
 
   private loadTelemetry(): void {

@@ -42,6 +42,7 @@
   @if (state(); as current) {
     <app-async-state
       [state]="current"
+      [lines]="6"
       loadingText="Cargando la bitácora de tickets…"
       [emptyText]="
         filtered() ? 'No hay registros con estos filtros.' : 'Hermes aún no ha escrito en tickets.'

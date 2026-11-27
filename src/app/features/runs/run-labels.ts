@@ -1,4 +1,5 @@
 import { ApiSchema } from '../../core/api/api-client';
+import type { ChipTone } from '../../shared/chip';
 import { formatDateTime } from '../../shared/labels';
 
 export type Run = ApiSchema<'Run'>;
@@ -19,6 +20,14 @@ export const STATUS_LABELS: Record<RunStatus, string> = {
   running: 'En ejecución',
   succeeded: 'Terminó bien',
   failed: 'Terminó con error',
+};
+
+/** Chip tone of each run status (G10: the semantic colours, in the shared chip). */
+export const STATUS_TONES: Record<RunStatus, ChipTone> = {
+  queued: 'neutral',
+  running: 'warning',
+  succeeded: 'success',
+  failed: 'danger',
 };
 
 export const TRIGGER_LABELS: Record<TriggerReason, string> = {

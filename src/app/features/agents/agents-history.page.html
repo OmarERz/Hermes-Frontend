@@ -50,6 +50,7 @@
         @if (state(); as current) {
           <app-async-state
             [state]="current"
+            [lines]="6"
             loadingText="Cargando el historial…"
             [emptyText]="
               filtered()

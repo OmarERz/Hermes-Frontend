@@ -1,6 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { LucideBuilding2, LucideGlobe, LucideLanguages, LucideListTree } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
+import { KpiCard } from '../../shared/kpi-card';
 import { CompanyProfile, languageName, sectorName } from './company-labels';
 import { PeersPanel } from './peers-panel';
 import { ProfilePanel } from './profile-panel';
@@ -11,15 +12,7 @@ import { ProfilePanel } from './profile-panel';
  */
 @Component({
   selector: 'app-company-page',
-  imports: [
-    BannerPagina,
-    ProfilePanel,
-    PeersPanel,
-    LucideBuilding2,
-    LucideGlobe,
-    LucideLanguages,
-    LucideListTree,
-  ],
+  imports: [BannerPagina, KpiCard, ProfilePanel, PeersPanel],
   template: `
     <div class="assets-view company-view">
       <app-banner-pagina
@@ -28,23 +21,29 @@ import { ProfilePanel } from './profile-panel';
         [icono]="bannerIcon"
       />
 
-      <section class="stats-grid" aria-label="Resumen del perfil">
-        <article class="stat-card">
-          <span><svg lucideBuilding2 aria-hidden="true"></svg></span><small>Sector principal</small>
-          <strong [class.unknown]="!profile()">{{ sector() }}</strong>
-        </article>
-        <article class="stat-card">
-          <span><svg lucideListTree aria-hidden="true"></svg></span><small>Subsectores</small>
-          <strong [class.unknown]="!profile()">{{ profile()?.subsectors?.length ?? '—' }}</strong>
-        </article>
-        <article class="stat-card">
-          <span><svg lucideGlobe aria-hidden="true"></svg></span><small>Países de operación</small>
-          <strong [class.unknown]="!profile()">{{ profile()?.countries?.length ?? '—' }}</strong>
-        </article>
-        <article class="stat-card">
-          <span><svg lucideLanguages aria-hidden="true"></svg></span><small>Idioma de salida</small>
-          <strong [class.unknown]="!profile()">{{ language() }}</strong>
-        </article>
+      <section class="kpi-grid" aria-label="Resumen del perfil">
+        <app-kpi-card
+          label="Sector principal"
+          [icon]="kpiIcons.sector"
+          kind="text"
+          [value]="profile() ? sector() : null"
+        />
+        <app-kpi-card
+          label="Subsectores"
+          [icon]="kpiIcons.subsectors"
+          [value]="profile()?.subsectors?.length"
+        />
+        <app-kpi-card
+          label="Países de operación"
+          [icon]="kpiIcons.countries"
+          [value]="profile()?.countries?.length"
+        />
+        <app-kpi-card
+          label="Idioma de salida"
+          [icon]="kpiIcons.language"
+          kind="text"
+          [value]="profile() ? language() : null"
+        />
       </section>
 
       <div class="company-grid">
@@ -54,12 +53,8 @@ import { ProfilePanel } from './profile-panel';
     </div>
   `,
   styles: `
-    .stats-grid {
-      margin-bottom: 18px;
-    }
-    .stat-card strong:not(.unknown) {
-      font-size: calc(20px + var(--font-size-increase));
-      overflow-wrap: anywhere;
+    .kpi-grid {
+      margin-bottom: var(--section-gap);
     }
     .company-grid {
       display: grid;
@@ -71,6 +66,13 @@ import { ProfilePanel } from './profile-panel';
 })
 export class CompanyPage {
   readonly bannerIcon = LucideBuilding2;
+  /** Icons of the indicator cards. */
+  readonly kpiIcons = {
+    sector: LucideBuilding2,
+    subsectors: LucideListTree,
+    countries: LucideGlobe,
+    language: LucideLanguages,
+  };
   readonly profile = signal<CompanyProfile | null>(null);
   readonly sector = computed(() => {
     const current = this.profile();

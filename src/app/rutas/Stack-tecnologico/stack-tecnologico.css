@@ -138,8 +138,8 @@
     margin-left: auto;
     padding: 6px 8px;
     border-radius: 16px;
-    background: #e0fbe9;
-    color: #07823e;
+    background: var(--success-bg);
+    color: var(--success-text);
     font-size: calc((10px) + var(--font-size-increase));
     font-style: normal;
     font-weight: 700;
@@ -159,8 +159,8 @@
     stroke-width: 2.2;
   }
   .summary-grid em.risk {
-    background: #ffe8f1;
-    color: #d40068;
+    background: var(--danger-bg);
+    color: var(--danger-text);
   }
   .panel {
     padding: 13px;

@@ -84,14 +84,12 @@ describe('RunsPage', () => {
     expect(cells(rows[1])).toContain('3 min 20 s');
     expect(cells(rows[1])).toContain('Agenda');
     expect(cells(rows[1])[7]).toBe('—');
-    expect(rows[2].querySelector('.run-status')?.classList).toContain('status-failed');
+    expect(rows[2].querySelector('.run-status')?.getAttribute('data-tone')).toBe('danger');
   });
 
   it('shows the counts of the last 24 hours', async () => {
     const { element } = await render();
-    const values = Array.from(element.querySelectorAll('.stat-card strong')).map((item) =>
-      text(item),
-    );
+    const values = Array.from(element.querySelectorAll('.kpi-value')).map((item) => text(item));
     expect(values).toEqual(['1', '2', '14', '3']);
   });
 
@@ -101,7 +99,7 @@ describe('RunsPage', () => {
       throwError(() => new ApiError(503, 'service_unavailable', 'Telemetría no disponible.')),
     );
     const { element } = await render(runs);
-    expect(Array.from(element.querySelectorAll('.stat-card strong')).map((s) => text(s))).toEqual([
+    expect(Array.from(element.querySelectorAll('.kpi-value')).map((s) => text(s))).toEqual([
       '—',
       '—',
       '—',
@@ -133,7 +131,7 @@ describe('RunsPage', () => {
       25,
     );
     await settle();
-    const clear = Array.from(element.querySelectorAll('button.more-filter')).find(
+    const clear = Array.from(element.querySelectorAll('.filter-actions button')).find(
       (button) => text(button) === 'Quitar filtros',
     ) as HTMLButtonElement;
     clear.click();
@@ -148,7 +146,7 @@ describe('RunsPage', () => {
   it('applies the filters chosen in the selects', async () => {
     const { element, runs } = await render();
     const [kind, status] = Array.from(
-      element.querySelectorAll('.filters select'),
+      element.querySelectorAll('.filter-bar select'),
     ) as HTMLSelectElement[];
     kind.value = 'ingestion';
     kind.dispatchEvent(new Event('change'));
@@ -396,6 +394,8 @@ describe('RunsPage', () => {
     const { element, runs, events, settle } = await render();
     const launch = element.querySelector('.launch-scan') as HTMLButtonElement;
     expect(text(launch)).toBe('Lanzar escaneo');
+    // The shared primary button, the same in both themes (COR-3).
+    expect(launch.classList).toContain('btn-primary');
     launch.click();
     await settle();
     expect(runs.launchScan).toHaveBeenCalledTimes(1);

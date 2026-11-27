@@ -11,6 +11,7 @@ import {
 } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
+import { Chip, ChipTone } from '../../shared/chip';
 import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink } from '../../shared/itop-links';
 import { formatDateTime } from '../../shared/labels';
@@ -26,6 +27,9 @@ function tableState(pager: CursorPager<unknown>): ViewState | null {
   return pager.items().length ? null : 'empty';
 }
 
+/** iTop urgency 1 to 4 as the level colours of the shared chip (G10). */
+const URGENCY_TONES: Record<number, ChipTone> = { 1: 'critical', 2: 'high', 3: 'medium', 4: 'low' };
+
 /**
  * Tickets y alertas: the iTop tickets Hermes created (real iTop states, fixed versus total assets and the link to
  * the ticket in iTop) and the threat alerts (R2, R3 or inferred by the AI). Both lists page by cursor.
@@ -37,6 +41,7 @@ function tableState(pager: CursorPager<unknown>): ViewState | null {
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    Chip,
     ItopLink,
     LucideArrowLeft,
     LucideArrowRight,
@@ -73,6 +78,7 @@ export class TicketsPage {
     this.tickets.items().map((ticket) => ({
       ...ticket,
       urgencyLabel: URGENCY_LABELS[ticket.urgency] ?? String(ticket.urgency),
+      urgencyTone: URGENCY_TONES[ticket.urgency] ?? 'neutral',
       progress: ticket.total_cis ? Math.round((ticket.fixed_cis / ticket.total_cis) * 100) : 0,
     })),
   );

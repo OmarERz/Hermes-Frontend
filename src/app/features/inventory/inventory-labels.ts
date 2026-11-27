@@ -1,3 +1,4 @@
+import type { ChipTone } from '../../shared/chip';
 import type { InstalledSoftware, InventoryAsset, SoftwareLicence } from './inventory.service';
 
 export type Criticality = InventoryAsset['criticality'];
@@ -32,6 +33,12 @@ export const INSTALL_STATUS_LABELS: Record<InstallStatus, string> = {
   unknown: 'Sin dato',
 };
 export const INSTALL_STATUSES = Object.keys(INSTALL_STATUS_LABELS) as InstallStatus[];
+/** Chip tone of an installation status (G10: the semantic colours, in the shared chip). */
+export const INSTALL_STATUS_TONES: Record<InstallStatus, ChipTone> = {
+  active: 'success',
+  inactive: 'warning',
+  unknown: 'neutral',
+};
 
 export const EXPOSURE_LABELS: Record<Exposure, string> = {
   exposed: 'Expuestos a internet',

@@ -5,7 +5,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--accent, #c90083);
+  color: var(--accent-text);
   font-weight: 600;
   text-decoration: none;
 }
@@ -56,11 +56,6 @@
   margin: 2px 0 0;
   overflow-wrap: anywhere;
 }
-.stat-card em.level-chip {
-  position: absolute;
-  right: 9px;
-  bottom: 10px;
-}
 .hint {
   margin: 10px 0 0;
   color: var(--text-muted, #6b6175);
@@ -70,15 +65,15 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--accent, #c90083);
+  color: var(--accent-text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 .link-button:focus-visible {
-  outline: 2px solid var(--accent, #ed079b);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 td a {
-  color: var(--accent, #c90083);
+  color: var(--accent-text);
 }

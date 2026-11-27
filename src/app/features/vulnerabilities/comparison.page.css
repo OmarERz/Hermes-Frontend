@@ -10,17 +10,6 @@
   color: var(--text-muted, #6b6175);
   font-size: calc(11px + var(--font-size-increase, 0px));
 }
-.stat-card.indicator {
-  grid-template-columns: minmax(0, 1fr);
-}
-.stat-card .note {
-  position: static;
-  padding: 0;
-  background: none;
-  color: var(--text-muted, #6b6175);
-  font-weight: 500;
-  white-space: normal;
-}
 .comparison-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));

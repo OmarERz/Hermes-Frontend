@@ -4,6 +4,9 @@
     descripcion="Supervisa la actividad de los agentes de IA, las corridas y los tickets de Hermes."
     [icono]="bannerIcon"
   />
+  @if (allFailed()) {
+    <app-async-state variant="page" state="error" [error]="summary.error()" (retry)="reloadAll()" />
+  }
   @if (current(); as summary) {
     <p class="source-badge real-source">
       Datos reales · calculado {{ formatDateTime(summary.generated_at) }}
@@ -30,90 +33,84 @@
 
     @if (summaryState(); as state) {
       <app-async-state
+        [compact]="allFailed()"
         [state]="state"
+        [lines]="4"
         loadingText="Cargando la telemetría…"
         [error]="summary.error()"
         (retry)="loadSummary()"
       />
     } @else if (current(); as summary) {
-      <div class="metric-grid">
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideCircleCheck class="green" aria-hidden="true"></svg> Tasa de éxito de
-            ejecución
-            <app-ayuda-tooltip
-              texto="Corridas que terminaron bien sobre las que terminaron en la ventana."
-          /></span>
-          <div>
-            <strong>{{ runSuccess() }}</strong>
-          </div>
-        </article>
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideLayers aria-hidden="true"></svg> Corridas completadas
-            <app-ayuda-tooltip
-              texto="Corridas que terminaron bien en la ventana: escaneos, ingestas, recálculos, sincronizaciones y calibraciones."
-          /></span>
-          <div>
-            <strong>{{ formatCount(summary.runs_succeeded) }}</strong>
-          </div>
-        </article>
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideZap aria-hidden="true"></svg> Respuesta promedio del juez
-            <app-ayuda-tooltip
-              texto="Latencia promedio de una llamada del juez al modelo en la ventana; a la derecha, el percentil 95."
-          /></span>
-          <div>
-            <strong>{{ judgeLatency() }}</strong
-            ><em>p95 {{ judgeLatencyP95() }}</em>
-          </div>
-        </article>
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideScale aria-hidden="true"></svg> Escalera del juez
-            <app-ayuda-tooltip
-              texto="Confianza en el juez: Normal, Vigilado, Cauteloso o Apagado. Sube de nivel cuando sus ajustes reciben feedback negativo."
-          /></span>
-          <div>
-            <strong>{{ summary.ladder_label }}</strong
-            ><em [class.warn]="ladderPaused()">Nivel {{ summary.ladder_level }}</em>
-          </div>
-        </article>
-        <article class="metric">
-          <span class="metric-label"
-            ><svg lucideTriangleAlert aria-hidden="true"></svg> Corridas con error
-            <app-ayuda-tooltip
-              texto="Corridas que terminaron con error o se cancelaron en la ventana. La cola de error junta las escrituras y validaciones que fallaron."
-          /></span>
-          <div>
-            <strong>{{ formatCount(summary.runs_failed) }}</strong>
-            @switch (errorQueue().state) {
-              @case ('ready') {
-                <em [class.warn]="errorQueue().value !== '0'"
-                  >Cola de error: {{ errorQueue().value }}</em
-                >
-              }
-              @case ('missing') {
-                <em class="muted">Cola de error: sin calcular</em>
-              }
-              @case ('error') {
-                <button
-                  type="button"
-                  class="queue-retry"
-                  title="La cola de error no está disponible"
-                  aria-label="La cola de error no está disponible. Reintentar"
-                  (click)="loadMetrics()"
-                >
-                  Cola de error: reintentar
-                </button>
-              }
-              @default {
-                <em class="muted">Cola de error: …</em>
-              }
+      <div class="kpi-grid">
+        <app-kpi-card
+          nested
+          label="Tasa de éxito de ejecución"
+          help="Corridas que terminaron bien sobre las que terminaron en la ventana."
+          [icon]="kpiIcons.success"
+          tone="success"
+          [value]="runSuccess()"
+        />
+        <app-kpi-card
+          nested
+          label="Corridas completadas"
+          help="Corridas que terminaron bien en la ventana: escaneos, ingestas, recálculos, sincronizaciones y calibraciones."
+          [icon]="kpiIcons.runs"
+          [value]="formatCount(summary.runs_succeeded)"
+        />
+        <app-kpi-card
+          nested
+          label="Respuesta promedio del juez"
+          help="Latencia promedio de una llamada del juez al modelo en la ventana; a la derecha, el percentil 95."
+          [icon]="kpiIcons.latency"
+          tone="violet"
+          [value]="judgeLatency()"
+        >
+          <em class="kpi-detail">p95 {{ judgeLatencyP95() }}</em>
+        </app-kpi-card>
+        <app-kpi-card
+          nested
+          label="Escalera del juez"
+          help="Confianza en el juez: Normal, Vigilado, Cauteloso o Apagado. Sube de nivel cuando sus ajustes reciben feedback negativo."
+          [icon]="kpiIcons.ladder"
+          tone="violet"
+          kind="text"
+          [value]="summary.ladder_label"
+        >
+          <em class="kpi-detail" [class.warn]="ladderPaused()">Nivel {{ summary.ladder_level }}</em>
+        </app-kpi-card>
+        <app-kpi-card
+          nested
+          label="Corridas con error"
+          help="Corridas que terminaron con error o se cancelaron en la ventana. La cola de error junta las escrituras y validaciones que fallaron."
+          [icon]="kpiIcons.failed"
+          tone="danger"
+          [value]="formatCount(summary.runs_failed)"
+        >
+          @switch (errorQueue().state) {
+            @case ('ready') {
+              <em class="kpi-detail" [class.warn]="errorQueue().value !== '0'"
+                >Cola de error: {{ errorQueue().value }}</em
+              >
             }
-          </div>
-        </article>
+            @case ('missing') {
+              <em class="kpi-detail muted">Cola de error: sin calcular</em>
+            }
+            @case ('error') {
+              <button
+                type="button"
+                class="kpi-detail warn queue-retry"
+                title="La cola de error no está disponible"
+                aria-label="La cola de error no está disponible. Reintentar"
+                (click)="loadMetrics()"
+              >
+                Cola de error: reintentar
+              </button>
+            }
+            @default {
+              <em class="kpi-detail muted">Cola de error: …</em>
+            }
+          }
+        </app-kpi-card>
       </div>
 
       <div class="charts-grid">
@@ -132,7 +129,9 @@
             />
           } @else {
             <app-async-state
+              [compact]="allFailed()"
               [state]="dailyState() ?? 'empty'"
+              [lines]="4"
               loadingText="Cargando las series diarias…"
               emptyText="No hay datos diarios."
               [error]="daily.error()"
@@ -165,9 +164,11 @@
             />
           } @else {
             <app-async-state
+              [compact]="allFailed()"
               [state]="dailyState() ?? 'empty'"
+              [lines]="4"
               loadingText="Cargando las series diarias…"
-              emptyText="No hay datos diarios."
+              [emptyText]="performanceEmptyText()"
               [error]="daily.error()"
               (retry)="loadDaily()"
             />
@@ -191,6 +192,7 @@
             />
           } @else {
             <app-async-state
+              [compact]="allFailed()"
               state="empty"
               emptyText="No hay corridas terminadas en esta ventana."
             />
@@ -211,6 +213,7 @@
             />
           } @else {
             <app-async-state
+              [compact]="allFailed()"
               state="empty"
               emptyText="El juez no propuso motivos en esta ventana."
             />
@@ -268,7 +271,9 @@
       </div>
       @if (summaryState(); as state) {
         <app-async-state
+          [compact]="allFailed()"
           [state]="state"
+          [lines]="5"
           loadingText="Cargando los agentes…"
           [error]="summary.error()"
           (retry)="loadSummary()"
@@ -357,6 +362,7 @@
       </h2>
       @if (ticketState(); as state) {
         <app-async-state
+          [compact]="allFailed()"
           [state]="state"
           loadingText="Cargando los tickets…"
           [error]="tickets.error()"
@@ -365,15 +371,7 @@
       } @else {
         <div class="ticket-kpis">
           @for (kpi of ticketKpis(); track kpi.label) {
-            <div>
-              <small
-                >{{ kpi.label }}
-                @if (kpi.help) {
-                  <app-ayuda-tooltip [texto]="kpi.help" />
-                }
-              </small>
-              <strong>{{ kpi.value }}</strong>
-            </div>
+            <app-kpi-card nested [label]="kpi.label" [help]="kpi.help" [value]="kpi.value" />
           }
         </div>
         <a class="ticket-link" routerLink="/tickets">Ver tickets y alertas</a>

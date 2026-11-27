@@ -15,27 +15,34 @@
       />
     </section>
   } @else if (summary.value(); as data) {
-    <section class="stats-grid" aria-label="Indicadores">
-      <article class="stat-card indicator">
-        <small>Reclasificados</small>
-        <strong>{{ data.reclassified_percent }} %</strong>
-        <em class="note">Hallazgos que cambiaron de nivel</em>
-      </article>
-      <article class="stat-card indicator">
-        <small>Críticos ocultos</small>
-        <strong>{{ data.hidden_criticals }}</strong>
-        <em class="note">CVSS menor a 7.0 y final de 75 o más</em>
-      </article>
-      <article class="stat-card indicator">
-        <small>Ruido evitado</small>
-        <strong>{{ data.avoided_noise }}</strong>
-        <em class="note">CVSS de 9.0 o más y final menor a 50</em>
-      </article>
-      <article class="stat-card indicator">
-        <small>Correlación de rangos</small>
-        <strong>{{ data.rank_correlation }}</strong>
-        <em class="note">τ-b de Kendall entre el orden por CVSS y el final</em>
-      </article>
+    <section class="kpi-grid" aria-label="Indicadores">
+      <app-kpi-card
+        label="Reclasificados"
+        note="Hallazgos que cambiaron de nivel"
+        [icon]="kpiIcons.reclassified"
+        [value]="data.reclassified_percent + ' %'"
+      />
+      <app-kpi-card
+        label="Críticos ocultos"
+        note="CVSS menor a 7.0 y final de 75 o más"
+        [icon]="kpiIcons.hidden"
+        tone="danger"
+        [value]="data.hidden_criticals"
+      />
+      <app-kpi-card
+        label="Ruido evitado"
+        note="CVSS de 9.0 o más y final menor a 50"
+        [icon]="kpiIcons.noise"
+        tone="success"
+        [value]="data.avoided_noise"
+      />
+      <app-kpi-card
+        label="Correlación de rangos"
+        note="τ-b de Kendall entre el orden por CVSS y el final"
+        [icon]="kpiIcons.correlation"
+        tone="violet"
+        [value]="data.rank_correlation"
+      />
     </section>
 
     <div class="comparison-grid">
@@ -51,7 +58,7 @@
               <th scope="col"><span class="visually-hidden">Nivel por CVSS</span></th>
               @for (level of levels; track level) {
                 <th scope="col">
-                  <span [class]="'level-chip level-' + level">{{ levelLabels[level] }}</span>
+                  <app-chip [tone]="level">{{ levelLabels[level] }}</app-chip>
                 </th>
               }
             </tr>
@@ -60,7 +67,7 @@
             @for (row of matrix(); track row.from) {
               <tr>
                 <th scope="row">
-                  <span [class]="'level-chip level-' + row.from">{{ levelLabels[row.from] }}</span>
+                  <app-chip [tone]="row.from">{{ levelLabels[row.from] }}</app-chip>
                 </th>
                 @for (cell of row.cells; track cell.to) {
                   <td
@@ -117,6 +124,7 @@
     @if (tableState(); as state) {
       <app-async-state
         [state]="state"
+        [lines]="6"
         loadingText="Cargando los hallazgos…"
         emptyText="Aún no hay hallazgos evaluados."
         [error]="pager.state.error()"

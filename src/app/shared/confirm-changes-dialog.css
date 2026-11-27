@@ -70,31 +70,7 @@ footer {
   justify-content: flex-end;
   gap: var(--space-2);
 }
-.save-button,
-.cancel-button {
-  min-height: var(--control-h);
-  padding: var(--space-2) var(--button-pad-x);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--accent-strong);
-  color: var(--on-accent);
-  font: inherit;
-  font-weight: var(--weight-bold);
-  cursor: pointer;
-}
-.cancel-button {
-  border: 1px solid var(--border, #e4e3ee);
-  background: var(--surface-raised, #fff);
-  color: var(--text-primary, #51465e);
-}
-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-button:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-offset);
-}
+/* The actions are the shared .btn (src/styles/buttons.css). */
 @media (max-width: 650px) {
   .change-list article > div {
     grid-template-columns: 1fr;

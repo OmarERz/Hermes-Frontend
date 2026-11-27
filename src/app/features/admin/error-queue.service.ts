@@ -15,6 +15,26 @@ export const KIND_LABELS: Record<ErrorKind, string> = {
   llm_validation: 'Validación del LLM',
 };
 
+/**
+ * What failed, in Spanish (COL-2): the notification event type, the iTop operation or the LLM component. A value this
+ * table does not know is shown as the API gives it.
+ */
+export const COMPONENT_LABELS: Readonly<Record<string, string>> = {
+  new_ticket: 'Ticket nuevo',
+  level_up: 'Subió de nivel',
+  reopened: 'Ticket reabierto',
+  partially_fixed: 'Corregido en parte',
+  fixed: 'Corregido',
+  threat_alert: 'Alerta de amenaza',
+  inferred_alert: 'Alerta inferida por la IA',
+  create: 'Crear ticket',
+  update: 'Actualizar ticket',
+  comment: 'Comentario en el ticket',
+  judge: 'Juez',
+  cve_analyst: 'Analista de CVE',
+  news_analyst: 'Analista de noticias',
+};
+
 export const STATUS_LABELS: Record<ErrorStatus, string> = {
   failed: 'Agotó sus reintentos',
   pending: 'Espera su próximo reintento',

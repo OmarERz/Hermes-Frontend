@@ -15,6 +15,7 @@
     <section class="panel performance">
       <app-async-state
         [state]="state"
+        [lines]="4"
         loadingText="Cargando las métricas…"
         [error]="board.error()"
         (retry)="loadBoard()"
@@ -27,35 +28,36 @@
         actividad de Hermes.
       </p>
     }
-    @for (group of groups(); track group.id) {
-      <section class="panel performance metric-group" [attr.aria-labelledby]="'group-' + group.id">
-        <div class="performance-heading">
-          <svg [lucideIcon]="group.icon" class="heading-icon small" aria-hidden="true"></svg>
-          <div>
-            <h2 [id]="'group-' + group.id">{{ group.title }}</h2>
-            <p>{{ group.description }}</p>
+    <div class="metric-sections">
+      @for (group of groups(); track group.id) {
+        <section
+          class="panel performance metric-group"
+          [attr.aria-labelledby]="'group-' + group.id"
+        >
+          <div class="performance-heading">
+            <svg [lucideIcon]="group.icon" class="heading-icon small" aria-hidden="true"></svg>
+            <div>
+              <h2 [id]="'group-' + group.id">{{ group.title }}</h2>
+              <p>{{ group.description }}</p>
+            </div>
           </div>
-        </div>
-        <div class="metric-grid">
-          @for (metric of group.metrics; track metric.key) {
-            <article class="metric" [attr.data-metric]="metric.key">
-              <span class="metric-label"
-                >{{ metric.label }}
-                @if (metric.help) {
-                  <app-ayuda-tooltip [texto]="metric.help" />
-                }
-              </span>
-              <div>
-                <strong>{{ metric.value }}</strong>
-              </div>
-            </article>
-          }
-        </div>
-      </section>
-    }
+          <div class="kpi-grid">
+            @for (metric of group.metrics; track metric.key) {
+              <app-kpi-card
+                nested
+                [attr.data-metric]="metric.key"
+                [label]="metric.label"
+                [help]="metric.help"
+                [value]="metric.value"
+              />
+            }
+          </div>
+        </section>
+      }
+    </div>
   }
 
-  <section class="panel performance metric-group" aria-labelledby="cost-title">
+  <section class="panel performance metric-group cost-section" aria-labelledby="cost-title">
     <div class="performance-heading">
       <svg lucideCoins class="heading-icon small" aria-hidden="true"></svg>
       <div>
@@ -76,7 +78,7 @@
       <app-async-state
         [state]="dailyState() ?? 'empty'"
         loadingText="Cargando el costo diario…"
-        emptyText="No hay datos diarios."
+        [emptyText]="costEmptyText()"
         [error]="daily.error()"
         (retry)="loadDaily()"
       />

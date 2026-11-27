@@ -103,7 +103,7 @@
                 @if (canDecide()) {
                   <button
                     type="button"
-                    class="save-button"
+                    class="btn btn-primary"
                     [attr.aria-label]="'Aprobar: ' + row.proposal.summary"
                     (click)="ask(row.proposal, 'approve')"
                   >
@@ -111,7 +111,7 @@
                   </button>
                   <button
                     type="button"
-                    class="cancel-button"
+                    class="btn btn-secondary"
                     [attr.aria-label]="'Rechazar: ' + row.proposal.summary"
                     (click)="ask(row.proposal, 'reject')"
                   >
@@ -132,7 +132,7 @@
       <nav class="proposals-pager" aria-label="Páginas de propuestas">
         <button
           type="button"
-          class="cancel-button"
+          class="btn btn-secondary btn-sm btn-icon"
           aria-label="Página anterior"
           [disabled]="!pager.hasPrevious() || pager.state.loading()"
           (click)="pager.previous()"
@@ -142,7 +142,7 @@
         <span>Página {{ pager.pageIndex() + 1 }}</span>
         <button
           type="button"
-          class="cancel-button"
+          class="btn btn-secondary btn-sm btn-icon"
           aria-label="Página siguiente"
           [disabled]="!pager.hasNext()"
           (click)="pager.next()"

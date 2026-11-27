@@ -2,6 +2,8 @@ import { TELEMETRY_DAILY, TELEMETRY_SUMMARY } from './agents.fixtures';
 import {
   agentPerformanceChart,
   dailyCostChart,
+  hasCost,
+  hasReviews,
   reasonsChart,
   runsTrendChart,
   runSuccessChart,
@@ -89,5 +91,23 @@ describe('agents charts', () => {
     ]);
     const tooltip = option['tooltip'] as { valueFormatter: (value: unknown) => string };
     expect(tooltip.valueFormatter(0.04)).toBe('USD 0.04');
+  });
+});
+
+describe('empty charts', () => {
+  it('tells a series with some cost from a zero-filled one', () => {
+    expect(hasCost(TELEMETRY_DAILY.series)).toBe(true);
+    const zero = TELEMETRY_DAILY.series.map((day) => ({
+      ...day,
+      agents: day.agents.map((entry) => ({ ...entry, cost_usd: '0.000' })),
+    }));
+    expect(hasCost(zero)).toBe(false);
+    expect(hasCost([])).toBe(false);
+  });
+
+  it('tells an agent with reviews in the days from one without', () => {
+    expect(hasReviews(TELEMETRY_DAILY.series, 'judge')).toBe(true);
+    expect(hasReviews(TELEMETRY_DAILY.series, 'cve_analyst')).toBe(false);
+    expect(hasReviews([], 'judge')).toBe(false);
   });
 });

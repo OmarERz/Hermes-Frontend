@@ -55,7 +55,7 @@ async function render(service: FakeService) {
 describe('ComparisonPage', () => {
   it('shows the four indicators', async () => {
     const { element } = await render(new FakeService());
-    const values = Array.from(element.querySelectorAll('.stat-card strong')).map((s) =>
+    const values = Array.from(element.querySelectorAll('.kpi-value')).map((s) =>
       s.textContent?.trim(),
     );
     expect(values).toEqual(['18.8 %', '2', '1', '0.71']);
@@ -142,7 +142,7 @@ describe('ComparisonPage', () => {
     (element.querySelector('[role="alert"] button') as HTMLButtonElement).click();
     await fixture.whenStable();
     expect(service.summary).toHaveBeenCalledTimes(2);
-    expect(element.querySelectorAll('.stat-card').length).toBe(4);
+    expect(element.querySelectorAll('app-kpi-card').length).toBe(4);
   });
 
   it('keeps funnel stages it does not know and fills missing matrix cells with zero', async () => {

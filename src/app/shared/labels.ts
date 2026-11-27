@@ -1,3 +1,4 @@
+import type { ChipTone } from './chip';
 import type { VulnerabilityGroup } from '../core/api/api-types';
 
 export type Level = VulnerabilityGroup['level'];
@@ -36,4 +37,33 @@ const DATE_FORMAT = new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', time
 export function formatDateTime(iso: string): string {
   const date = new Date(iso);
   return Number.isNaN(date.getTime()) ? '—' : DATE_FORMAT.format(date);
+}
+
+/** Chip tone of each finding status (G10: the semantic colours, in the shared chip). */
+export const STATUS_TONES: Record<FindingStatus, ChipTone> = {
+  new: 'violet',
+  persistent: 'warning',
+  reopened: 'danger',
+  fixed: 'success',
+  no_data: 'neutral',
+};
+
+/**
+ * Criticality of an asset in iTop (VDE-2). The API gives it as text (`high`, `medium`, `low`); a value this table
+ * does not know is shown as it comes, in a neutral chip.
+ */
+const CRITICALITY_LABELS: Record<string, string> = {
+  high: 'Alta',
+  medium: 'Media',
+  low: 'Baja',
+  unknown: 'Sin dato',
+};
+
+export function criticalityLabel(value: string | null | undefined): string {
+  if (!value) return 'Sin dato';
+  return CRITICALITY_LABELS[value] ?? value;
+}
+
+export function criticalityTone(value: string | null | undefined): ChipTone {
+  return value === 'high' || value === 'medium' || value === 'low' ? value : 'neutral';
 }

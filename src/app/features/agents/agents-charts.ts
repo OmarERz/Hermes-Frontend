@@ -284,3 +284,16 @@ export function dailyCostChart(days: readonly TelemetryDay[]): EChartsCoreOption
     })),
   };
 }
+
+/** Whether any agent cost something in the days: a zero-filled series only draws its axes (G11, MET-3). */
+export function hasCost(days: readonly TelemetryDay[]): boolean {
+  return days.some((day) => day.agents.some((entry) => (chartNumber(entry.cost_usd) ?? 0) > 0));
+}
+
+/**
+ * Whether the agent has a review in the days (`reviews` of the API): without one, the performance chart has no line
+ * to draw (G11).
+ */
+export function hasReviews(days: readonly TelemetryDay[], agent: Agent): boolean {
+  return days.some((day) => day.agents.some((entry) => entry.agent === agent && entry.reviews > 0));
+}

@@ -5,27 +5,37 @@
     [icono]="bannerIcon"
   />
 
-  <section class="stats-grid" aria-label="Resumen de corridas">
-    <article class="stat-card">
-      <span><svg lucideClock aria-hidden="true"></svg></span><small>En cola ahora</small>
-      <strong class="numeric" [class.unknown]="queued() === null">{{ queued() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span><svg lucideLoader aria-hidden="true"></svg></span><small>En ejecución ahora</small>
-      <strong class="numeric" [class.unknown]="running() === null">{{ running() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span><svg lucideCircleCheck aria-hidden="true"></svg></span
-      ><small>Iniciadas en las últimas 24 h · terminaron bien</small>
-      <strong class="numeric" [class.unknown]="succeeded() === null">{{
-        succeeded() ?? '—'
-      }}</strong>
-    </article>
-    <article class="stat-card">
-      <span class="warning"><svg lucideCircleAlert aria-hidden="true"></svg></span
-      ><small>Iniciadas en las últimas 24 h · con error</small>
-      <strong class="numeric" [class.unknown]="failed() === null">{{ failed() ?? '—' }}</strong>
-    </article>
+  <!-- A failed read leaves «—» in the cards; the notice below says why. -->
+  <section class="kpi-grid" aria-label="Resumen de corridas">
+    <app-kpi-card
+      label="En cola ahora"
+      [icon]="kpiIcons.queued"
+      [state]="summary.loading() ? 'loading' : 'ready'"
+      [value]="queued()"
+    />
+    <app-kpi-card
+      label="En ejecución ahora"
+      [icon]="kpiIcons.running"
+      tone="violet"
+      [state]="summary.loading() ? 'loading' : 'ready'"
+      [value]="running()"
+    />
+    <app-kpi-card
+      label="Terminaron bien"
+      note="Iniciadas en las últimas 24 h"
+      [icon]="kpiIcons.succeeded"
+      tone="success"
+      [state]="summary.loading() ? 'loading' : 'ready'"
+      [value]="succeeded()"
+    />
+    <app-kpi-card
+      label="Con error"
+      note="Iniciadas en las últimas 24 h"
+      [icon]="kpiIcons.failed"
+      tone="danger"
+      [state]="summary.loading() ? 'loading' : 'ready'"
+      [value]="failed()"
+    />
   </section>
   @if (summary.error(); as failure) {
     <p class="runs-notice" role="status">
@@ -36,7 +46,7 @@
   <div class="action-row" *appIfRole="launchRole">
     <button
       type="button"
-      class="primary-action launch-scan"
+      class="btn btn-primary launch-scan"
       [disabled]="launching()"
       [attr.aria-busy]="launching()"
       (click)="launchScan()"
@@ -56,69 +66,77 @@
     </p>
   }
 
-  <section class="filters" aria-label="Filtros de corridas">
-    <label class="select-filter"
-      ><svg lucideLayers aria-hidden="true"></svg>
-      <select
-        #kindSelect
-        [value]="kind()"
-        (change)="setKind(kindSelect.value)"
-        aria-label="Tipo de corrida"
-      >
-        <option value="">Todos los tipos</option>
-        @for (value of kinds; track value) {
-          <option [value]="value" [selected]="kind() === value">{{ kindLabels[value] }}</option>
-        }
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <label class="select-filter"
-      ><svg lucideFunnel aria-hidden="true"></svg>
-      <select
-        #statusSelect
-        [value]="status()"
-        (change)="setStatus(statusSelect.value)"
-        aria-label="Estado de la corrida"
-      >
-        <option value="">Todos los estados</option>
-        @for (value of statuses; track value) {
-          <option [value]="value" [selected]="status() === value">
-            {{ statusLabels[value] }}
-          </option>
-        }
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <label class="asset-search date-filter"
-      ><svg lucideCalendar aria-hidden="true"></svg>
-      <span aria-hidden="true">Desde</span>
-      <input
-        #fromInput
-        type="date"
-        [value]="dateFrom()"
-        [attr.max]="dateTo() || null"
-        (change)="setDateFrom(fromInput.value)"
-        aria-label="Iniciadas desde"
-      />
-    </label>
-    <label class="asset-search date-filter"
-      ><svg lucideCalendar aria-hidden="true"></svg>
-      <span aria-hidden="true">hasta</span>
-      <input
-        #toInput
-        type="date"
-        [value]="dateTo()"
-        [attr.min]="dateFrom() || null"
-        (change)="setDateTo(toInput.value)"
-        aria-label="Iniciadas hasta"
-      />
-    </label>
-    @if (hasFilters()) {
-      <button type="button" class="more-filter" (click)="clearFilters()">Quitar filtros</button>
-    }
-    <button type="button" class="more-filter" (click)="refresh()">
-      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
-    </button>
+  <section class="filter-bar" aria-label="Filtros de corridas">
+    <label class="field"
+      ><span class="field-label">Tipo</span
+      ><span class="control"
+        ><svg lucideLayers aria-hidden="true"></svg>
+        <select
+          #kindSelect
+          [value]="kind()"
+          (change)="setKind(kindSelect.value)"
+          aria-label="Tipo de corrida"
+        >
+          <option value="">Todos los tipos</option>
+          @for (value of kinds; track value) {
+            <option [value]="value" [selected]="kind() === value">{{ kindLabels[value] }}</option>
+          }
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Estado</span
+      ><span class="control"
+        ><svg lucideFunnel aria-hidden="true"></svg>
+        <select
+          #statusSelect
+          [value]="status()"
+          (change)="setStatus(statusSelect.value)"
+          aria-label="Estado de la corrida"
+        >
+          <option value="">Todos los estados</option>
+          @for (value of statuses; track value) {
+            <option [value]="value" [selected]="status() === value">
+              {{ statusLabels[value] }}
+            </option>
+          }
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Iniciadas desde</span
+      ><span class="control"
+        ><svg lucideCalendar aria-hidden="true"></svg>
+        <input
+          #fromInput
+          type="date"
+          [value]="dateFrom()"
+          [attr.max]="dateTo() || null"
+          (change)="setDateFrom(fromInput.value)"
+          aria-label="Iniciadas desde" /></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Iniciadas hasta</span
+      ><span class="control"
+        ><svg lucideCalendar aria-hidden="true"></svg>
+        <input
+          #toInput
+          type="date"
+          [value]="dateTo()"
+          [attr.min]="dateFrom() || null"
+          (change)="setDateTo(toInput.value)"
+          aria-label="Iniciadas hasta" /></span
+    ></label>
+    <div class="filter-actions">
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+          Quitar filtros
+        </button>
+      }
+      <button type="button" class="btn btn-secondary" (click)="refresh()">
+        <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+      </button>
+    </div>
   </section>
 
   @if (detail(); as run) {
@@ -140,7 +158,9 @@
 
       <div class="live-progress">
         <div class="live-line">
-          <span [class]="'run-status status-' + run.status">{{ run.statusLabel }}</span>
+          <app-chip class="run-status" [tone]="statusTones[run.status]">{{
+            run.statusLabel
+          }}</app-chip>
           <strong class="numeric">{{ run.progress }} %</strong>
           @switch (liveState()) {
             @case ('live') {
@@ -170,7 +190,7 @@
               sigue siendo el que dio la API.
             </p>
             @if (run.active) {
-              <button type="button" class="more-filter" (click)="followAgain()">
+              <button type="button" class="btn btn-secondary btn-sm" (click)="followAgain()">
                 <svg lucideRefreshCw aria-hidden="true"></svg> Seguir de nuevo
               </button>
             }
@@ -218,6 +238,7 @@
     @if (tableState(); as state) {
       <app-async-state
         [state]="state"
+        [lines]="6"
         loadingText="Cargando corridas…"
         [emptyText]="hasFilters() ? 'No hay corridas con estos filtros.' : 'Aún no hay corridas.'"
         [error]="pager.state.error()"
@@ -251,7 +272,9 @@
                   <strong>{{ row.kindLabel }}</strong>
                 </td>
                 <td>
-                  <span [class]="'run-status status-' + row.status">{{ row.statusLabel }}</span>
+                  <app-chip class="run-status" [tone]="statusTones[row.status]">{{
+                    row.statusLabel
+                  }}</app-chip>
                 </td>
                 <td>
                   <span class="progress-cell">

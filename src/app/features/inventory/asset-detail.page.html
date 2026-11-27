@@ -21,38 +21,35 @@
       />
     </section>
   } @else if (detail.value(); as asset) {
-    <section class="stats-grid" aria-label="Resumen del activo">
-      <article class="stat-card">
-        <span class="warning"><svg lucideShieldAlert aria-hidden="true"></svg></span>
-        <small>Riesgo del activo</small>
+    <section class="kpi-grid" aria-label="Resumen del activo">
+      <app-kpi-card
+        label="Riesgo del activo"
+        [icon]="kpiIcons.risk"
+        [tone]="worstLevel() ?? 'success'"
+        [kind]="worstLevel() ? 'number' : 'text'"
+        [value]="worstLevel() ? asset.risk : 'Sin vulnerabilidades abiertas'"
+      >
         @if (worstLevel(); as level) {
-          <strong>{{ asset.risk }}</strong>
-          <em [class]="'level-chip level-' + level">{{ levelLabels[level] }}</em>
-        } @else {
-          <strong class="unknown">Sin vulnerabilidades abiertas</strong>
+          <app-chip [tone]="level">{{ levelLabels[level] }}</app-chip>
         }
-      </article>
-      <article class="stat-card">
-        <span><svg lucideTriangleAlert aria-hidden="true"></svg></span>
-        <small>Vulnerabilidades abiertas</small>
-        <strong>{{ openFindings().length }}</strong>
-      </article>
-      <article class="stat-card">
-        <span class="warning"><svg lucideFlame aria-hidden="true"></svg></span>
-        <small>Abiertas en el catálogo KEV</small>
-        <strong>{{ kevCount() }}</strong>
-      </article>
-      <article class="stat-card">
-        <span><svg lucideLayers aria-hidden="true"></svg></span>
-        <small>Software instalado</small>
-        @if (software.status() === 'ready') {
-          <strong>{{ softwareRows().length }}</strong>
-        } @else {
-          <strong class="unknown">{{
-            software.status() === 'error' ? 'Sin datos' : 'Cargando…'
-          }}</strong>
-        }
-      </article>
+      </app-kpi-card>
+      <app-kpi-card
+        label="Vulnerabilidades abiertas"
+        [icon]="kpiIcons.findings"
+        [value]="openFindings().length"
+      />
+      <app-kpi-card
+        label="Abiertas en el catálogo KEV"
+        [icon]="kpiIcons.kev"
+        tone="danger"
+        [value]="kevCount()"
+      />
+      <app-kpi-card
+        label="Software instalado"
+        [icon]="kpiIcons.software"
+        [state]="softwareKpiState()"
+        [value]="softwareRows().length"
+      />
     </section>
 
     <section class="panel" aria-labelledby="itop-data-title">
@@ -128,12 +125,10 @@
                     }
                   </td>
                   <td>
-                    <span class="category-chip">{{ item.categoryLabel }}</span>
+                    <app-chip tone="violet">{{ item.categoryLabel }}</app-chip>
                   </td>
                   <td>
-                    <span [class]="'state-chip state-' + item.statusKey">{{
-                      item.statusLabel
-                    }}</span>
+                    <app-chip [tone]="stateTones[item.statusKey]">{{ item.statusLabel }}</app-chip>
                   </td>
                   <td>
                     @if (item.licence; as licence) {
@@ -156,8 +151,8 @@
                   </td>
                   <td>
                     @if (item.worst_level; as level) {
-                      <span [class]="'level-chip level-' + level"
-                        >{{ levelLabels[level] }} · {{ item.open_vulnerabilities }}</span
+                      <app-chip [tone]="level"
+                        >{{ levelLabels[level] }} · {{ item.open_vulnerabilities }}</app-chip
                       >
                     } @else {
                       <span class="muted">Sin vulnerabilidades</span>
@@ -215,13 +210,13 @@
                   </td>
                   <td>{{ finding.product }}</td>
                   <td>
-                    <span [class]="'level-chip level-' + finding.level">{{
-                      levelLabels[finding.level]
-                    }}</span>
+                    <app-chip [tone]="finding.level">{{ levelLabels[finding.level] }}</app-chip>
                   </td>
                   <td class="numeric">{{ finding.final }}</td>
                   <td>
-                    <span class="status">{{ statusLabels[finding.status] }}</span>
+                    <app-chip [tone]="statusTones[finding.status]">{{
+                      statusLabels[finding.status]
+                    }}</app-chip>
                   </td>
                   <td>{{ finding.in_kev ? 'Sí' : 'No' }}</td>
                   <td>{{ finding.tickets.join(', ') || 'Sin tickets' }}</td>

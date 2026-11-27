@@ -27,29 +27,10 @@
   outline-offset: 2px;
 }
 
-.metric em.warn {
-  background: #fff1d9;
-  color: #985800;
-}
-.metric em.muted {
-  background: #f1edf5;
-  color: #62576c;
-}
-.queue-retry {
-  padding: 5px 8px;
-  border: 1px dashed #c98a2b;
-  border-radius: 10px;
-  background: #fff1d9;
-  color: #985800;
-  font: inherit;
-  font-size: calc((10px) + var(--font-size-increase));
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-}
+/* The chips next to the indicator values are the shared .kpi-detail (src/styles/kpi.css); the retry is one of them. */
 .queue-retry:focus-visible {
-  outline: 3px solid #9e4be1;
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .last-run {
@@ -165,15 +146,6 @@
 :host-context(.app-shell[data-theme='dark']) .connections-link,
 :host-context(.app-shell[data-theme='dark']) .ticket-link {
   color: var(--accent-lilac, #d9a8ff);
-}
-:host-context(.app-shell[data-theme='dark']) .metric em.warn,
-:host-context(.app-shell[data-theme='dark']) .queue-retry {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-:host-context(.app-shell[data-theme='dark']) .metric em.muted {
-  background: var(--violet-wash);
-  color: var(--text-secondary);
 }
 
 @container workspace (max-width: 1100px) {

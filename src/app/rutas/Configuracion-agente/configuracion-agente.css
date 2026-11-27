@@ -145,28 +145,6 @@
     color: #16804a;
     font-size: calc((12px) + var(--font-size-increase));
   }
-  .save-button,
-  .cancel-button {
-    min-height: 39px;
-    padding: 8px 14px;
-    border: 0;
-    border-radius: 8px;
-    background: var(--accent-strong);
-    color: var(--on-accent);
-    font: inherit;
-    font-size: calc((12px) + var(--font-size-increase));
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .save-button:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-  .cancel-button {
-    border: 1px solid var(--line);
-    background: var(--surface-raised, #fff);
-    color: var(--text-primary, #51465e);
-  }
 }
 @media (max-width: 650px) {
   .agent-config-view .config-grid {
@@ -434,14 +412,9 @@
   .save-row {
     margin-top: 16px;
   }
-  .save-button:focus-visible,
-  .cancel-button:focus-visible,
   .secondary-link:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
-  }
-  .save-button:disabled {
-    cursor: not-allowed;
   }
 }
 @media (max-width: 1100px) {
@@ -545,12 +518,6 @@
     font-size: calc((13px) + var(--font-size-increase));
   }
   .secondary-link {
-    font-size: calc((14px) + var(--font-size-increase));
-  }
-  .save-button,
-  .cancel-button {
-    min-height: 43px;
-    padding: 9px 17px;
     font-size: calc((14px) + var(--font-size-increase));
   }
   .config-grid {
