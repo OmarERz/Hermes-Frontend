@@ -109,6 +109,43 @@ describe('AgentsDashboardPage', SCREEN, () => {
     expect(charts(fixture)[1].label()).toContain('Analista de noticias');
   });
 
+  it('says an agent without reviews in the days has nothing to draw, instead of empty axes', async () => {
+    const { fixture, element } = await render(new FakeService());
+    fixture.componentInstance.chartAgent.set('cve_analyst');
+    await fixture.whenStable();
+    expect(charts(fixture).length).toBe(3);
+    expect(text(element.querySelector('.agent-chart'))).toContain(
+      'Analista de CVE no tuvo revisiones en los últimos',
+    );
+  });
+
+  it('says once, at the top, that every read failed, with one retry for all', async () => {
+    const service = new FakeService();
+    for (const read of [
+      service.summary,
+      service.daily,
+      service.ticketSummary,
+      service.latestRun,
+      service.metrics,
+    ]) {
+      read.mockReturnValue(failure());
+    }
+    const { fixture, element } = await render(service);
+    const notice = element.querySelector('app-async-state.page-notice') as HTMLElement;
+    expect(text(notice)).toContain('Telemetría no disponible.');
+    // The panels say only «No disponible», with no retry of their own (AGE-5).
+    expect(element.querySelectorAll('[role="alert"] button')).toHaveLength(1);
+    expect(text(element.querySelector('.performance [role="alert"]'))).toBe('No disponible.');
+
+    // One read answers this time: the notice goes away and the other panels show their own error.
+    service.summary.mockReturnValue(of(TELEMETRY_SUMMARY));
+    (notice.querySelector('button') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(service.metrics).toHaveBeenCalledTimes(2);
+    expect(service.latestRun).toHaveBeenCalledTimes(2);
+    expect(element.querySelector('app-async-state.page-notice')).toBeNull();
+  });
+
   it('reloads the summary and the series when the window changes', async () => {
     const service = new FakeService();
     const { fixture, element } = await render(service);

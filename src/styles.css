@@ -4,6 +4,7 @@
 @import './styles/kpi.css';
 @import './styles/forms.css';
 @import './styles/chips.css';
+@import './styles/states.css';
 @import './app/componentes/layout-principal/layout-principal.css';
 @import './app/rutas/Agentes/control-agente.css';
 @import './app/rutas/Stack-tecnologico/stack-tecnologico.css';

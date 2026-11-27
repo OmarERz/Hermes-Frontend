@@ -97,6 +97,24 @@ describe('MetricsPage', SCREEN, () => {
     ]);
   });
 
+  it('says the AI cost nothing instead of drawing empty axes', async () => {
+    const service = new FakeService();
+    service.daily.mockReturnValue(
+      of({
+        ...TELEMETRY_DAILY,
+        series: TELEMETRY_DAILY.series.map((day) => ({
+          ...day,
+          agents: day.agents.map((entry) => ({ ...entry, cost_usd: '0' })),
+        })),
+      }),
+    );
+    const { fixture, element } = await render(service);
+    expect(chart(fixture)).toBeUndefined();
+    expect(text(element.querySelector('.cost-section'))).toContain(
+      `La IA no tuvo costo en los últimos ${COST_DAYS} días.`,
+    );
+  });
+
   it('shows the error of the board with a retry, without hiding the cost chart', async () => {
     const service = new FakeService();
     service.metrics.mockReturnValue(

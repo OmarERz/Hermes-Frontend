@@ -77,7 +77,7 @@
       <app-async-state
         [state]="dailyState() ?? 'empty'"
         loadingText="Cargando el costo diario…"
-        emptyText="No hay datos diarios."
+        [emptyText]="costEmptyText()"
         [error]="daily.error()"
         (retry)="loadDaily()"
       />

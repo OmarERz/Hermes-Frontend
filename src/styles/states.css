@@ -1,0 +1,8 @@
+/*
+ * States of a list (F19.4, docs/front/diseno-ronda-1.md G11, VUL-6). The loading, empty and error states themselves
+ * are <app-async-state> (src/app/shared/async-state.component.ts); it carries its state as data-state. While a list
+ * is empty, the footer with its pagination and its page size has nothing to page, so it is not shown.
+ */
+.app-shell .page-content app-async-state[data-state='empty'] ~ footer:has(.pagination) {
+  display: none;
+}

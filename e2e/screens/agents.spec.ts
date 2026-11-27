@@ -14,14 +14,14 @@ test.describe('agents as reader', () => {
     page,
   }) => {
     await page.goto('/agentes');
-    await expect(page.locator('.metric')).toHaveCount(5);
-    await expect(page.locator('.metric strong').first()).toHaveText(/%$|^Sin datos$/);
+    await expect(page.locator('.performance .kpi-grid > app-kpi-card')).toHaveCount(5);
+    await expect(page.locator('.performance .kpi-value').first()).toHaveText(/%$|^Sin datos$/);
     await expect(page.locator('.agent-block h3')).toHaveText([
       /^\s*Juez/,
       /^\s*Analista de noticias/,
       /^\s*Analista de CVE/,
     ]);
-    await expect(page.locator('.ticket-kpis > div')).toHaveCount(9);
+    await expect(page.locator('.ticket-kpis > app-kpi-card')).toHaveCount(9);
     const charts = page.locator('app-grafico-dashboard');
     await expect(charts.first().locator('svg')).toBeVisible();
     // The last run that started, with its state and date.
@@ -29,6 +29,33 @@ test.describe('agents as reader', () => {
     // The connections are admin only (AG-4).
     await expect(page.getByText('Conexiones externas')).toHaveCount(0);
     await settle(page);
+  });
+
+  test('says once that the panel could not be read, with one retry for all its reads', async ({
+    page,
+  }) => {
+    // Every read of the panel fails (the reviews log has its own state and is left alone).
+    let failing = true;
+    await page.route(
+      /\/api\/(telemetry\/(summary|daily)|tickets\/summary|history|metrics)(\?|$)/,
+      (route) =>
+        failing
+          ? route.fulfill({
+              status: 500,
+              json: { error: { code: 'internal_error', message: 'Error interno del servidor.' } },
+            })
+          : route.fallback(),
+    );
+    await page.goto('/agentes');
+    const notice = page.locator('app-async-state.page-notice');
+    await expect(notice).toContainText('Error interno del servidor.');
+    await expect(page.getByRole('button', { name: 'Reintentar todo' })).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Reintentar', exact: true })).toHaveCount(0);
+
+    failing = false;
+    await page.getByRole('button', { name: 'Reintentar todo' }).click();
+    await expect(notice).toHaveCount(0);
+    await expect(page.locator('.performance .kpi-grid > app-kpi-card')).toHaveCount(5);
   });
 
   test('changes the window of the telemetry and lists the LLM reviews', async ({ page }) => {

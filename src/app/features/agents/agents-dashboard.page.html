@@ -4,6 +4,9 @@
     descripcion="Supervisa la actividad de los agentes de IA, las corridas y los tickets de Hermes."
     [icono]="bannerIcon"
   />
+  @if (allFailed()) {
+    <app-async-state variant="page" state="error" [error]="summary.error()" (retry)="reloadAll()" />
+  }
   @if (current(); as summary) {
     <p class="source-badge real-source">
       Datos reales · calculado {{ formatDateTime(summary.generated_at) }}
@@ -30,6 +33,7 @@
 
     @if (summaryState(); as state) {
       <app-async-state
+        [compact]="allFailed()"
         [state]="state"
         loadingText="Cargando la telemetría…"
         [error]="summary.error()"
@@ -124,6 +128,7 @@
             />
           } @else {
             <app-async-state
+              [compact]="allFailed()"
               [state]="dailyState() ?? 'empty'"
               loadingText="Cargando las series diarias…"
               emptyText="No hay datos diarios."
@@ -157,9 +162,10 @@
             />
           } @else {
             <app-async-state
+              [compact]="allFailed()"
               [state]="dailyState() ?? 'empty'"
               loadingText="Cargando las series diarias…"
-              emptyText="No hay datos diarios."
+              [emptyText]="performanceEmptyText()"
               [error]="daily.error()"
               (retry)="loadDaily()"
             />
@@ -183,6 +189,7 @@
             />
           } @else {
             <app-async-state
+              [compact]="allFailed()"
               state="empty"
               emptyText="No hay corridas terminadas en esta ventana."
             />
@@ -203,6 +210,7 @@
             />
           } @else {
             <app-async-state
+              [compact]="allFailed()"
               state="empty"
               emptyText="El juez no propuso motivos en esta ventana."
             />
@@ -260,6 +268,7 @@
       </div>
       @if (summaryState(); as state) {
         <app-async-state
+          [compact]="allFailed()"
           [state]="state"
           loadingText="Cargando los agentes…"
           [error]="summary.error()"
@@ -349,6 +358,7 @@
       </h2>
       @if (ticketState(); as state) {
         <app-async-state
+          [compact]="allFailed()"
           [state]="state"
           loadingText="Cargando los tickets…"
           [error]="tickets.error()"
