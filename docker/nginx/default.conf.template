@@ -68,15 +68,17 @@ server {
         sub_filter 'HERMES_CSP_NONCE' '$request_id';
     }
 
-    # Bundles with a content hash in the name (outputHashing: all) never change.
-    location ~ "^/[A-Za-z0-9._-]+-[A-Z0-9]{8}\.(js|css)$" {
+    # Files with a content hash in the name (outputHashing: all: the bundles at the root and the fonts in media/) never
+    # change: public, cached for a year.
+    location ~ "^/(media/)?[A-Za-z0-9._-]+-[A-Z0-9]{8}\.(js|css|woff2?)$" {
         include /etc/nginx/hermes/security-headers.conf;
         add_header Cache-Control "public, max-age=31536000, immutable" always;
         try_files $uri =404;
     }
 
-    # A missing file of the build (a file at the root, or under assets/ or media/) is a 404, not the app. Other paths
-    # with a dot are routes of the app (/activos/host.example) and go to the single-page fallback.
+    # The other files of the build (no hash in the name: favicon, images in assets/) are revalidated on every use
+    # (no-cache), so a new release shows at once. A missing one (at the root, or under assets/ or media/) is a 404, not
+    # the app; other paths with a dot are routes of the app (/activos/host.example) and go to the fallback.
     location ~ "^/((assets|media)/.+|[^/]+)\.[A-Za-z0-9]+$" {
         include /etc/nginx/hermes/security-headers.conf;
         add_header Cache-Control "no-cache" always;
