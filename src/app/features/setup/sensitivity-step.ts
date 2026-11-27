@@ -1,8 +1,15 @@
-import { Component, computed, DestroyRef, inject } from '@angular/core';
-import { AsyncState } from '../../shared/async-state';
-import { AsyncStateComponent } from '../../shared/async-state.component';
-import { optionLabel } from '../configuration/config-model';
-import { ConfigDocument, SetupService } from './setup.service';
+import { Component, computed, effect, inject, output } from '@angular/core';
+import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
+import { ConfigEditor } from '../configuration/config-editor';
+import { ConfigSaveBar } from '../configuration/config-save-bar';
+import { ConfigStore } from '../configuration/config-store';
+import {
+  chooseProfile,
+  DEAD_ZONE_KEY,
+  PROFILE_KEY,
+  profileCards,
+} from '../configuration/sensitivity-profiles';
+import { SimulationPanel } from '../configuration/simulation-panel';
 
 /** Factors of the base score, in the order of the Fórmula screen; any other weight goes last with its code. */
 const FACTORS: Record<string, string> = {
@@ -33,31 +40,66 @@ export function weightsOf(values: Readonly<Record<string, string>>): Weight[] {
 }
 
 /**
- * Paso 6 · Sensibilidad y fórmula (docs/13 §9): the current sensitivity profile, its dead zone and the formula
- * weights, from `GET /api/config`. Changing them needs the simulation first (FRO-04), so it happens in
- * Configuración del juez and Fórmula, where the profile is saved together with its dead zone (D-091).
+ * Paso 6 · Sensibilidad y fórmula (docs/13 §9): the admin chooses the sensitivity profile here, with the same pieces
+ * as Configuración del juez: the profile travels with its dead zone (D-091), the simulation comes first (FRO-04) and
+ * the save carries the version read (API-03), with the before/after confirmation. The formula weights are shown as
+ * they are (the factory ones serve to start); they change in Fórmula.
  */
 @Component({
   selector: 'app-setup-sensitivity-step',
-  imports: [AsyncStateComponent],
+  providers: [ConfigStore],
+  imports: [AsyncStateComponent, SimulationPanel, ConfigSaveBar],
   template: `
-    @switch (load.status()) {
-      @case ('error') {
-        <app-async-state state="error" [error]="load.error()" (retry)="reload()" />
-      }
-      @case ('ready') {
+    <div class="agent-config-view setup-sensitivity">
+      @if (pageState(); as view) {
+        <app-async-state
+          [state]="view"
+          loadingText="Cargando la configuración…"
+          [error]="store.state.error()"
+          (retry)="store.load()"
+        />
+      } @else {
+        @if (profileParam(); as param) {
+          <fieldset class="profile-options setup-profiles" [disabled]="!editor.canEdit(param)">
+            <legend class="field-label">Perfil de sensibilidad del juez</legend>
+            @for (profile of profiles(); track profile.value) {
+              <label
+                class="profile-option"
+                [class.selected]="editor.value(param.key) === profile.value"
+              >
+                <span class="profile-option-heading"
+                  ><input
+                    type="radio"
+                    name="setup-sensitivity-profile"
+                    [value]="profile.value"
+                    [checked]="editor.value(param.key) === profile.value"
+                    (change)="select(profile.value)"
+                /></span>
+                <strong>{{ profile.label }}</strong>
+                @if (profile.text) {
+                  <small>{{ profile.text }}</small>
+                }
+                @if (profile.deadZone !== null) {
+                  <small class="profile-dead-zone">Zona muerta: ≤ {{ profile.deadZone }}</small>
+                }
+              </label>
+            }
+          </fieldset>
+        } @else {
+          <p class="step-hint">El servidor no publica el perfil de sensibilidad.</p>
+        }
         <dl class="step-facts">
           <div>
-            <dt>Perfil de sensibilidad</dt>
-            <dd class="profile-value">{{ profile() }}</dd>
+            <dt>Perfil guardado</dt>
+            <dd class="profile-value">{{ savedProfile() }}</dd>
           </div>
           <div>
-            <dt>Zona muerta</dt>
-            <dd>{{ deadZone() }}</dd>
+            <dt>Zona muerta guardada</dt>
+            <dd>{{ savedDeadZone() }}</dd>
           </div>
           <div>
             <dt>Versión de la configuración</dt>
-            <dd>v{{ load.value()?.version }}</dd>
+            <dd>v{{ store.version() }}</dd>
           </div>
         </dl>
         @if (weights().length) {
@@ -73,41 +115,57 @@ export function weightsOf(values: Readonly<Record<string, string>>): Weight[] {
           </ul>
         }
         <p class="step-hint">
-          El perfil se cambia en Configuración del juez, con simulación previa, y se guarda junto
-          con su zona muerta. Los pesos de fábrica sirven para empezar.
+          Simula el perfil antes de guardarlo; se guarda junto con su zona muerta. Los pesos de
+          fábrica sirven para empezar y se cambian en Fórmula.
         </p>
+        <app-simulation-panel class="setup-simulation" [editor]="editor" />
+        <app-config-save-bar title="Confirmar el perfil de sensibilidad" [editor]="editor" />
       }
-      @default {
-        <app-async-state state="loading" loadingText="Cargando la configuración…" />
-      }
-    }
+    </div>
   `,
-  styleUrl: './setup-step.css',
+  styleUrls: ['./setup-step.css', './sensitivity-step.css'],
 })
 export class SetupSensitivityStep {
-  private readonly service = inject(SetupService);
-
-  readonly load = new AsyncState<ConfigDocument>();
-
-  private readonly values = computed<Readonly<Record<string, string>>>(
-    () => this.load.value()?.values ?? {},
-  );
-  readonly profile = computed(() => {
-    const value = this.values()['sensitivity_profile'];
-    return value ? optionLabel('sensitivity_profile', value) : '—';
+  readonly store = inject(ConfigStore);
+  readonly editor = new ConfigEditor({
+    include: (param) => param.key === PROFILE_KEY || param.key === DEAD_ZONE_KEY,
+    simulate: true,
   });
-  readonly deadZone = computed(() => {
-    const value = this.values()['dead_zone'];
+
+  /** A new configuration version was saved (the wizard reads its steps again: step 6 is done once saved). */
+  readonly saved = output<void>();
+  private readVersion: number | null = null;
+
+  readonly pageState = computed<ViewState | null>(() => {
+    const status = this.store.state.status();
+    if (status === 'error') return 'error';
+    return status === 'ready' ? null : 'loading';
+  });
+  readonly profileParam = computed(
+    () => this.editor.parameters().find((param) => param.key === PROFILE_KEY) ?? null,
+  );
+  readonly profiles = computed(() => profileCards(this.profileParam()?.options ?? []));
+  readonly savedProfile = computed(() => {
+    const value = this.editor.current(PROFILE_KEY);
+    return value ? profileCards([value])[0].label : '—';
+  });
+  readonly savedDeadZone = computed(() => {
+    const value = this.editor.current(DEAD_ZONE_KEY);
     return value ? `≤ ${value}` : '—';
   });
-  readonly weights = computed(() => weightsOf(this.values()));
+  readonly weights = computed(() => weightsOf(this.store.values()));
 
   constructor() {
-    this.reload();
-    inject(DestroyRef).onDestroy(() => this.load.cancel());
+    this.store.load();
+    effect(() => {
+      const version = this.store.version();
+      if (version === null) return;
+      if (this.readVersion !== null && version !== this.readVersion) this.saved.emit();
+      this.readVersion = version;
+    });
   }
 
-  reload(): void {
-    this.load.run(this.service.config());
+  select(profile: string): void {
+    chooseProfile(this.editor, profile);
   }
 }

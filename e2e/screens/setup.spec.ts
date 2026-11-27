@@ -38,13 +38,15 @@ test.describe('setup as admin', () => {
     await expect(page.locator('.step-locked')).toContainText('Siempre activas');
 
     await stepper.getByRole('button', { name: /^Revisión del inventario/ }).click();
-    await expect(page.locator('.pending-list li')).toHaveCount(6);
+    await expect(page.locator('.pending-list li[data-kind="software_without_cpe"]')).toBeVisible();
 
+    // The profile is chosen here, with the simulation first (nothing is saved in this suite).
     await stepper.getByRole('button', { name: /^Sensibilidad y fórmula/ }).click();
     await expect(page.locator('.profile-value')).not.toHaveText('—');
-    await expect(
-      page.getByRole('link', { name: 'Elegir el perfil en Configuración del juez' }),
-    ).toBeVisible();
+    const profiles = page.locator('.setup-profiles');
+    await expect(profiles.getByRole('radio', { name: /^Normal/ })).toBeEnabled();
+    await expect(profiles.getByText('Zona muerta: ≤ 2')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Guardar cambios' })).toBeDisabled();
 
     await stepper.getByRole('button', { name: /^Primer escaneo/ }).click();
     // Visible, not pressed (another test may have a scan running).
@@ -67,6 +69,19 @@ test.describe('setup as admin', () => {
   });
 });
 
+test.describe('setup reminder as admin', () => {
+  asRole('admin');
+
+  // The stack has no external keys, so the connections step stays pending and the reminder shows.
+  test('the start screen points to the wizard while steps are pending', async ({ page }) => {
+    await page.goto('/inicio');
+    const reminder = page.getByRole('complementary', { name: 'Configuración inicial' });
+    await expect(reminder).toContainText('pasos pendientes en el asistente');
+    await reminder.getByRole('link', { name: 'Abrir el asistente' }).click();
+    await expect(page).toHaveURL(/\/asistente$/);
+  });
+});
+
 for (const role of ['reader', 'analyst'] as const) {
   test.describe(`setup as ${role}`, () => {
     asRole(role);
@@ -74,6 +89,14 @@ for (const role of ['reader', 'analyst'] as const) {
     test('sends the wizard to the forbidden screen', async ({ page }) => {
       await page.goto('/asistente');
       await expect(page).toHaveURL(/\/sin-permiso$/);
+    });
+
+    test('shows no setup reminder on the start screen', async ({ page }) => {
+      await page.goto('/inicio');
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await expect(page.getByRole('complementary', { name: 'Configuración inicial' })).toHaveCount(
+        0,
+      );
     });
   });
 }

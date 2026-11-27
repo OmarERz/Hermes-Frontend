@@ -59,14 +59,10 @@ describe('SetupService', () => {
     expect(await marked).toEqual(STEP);
   });
 
-  it('reads the inventory pendings and the configuration', async () => {
+  it('reads the inventory pendings', async () => {
     const pending = firstValueFrom(service.pendingInventory());
     backend.expectOne(`${API}/api/pending/inventory`).flush({ software_without_cpe: [] });
     expect(await pending).toEqual({ software_without_cpe: [] });
-
-    const config = firstValueFrom(service.config());
-    backend.expectOne(`${API}/api/config`).flush({ version: 3, values: {} });
-    expect(await config).toEqual({ version: 3, values: {} });
   });
 
   it('launches a scan and reads the latest scans', async () => {
@@ -82,6 +78,15 @@ describe('SetupService', () => {
     expect(list.request.method).toBe('GET');
     list.flush({ items: [RUN], next_cursor: null });
     expect(await scans).toEqual([RUN]);
+
+    const since = firstValueFrom(service.scans(20, RUN.started_at));
+    const followed = backend.expectOne(
+      (request) => request.url === `${API}/api/runs` && request.params.has('date_from'),
+    );
+    expect(followed.request.params.get('date_from')).toBe(RUN.started_at);
+    expect(followed.request.params.get('kind')).toBe('scan');
+    followed.flush({ items: [], next_cursor: null });
+    expect(await since).toEqual([]);
   });
 
   it('hands the API refusal over as an ApiError', async () => {

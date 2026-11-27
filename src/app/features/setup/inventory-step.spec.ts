@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
-import { SetupInventoryStep } from './inventory-step';
+import { PENDING_LIMIT, pendingRows, SetupInventoryStep } from './inventory-step';
 import { InventoryPending, SetupService } from './setup.service';
 
 const item = (id: string) => ({ id, name: id }) as unknown as InventoryPending['without_owner'][0];
@@ -39,15 +39,15 @@ describe('SetupInventoryStep', () => {
       text(li.querySelector('strong')),
       text(li.querySelector('.item-number')),
     ]);
+    // «Fuera del modelo de entrega» is not computed by the API yet: an empty list is not shown as zero.
     expect(rows).toEqual([
       ['Software sin CPE', '2'],
       ['Activos sin clasificación', '1'],
       ['Activos sin dato de exposición', '0'],
       ['Activos sin responsable', '1'],
       ['Activos sin equipo custodio', '0'],
-      ['Activos fuera del modelo de entrega', '0'],
     ]);
-    expect(element.querySelectorAll('.item-number.zero').length).toBe(3);
+    expect(element.querySelectorAll('.item-number.zero').length).toBe(2);
     expect(text(element.querySelector('.step-hint'))).toContain('se corrigen en iTop');
   });
 
@@ -68,6 +68,28 @@ describe('SetupInventoryStep', () => {
     expect(text(second.element.querySelector('.step-count'))).toBe('1 pendiente en el inventario');
   });
 
+  it('reads a list cut at the API limit as «or more», and shows a kind once the API computes it', async () => {
+    const service = new FakeSetup();
+    service.pendingInventory.mockReturnValueOnce(
+      of({
+        ...PENDING,
+        without_exposure: Array.from({ length: PENDING_LIMIT }, (_, i) => item(`ci-${i}`)),
+        outside_delivery_model: [item('ci-x')],
+      }),
+    );
+    const { element } = await render(service);
+    expect(text(element.querySelector('.step-count'))).toBe(
+      'Al menos 205 pendientes en el inventario',
+    );
+    expect(text(element.querySelector('li[data-kind="without_exposure"] .item-number'))).toBe(
+      '200 o más',
+    );
+    expect(text(element.querySelector('li[data-kind="outside_delivery_model"] .item-number'))).toBe(
+      '1',
+    );
+    expect(pendingRows(null).map((row) => row.count)).toEqual([0, 0, 0, 0, 0]);
+  });
+
   it('shows the API message and retries', async () => {
     const service = new FakeSetup();
     service.pendingInventory.mockReturnValueOnce(
@@ -78,6 +100,6 @@ describe('SetupInventoryStep', () => {
     (element.querySelector('[role="alert"] button') as HTMLButtonElement).click();
     await fixture.whenStable();
     expect(service.pendingInventory).toHaveBeenCalledTimes(2);
-    expect(element.querySelectorAll('li[data-kind]').length).toBe(6);
+    expect(element.querySelectorAll('li[data-kind]').length).toBe(5);
   });
 });

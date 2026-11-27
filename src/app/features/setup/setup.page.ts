@@ -72,6 +72,8 @@ export class SetupPage {
   private readonly service = inject(SetupService);
   private readonly destroyRef = inject(DestroyRef);
   private refreshing: Subscription | null = null;
+  /** Marks started so far: a reading of the steps started before a mark never replaces what the mark saved. */
+  private marks = 0;
 
   readonly bannerIcon = LucideWandSparkles;
 
@@ -133,12 +135,18 @@ export class SetupPage {
 
   /**
    * Reads the steps again without leaving the current one: a step turns done as soon as the data shows it (after
-   * saving the profile, adding a peer, switching a source, a successful scan…). A failure keeps what is shown.
+   * saving the profile, adding a peer, switching a source, a successful scan…). A failure keeps what is shown. While
+   * a mark is saved nothing is read, and an answer that started before a mark is dropped, so an older reading never
+   * puts back the state the mark changed.
    */
   refresh(): void {
+    if (this.marking() !== null) return;
     this.refreshing?.unsubscribe();
+    const seen = this.marks;
     this.refreshing = this.service.status().subscribe({
-      next: (steps) => this.steps.set(steps),
+      next: (steps) => {
+        if (seen === this.marks) this.steps.set(steps);
+      },
       error: () => undefined,
     });
   }
@@ -155,6 +163,8 @@ export class SetupPage {
   mark(mark: StepMark): void {
     const n = this.selected();
     if (n === null || this.marking() !== null) return;
+    this.marks += 1;
+    this.refreshing?.unsubscribe();
     this.marking.set(n);
     this.markError.set(null);
     this.notice.set(null);

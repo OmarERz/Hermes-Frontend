@@ -77,11 +77,11 @@ export const STEP_GUIDES: Readonly<Record<number, StepGuide>> = {
     icon: LucideClipboardList,
   },
   6: {
-    what: 'Perfil de sensibilidad del juez y pesos de la fórmula; los pesos de fábrica sirven para empezar.',
+    what: 'Elige el perfil de sensibilidad del juez, con simulación previa; los pesos de fábrica de la fórmula sirven para empezar.',
     ifSkipped: 'Se usa el perfil «Normal» con los pesos de fábrica.',
     links: [
-      { path: '/configuracion-agente', label: 'Elegir el perfil en Configuración del juez' },
-      { path: '/formula', label: 'Revisar la fórmula' },
+      { path: '/configuracion-agente', label: 'Modo avanzado en Configuración del juez' },
+      { path: '/formula', label: 'Cambiar los pesos en Fórmula' },
     ],
     icon: LucideSlidersHorizontal,
   },

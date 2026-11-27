@@ -5,6 +5,8 @@ import { ApiError } from '../../core/api/api-error';
 import { provideFakeSession } from '../../testing/fake-session';
 import type { CompanyProfile } from '../company/company-labels';
 import { CompanyService } from '../company/company.service';
+import { ConfigApi } from '../configuration/config-api';
+import { configDocument, SCHEMA } from '../configuration/testing/config-fixtures';
 import { ConnectionsService } from '../connections/connections.service';
 import { makeSource } from '../sources/source-fixtures';
 import { SourcesService } from '../sources/sources.service';
@@ -49,9 +51,6 @@ class FakeSetup {
       outside_delivery_model: [],
     }),
   );
-  config = vi.fn<SetupService['config']>(() =>
-    of({ version: 3, values: { sensitivity_profile: 'normal', dead_zone: '4' } }),
-  );
   scans = vi.fn<SetupService['scans']>(() => of([]));
   launchScan = vi.fn<SetupService['launchScan']>();
 }
@@ -75,6 +74,10 @@ async function render(setup = new FakeSetup()) {
       {
         provide: ConnectionsService,
         useValue: { status: () => of([]), test: () => of([]) },
+      },
+      {
+        provide: ConfigApi,
+        useValue: { schema: () => of(SCHEMA), config: () => of(configDocument()) },
       },
       {
         provide: SourcesService,
@@ -210,6 +213,39 @@ describe('SetupPage', () => {
     expect(text(element.querySelector('.setup-notice[role="status"]'))).toBe(
       '«Empresas pares» volvió a quedar pendiente.',
     );
+  });
+
+  it('never lets an older reading of the steps put back what a mark saved', async () => {
+    const setup = new FakeSetup();
+    const { element, page, press, goTo, stable } = await render(setup);
+    // Opening step 4 starts a reading that is still on its way when the step is skipped.
+    const late = new Subject<SetupStep[]>();
+    setup.status.mockReturnValueOnce(late);
+    await goTo(4);
+    await press('Omitir paso');
+    expect(element.querySelectorAll('.step-link')[3].getAttribute('data-state')).toBe('skipped');
+    late.next(steps({ 1: 'done', 3: 'skipped' }));
+    await stable();
+    expect(element.querySelectorAll('.step-link')[3].getAttribute('data-state')).toBe('skipped');
+
+    // A reading started before a mark and answered after it is dropped too.
+    await goTo(6);
+    const before = new Subject<SetupStep[]>();
+    const mark = new Subject<SetupStep>();
+    setup.status.mockReturnValueOnce(before);
+    page.refresh();
+    setup.mark.mockReturnValueOnce(mark);
+    page.mark('done');
+    // While the mark is saved nothing is read.
+    const reads = setup.status.mock.calls.length;
+    page.refresh();
+    expect(setup.status.mock.calls.length).toBe(reads);
+    mark.next({ n: 6, name: NAMES[5], done: true, skipped: false });
+    mark.complete();
+    before.next(steps({ 1: 'done' }));
+    await stable();
+    expect(element.querySelectorAll('.step-link')[5].getAttribute('data-state')).toBe('done');
+    expect(element.querySelectorAll('.step-link')[3].getAttribute('data-state')).toBe('skipped');
   });
 
   it('disables the marks while one is saved and shows the API message when it fails', async () => {

@@ -96,7 +96,7 @@
                   <app-setup-inventory-step />
                 }
                 @case (6) {
-                  <app-setup-sensitivity-step />
+                  <app-setup-sensitivity-step (saved)="refresh()" />
                 }
                 @case (7) {
                   <app-setup-scan-step (finished)="refresh()" />

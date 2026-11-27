@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import { formatDateTime } from '../../shared/labels';
 import { isActive, SCAN_POLLING, SetupScanStep } from './scan-step';
@@ -22,7 +22,7 @@ function run(overrides: Partial<Run> = {}): Run {
 class FakeSetup {
   /** What each read of the latest scans answers, in order; the last answer repeats. */
   answers: (Run[] | Error)[] = [[]];
-  scans = vi.fn<(limit: number) => Observable<Run[]>>(() => {
+  scans = vi.fn<(limit: number, since?: string | null) => Observable<Run[]>>(() => {
     const answer = this.answers.length > 1 ? this.answers.shift()! : this.answers[0];
     return answer instanceof Error ? throwError(() => answer) : of(answer);
   });
@@ -85,7 +85,8 @@ describe('SetupScanStep', () => {
     expect(service.launchScan).toHaveBeenCalledTimes(1);
 
     await until(() => expect(finished).toHaveBeenCalledTimes(1));
-    expect(service.scans).toHaveBeenLastCalledWith(20);
+    // Each reading asks for the scans started since the followed one.
+    expect(service.scans).toHaveBeenLastCalledWith(20, STARTED);
     expect(text(element.querySelector('.scan-status strong'))).toBe('Terminó bien');
     expect((element.querySelector('progress') as HTMLProgressElement).value).toBe(100);
     expect(text(element.querySelector('.scan-run .item-number'))).toBe('100 %');
@@ -121,15 +122,32 @@ describe('SetupScanStep', () => {
     expect(text(element.querySelector('.scan-status strong'))).toBe('Terminó bien');
   });
 
-  it('shows the API message when the scan cannot be launched or the runs cannot be read', async () => {
+  it('keeps launching off until the latest scan can be read, so a scan in progress is never hidden', async () => {
     const service = new FakeSetup();
-    service.answers = [new ApiError(503, 'auth_unavailable', 'El servicio no responde.')];
-    const { fixture, element, button } = await render(service);
-    expect(text(element.querySelector('[role="alert"]'))).toBe('El servicio no responde.');
-    expect(element.querySelector('.step-count')?.textContent?.trim()).toBe(
-      'Todavía no hay escaneos.',
-    );
+    service.answers = [
+      new ApiError(503, 'auth_unavailable', 'El servicio no responde.'),
+      [run({ status: 'running', progress: 30 })],
+    ];
+    const { fixture, element, button } = await render(service, 1000);
+    expect(text(element.querySelector('[role="alert"]'))).toContain('El servicio no responde.');
+    expect(text(element.querySelector('.step-count'))).toBe('No se pudo leer el último escaneo.');
+    expect(button().disabled).toBe(true);
+    fixture.componentInstance.launch();
+    expect(service.launchScan).not.toHaveBeenCalled();
 
+    const retry = element.querySelector('[role="alert"] button') as HTMLButtonElement;
+    expect(text(retry)).toBe('Reintentar');
+    retry.click();
+    fixture.detectChanges();
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+    expect(text(element.querySelector('.scan-status strong'))).toBe('En ejecución');
+    expect(button().disabled).toBe(true);
+    fixture.destroy();
+  });
+
+  it('shows the API message when the scan cannot be launched', async () => {
+    const service = new FakeSetup();
+    const { fixture, element, button } = await render(service);
     service.launchScan.mockReturnValueOnce(
       throwError(() => new ApiError(403, 'forbidden', 'No tienes permiso.')),
     );
@@ -138,6 +156,23 @@ describe('SetupScanStep', () => {
     expect(text(element.querySelector('[role="alert"]'))).toBe('No tienes permiso.');
     expect(element.querySelector('[role="alert"] button')).toBeNull();
     expect(button().disabled).toBe(false);
+  });
+
+  it('waits for a slow reading instead of cancelling it on the next tick', async () => {
+    const service = new FakeSetup();
+    service.answers = [[run({ status: 'running', progress: 10 })]];
+    const slow = new Subject<Run[]>();
+    const { fixture, element, finished, until } = await render(service);
+    service.scans.mockReturnValue(slow);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    // Ticks kept coming, but only one reading is on its way.
+    const reads = service.scans.mock.calls.length;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(service.scans.mock.calls.length).toBe(reads);
+    slow.next([run({ status: 'succeeded', progress: 100 })]);
+    await until(() => expect(finished).toHaveBeenCalledTimes(1));
+    await fixture.whenStable();
+    expect(text(element.querySelector('.scan-status strong'))).toBe('Terminó bien');
   });
 
   it('offers to read again when following fails, and resumes', async () => {

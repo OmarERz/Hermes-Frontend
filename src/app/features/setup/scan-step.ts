@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { LucidePlay } from '@lucide/angular';
-import { map, Subscription, switchMap, take, takeWhile, timer } from 'rxjs';
+import { exhaustMap, map, Subscription, take, takeWhile, timer } from 'rxjs';
 import { toApiError } from '../../core/api/api-error';
 import { formatDateTime } from '../../shared/labels';
 import { Run, SetupService } from './setup.service';
@@ -40,8 +40,10 @@ export function isActive(run: Pick<Run, 'status'>): boolean {
 
 /**
  * Paso 7 · Primer escaneo (docs/13 §9): launches the simulated scan (`POST /api/scans`) and shows its progress by
- * reading `GET /api/runs` every few seconds until it ends (Corridas follows it live). It starts by showing the latest
- * scan, and keeps following it if it is still queued or running.
+ * reading `GET /api/runs` (the scans started since it) every few seconds until it ends; a slow answer is waited for,
+ * never cancelled by the next tick. Corridas follows it live. It starts by showing the latest scan, and keeps
+ * following it if it is still queued or running; until that first reading succeeds, launching stays off, so a
+ * failed reading never hides a scan in progress.
  */
 @Component({
   selector: 'app-setup-scan-step',
@@ -51,6 +53,8 @@ export function isActive(run: Pick<Run, 'status'>): boolean {
       <span class="step-count">
         @if (loading()) {
           Buscando el último escaneo…
+        } @else if (loadFailed()) {
+          No se pudo leer el último escaneo.
         } @else if (!run()) {
           Todavía no hay escaneos.
         }
@@ -58,7 +62,7 @@ export function isActive(run: Pick<Run, 'status'>): boolean {
       <button
         type="button"
         class="step-button launch-scan"
-        [disabled]="launching() || loading() || active()"
+        [disabled]="launching() || loading() || loadFailed() || active()"
         [attr.aria-busy]="launching()"
         (click)="launch()"
       >
@@ -69,7 +73,9 @@ export function isActive(run: Pick<Run, 'status'>): boolean {
     @if (error(); as problem) {
       <div class="step-message error" role="alert">
         {{ problem }}
-        @if (stalled()) {
+        @if (loadFailed()) {
+          <button type="button" class="step-button" (click)="loadLatest()">Reintentar</button>
+        } @else if (stalled()) {
           <button type="button" class="step-button" (click)="resume()">Volver a consultar</button>
         }
       </div>
@@ -101,6 +107,8 @@ export class SetupScanStep {
 
   readonly run = signal<Run | null>(null);
   readonly loading = signal(true);
+  /** The first reading of the latest scan failed: launching waits for a successful retry. */
+  readonly loadFailed = signal(false);
   readonly launching = signal(false);
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
@@ -121,25 +129,35 @@ export class SetupScanStep {
   });
 
   constructor() {
-    this.initial = this.service.scans(1).subscribe({
-      next: ([latest]) => {
-        this.loading.set(false);
-        this.run.set(latest ?? null);
-        if (latest && isActive(latest)) this.follow(latest.id);
-      },
-      error: (error: unknown) => {
-        this.loading.set(false);
-        this.error.set(toApiError(error).message);
-      },
-    });
+    this.loadLatest();
     inject(DestroyRef).onDestroy(() => {
       this.initial?.unsubscribe();
       this.following?.unsubscribe();
     });
   }
 
+  /** Reads the latest scan (and follows it if it is still queued or running). */
+  loadLatest(): void {
+    this.initial?.unsubscribe();
+    this.loading.set(true);
+    this.loadFailed.set(false);
+    this.error.set(null);
+    this.initial = this.service.scans(1).subscribe({
+      next: ([latest]) => {
+        this.loading.set(false);
+        this.run.set(latest ?? null);
+        if (latest && isActive(latest)) this.follow(latest);
+      },
+      error: (error: unknown) => {
+        this.loading.set(false);
+        this.loadFailed.set(true);
+        this.error.set(toApiError(error).message);
+      },
+    });
+  }
+
   launch(): void {
-    if (this.launching() || this.active()) return;
+    if (this.launching() || this.loading() || this.loadFailed() || this.active()) return;
     this.launching.set(true);
     this.error.set(null);
     this.notice.set(null);
@@ -150,7 +168,7 @@ export class SetupScanStep {
         this.launching.set(false);
         this.run.set(created);
         this.notice.set('Se lanzó el escaneo simulado; el worker lo toma en unos segundos.');
-        this.follow(created.id);
+        this.follow(created);
       },
       error: (error: unknown) => {
         this.launching.set(false);
@@ -165,18 +183,19 @@ export class SetupScanStep {
     if (!current) return;
     this.error.set(null);
     this.stalled.set(false);
-    this.follow(current.id);
+    this.follow(current);
   }
 
-  private follow(id: string): void {
+  private follow(followed: Run): void {
     this.following?.unsubscribe();
     let ended = false;
     const { intervalMs, maxPolls } = this.polling;
     this.following = timer(intervalMs, intervalMs)
       .pipe(
         take(maxPolls),
-        switchMap(() => this.service.scans(SCANS_READ)),
-        map((runs) => runs.find((run) => run.id === id) ?? null),
+        // A tick while the previous reading is still on its way is skipped, not a reason to cancel it.
+        exhaustMap(() => this.service.scans(SCANS_READ, followed.started_at)),
+        map((runs) => runs.find((run) => run.id === followed.id) ?? null),
         takeWhile((run) => run === null || isActive(run), true),
       )
       .subscribe({
