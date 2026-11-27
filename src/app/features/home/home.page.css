@@ -5,7 +5,6 @@
   grid-template-areas: 'main art' 'summary summary';
   gap: clamp(14px, 2vh, 20px) clamp(20px, 2vw, 32px);
   min-height: calc(100svh - 123px);
-  margin-inline: clamp(0px, 0.65vw, 12px);
   color: var(--text-primary);
 }
 .welcome-main {

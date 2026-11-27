@@ -396,11 +396,6 @@ h3 {
   outline-offset: var(--focus-offset);
 }
 
-.app-shell[data-theme='light'] .theme-toggle {
-  background: #f2e4fb;
-  color: #52146b;
-}
-
 /* Paleta de texto secundaria para el tema claro; los colores semánticos se mantienen aparte. */
 .app-shell[data-theme='light']
   :is(
@@ -859,6 +854,22 @@ h3 {
   background: rgba(33, 13, 56, 0.98);
   color: #fbf5ff;
   box-shadow: var(--shadow-2);
+}
+/* Compact sidebar (tablet): the dropdown is wider than the 76 px sidebar and opens over the page. */
+@media (max-width: 850px) {
+  .app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown {
+    right: auto;
+    width: min(290px, calc(100vw - var(--sidebar-w-compact)));
+    max-width: none;
+  }
+}
+/* Bottom bar (phone): the dropdown opens above the bar, against its right edge. */
+@media (max-width: 560px) {
+  .app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown {
+    left: auto;
+    right: var(--space-2);
+    width: min(290px, calc(100% - 2 * var(--space-2)));
+  }
 }
 .app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown:focus-visible {
   outline: var(--focus-ring);

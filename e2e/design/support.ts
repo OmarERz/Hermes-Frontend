@@ -248,14 +248,24 @@ export async function openScreen(page: Page, screen: Screen, recorder: Recorder)
   return page.url();
 }
 
-/** Sets the theme with the switch of the app shell (not persisted: every load starts dark). */
+/**
+ * Sets the theme with the switch of the profile menu (not persisted: every load starts dark): opens the menu, switches
+ * and closes it again, so the menu is only in the picture of the view that opened it.
+ */
 async function setTheme(page: Page, theme: Theme): Promise<boolean> {
   const shell = page.locator('.app-shell');
   if (!(await shell.count())) return false;
   if ((await shell.getAttribute('data-theme')) !== theme) {
-    // A dispatched click: the pointer never hovers anything in the captures.
-    await page.locator('.theme-toggle').dispatchEvent('click');
+    // Dispatched clicks: the pointer never hovers anything in the captures. A menu the view opened stays open.
+    const trigger = page.locator('.sidebar-profile .profile-trigger');
+    const wasOpen = (await trigger.getAttribute('aria-expanded')) === 'true';
+    if (!wasOpen) await trigger.dispatchEvent('click');
+    await page.locator('.profile-dropdown .theme-toggle').dispatchEvent('click');
     await expect(shell).toHaveAttribute('data-theme', theme);
+    if (!wasOpen) {
+      await trigger.dispatchEvent('click');
+      await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    }
     await page.waitForTimeout(300);
   }
   return true;

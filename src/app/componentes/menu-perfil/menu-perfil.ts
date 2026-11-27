@@ -7,14 +7,15 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { LucideChevronDown, LucideLogOut } from '@lucide/angular';
+import { LucideChevronDown, LucideLogOut, LucideMoon, LucideSun } from '@lucide/angular';
 import { Router } from '@angular/router';
 import { ROLE_LABELS } from '../../core/auth/roles';
 import { SessionService } from '../../core/auth/session.service';
+import { ThemeService } from '../../core/theme/theme.service';
 
 @Component({
   selector: 'app-menu-perfil',
-  imports: [LucideChevronDown, LucideLogOut],
+  imports: [LucideChevronDown, LucideLogOut, LucideMoon, LucideSun],
   templateUrl: './menu-perfil.html',
   styleUrl: './menu-perfil.css',
 })
@@ -22,6 +23,7 @@ export class MenuPerfil {
   private readonly elemento = inject(ElementRef<HTMLElement>);
   private readonly router = inject(Router);
   readonly sesion = inject(SessionService);
+  readonly tema = inject(ThemeService);
   @Input() ubicacion: 'arriba' | 'abajo' = 'abajo';
   @Input() menuId = 'profile-dropdown';
 
@@ -79,9 +81,19 @@ export class MenuPerfil {
     if (this.menuAbierto) this.cerrarMenu(true);
   }
 
-  /** Cierra el menú al pulsar Tab para que el foco continúe en el orden de página. */
+  /**
+   * Tab moves between the menu's buttons; the menu closes when Tab (or Shift+Tab) takes the focus out of it, so the
+   * focus goes on in the page order.
+   */
   manejarTecladoPanel(evento: KeyboardEvent): void {
-    if (evento.key === 'Tab') this.cerrarMenu();
+    if (evento.key !== 'Tab' || !this.panel) return;
+    const panel = this.panel.nativeElement;
+    const buttons = [...panel.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+    const active = document.activeElement;
+    const leaves = evento.shiftKey
+      ? active === panel || active === buttons[0]
+      : !buttons.length || active === buttons[buttons.length - 1];
+    if (leaves) this.cerrarMenu();
   }
 
   /** Cierra el menú al hacer clic fuera de esta instancia compartida. */
