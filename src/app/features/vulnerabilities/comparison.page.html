@@ -145,7 +145,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of pager.items(); track row.cve + row.ci_id) {
+            @for (row of pager.items(); track row.cve + '|' + row.product + '|' + row.ci_id) {
               <tr>
                 <td>
                   <strong>{{ row.cve }}</strong>

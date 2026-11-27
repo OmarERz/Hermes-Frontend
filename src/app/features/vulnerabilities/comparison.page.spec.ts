@@ -107,6 +107,30 @@ describe('ComparisonPage', () => {
     expect(element.querySelector('td.delta')?.classList).toContain('delta-down');
   });
 
+  it('keeps one row per CVE, product and CI (one finding each), with no duplicated key', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const service = new FakeService();
+    const row = {
+      cve: 'CVE-2026-10002',
+      product: 'nginx',
+      ci_id: 'SRV-03',
+      cvss: '9.8',
+      raw: 98,
+      base: 40,
+      judge_adjustment: -2,
+      final: 38,
+      delta: -60,
+      main_cause: 'Criticidad y exposición del activo (-45)',
+    };
+    service.rows.mockReturnValue(
+      of({ items: [row, { ...row, product: 'nginx-module' }], nextCursor: null }),
+    );
+    const { element } = await render(service);
+    expect(element.querySelectorAll('section.inventory tbody tr').length).toBe(2);
+    expect(warn.mock.calls.flat().join(' ')).not.toContain('NG0955');
+    warn.mockRestore();
+  });
+
   it('keeps the table when the summary fails, and retries', async () => {
     const service = new FakeService();
     service.summary.mockReturnValueOnce(
