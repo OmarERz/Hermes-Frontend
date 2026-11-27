@@ -35,14 +35,11 @@
 .view-switch button[aria-pressed='true'] {
   border-color: #ed079b44;
   background: #ed079b12;
-  color: #c90083;
+  color: var(--accent-text);
 }
 .view-switch button:focus-visible {
   outline: 2px solid #ed079b;
   outline-offset: 2px;
-}
-:host-context(.app-shell[data-theme='dark']) .view-switch button[aria-pressed='true'] {
-  color: #ff78cf;
 }
 .level-list {
   display: inline-flex;

@@ -85,7 +85,7 @@
   background: #ed079b;
 }
 .delta-up {
-  color: #c90083;
+  color: var(--accent-text);
   font-weight: 700;
 }
 .delta-down {

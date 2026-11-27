@@ -98,7 +98,7 @@ form {
   padding: 8px 16px;
   border: 0;
   border-radius: 9px;
-  background: #e9089b;
+  background: var(--accent-strong);
   color: #fff;
   font: inherit;
   font-weight: 700;

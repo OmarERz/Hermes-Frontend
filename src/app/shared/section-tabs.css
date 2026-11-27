@@ -45,14 +45,11 @@
 .section-tabs a.active {
   border-color: #ed079b44;
   background: #ed079b12;
-  color: #c90083;
+  color: var(--accent-text);
 }
 .section-tabs a:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
-}
-:host-context(.app-shell[data-theme='dark']) .section-tabs a.active {
-  color: #ff78cf;
 }
 :host-context(.app-shell[data-theme='dark']) .section-tabs a:hover {
   color: var(--text-primary);

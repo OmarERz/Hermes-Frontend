@@ -76,7 +76,7 @@ export function itopCreateUrl(base: string | null, itopClass: string): string | 
       display: inline-flex;
       align-items: center;
       gap: var(--space-1);
-      color: var(--accent, #c90083);
+      color: var(--accent-text, #c9007f);
       font-weight: var(--weight-semibold);
       text-decoration: none;
       white-space: nowrap;

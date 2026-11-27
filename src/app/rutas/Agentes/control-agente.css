@@ -290,8 +290,8 @@
     flex: none;
   }
   .action.primary {
-    background: #e9089b;
-    color: #fff;
+    background: var(--accent-strong);
+    color: var(--on-accent);
   }
   .action.outline {
     border: 1px solid #d76ce4;

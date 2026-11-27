@@ -9,7 +9,7 @@
 }
 .scope-note a,
 .link-button {
-  color: var(--accent, #c90083);
+  color: var(--accent-text);
   font-weight: 600;
 }
 .feedback-filter,

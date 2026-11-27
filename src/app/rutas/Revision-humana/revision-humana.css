@@ -273,8 +273,8 @@
   }
   .confirm-button {
     border-color: transparent;
-    background: #e9089b;
-    color: #fff;
+    background: var(--accent-strong);
+    color: var(--on-accent);
   }
   .audit-card {
     margin-top: 12px;
@@ -1066,8 +1066,8 @@
 }
 .review-modal-actions .review-save {
   border-color: transparent;
-  background: var(--accent);
-  color: #fff;
+  background: var(--accent-strong);
+  color: var(--on-accent);
 }
 .review-modal-actions button:disabled {
   opacity: 0.5;

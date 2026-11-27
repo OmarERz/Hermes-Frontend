@@ -35,7 +35,12 @@
   --text-secondary: #ddcfe9;
   --text-muted: #b7a5c8;
   --border: rgba(217, 168, 255, 0.24);
-  --accent: #ff009d;
+  --accent: #ff009d; /* logo, gradients, icons, active borders (D-093: unchanged) */
+  /* D-093: pink behind white text and pink text, at WCAG AA in both themes. */
+  --accent-strong: #c9007f; /* 5.54:1 with white: primary buttons, active page, filled chips */
+  --accent-strong-hover: #b00070; /* 6.82:1 with white */
+  --on-accent: #fff;
+  --accent-text: #ff78cf; /* pink text: 6.70:1 on --surface */
   --accent-violet: #a537ff;
   --accent-lilac: #d9a8ff;
   --accent-wash: rgba(255, 0, 157, 0.13);
@@ -58,7 +63,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  accent-color: var(--accent);
+  accent-color: var(--accent-strong);
   color: var(--text-primary);
   background: var(--canvas);
 }
@@ -76,7 +81,7 @@ body {
   color: var(--text-primary);
 }
 .app-shell {
-  accent-color: var(--accent);
+  accent-color: var(--accent-strong);
   background: var(--page-background);
 }
 .app-shell[data-theme='dark'] {
@@ -110,6 +115,7 @@ h3 {
   --text-muted: #6c6179;
   --border: #e5dced;
   --accent: #ed079b;
+  --accent-text: #c9007f; /* 5.54:1 on white, 4.70:1 on --accent-wash */
   --accent-violet: #8d20b8;
   --accent-lilac: #d9a8ff;
   --accent-wash: #fce6f8;
@@ -230,8 +236,8 @@ h3 {
 .app-shell[data-theme='dark'] .agent-view .action.primary,
 .app-shell[data-theme='dark'] .assets-view .primary-action {
   border-color: transparent;
-  background: var(--accent);
-  color: #fff;
+  background: var(--accent-strong);
+  color: var(--on-accent);
   box-shadow: var(--glow-accent);
 }
 .app-shell[data-theme='dark'] .agent-view .action.outline {
@@ -308,9 +314,9 @@ h3 {
 }
 .app-shell[data-theme='dark'] .stack-view .pagination button.selected,
 .app-shell[data-theme='dark'] .assets-view .pagination button.selected {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--on-accent);
 }
 .app-shell[data-theme='dark'] .stack-view .quadrant-chart {
   border-color: var(--border);
