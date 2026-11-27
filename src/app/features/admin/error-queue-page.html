@@ -1,0 +1,160 @@
+<div class="assets-view error-queue-view">
+  <app-banner-pagina
+    titulo="Cola de errores"
+    descripcion="Lo que falló y espera a una persona: notificaciones y escrituras en iTop que agotaron sus reintentos, y elementos que un analista o el juez no pudieron validar."
+    [icono]="bannerIcon"
+  />
+
+  <section class="filters" aria-label="Filtros de la cola de errores">
+    <label class="select-filter"
+      ><svg lucideFunnel aria-hidden="true"></svg>
+      <select
+        #kindSelect
+        [value]="kind()"
+        (change)="setKind(kindSelect.value)"
+        aria-label="Origen del error"
+      >
+        <option value="">Todos los orígenes</option>
+        @for (value of kinds; track value) {
+          <option [value]="value" [selected]="kind() === value">{{ kindLabels[value] }}</option>
+        }
+      </select>
+      <svg lucideChevronDown aria-hidden="true"></svg>
+    </label>
+    <button type="button" class="more-filter" (click)="refresh()">
+      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+    </button>
+  </section>
+
+  @if (notice(); as message) {
+    <p
+      class="admin-notice"
+      [class.error]="message.kind === 'error'"
+      [attr.role]="message.kind === 'error' ? 'alert' : 'status'"
+    >
+      {{ message.text }}
+    </p>
+  }
+
+  <section class="panel inventory" aria-labelledby="errors-title">
+    <header>
+      <div class="inventory-title">
+        <svg lucideTriangleAlert aria-hidden="true"></svg>
+        <h2 id="errors-title">Elementos con error</h2>
+      </div>
+      <span>Página {{ pager.pageIndex() + 1 }}</span>
+    </header>
+    @if (tableState(); as state) {
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando la cola de errores…"
+        [emptyText]="
+          kind() ? 'No hay errores de este origen.' : 'No hay errores pendientes. Todo se entregó.'
+        "
+        [error]="pager.state.error()"
+        (retry)="pager.reload()"
+      />
+    } @else {
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Cola de errores; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table class="errors-table">
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Origen</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Intentos</th>
+              <th scope="col">Próximo intento</th>
+              <th scope="col">Error</th>
+              <th scope="col">Relacionado</th>
+              <th scope="col"><span class="sr-only">Acción</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td class="numeric">{{ row.when }}</td>
+                <td>
+                  <strong>{{ row.kindLabel }}</strong>
+                  <small class="code">{{ row.component }}</small>
+                </td>
+                <td>
+                  <span class="chip" [class.bad]="!row.scheduled" [class.warn]="row.scheduled">{{
+                    row.statusLabel
+                  }}</span>
+                </td>
+                <td class="numeric">{{ row.attempts }}</td>
+                <td>{{ row.nextAttempt }}</td>
+                <td class="error-text">{{ row.error }}</td>
+                <td class="related">
+                  @if (row.cve) {
+                    <span class="code">{{ row.cve }}</span>
+                  }
+                  @if (row.ticket) {
+                    <small>Ticket {{ row.ticket }}</small>
+                  }
+                  @if (row.assessmentId) {
+                    <a
+                      class="row-link"
+                      [routerLink]="['/recomendaciones-agente']"
+                      [queryParams]="{ id: row.assessmentId }"
+                      >Ver recomendación</a
+                    >
+                  }
+                  @if (!row.cve && !row.ticket && !row.assessmentId) {
+                    —
+                  }
+                </td>
+                <td class="row-actions">
+                  @if (row.retryable) {
+                    <button
+                      type="button"
+                      class="row-button"
+                      [disabled]="isRetrying(row.id)"
+                      [attr.aria-busy]="isRetrying(row.id)"
+                      (click)="retry(row)"
+                    >
+                      <svg lucideRotateCcw aria-hidden="true"></svg>
+                      {{ isRetrying(row.id) ? 'Reintentando…' : 'Reintentar' }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <footer>
+      <span class="footnote"
+        >Solo las notificaciones se pueden reintentar desde aquí; las escrituras en iTop y la
+        validación del LLM se revisan en su origen.</span
+      >
+      <div class="pagination">
+        <button
+          type="button"
+          [disabled]="!pager.hasPrevious() || pager.state.loading()"
+          (click)="pager.previous()"
+          aria-label="Página anterior de la cola de errores"
+        >
+          <svg lucideArrowLeft aria-hidden="true"></svg>
+        </button>
+        <button type="button" class="selected" aria-current="page">
+          {{ pager.pageIndex() + 1 }}
+        </button>
+        <button
+          type="button"
+          [disabled]="!pager.hasNext()"
+          (click)="pager.next()"
+          aria-label="Página siguiente de la cola de errores"
+        >
+          <svg lucideArrowRight aria-hidden="true"></svg>
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>

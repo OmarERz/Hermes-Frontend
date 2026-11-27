@@ -1,0 +1,24 @@
+/* Cola de errores: the table width, the error text (external data, wrapped) and the related column. */
+table.errors-table {
+  min-width: 1040px;
+}
+.errors-table td.error-text {
+  min-width: 220px;
+  max-width: 360px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.errors-table td.related {
+  min-width: 140px;
+  white-space: normal;
+}
+.errors-table td.related > * {
+  display: block;
+}
+.errors-table td.related > * + * {
+  margin-top: 3px;
+}
+.footnote {
+  color: var(--text-muted);
+  font-size: calc(11px + var(--font-size-increase));
+}
