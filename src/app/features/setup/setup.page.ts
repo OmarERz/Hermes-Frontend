@@ -16,6 +16,7 @@ import { toApiError } from '../../core/api/api-error';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { KpiCard } from '../../shared/kpi-card';
 import { PeersPanel } from '../company/peers-panel';
 import { ProfilePanel } from '../company/profile-panel';
 import { SetupConnectionsStep } from './connections-step';
@@ -53,6 +54,7 @@ import { SetupSourcesStep } from './sources-step';
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    KpiCard,
     ProfilePanel,
     PeersPanel,
     SetupConnectionsStep,
@@ -63,10 +65,7 @@ import { SetupSourcesStep } from './sources-step';
     LucideArrowLeft,
     LucideArrowRight,
     LucideCircleCheck,
-    LucideCircleDashed,
     LucideDynamicIcon,
-    LucideListOrdered,
-    LucideSkipForward,
   ],
   templateUrl: './setup-page.html',
   styleUrl: './setup-page.css',
@@ -79,6 +78,13 @@ export class SetupPage {
   private marks = 0;
 
   readonly bannerIcon = LucideWandSparkles;
+  /** Icons of the progress cards (the shared <app-kpi-card>). */
+  readonly kpiIcons = {
+    total: LucideListOrdered,
+    done: LucideCircleCheck,
+    skipped: LucideSkipForward,
+    pending: LucideCircleDashed,
+  };
 
   readonly load = new AsyncState<SetupStep[]>();
   readonly steps = signal<SetupStep[]>([]);

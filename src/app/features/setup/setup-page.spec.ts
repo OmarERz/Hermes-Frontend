@@ -132,7 +132,7 @@ describe('SetupPage', () => {
       ),
     ).toEqual(['done', 'pending', 'skipped', 'pending', 'pending', 'pending', 'pending']);
     expect(text(element.querySelector('.step-link .step-number'))).toBe('✓');
-    expect(Array.from(element.querySelectorAll('.stat-card strong')).map(text)).toEqual([
+    expect(Array.from(element.querySelectorAll('.setup-stats .kpi-value')).map(text)).toEqual([
       '7',
       '1',
       '1',
@@ -347,7 +347,7 @@ describe('SetupPage', () => {
       ),
     );
     const { element, stable } = await render(setup);
-    expect(Array.from(element.querySelectorAll('.stat-card strong')).map(text)).toEqual([
+    expect(Array.from(element.querySelectorAll('.setup-stats .kpi-value')).map(text)).toEqual([
       '—',
       '—',
       '—',

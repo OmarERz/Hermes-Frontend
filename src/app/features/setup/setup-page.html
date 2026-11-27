@@ -5,24 +5,16 @@
     [icono]="bannerIcon"
   />
 
-  <section class="stats-grid" aria-label="Avance del asistente">
-    <article class="stat-card">
-      <span><svg lucideListOrdered aria-hidden="true"></svg></span><small>Pasos</small>
-      <strong [class.unknown]="total() === null">{{ total() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span><svg lucideCircleCheck aria-hidden="true"></svg></span><small>Hechos</small>
-      <strong [class.unknown]="doneCount() === null">{{ doneCount() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span><svg lucideSkipForward aria-hidden="true"></svg></span><small>Omitidos</small>
-      <strong [class.unknown]="skippedCount() === null">{{ skippedCount() ?? '—' }}</strong>
-    </article>
-    <article class="stat-card">
-      <span class="warning"><svg lucideCircleDashed aria-hidden="true"></svg></span
-      ><small>Pendientes</small>
-      <strong [class.unknown]="pendingCount() === null">{{ pendingCount() ?? '—' }}</strong>
-    </article>
+  <section class="kpi-grid setup-stats" aria-label="Avance del asistente">
+    <app-kpi-card label="Pasos" [icon]="kpiIcons.total" [value]="total()" />
+    <app-kpi-card label="Hechos" [icon]="kpiIcons.done" [value]="doneCount()" />
+    <app-kpi-card label="Omitidos" [icon]="kpiIcons.skipped" [value]="skippedCount()" />
+    <app-kpi-card
+      label="Pendientes"
+      [icon]="kpiIcons.pending"
+      tone="warning"
+      [value]="pendingCount()"
+    />
   </section>
 
   @switch (load.status()) {
