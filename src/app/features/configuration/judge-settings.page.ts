@@ -99,7 +99,7 @@ export class JudgeSettingsPage {
     () => this.editor.parameters().find((param) => param.key === PROFILE_KEY) ?? null,
   );
   readonly profiles = computed(() =>
-    profileCards(this.profileParam()?.options ?? []).map((card) => ({
+    profileCards(this.profileParam()).map((card) => ({
       ...card,
       icon: PROFILE_ICONS[card.value] ?? LucideSlidersHorizontal,
     })),

@@ -1,9 +1,8 @@
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { pendingCount, PendingKind } from '../inventory/pending-counts';
 import { InventoryPending, SetupService } from './setup.service';
-
-type PendingKind = keyof InventoryPending;
 
 /** The pendings of FRO-17, in the order of the Pendientes de inventario screen (the OpenAPI descriptions). */
 export const PENDING_LABELS: Record<PendingKind, string> = {
@@ -15,9 +14,6 @@ export const PENDING_LABELS: Record<PendingKind, string> = {
   outside_delivery_model: 'Activos fuera del modelo de entrega',
 };
 
-/** The API lists up to this many items of each kind: a full list means «this many or more». */
-export const PENDING_LIMIT = 200;
-
 /**
  * Kinds the API does not compute yet (it always answers an empty list): shown only once it sends items, so an empty
  * list never reads as «nothing pending».
@@ -28,15 +24,21 @@ export interface PendingRow {
   kind: PendingKind;
   label: string;
   count: number;
-  /** The API cut the list at its limit: there are at least `count`. */
+  /** Only without `totals`: the API cut the list at its limit, so there are at least `count`. */
   capped: boolean;
 }
 
+/**
+ * The count of each kind with the rule of Pendientes de inventario (`pendingCount`): the exact total of `totals`
+ * (F18.6), which counts past the 200 of each list; without it, the list length, «or more» when the list is full.
+ */
 export function pendingRows(pending: InventoryPending | null): PendingRow[] {
   return (Object.keys(PENDING_LABELS) as PendingKind[])
     .map((kind) => {
-      const count = pending?.[kind]?.length ?? 0;
-      return { kind, label: PENDING_LABELS[kind], count, capped: count >= PENDING_LIMIT };
+      const { count, atLeast } = pending
+        ? pendingCount(pending, kind)
+        : { count: 0, atLeast: false };
+      return { kind, label: PENDING_LABELS[kind], count, capped: atLeast };
     })
     .filter((row) => row.count > 0 || !NOT_COMPUTED.includes(row.kind));
 }
@@ -53,8 +55,8 @@ export function pendingTotal(rows: readonly PendingRow[]): string {
 
 /**
  * Paso 5 · Revisión del inventario (docs/13 §9, FRO-17): what `GET /api/pending/inventory` finds missing in the iTop
- * inventory, as counts (a list cut at the API limit reads «200 o más»). The data is fixed in iTop and the CPE mapping
- * in Pendientes de inventario.
+ * inventory, as counts (its `totals`; without them, a list cut at the API limit reads «200 o más»). The data is fixed
+ * in iTop and the CPE mapping in Pendientes de inventario.
  */
 @Component({
   selector: 'app-setup-inventory-step',

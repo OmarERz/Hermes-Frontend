@@ -118,7 +118,7 @@ async function errorOf(response: Response): Promise<ApiError> {
  * The observable completes when the run ends (`succeeded` or `failed`). When the connection drops, or the server
  * closes the stream before the run ends, it reconnects with a growing wait; after `MAX_RECONNECTS` failures in a
  * row it errors with the network message, and an API error (403, 404, 422…) errors at once. Unsubscribing aborts
- * the request. Either way the screen asks `GET /api/runs` for the final state.
+ * the request. Either way the screen asks `GET /api/runs/{id}` for the final state.
  */
 @Injectable({ providedIn: 'root' })
 export class RunEventsService {

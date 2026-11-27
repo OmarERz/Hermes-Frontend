@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
-import { PENDING_LIMIT, pendingRows, SetupInventoryStep } from './inventory-step';
+import { PENDING_PAGE as PENDING_LIMIT } from '../inventory/pending-counts';
+import { pendingRows, SetupInventoryStep } from './inventory-step';
 import { InventoryPending, SetupService } from './setup.service';
 
 const item = (id: string) => ({ id, name: id }) as unknown as InventoryPending['without_owner'][0];
@@ -88,6 +89,45 @@ describe('SetupInventoryStep', () => {
       '1',
     );
     expect(pendingRows(null).map((row) => row.count)).toEqual([0, 0, 0, 0, 0]);
+  });
+
+  it('counts past the API limit with the totals, so a cut list reads its exact number', async () => {
+    const service = new FakeSetup();
+    service.pendingInventory.mockReturnValueOnce(
+      of({
+        ...PENDING,
+        without_exposure: Array.from({ length: PENDING_LIMIT }, (_, i) => item(`ci-${i}`)),
+        totals: {
+          software_without_cpe: 2,
+          without_classification: 1,
+          without_exposure: 206,
+          without_owner: 1,
+          without_custodian: 0,
+          outside_delivery_model: 0,
+        },
+      }),
+    );
+    const { element } = await render(service);
+    expect(text(element.querySelector('.step-count'))).toBe('210 pendientes en el inventario');
+    expect(text(element.querySelector('li[data-kind="without_exposure"] .item-number'))).toBe(
+      '206',
+    );
+    // A total below what the list holds never hides an item.
+    const rows = pendingRows({
+      ...PENDING,
+      totals: {
+        software_without_cpe: 0,
+        without_classification: 0,
+        without_exposure: 0,
+        without_owner: 0,
+        without_custodian: 0,
+        outside_delivery_model: 0,
+      },
+    });
+    expect(rows.find((row) => row.kind === 'software_without_cpe')).toMatchObject({
+      count: 2,
+      capped: false,
+    });
   });
 
   it('shows the API message and retries', async () => {

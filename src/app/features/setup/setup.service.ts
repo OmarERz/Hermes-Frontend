@@ -9,8 +9,8 @@ export type Run = ApiSchema<'Run'>;
 /**
  * Calls of the first-run setup wizard (docs/13 §9, D-042), admin only: the seven steps and their marks
  * (`GET /api/setup/status`, `PUT /api/setup/steps/{n}`), plus what some steps show: the inventory pendings and the
- * simulated scans. The connections, the company and the sources use the services of
- * their own screens. Nothing here sends or receives a key (SEG-23).
+ * simulated scans (their live progress comes from the run events of Corridas). The connections, the company and the
+ * sources use the services of their own screens. Nothing here sends or receives a key (SEG-23).
  */
 @Injectable({ providedIn: 'root' })
 export class SetupService {
@@ -34,13 +34,15 @@ export class SetupService {
     return this.api.post('/api/scans', { body: { kind: 'scan' } });
   }
 
-  /**
-   * The latest scans: the ones not started yet first, then the newest (ARQ-04). `since` keeps only the scans started
-   * on or after that moment, so a followed scan stays on the first page however many come after it.
-   */
-  scans(limit: number, since: string | null = null): Observable<Run[]> {
+  /** The latest scans: the ones not started yet first, then the newest (ARQ-04). */
+  scans(limit: number): Observable<Run[]> {
     return this.api
-      .get('/api/runs', { query: { kind: 'scan', limit, date_from: since } })
+      .get('/api/runs', { query: { kind: 'scan', limit } })
       .pipe(map((page) => page.items));
+  }
+
+  /** One run by its id, with its current status (the final one once it ended). */
+  run(id: string): Observable<Run> {
+    return this.api.get('/api/runs/{id}', { path: { id } });
   }
 }

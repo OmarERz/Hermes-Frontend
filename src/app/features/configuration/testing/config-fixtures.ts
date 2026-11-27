@@ -139,6 +139,27 @@ export const SCHEMA: ConfigParameter[] = [
     default: 'normal',
     options: ['broad', 'minimal', 'normal'],
     description: 'Perfil de sensibilidad del juez',
+    // What the API publishes since F18.6 (docs/07 §12).
+    option_values: {
+      broad: {
+        'judge.range_multiplier': '1.5',
+        'judge.allow_lowering': 'true',
+        dead_zone: '2',
+        'mode2.min_confidence': '0.4',
+      },
+      minimal: {
+        'judge.range_multiplier': '0.5',
+        'judge.allow_lowering': 'false',
+        dead_zone: '6',
+        'mode2.min_confidence': '0.8',
+      },
+      normal: {
+        'judge.range_multiplier': '1',
+        'judge.allow_lowering': 'true',
+        dead_zone: '4',
+        'mode2.min_confidence': '0.6',
+      },
+    },
   }),
   parameter({
     key: 'human_ticket_suggestions',

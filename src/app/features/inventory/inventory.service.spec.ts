@@ -12,7 +12,6 @@ import {
   PENDING,
   SUMMARY,
   testConfig,
-  WEB,
 } from './inventory.fixtures';
 import { InventoryService, MAX_CATALOGUE_PAGES } from './inventory.service';
 
@@ -48,41 +47,6 @@ describe('InventoryService', () => {
     expect(request.request.params.get('limit')).toBe('25');
     request.flush({ items: [PAYMENTS], next_cursor: 'n.sig' });
     expect(await result).toEqual({ items: [PAYMENTS], nextCursor: 'n.sig' });
-  });
-
-  it('finds the inventory row with the exact id among the search matches', async () => {
-    const found = firstValueFrom(service.findAsset('CI-1'));
-    const request = backend.expectOne((req) => req.url === `${API}/api/inventory/assets`);
-    expect(request.request.params.get('q')).toBe('CI-1');
-    expect(request.request.params.get('limit')).toBe('200');
-    request.flush({ items: [{ ...PAYMENTS, ci_id: 'CI-10' }, PAYMENTS], next_cursor: null });
-    expect(await found).toEqual(PAYMENTS);
-
-    const missing = firstValueFrom(service.findAsset('CI-9'));
-    backend.expectOne(() => true).flush({ items: [WEB] });
-    expect(await missing).toBeNull();
-  });
-
-  it('follows the search pages until the exact id appears', async () => {
-    const found = firstValueFrom(service.findAsset('CI-1'));
-    backend
-      .expectOne((req) => !req.params.has('cursor'))
-      .flush({ items: [{ ...PAYMENTS, ci_id: 'CI-10' }], next_cursor: 'p2.sig' });
-    const second = backend.expectOne((req) => req.params.get('cursor') === 'p2.sig');
-    expect(second.request.params.get('q')).toBe('CI-1');
-    second.flush({ items: [PAYMENTS], next_cursor: 'p3.sig' });
-    // Found: the third page is never asked for.
-    expect(await found).toEqual(PAYMENTS);
-  });
-
-  it('stops following the search at the page cap', async () => {
-    const found = firstValueFrom(service.findAsset('CI-1'));
-    for (let page = 1; page <= MAX_CATALOGUE_PAGES; page += 1) {
-      backend
-        .expectOne((req) => req.url === `${API}/api/inventory/assets`)
-        .flush({ items: [WEB], next_cursor: `p${page + 1}.sig` });
-    }
-    expect(await found).toBeNull();
   });
 
   it('counts the vulnerability groups per priority from the criticality view', async () => {

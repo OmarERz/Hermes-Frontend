@@ -15,7 +15,10 @@ export type SetupStep = ApiSchema<'SetupStep'>;
 export type SetupStepUpdate = ApiBody<'/api/setup/steps/{n}', 'put'>;
 export type StepState = 'done' | 'skipped' | 'pending';
 
-/** What an admin does with a step: mark it done, skip it, or take back a skip. */
+/**
+ * What an admin does with a step: mark it done, skip it, or take back a skip or a manual done mark (`{done: false}`
+ * only undoes a mark: a step the data shows stays done).
+ */
 export type StepMark = 'done' | 'skipped' | 'reset';
 
 export const MARK_BODIES: Record<StepMark, SetupStepUpdate> = {
@@ -29,6 +32,26 @@ export const STATE_LABELS: Record<StepState, string> = {
   skipped: 'Omitido',
   pending: 'Pendiente',
 };
+
+export type DoneSource = NonNullable<SetupStep['done_source']>;
+
+/** Where a done step comes from (`done_source`, F18.6): the data shows it, or only an admin's mark. */
+export const DONE_SOURCE_LABELS: Record<DoneSource, string> = {
+  data: 'detectado',
+  manual: 'marcado',
+};
+
+/** The state for people, with where a done step comes from when the API says it: «Hecho · detectado». */
+export function stateText(step: Pick<SetupStep, 'done' | 'skipped' | 'done_source'>): string {
+  const state = stepState(step);
+  const source = state === 'done' && step.done_source ? DONE_SOURCE_LABELS[step.done_source] : null;
+  return source ? `${STATE_LABELS[state]} · ${source}` : STATE_LABELS[state];
+}
+
+/** Only a done mark that nothing else backs can be taken back (with data behind it, it would stay done). */
+export function canUnmark(step: Pick<SetupStep, 'done' | 'done_source'>): boolean {
+  return step.done && step.done_source === 'manual';
+}
 
 export interface StepLink {
   path: string;
@@ -124,7 +147,11 @@ export function nextOpenStep(steps: readonly SetupStep[], n: number): number | n
 
 /** What the page says after a mark. */
 export function markNotice(step: SetupStep, mark: StepMark): string {
-  if (mark === 'reset') return `«${step.name}» volvió a quedar pendiente.`;
+  if (mark === 'reset') {
+    return stepState(step) === 'done'
+      ? `«${step.name}» sigue hecho: los datos ya lo muestran.`
+      : `«${step.name}» volvió a quedar pendiente.`;
+  }
   if (stepState(step) === 'done') return `«${step.name}» quedó como hecho.`;
   return `Se omitió «${step.name}». ${stepGuide(step.n).ifSkipped}`;
 }

@@ -1,31 +1,10 @@
-import {
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  InjectionToken,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
 import { LucidePlay } from '@lucide/angular';
-import { exhaustMap, map, Subscription, take, takeWhile, timer } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { toApiError } from '../../core/api/api-error';
 import { formatDateTime } from '../../shared/labels';
+import { RunEventsService, RunProgress } from '../runs/run-events';
 import { Run, SetupService } from './setup.service';
-
-/**
- * How the step follows a queued or running scan: it reads the runs every `intervalMs` milliseconds, and after
- * `maxPolls` reads (about 10 minutes) it stops and points to Corridas.
- */
-export interface ScanPolling {
-  intervalMs: number;
-  maxPolls: number;
-}
-export const SCAN_POLLING = new InjectionToken<ScanPolling>('SCAN_POLLING', {
-  factory: () => ({ intervalMs: 3000, maxPolls: 200 }),
-});
-/** The newest scans read on each poll to find the one being followed. */
-const SCANS_READ = 20;
 
 export const RUN_STATUS_LABELS: Record<Run['status'], string> = {
   queued: 'En cola',
@@ -38,12 +17,17 @@ export function isActive(run: Pick<Run, 'status'>): boolean {
   return run.status === 'queued' || run.status === 'running';
 }
 
+/** The followed run with the progress and the status of its last stream event. */
+function withProgress(run: Run, progress: RunProgress): Run {
+  return { ...run, progress: progress.progress, status: progress.status ?? run.status };
+}
+
 /**
- * Paso 7 · Primer escaneo (docs/13 §9): launches the simulated scan (`POST /api/scans`) and shows its progress by
- * reading `GET /api/runs` (the scans started since it) every few seconds until it ends; a slow answer is waited for,
- * never cancelled by the next tick. Corridas follows it live. It starts by showing the latest scan, and keeps
- * following it if it is still queued or running; until that first reading succeeds, launching stays off, so a
- * failed reading never hides a scan in progress.
+ * Paso 7 · Primer escaneo (docs/13 §9): launches the simulated scan (`POST /api/scans`) and follows its progress live
+ * over `GET /api/runs/{id}/events` (the stream of Corridas, which sends the Bearer token): each event carries the
+ * run's `status`, and the stream ends with the final one. Then `GET /api/runs/{id}` gives the final row (status,
+ * progress, end). It starts by showing the latest scan, and keeps following it if it is still queued or running;
+ * until that first reading succeeds, launching stays off, so a failed reading never hides a scan in progress.
  */
 @Component({
   selector: 'app-setup-scan-step',
@@ -98,7 +82,7 @@ export function isActive(run: Pick<Run, 'status'>): boolean {
 })
 export class SetupScanStep {
   private readonly service = inject(SetupService);
-  private readonly polling = inject(SCAN_POLLING);
+  private readonly runEvents = inject(RunEventsService);
   private following: Subscription | null = null;
   private initial: Subscription | null = null;
 
@@ -112,7 +96,7 @@ export class SetupScanStep {
   readonly launching = signal(false);
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
-  /** Following stopped before the run ended (an error or too long): it can be resumed. */
+  /** Following stopped before the run ended (the stream or the final reading failed): it can be resumed. */
   readonly stalled = signal(false);
 
   readonly active = computed(() => {
@@ -186,41 +170,55 @@ export class SetupScanStep {
     this.follow(current);
   }
 
+  /** Follows the run's stream; when it ends, reads the final row of the run. */
   private follow(followed: Run): void {
     this.following?.unsubscribe();
-    let ended = false;
-    const { intervalMs, maxPolls } = this.polling;
-    this.following = timer(intervalMs, intervalMs)
-      .pipe(
-        take(maxPolls),
-        // A tick while the previous reading is still on its way is skipped, not a reason to cancel it.
-        exhaustMap(() => this.service.scans(SCANS_READ, followed.started_at)),
-        map((runs) => runs.find((run) => run.id === followed.id) ?? null),
-        takeWhile((run) => run === null || isActive(run), true),
-      )
-      .subscribe({
-        next: (run) => {
-          if (!run) return;
-          this.run.set(run);
-          if (!isActive(run)) {
-            ended = true;
-            this.notice.set(
-              run.status === 'succeeded'
-                ? 'El escaneo terminó bien.'
-                : 'El escaneo terminó con error; revisa el detalle en Corridas.',
-            );
-            this.finished.emit();
-          }
-        },
-        error: (error: unknown) => {
-          this.stalled.set(true);
-          this.error.set(toApiError(error).message);
-        },
-        complete: () => {
-          if (ended) return;
-          this.stalled.set(true);
-          this.error.set('El escaneo sigue en curso: consulta su avance en Corridas.');
-        },
-      });
+    let last: RunProgress | null = null;
+    this.following = this.runEvents.watch(followed.id).subscribe({
+      next: (progress) => {
+        last = progress;
+        this.run.update((current) =>
+          current?.id === followed.id ? withProgress(current, progress) : current,
+        );
+      },
+      complete: () => this.readFinal(followed.id, last),
+      error: (error: unknown) => this.stall(toApiError(error).message),
+    });
+  }
+
+  /**
+   * The stream ended with a final status: `GET /api/runs/{id}` gives the final row. If that reading fails, the last
+   * event already said how the run ended, so the step reports it with what it has.
+   */
+  private readFinal(runId: string, last: RunProgress | null): void {
+    this.following = this.service.run(runId).subscribe({
+      next: (final) => {
+        this.run.set(final);
+        if (!isActive(final)) {
+          this.ended(final.status);
+        } else {
+          this.stall('El escaneo sigue en curso: consulta su avance en Corridas.');
+        }
+      },
+      error: (error: unknown) => {
+        const status = last?.status;
+        if (status && !isActive({ status })) this.ended(status);
+        else this.stall(toApiError(error).message);
+      },
+    });
+  }
+
+  private ended(status: Run['status']): void {
+    this.notice.set(
+      status === 'succeeded'
+        ? 'El escaneo terminó bien.'
+        : 'El escaneo terminó con error; revisa el detalle en Corridas.',
+    );
+    this.finished.emit();
+  }
+
+  private stall(message: string): void {
+    this.stalled.set(true);
+    this.error.set(message);
   }
 }

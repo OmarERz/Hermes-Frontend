@@ -12,6 +12,7 @@ import {
 } from '@lucide/angular';
 import type { LucideIconInput } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
+import { ItopLink } from '../../shared/itop-links';
 import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
 import { AsyncState } from '../../shared/async-state';
@@ -19,9 +20,7 @@ import { AsyncStateComponent } from '../../shared/async-state.component';
 import { CpeMappingDialog, MappingTarget } from './cpe-mapping-dialog';
 import { InventoryPending, InventoryService, Mapping, PendingItem } from './inventory.service';
 import { viewState } from './inventory-view';
-
-/** The lists of `GET /api/pending/inventory`, in the order of the screen. */
-type PendingKind = keyof InventoryPending;
+import { pendingCount, pendingItemId, PendingKind } from './pending-counts';
 
 interface PendingSection {
   kind: PendingKind;
@@ -34,9 +33,6 @@ interface PendingSection {
   /** Shown only when it has items (`outside_delivery_model` is not modelled yet: always empty). */
   onlyWithItems?: boolean;
 }
-
-/** Each list the API gives is at most this long (FRO-17). */
-export const PENDING_PAGE = 200;
 
 const SECTIONS: readonly PendingSection[] = [
   {
@@ -100,6 +96,7 @@ const SECTIONS: readonly PendingSection[] = [
   selector: 'app-pending-inventory-page',
   imports: [
     RouterLink,
+    ItopLink,
     BannerPagina,
     AsyncStateComponent,
     IfRoleDirective,
@@ -115,24 +112,26 @@ export class PendingInventoryPage {
 
   readonly bannerIcon = LucideClipboardList;
   readonly mapRole = ACTION_ROLES.mapCpe;
-  readonly pageLimit = PENDING_PAGE;
 
   readonly pending = new AsyncState<InventoryPending>();
   readonly state = computed(() => viewState(this.pending));
   readonly mapping = signal<MappingTarget | null>(null);
   readonly notice = signal('');
 
-  /** Sections with their items; the optional ones only when they have any. */
+  /** Sections with their items (each with its id) and counts; the optional ones only when they have any. */
   readonly sections = computed(() => {
     const value = this.pending.value();
     if (!value) return [];
-    return SECTIONS.map((section) => ({ ...section, items: value[section.kind] ?? [] })).filter(
-      (section) => !section.onlyWithItems || section.items.length > 0,
-    );
+    return SECTIONS.map((section) => ({
+      ...section,
+      ...pendingCount(value, section.kind),
+      items: (value[section.kind] ?? []).map((item) => ({
+        ...item,
+        id: pendingItemId(item, section.software),
+      })),
+    })).filter((section) => !section.onlyWithItems || section.count > 0);
   });
-  readonly total = computed(() =>
-    this.sections().reduce((sum, section) => sum + section.items.length, 0),
-  );
+  readonly total = computed(() => this.sections().reduce((sum, section) => sum + section.count, 0));
 
   constructor() {
     this.load();
@@ -143,10 +142,10 @@ export class PendingInventoryPage {
     this.pending.run(this.service.pending());
   }
 
-  /** The software items carry the product id in `ci_id` (the `{software}` of the mapping route). */
+  /** Maps a software item by its product id (the `{software}` of the mapping route). */
   openMapping(item: PendingItem): void {
     this.notice.set('');
-    this.mapping.set({ id: item.ci_id, name: item.name, cpe: null });
+    this.mapping.set({ id: pendingItemId(item, true), name: item.name, cpe: null });
   }
 
   mapped(mapping: Mapping): void {

@@ -146,6 +146,44 @@ describe('JudgeSettingsPage', () => {
     ).toEqual(['Zona muerta: ≤ 6', 'Zona muerta: ≤ 4', 'Zona muerta: ≤ 2']);
   });
 
+  it('takes each profile dead zone from the schema, and drafts none the schema lacks', async () => {
+    const withValues = (optionValues: ConfigParameter['option_values']) =>
+      SCHEMA.map((param) =>
+        param.key === 'sensitivity_profile' ? { ...param, option_values: optionValues } : param,
+      );
+    const api = new FakeConfigApi();
+    api.schema.mockReturnValue(
+      of(
+        withValues({
+          minimal: { dead_zone: '7' },
+          broad: { dead_zone: '3', 'judge.range_multiplier': '1.75' },
+        }),
+      ),
+    );
+    const { fixture, element, page } = await render('admin', api);
+    // «Normal» publishes nothing: no dead zone and no text on its card.
+    expect(
+      Array.from(element.querySelectorAll('.profile-dead-zone')).map((s) => s.textContent?.trim()),
+    ).toEqual(['Zona muerta: ≤ 7', 'Zona muerta: ≤ 3']);
+    const broad = element.querySelectorAll('.profile-option')[2];
+    expect(broad.querySelector('small')?.textContent).toContain('×1.75');
+    element.querySelectorAll<HTMLInputElement>('.profile-option input')[2].click();
+    await fixture.whenStable();
+    expect(page.editor.changes()).toEqual({ sensitivity_profile: 'broad', dead_zone: '3' });
+    // The dead zone came with the profile: not an advanced change.
+    expect(page.advancedChanged()).toBe(false);
+
+    TestBed.resetTestingModule();
+    const older = new FakeConfigApi();
+    older.schema.mockReturnValue(of(withValues(undefined)));
+    const second = await render('admin', older);
+    expect(second.element.querySelectorAll('.profile-dead-zone')).toHaveLength(0);
+    second.element.querySelectorAll<HTMLInputElement>('.profile-option input')[0].click();
+    await second.fixture.whenStable();
+    // Without the published values the front sends only the profile: the dead zone stays as it is.
+    expect(second.page.editor.changes()).toEqual({ sensitivity_profile: 'minimal' });
+  });
+
   it('drafts the dead zone of the chosen profile without opening the advanced mode', async () => {
     const { fixture, element, page } = await render('admin');
     element.querySelectorAll<HTMLInputElement>('.profile-option input')[0].click();

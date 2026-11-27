@@ -55,32 +55,6 @@ export class InventoryService {
       .pipe(map((page) => ({ items: page.items, nextCursor: page.next_cursor ?? null })));
   }
 
-  /**
-   * The inventory row of one CI (criticality, exposure, OS, service, iTop link…), which the detail route does not
-   * carry. The search matches the name or the id anywhere, alphabetically, so the exact id may come on a later page:
-   * the pages are followed until it appears or the matches end (up to MAX_CATALOGUE_PAGES); null if none.
-   */
-  findAsset(ciId: string): Observable<InventoryAsset | null> {
-    const page = (cursor: string | null) =>
-      this.api.get('/api/inventory/assets', { query: { q: ciId, cursor, limit: MAX_PAGE_SIZE } });
-    const exact = (asset: InventoryAsset) => asset.ci_id === ciId;
-    return defer(() => {
-      let read = 0;
-      return page(null).pipe(
-        expand((current) => {
-          read += 1;
-          return current.items.some(exact) || !current.next_cursor || read >= MAX_CATALOGUE_PAGES
-            ? EMPTY
-            : page(current.next_cursor);
-        }),
-        reduce<{ items: InventoryAsset[] }, InventoryAsset | null>(
-          (found, current) => found ?? current.items.find(exact) ?? null,
-          null,
-        ),
-      );
-    });
-  }
-
   /** Totals of the live inventory and the health of its software (already computed by the API). */
   summary(): Observable<InventorySummary> {
     return this.api.get('/api/inventory/summary');
@@ -129,7 +103,10 @@ export class InventoryService {
     return this.api.get('/api/inventory/assets/{ci_id}/software', { path: { ci_id: ciId } });
   }
 
-  /** A CI with its risk and its vulnerability groups (and its iTop CPU, RAM, description and class). */
+  /**
+   * A CI with its risk, its vulnerability groups and its iTop data: class, CPU, RAM, description and, since F18.6,
+   * the inventory fields of the list (criticality, exposure, personal data, OS, service, sync, iTop link).
+   */
   asset(ciId: string): Observable<AssetDetail> {
     return this.api.get('/api/assets/{ci_id}', { path: { ci_id: ciId } });
   }
