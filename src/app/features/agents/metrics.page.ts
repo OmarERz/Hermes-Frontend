@@ -1,2 +1,78 @@
-// Entry of the route (owned by its lane): a placeholder until the lane builds the screen.
-export { PlaceholderPage as MetricsPage } from '../../shared/placeholder-page';
+import { Component, computed, DestroyRef, inject } from '@angular/core';
+import { LucideChartColumn, LucideCoins, LucideDynamicIcon } from '@lucide/angular';
+import { AyudaTooltip } from '../../componentes/ayuda-tooltip/ayuda-tooltip';
+import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
+import { GraficoDashboard } from '../../componentes/grafico-dashboard/grafico-dashboard';
+import { AsyncState } from '../../shared/async-state';
+import { AsyncStateComponent } from '../../shared/async-state.component';
+import { formatDateTime } from '../../shared/labels';
+import { dailyCostChart } from './agents-charts';
+import { AgentsService, MetricsDashboard, TelemetryDaily } from './agents.service';
+import { groupMetrics } from './metric-groups';
+import { loadState } from './view-state';
+
+/** Days of the cost chart. */
+export const COST_DAYS = 30;
+
+/**
+ * Métricas (FRO-21): the board of docs/10 from `GET /api/metrics`, the latest value of each metric as the backend
+ * calculated and formatted it, by section and in the prototype's agent card design, plus the daily AI cost per agent
+ * of the last 30 days (`GET /api/telemetry/daily`, MET-17). A metric the backend has not calculated yet is not shown
+ * (never a zero), and one this screen does not know goes to «Otras métricas».
+ */
+@Component({
+  selector: 'app-metrics-page',
+  imports: [
+    AsyncStateComponent,
+    AyudaTooltip,
+    BannerPagina,
+    GraficoDashboard,
+    LucideCoins,
+    LucideDynamicIcon,
+  ],
+  templateUrl: './metrics.page.html',
+  styleUrl: './metrics.page.css',
+})
+export class MetricsPage {
+  private readonly service = inject(AgentsService);
+
+  readonly bannerIcon = LucideChartColumn;
+  readonly costDays = COST_DAYS;
+  readonly formatDateTime = formatDateTime;
+
+  readonly board = new AsyncState<MetricsDashboard>();
+  readonly daily = new AsyncState<TelemetryDaily>();
+
+  readonly boardState = computed(() => loadState(this.board));
+  readonly dailyState = computed(() => loadState(this.daily));
+
+  readonly current = computed(() => (this.board.status() === 'ready' ? this.board.value() : null));
+  readonly groups = computed(() => groupMetrics(this.current()?.metrics ?? []));
+  /** Only the judge ladder (always present): the daily metrics have not been calculated yet. */
+  readonly nothingCalculated = computed(() => {
+    const metrics = this.current()?.metrics ?? [];
+    return metrics.every((metric) => metric.key === 'judge_ladder_level');
+  });
+
+  readonly costChart = computed(() => {
+    const series = this.daily.status() === 'ready' ? (this.daily.value()?.series ?? []) : [];
+    return series.length ? dailyCostChart(series) : null;
+  });
+
+  constructor() {
+    this.loadBoard();
+    this.loadDaily();
+    inject(DestroyRef).onDestroy(() => {
+      this.board.cancel();
+      this.daily.cancel();
+    });
+  }
+
+  loadBoard(): void {
+    this.board.run(this.service.metrics());
+  }
+
+  loadDaily(): void {
+    this.daily.run(this.service.daily(COST_DAYS));
+  }
+}

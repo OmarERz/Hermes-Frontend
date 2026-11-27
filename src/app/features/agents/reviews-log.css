@@ -1,0 +1,12 @@
+/* The log's own layout; the table look is shared (agents-tables.css). */
+:host {
+  display: block;
+  margin-top: 18px;
+}
+.reviews-log .history-panel {
+  margin-bottom: 0;
+}
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+}

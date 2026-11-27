@@ -1,0 +1,183 @@
+/*
+ * Additions to the prototype's agent view (control-agente.css, global): the window and agent pickers, the notes of
+ * each agent card and the ticket link. Three real agents replace the prototype's single one, so the status panel
+ * takes the wider column.
+ */
+.agents-dashboard .top-grid {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+}
+
+.chart-select {
+  min-height: 32px;
+  margin-left: auto;
+  padding: 4px 8px;
+  border: 1px solid #d9d7e4;
+  border-radius: 8px;
+  background: var(--surface-raised, #fff);
+  color: var(--text-primary, #342044);
+  font: inherit;
+  font-size: calc((12px) + var(--font-size-increase));
+  font-weight: 500;
+}
+
+.performance-heading select:focus-visible,
+.chart-select:focus-visible,
+.ticket-link:focus-visible {
+  outline: 3px solid #9e4be1;
+  outline-offset: 2px;
+}
+
+.metric em.warn {
+  background: #fff1d9;
+  color: #985800;
+}
+.metric em.muted {
+  background: #f1edf5;
+  color: #62576c;
+}
+.queue-retry {
+  padding: 5px 8px;
+  border: 1px dashed #c98a2b;
+  border-radius: 10px;
+  background: #fff1d9;
+  color: #985800;
+  font: inherit;
+  font-size: calc((10px) + var(--font-size-increase));
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.queue-retry:focus-visible {
+  outline: 3px solid #9e4be1;
+  outline-offset: 2px;
+}
+
+.last-run {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e1eb;
+  color: #554a60;
+  font-size: calc((12px) + var(--font-size-increase));
+  line-height: 1.4;
+}
+.last-run svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  color: #83179a;
+}
+
+.budget {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  color: #554a60;
+  font-size: calc((13px) + var(--font-size-increase));
+}
+.budget strong {
+  color: #351044;
+}
+.connections {
+  margin-top: 6px;
+}
+.connections strong.failing {
+  color: #985800;
+}
+.connections-link {
+  color: #a10f7d;
+  font-weight: 700;
+}
+.inline-retry {
+  padding: 2px 8px;
+  border: 1px solid #e2d5e9;
+  border-radius: 7px;
+  background: var(--surface-raised, #fff);
+  color: #8d137c;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.connections-link:focus-visible,
+.inline-retry:focus-visible {
+  outline: 3px solid #9e4be1;
+  outline-offset: 2px;
+}
+
+.agent-block + .agent-block {
+  margin-top: 14px;
+  padding-top: 2px;
+}
+.agent-summary h3 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.fact-note {
+  display: block;
+  margin-top: 2px;
+  color: #625871;
+  font-size: calc((11px) + var(--font-size-increase));
+  line-height: 1.3;
+}
+.agent-tokens {
+  margin-top: 8px;
+  color: #625871;
+  font-size: calc((11px) + var(--font-size-increase));
+}
+
+.ticket-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: #a10f7d;
+  font-weight: 700;
+  font-size: calc((13px) + var(--font-size-increase));
+}
+
+:host-context(.app-shell[data-theme='dark']) .chart-select,
+:host-context(.app-shell[data-theme='dark']) .performance-heading select {
+  border-color: rgba(217, 168, 255, 0.28);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+:host-context(.app-shell[data-theme='dark']) .budget,
+:host-context(.app-shell[data-theme='dark']) .last-run,
+:host-context(.app-shell[data-theme='dark']) .fact-note,
+:host-context(.app-shell[data-theme='dark']) .agent-tokens {
+  color: var(--text-secondary);
+}
+:host-context(.app-shell[data-theme='dark']) .budget strong {
+  color: var(--text-primary);
+}
+:host-context(.app-shell[data-theme='dark']) .connections strong.failing {
+  color: var(--warning-text);
+}
+:host-context(.app-shell[data-theme='dark']) .inline-retry {
+  border-color: var(--border);
+  background: var(--surface-raised);
+  color: var(--accent-lilac);
+}
+:host-context(.app-shell[data-theme='dark']) .connections-link,
+:host-context(.app-shell[data-theme='dark']) .ticket-link {
+  color: var(--accent-lilac, #d9a8ff);
+}
+:host-context(.app-shell[data-theme='dark']) .metric em.warn,
+:host-context(.app-shell[data-theme='dark']) .queue-retry {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+:host-context(.app-shell[data-theme='dark']) .metric em.muted {
+  background: var(--violet-wash);
+  color: var(--text-secondary);
+}
+
+@container workspace (max-width: 1100px) {
+  .agents-dashboard .top-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

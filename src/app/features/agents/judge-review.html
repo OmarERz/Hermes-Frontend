@@ -1,0 +1,81 @@
+<section class="judge-review" aria-labelledby="judge-review-title">
+  <h3 id="judge-review-title">Decisión del juez</h3>
+  @if (judgeState(); as state) {
+    <app-async-state
+      [state]="state"
+      loadingText="Cargando la decisión del juez…"
+      [error]="judge.error()"
+      (retry)="loadJudge()"
+    />
+  } @else {
+    <dl>
+      @for (fact of facts(); track fact.term) {
+        <dt>{{ fact.term }}</dt>
+        <dd>{{ fact.value }}</dd>
+      }
+      <dt>Motivos aceptados</dt>
+      <dd>
+        @for (reason of accepted(); track reason.seq) {
+          <div class="reason">
+            <strong>{{ reason.label }}</strong> · {{ reason.points }}
+            @if (reason.ciId) {
+              <span class="reason-ci">· CI {{ reason.ciId }}</span>
+            }
+            <q>{{ reason.quote }}</q>
+          </div>
+        } @empty {
+          Ninguno
+        }
+      </dd>
+      <dt>Motivos rechazados</dt>
+      <dd>
+        @for (reason of rejected(); track reason.seq) {
+          <div class="reason rejected">
+            <strong>{{ reason.label }}</strong> · {{ reason.status }}
+            @if (reason.rule) {
+              <span>(regla {{ reason.rule }})</span>
+            }
+            · {{ reason.points }} propuestos
+            <q>{{ reason.quote }}</q>
+          </div>
+        } @empty {
+          Ninguno
+        }
+      </dd>
+    </dl>
+  }
+
+  <h3>Intervención humana</h3>
+  @if (feedbackState(); as state) {
+    <app-async-state
+      [state]="state"
+      loadingText="Cargando el feedback…"
+      [error]="feedback.error()"
+      (retry)="loadFeedback()"
+    />
+  } @else {
+    <ul class="feedback-list">
+      @for (line of feedbackLines(); track $index) {
+        <li [class.inactive]="!line.active">
+          <strong>{{ line.who }}</strong
+          >: {{ line.verdict }} · {{ line.when }} · desde
+          {{ line.channel }}
+          @if (!line.active) {
+            <span class="tag">Reemplazado</span>
+          }
+          @if (line.olderVersion) {
+            <span class="tag">Sobre una versión anterior</span>
+          }
+        </li>
+      } @empty {
+        <li class="empty-line">Nadie ha dado feedback sobre esta evaluación.</li>
+      }
+    </ul>
+  }
+  <a
+    class="recommendation-link"
+    routerLink="/recomendaciones-agente"
+    [queryParams]="{ id: assessmentId() }"
+    >Ver la recomendación y su feedback</a
+  >
+</section>
