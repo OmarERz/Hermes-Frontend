@@ -36,6 +36,12 @@ export function isActive(status: RunStatus): boolean {
   return status === 'queued' || status === 'running';
 }
 
+/** Of two copies of the same run, the one that already ended (the API never brings an ended run back). */
+export function fresher(listed: Run | undefined, kept: Run): Run {
+  if (!listed) return kept;
+  return isActive(listed.status) && !isActive(kept.status) ? kept : listed;
+}
+
 /** The label of a value of an enum, or the value itself when the API sends one the front does not know yet. */
 export function labelOf<K extends string>(labels: Record<K, string>, value: string): string {
   return (labels as Record<string, string>)[value] ?? value;
@@ -75,13 +81,17 @@ export interface RunView {
   launchedBy: string;
 }
 
-/** The run as shown, with its live progress (from the event stream) in place of the listed one when known. */
+/**
+ * The run as shown. While the API still lists it as queued or running, its live progress (from the event stream)
+ * goes in place of the listed one; once the API lists it as ended, that final row wins over any last event.
+ */
 export function toRunView(
   run: Run,
   live?: { progress: number; status: RunStatus | null },
 ): RunView {
-  const status = live?.status ?? run.status;
-  const progress = Math.max(0, Math.min(100, Math.round(live?.progress ?? run.progress)));
+  const stream = live && isActive(run.status) ? live : undefined;
+  const status = stream?.status ?? run.status;
+  const progress = Math.max(0, Math.min(100, Math.round(stream?.progress ?? run.progress)));
   const active = isActive(status);
   return {
     run,

@@ -1,6 +1,7 @@
 import { formatDateTime } from '../../shared/labels';
 import {
   formatDuration,
+  fresher,
   isActive,
   KIND_LABELS,
   labelOf,
@@ -65,6 +66,11 @@ describe('run labels', () => {
     expect(live.progress).toBe(72);
     expect(live.status).toBe('running');
     const done = toRunView(SCAN_RUNNING, { progress: 140, status: 'succeeded' });
+    // Once the API lists the run as ended, its row wins over the last event.
+    expect(toRunView(NEWS_DONE, { progress: 40, status: 'running' })).toMatchObject({
+      progress: 100,
+      status: 'succeeded',
+    });
     expect(done).toMatchObject({
       progress: 100,
       status: 'succeeded',
@@ -75,5 +81,13 @@ describe('run labels', () => {
 
   it('shows a dash for a missing reason', () => {
     expect(toRunView({ ...RECALC_FAILED, trigger_reason: null }).trigger).toBe('—');
+  });
+
+  it('keeps the copy of a run that already ended', () => {
+    expect(fresher(undefined, SCAN_RUNNING)).toBe(SCAN_RUNNING);
+    expect(fresher(NEWS_DONE, SCAN_RUNNING)).toBe(NEWS_DONE);
+    const ended = { ...SCAN_RUNNING, status: 'succeeded' as const };
+    expect(fresher(SCAN_RUNNING, ended)).toBe(ended);
+    expect(fresher(ended, SCAN_RUNNING)).toBe(ended);
   });
 });

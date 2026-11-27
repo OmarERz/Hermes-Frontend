@@ -23,7 +23,8 @@ import {
   ErrorQueueService,
   ErrorStatus,
   KIND_LABELS,
-  STATUS_LABELS,
+  retryScheduled,
+  statusText,
 } from './error-queue.service';
 
 const PAGE_SIZE = 50;
@@ -37,6 +38,7 @@ export interface ErrorRow {
   component: string;
   status: ErrorStatus;
   statusLabel: string;
+  scheduled: boolean;
   attempts: number;
   nextAttempt: string;
   error: string;
@@ -58,7 +60,8 @@ function toRow(item: ErrorQueueItem): ErrorRow {
     kindLabel: labelOf(KIND_LABELS, item.kind),
     component: item.component,
     status: item.status,
-    statusLabel: labelOf(STATUS_LABELS, item.status),
+    statusLabel: statusText(item),
+    scheduled: retryScheduled(item),
     attempts: item.attempts,
     nextAttempt: item.next_attempt_at ? formatDateTime(item.next_attempt_at) : 'Sin reintento',
     error: item.error?.trim() || 'Sin detalle',

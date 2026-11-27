@@ -37,6 +37,7 @@ import { CursorPager } from '../../shared/cursor-pager';
 import { dayBound } from '../../shared/day-bound';
 import { RunEventsService, RunProgress } from './run-events';
 import {
+  fresher,
   isActive,
   KIND_LABELS,
   Run,
@@ -51,6 +52,8 @@ import {
 import { RunFilters, RunsService, TelemetrySummary } from './runs.service';
 
 const PAGE_SIZE = 25;
+/** Runs read to find the open one again after its stream ends. */
+const LOOKUP_SIZE = 50;
 
 /** What the live follow of the selected run is doing. */
 export type LiveState = 'idle' | 'live' | 'ended' | 'error';
@@ -152,12 +155,15 @@ export class RunsPage {
       .map((run) => toRunView(run, live && run.id === live.runId ? live : undefined));
   });
 
-  /** The open run, as the current page lists it when it is there (fresher), with its live progress. */
+  /**
+   * The open run, as the current page lists it when it is there, unless the kept copy already ended (read after the
+   * stream ended, whatever the table filters), with its live progress while it is still active.
+   */
   readonly detail = computed<RunView | null>(() => {
     const chosen = this.selected();
     if (!chosen) return null;
-    const listed = this.pager.items().find((run) => run.id === chosen.id) ?? chosen;
-    return toRunView(listed, this.liveFor(chosen.id) ?? undefined);
+    const listed = this.pager.items().find((run) => run.id === chosen.id);
+    return toRunView(fresher(listed, chosen), this.liveFor(chosen.id) ?? undefined);
   });
 
   readonly queued = computed(() => this.count('runs_queued'));
@@ -264,7 +270,9 @@ export class RunsPage {
             text: 'Escaneo en cola. El worker lo toma en unos segundos y su avance se ve en el detalle.',
           });
           this.select(run);
-          this.refresh();
+          // A run not started yet heads the list (ARQ-04): show the first page.
+          this.pager.first();
+          this.summary.run(this.service.summary());
         },
         error: (error: unknown) =>
           this.notice.set({ kind: 'error', text: toApiError(error).message }),
@@ -285,12 +293,39 @@ export class RunsPage {
     });
   }
 
-  /** The stream is over: the list and the counts are read again for the final state of the run. */
+  /**
+   * The stream is over: the list and the counts are read again, and the run itself is looked up apart from the
+   * table filters (it may have left them, say «En ejecución»), so the detail gets its final status, end and duration.
+   */
   private settle(runId: string, state: LiveState): void {
     this.watching = null;
-    if (this.selected()?.id !== runId) return;
+    const run = this.selected();
+    if (run?.id !== runId) return;
     this.liveState.set(state);
     this.refresh();
+    this.lookUp(run, this.live()?.status ?? null);
+  }
+
+  /**
+   * Reads one run again without a route for a single run: same kind and, once started, the same start instant (it
+   * never changes); a run that was still queued is looked for among the newest of its kind with its final status.
+   */
+  private lookUp(run: Run, status: RunStatus | null): void {
+    const started = run.started_at || null;
+    const filters: RunFilters = started
+      ? { kind: run.kind, date_from: started, date_to: started }
+      : { kind: run.kind, status: status && !isActive(status) ? status : null };
+    this.service
+      .list(filters, null, LOOKUP_SIZE)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (page) => {
+          const found = page.items.find((item) => item.id === run.id);
+          if (found && this.selected()?.id === run.id) this.selected.set(found);
+        },
+        // The table and the stream already said what they could; the detail keeps that.
+        error: () => undefined,
+      });
   }
 
   private liveFor(runId: string | undefined): RunProgress | null {

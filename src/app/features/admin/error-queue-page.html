@@ -83,12 +83,9 @@
                   <small class="code">{{ row.component }}</small>
                 </td>
                 <td>
-                  <span
-                    class="chip"
-                    [class.bad]="row.status !== 'pending'"
-                    [class.warn]="row.status === 'pending'"
-                    >{{ row.statusLabel }}</span
-                  >
+                  <span class="chip" [class.bad]="!row.scheduled" [class.warn]="row.scheduled">{{
+                    row.statusLabel
+                  }}</span>
                 </td>
                 <td class="numeric">{{ row.attempts }}</td>
                 <td>{{ row.nextAttempt }}</td>

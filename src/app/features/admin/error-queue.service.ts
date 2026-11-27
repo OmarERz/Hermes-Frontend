@@ -21,6 +21,21 @@ export const STATUS_LABELS: Record<ErrorStatus, string> = {
   gave_up: 'Se dejó de reintentar',
 };
 
+/**
+ * What the state of an item means for a person. A `pending` item is in this queue only when no run retries it any
+ * more (no `next_attempt_at`): it waits for a person, not for a retry.
+ */
+export function statusText(item: Pick<ErrorQueueItem, 'status' | 'next_attempt_at'>): string {
+  if (item.status === 'pending' && !item.next_attempt_at)
+    return 'Pendiente, sin reintento programado';
+  return (STATUS_LABELS as Record<string, string>)[item.status] ?? item.status;
+}
+
+/** True when a retry is scheduled for the item (only then it is not waiting for a person). */
+export function retryScheduled(item: Pick<ErrorQueueItem, 'status' | 'next_attempt_at'>): boolean {
+  return item.status === 'pending' && !!item.next_attempt_at;
+}
+
 export const ERROR_KINDS = Object.keys(KIND_LABELS) as ErrorKind[];
 
 /** The error queue (FRO-18, admin) and the retry of a notification event (NOT-02). */

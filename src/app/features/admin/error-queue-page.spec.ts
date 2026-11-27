@@ -45,7 +45,8 @@ const LLM: ErrorQueueItem = {
   created_at: '2026-11-26T07:00:00Z',
   status: 'pending',
   attempts: 3,
-  next_attempt_at: '2026-11-27T10:00:00Z',
+  // The backend lists a pending item only when no run retries it any more.
+  next_attempt_at: null,
   error: null,
   component: 'news_analyst',
   cve: null,
@@ -123,13 +124,35 @@ describe('ErrorQueuePage', () => {
     expect(itop.querySelector('button')).toBeNull();
     expect(cells(llm).slice(1, 7)).toEqual([
       'Validación del LLM news_analyst',
-      'Espera su próximo reintento',
+      'Pendiente, sin reintento programado',
       '3',
-      formatDateTime(LLM.next_attempt_at!),
+      'Sin reintento',
       'Sin detalle',
       '—',
     ]);
-    expect(llm.querySelector('.chip')?.classList).toContain('warn');
+    expect(llm.querySelector('.chip')?.classList).toContain('bad');
+  });
+
+  it('says a retry is scheduled only when the API gives its date', async () => {
+    const queue = new FakeQueue();
+    const scheduled = { ...LLM, next_attempt_at: '2026-11-27T10:00:00Z' };
+    const unknown = {
+      ...ITOP,
+      id: 'x',
+      status: 'stuck' as ErrorQueueItem['status'],
+      kind: 'other' as ErrorQueueItem['kind'],
+    };
+    queue.list.mockReturnValue(of({ items: [scheduled, unknown], nextCursor: null }));
+    const { element } = await render(queue);
+    const [row, other] = rows(element);
+    expect(cells(row).slice(2, 5)).toEqual([
+      'Espera su próximo reintento',
+      '3',
+      formatDateTime(scheduled.next_attempt_at),
+    ]);
+    expect(row.querySelector('.chip')?.classList).toContain('warn');
+    // Values the front does not know yet are shown as they come.
+    expect(cells(other).slice(1, 3)).toEqual(['other add_ci', 'stuck']);
   });
 
   it('filters by origin from the first page', async () => {

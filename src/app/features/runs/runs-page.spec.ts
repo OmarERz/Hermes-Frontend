@@ -235,12 +235,98 @@ describe('RunsPage', () => {
     });
     stream.complete();
     await settle();
-    expect(runs.list.mock.calls.length).toBe(listed + 1);
+    // The page again, and the run itself apart from the table filters (same kind and start instant).
+    expect(runs.list.mock.calls.length).toBe(listed + 2);
+    expect(runs.list).toHaveBeenLastCalledWith(
+      { kind: 'scan', date_from: SCAN_RUNNING.started_at, date_to: SCAN_RUNNING.started_at },
+      null,
+      50,
+    );
     expect(runs.summary.mock.calls.length).toBe(counted + 1);
     expect(page.liveState()).toBe('ended');
     expect(text(detail.querySelector('.live-note'))).toBe('La corrida terminó.');
     expect(text(detail.querySelector('.run-status'))).toBe('Terminó bien');
     expect(text(detail.querySelector('.run-facts'))).toContain('2 min');
+  });
+
+  it('lets the final row of the API win over the last event when the stream is lost', async () => {
+    const { element, events, runs, settle, page } = await render();
+    page.select(SCAN_RUNNING);
+    const stream = events.streams.get(SCAN_RUNNING.id)!;
+    stream.next({ runId: SCAN_RUNNING.id, progress: 40, status: 'running', message: 'En curso' });
+    const ended: Run = {
+      ...SCAN_RUNNING,
+      status: 'succeeded',
+      progress: 100,
+      finished_at: '2026-11-27T09:05:00Z',
+    };
+    runs.list.mockReturnValue(of({ items: [ended, NEWS_DONE], nextCursor: null }));
+    stream.error(new ApiError(0, 'network_error', 'No se pudo conectar con el servidor.'));
+    await settle();
+    const detail = element.querySelector('.run-detail')!;
+    expect(text(detail.querySelector('.run-status'))).toBe('Terminó bien');
+    expect(detail.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')).toBe('100');
+    expect(text(detail.querySelector('.run-facts'))).toContain('5 min');
+    // The run ended: nothing to follow again.
+    expect(detail.querySelector('.live-error button')).toBeNull();
+    const row = element.querySelector('.runs-table tbody tr')!;
+    expect(text(row.querySelector('.run-status'))).toBe('Terminó bien');
+    expect(text(row.querySelector('.detail-button'))).toBe('Ver detalle');
+  });
+
+  it('gets the final row of a run that left the table filters when it ended', async () => {
+    const { events, runs, settle, page, element } = await render();
+    page.setStatus('running');
+    page.select(SCAN_RUNNING);
+    const ended: Run = {
+      ...SCAN_RUNNING,
+      status: 'failed',
+      progress: 70,
+      finished_at: '2026-11-27T09:00:45Z',
+    };
+    runs.list.mockImplementation((filters) =>
+      of({ items: filters.status === 'running' ? [] : [ended], nextCursor: null }),
+    );
+    const stream = events.streams.get(SCAN_RUNNING.id)!;
+    stream.next({ runId: SCAN_RUNNING.id, progress: 70, status: 'failed', message: 'Falló' });
+    stream.complete();
+    await settle();
+    expect(element.querySelectorAll('.runs-table tbody tr')).toHaveLength(0);
+    const facts = text(element.querySelector('.run-detail .run-facts'));
+    expect(facts).toContain('45 s');
+    expect(text(element.querySelector('.run-detail .run-status'))).toBe('Terminó con error');
+  });
+
+  it('looks a run that was still queued up among the newest of its kind with its final status', async () => {
+    const { events, runs, page } = await render();
+    const queued: Run = {
+      ...SCAN_RUNNING,
+      id: 'queued-run',
+      status: 'queued',
+      progress: 0,
+      started_at: '',
+    };
+    page.select(queued);
+    const stream = events.streams.get('queued-run')!;
+    stream.next({ runId: 'queued-run', progress: 100, status: 'succeeded', message: 'Terminado' });
+    stream.complete();
+    expect(runs.list).toHaveBeenLastCalledWith({ kind: 'scan', status: 'succeeded' }, null, 50);
+  });
+
+  it('keeps the detail it has when the run cannot be read again', async () => {
+    const { events, runs, page } = await render();
+    page.select(SCAN_RUNNING);
+    runs.list.mockReturnValue(throwError(() => new ApiError(500, 'internal_error', 'Falló.')));
+    const stream = events.streams.get(SCAN_RUNNING.id)!;
+    stream.next({ runId: SCAN_RUNNING.id, progress: 100, status: null, message: '' });
+    stream.complete();
+    expect(runs.list).toHaveBeenLastCalledWith(
+      { kind: 'scan', date_from: SCAN_RUNNING.started_at, date_to: SCAN_RUNNING.started_at },
+      null,
+      50,
+    );
+    expect(page.detail()?.id).toBe(SCAN_RUNNING.id);
+    expect(page.liveState()).toBe('ended');
   });
 
   it('opens a finished run without following it', async () => {
@@ -305,6 +391,8 @@ describe('RunsPage', () => {
     expect(runs.launchScan).toHaveBeenCalledTimes(1);
     expect(text(element.querySelector('.runs-notice[role="status"]'))).toContain('Escaneo en cola');
     expect(events.watch).toHaveBeenCalledWith('new-run');
+    // A run not started yet heads the list: back to the first page.
+    expect(runs.list).toHaveBeenLastCalledWith(expect.anything(), null, 25);
     expect(text(element.querySelector('.run-detail .run-status'))).toBe('En cola');
   });
 
