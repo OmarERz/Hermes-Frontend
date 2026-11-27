@@ -12,11 +12,11 @@ import {
 } from '@lucide/angular';
 import type { LucideIconInput } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
+import { ItopLink } from '../../shared/itop-links';
 import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
-import { ItopLink } from '../../shared/itop-links';
 import { CpeMappingDialog, MappingTarget } from './cpe-mapping-dialog';
 import { InventoryPending, InventoryService, Mapping, PendingItem } from './inventory.service';
 import { viewState } from './inventory-view';
@@ -96,10 +96,10 @@ const SECTIONS: readonly PendingSection[] = [
   selector: 'app-pending-inventory-page',
   imports: [
     RouterLink,
+    ItopLink,
     BannerPagina,
     AsyncStateComponent,
     IfRoleDirective,
-    ItopLink,
     CpeMappingDialog,
     LucideDynamicIcon,
     LucideRefreshCw,

@@ -298,8 +298,8 @@ describe('AssetDetailPage', () => {
       throwError(() => new ApiError(500, 'internal_error', 'Falló el software.')),
     );
     const { fixture, element } = await render(service);
-    expect(element.textContent).toContain('Falló el software.');
     expect(facts(element)['Criticidad']).toBe('Alta');
+    expect(element.textContent).toContain('Falló el software.');
     expect(Array.from(element.querySelectorAll('.stat-card strong')).at(-1)?.textContent).toContain(
       'Sin datos',
     );
