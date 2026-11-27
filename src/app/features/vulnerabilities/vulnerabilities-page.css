@@ -1,6 +1,16 @@
 .filters {
   flex-wrap: wrap;
 }
+.filters .text-filter {
+  flex: 1 1 150px;
+}
+.filters .date-filter {
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+.filters .date-filter input {
+  width: auto;
+}
 .view-switch {
   display: inline-flex;
   flex-wrap: wrap;

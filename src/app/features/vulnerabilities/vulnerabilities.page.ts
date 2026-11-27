@@ -1,18 +1,22 @@
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, WritableSignal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LucideArrowLeft,
   LucideArrowRight,
+  LucideCalendar,
   LucideChevronDown,
   LucideFlame,
   LucideFunnel,
   LucideGlobe,
   LucideLayers,
+  LucideLock,
   LucideRefreshCw,
   LucideShieldAlert,
   LucideTriangleAlert,
+  LucideUser,
+  LucideUsers,
 } from '@lucide/angular';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
@@ -28,6 +32,7 @@ import {
 } from './vulnerabilities.service';
 import { VIEW_LABELS, VIEW_QUERY, viewFromQuery, VulnerabilityView } from './vulnerability-texts';
 import {
+  Classification,
   CLASSIFICATION_LABELS,
   FindingStatus,
   formatDateTime,
@@ -42,6 +47,22 @@ type YesNoFilter = '' | 'true' | 'false';
 
 function yesNo(value: YesNoFilter): boolean | null {
   return value === '' ? null : value === 'true';
+}
+
+const CLASSIFICATIONS = Object.keys(CLASSIFICATION_LABELS) as Classification[];
+
+/**
+ * A day of the date filter (`YYYY-MM-DD`) as an instant of the API: its first or its last millisecond in the
+ * person's time zone, the zone the table shows «Última vez vista» in. Both ends are included (`last_seen`).
+ */
+function dayBound(day: string, end: boolean): string | null {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
+  if (!parts) return null;
+  const [year, month, date] = [Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])];
+  const moment = end
+    ? new Date(year, month, date, 23, 59, 59, 999)
+    : new Date(year, month, date, 0, 0, 0, 0);
+  return moment.toISOString();
 }
 
 /** A row of the group table: a band header (criticality view) or a vulnerability group. */
@@ -84,13 +105,17 @@ function groupRow(group: VulnerabilityGroup, key: string): GroupTableRow {
     AsyncStateComponent,
     LucideArrowLeft,
     LucideArrowRight,
+    LucideCalendar,
     LucideChevronDown,
     LucideFlame,
     LucideFunnel,
     LucideGlobe,
     LucideLayers,
+    LucideLock,
     LucideRefreshCw,
     LucideTriangleAlert,
+    LucideUser,
+    LucideUsers,
   ],
   templateUrl: './vulnerabilities-page.html',
   styleUrls: ['./vulnerability-chips.css', './vulnerabilities-page.css'],
@@ -106,6 +131,7 @@ export class VulnerabilitiesPage {
   readonly levelLabels = LEVEL_LABELS;
   readonly statusLabels = STATUS_LABELS;
   readonly classificationLabels = CLASSIFICATION_LABELS;
+  readonly classifications = CLASSIFICATIONS;
   readonly views = Object.keys(VIEW_LABELS) as VulnerabilityView[];
   readonly viewLabels = VIEW_LABELS;
   readonly pageSizes = [10, 25, 50];
@@ -117,6 +143,13 @@ export class VulnerabilitiesPage {
   readonly status = signal<FindingStatus | ''>('');
   readonly inKev = signal<YesNoFilter>('');
   readonly exposed = signal<YesNoFilter>('');
+  readonly classification = signal<Classification | ''>('');
+  /** Owner and custodian of the asset: exact text, as the API compares them. */
+  readonly owner = signal('');
+  readonly custodian = signal('');
+  /** Days (`YYYY-MM-DD`) that bound «Última vez vista». */
+  readonly dateFrom = signal('');
+  readonly dateTo = signal('');
   readonly pageSize = signal(25);
 
   readonly filters = computed<VulnerabilityFilters>(() => ({
@@ -124,6 +157,11 @@ export class VulnerabilitiesPage {
     status: this.status() || null,
     in_kev: yesNo(this.inKev()),
     exposed: yesNo(this.exposed()),
+    classification: this.classification() || null,
+    owner: this.owner() || null,
+    custodian: this.custodian() || null,
+    date_from: dayBound(this.dateFrom(), false),
+    date_to: dayBound(this.dateTo(), true),
   }));
 
   readonly groupPager = new CursorPager<VulnerabilityGroup>((cursor) =>
@@ -237,23 +275,39 @@ export class VulnerabilitiesPage {
   }
 
   setBand(value: Level | ''): void {
-    this.band.set(value);
-    this.refresh();
+    this.setFilter(this.band, value);
   }
 
   setStatus(value: FindingStatus | ''): void {
-    this.status.set(value);
-    this.refresh();
+    this.setFilter(this.status, value);
   }
 
   setInKev(value: YesNoFilter): void {
-    this.inKev.set(value);
-    this.refresh();
+    this.setFilter(this.inKev, value);
   }
 
   setExposed(value: YesNoFilter): void {
-    this.exposed.set(value);
-    this.refresh();
+    this.setFilter(this.exposed, value);
+  }
+
+  setClassification(value: Classification | ''): void {
+    this.setFilter(this.classification, value);
+  }
+
+  setOwner(value: string): void {
+    this.setFilter(this.owner, value.trim());
+  }
+
+  setCustodian(value: string): void {
+    this.setFilter(this.custodian, value.trim());
+  }
+
+  setDateFrom(value: string): void {
+    this.setFilter(this.dateFrom, value);
+  }
+
+  setDateTo(value: string): void {
+    this.setFilter(this.dateTo, value);
   }
 
   setPageSize(value: number): void {
@@ -262,10 +316,26 @@ export class VulnerabilitiesPage {
   }
 
   clearFilters(): void {
-    this.band.set('');
-    this.status.set('');
-    this.inKev.set('');
-    this.exposed.set('');
+    for (const filter of [
+      this.band,
+      this.status,
+      this.inKev,
+      this.exposed,
+      this.classification,
+      this.owner,
+      this.custodian,
+      this.dateFrom,
+      this.dateTo,
+    ] as WritableSignal<string>[]) {
+      filter.set('');
+    }
+    this.refresh();
+  }
+
+  /** A new filter value starts again from the first page (a cursor belongs to its filters) with new counts. */
+  private setFilter<T>(filter: WritableSignal<T>, value: T): void {
+    if (Object.is(filter(), value)) return;
+    filter.set(value);
     this.refresh();
   }
 

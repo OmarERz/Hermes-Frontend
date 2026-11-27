@@ -78,6 +78,68 @@
       </select>
       <svg lucideChevronDown aria-hidden="true"></svg>
     </label>
+    <label class="select-filter"
+      ><svg lucideLock aria-hidden="true"></svg>
+      <select
+        [ngModel]="classification()"
+        (ngModelChange)="setClassification($event)"
+        aria-label="Clasificación"
+      >
+        <option value="">Todas las clasificaciones</option>
+        @for (option of classifications; track option) {
+          <option [value]="option">{{ classificationLabels[option] }}</option>
+        }
+      </select>
+      <svg lucideChevronDown aria-hidden="true"></svg>
+    </label>
+    <label class="asset-search text-filter"
+      ><svg lucideUser aria-hidden="true"></svg>
+      <input
+        #ownerInput
+        type="text"
+        enterkeyhint="search"
+        [value]="owner()"
+        (change)="setOwner(ownerInput.value)"
+        placeholder="Responsable"
+        aria-label="Responsable (texto exacto)"
+      />
+    </label>
+    <label class="asset-search text-filter"
+      ><svg lucideUsers aria-hidden="true"></svg>
+      <input
+        #custodianInput
+        type="text"
+        enterkeyhint="search"
+        [value]="custodian()"
+        (change)="setCustodian(custodianInput.value)"
+        placeholder="Custodio"
+        aria-label="Custodio (texto exacto)"
+      />
+    </label>
+    <label class="asset-search date-filter"
+      ><svg lucideCalendar aria-hidden="true"></svg>
+      <span aria-hidden="true">Vista desde</span>
+      <input
+        #fromInput
+        type="date"
+        [value]="dateFrom()"
+        [attr.max]="dateTo() || null"
+        (change)="setDateFrom(fromInput.value)"
+        aria-label="Última vez vista desde"
+      />
+    </label>
+    <label class="asset-search date-filter"
+      ><svg lucideCalendar aria-hidden="true"></svg>
+      <span aria-hidden="true">hasta</span>
+      <input
+        #toInput
+        type="date"
+        [value]="dateTo()"
+        [attr.min]="dateFrom() || null"
+        (change)="setDateTo(toInput.value)"
+        aria-label="Última vez vista hasta"
+      />
+    </label>
     @if (hasFilters()) {
       <button type="button" class="more-filter" (click)="clearFilters()">Quitar filtros</button>
     }

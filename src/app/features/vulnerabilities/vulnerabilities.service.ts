@@ -4,10 +4,18 @@ import { ApiClient, ApiQuery, ApiSchema } from '../../core/api/api-client';
 import type { CursorPage } from '../../shared/cursor-pager';
 import { LEVELS, type Level } from '../../shared/labels';
 
-/** Filters of the grouped views (FRO-10) that the screen offers. */
+/** Filters of the grouped views (FRO-10), common to the three views and to the level counts. */
 export type VulnerabilityFilters = Pick<
   ApiQuery<'/api/vulnerabilities'>,
-  'band' | 'status' | 'in_kev' | 'exposed' | 'classification'
+  | 'band'
+  | 'status'
+  | 'in_kev'
+  | 'exposed'
+  | 'classification'
+  | 'owner'
+  | 'custodian'
+  | 'date_from'
+  | 'date_to'
 >;
 
 export type LevelCounts = Record<Level, number>;

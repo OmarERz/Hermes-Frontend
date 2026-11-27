@@ -25,6 +25,19 @@ const GROUP: VulnerabilityGroup = {
   last_seen: '2026-11-20T15:30:00Z',
 };
 
+/** Every filter empty: what the page asks for before the person picks one. */
+const NO_FILTERS = {
+  band: null,
+  status: null,
+  in_kev: null,
+  exposed: null,
+  classification: null,
+  owner: null,
+  custodian: null,
+  date_from: null,
+  date_to: null,
+};
+
 class FakeService {
   listGroups = vi.fn<VulnerabilitiesService['listGroups']>(() =>
     of({ items: [GROUP], nextCursor: 'n.sig' }),
@@ -97,11 +110,7 @@ describe('VulnerabilitiesPage', () => {
       s.textContent?.trim(),
     );
     expect(cards).toEqual(['1', '0', '2', '0']);
-    expect(service.listGroups).toHaveBeenCalledWith(
-      { band: null, status: null, in_kev: null, exposed: null },
-      null,
-      25,
-    );
+    expect(service.listGroups).toHaveBeenCalledWith(NO_FILTERS, null, 25);
   });
 
   it('pages forward with the cursor of the response and resets it when a filter changes', async () => {
@@ -114,7 +123,7 @@ describe('VulnerabilitiesPage', () => {
     fixture.componentInstance.setBand('critical');
     await fixture.whenStable();
     expect(service.listGroups).toHaveBeenLastCalledWith(
-      { band: 'critical', status: null, in_kev: null, exposed: null },
+      { ...NO_FILTERS, band: 'critical' },
       null,
       25,
     );
@@ -126,12 +135,7 @@ describe('VulnerabilitiesPage', () => {
     const { fixture } = await render(service);
     fixture.componentInstance.setInKev('true');
     await fixture.whenStable();
-    expect(service.levelCounts).toHaveBeenLastCalledWith({
-      band: null,
-      status: null,
-      in_kev: true,
-      exposed: null,
-    });
+    expect(service.levelCounts).toHaveBeenLastCalledWith({ ...NO_FILTERS, in_kev: true });
   });
 
   it('never shows the counts of other filters while loading or after an error', async () => {
@@ -195,11 +199,7 @@ describe('VulnerabilitiesPage', () => {
     ) as HTMLButtonElement;
     assetButton.click();
     await fixture.whenStable();
-    expect(service.listAssets).toHaveBeenCalledWith(
-      { band: null, status: null, in_kev: null, exposed: null },
-      null,
-      25,
-    );
+    expect(service.listAssets).toHaveBeenCalledWith(NO_FILTERS, null, 25);
     expect(TestBed.inject(Router).url).toBe('/vulnerabilidades?vista=activo');
     const cells = Array.from(element.querySelectorAll('tbody tr td')).map((td) =>
       td.textContent?.replace(/\s+/g, ' ').trim(),
@@ -220,11 +220,7 @@ describe('VulnerabilitiesPage', () => {
     await TestBed.inject(Router).navigateByUrl('/vulnerabilidades');
     await fixture.whenStable();
     expect(fixture.componentInstance.view()).toBe('vulnerability');
-    expect(service.listGroups).toHaveBeenCalledWith(
-      { band: null, status: null, in_kev: null, exposed: null },
-      null,
-      25,
-    );
+    expect(service.listGroups).toHaveBeenCalledWith(NO_FILTERS, null, 25);
     expect(element.querySelector('tbody a.row-link')?.getAttribute('href')).toBe(
       `/vulnerabilidades/${GROUP.group_id}`,
     );
@@ -255,34 +251,73 @@ describe('VulnerabilitiesPage', () => {
     page.setExposed('false');
     page.setInKev('true');
     expect(service.listGroups).toHaveBeenLastCalledWith(
-      { band: null, status: 'new', in_kev: true, exposed: false },
+      { ...NO_FILTERS, status: 'new', in_kev: true, exposed: false },
       null,
       25,
     );
     expect(page.hasFilters()).toBe(true);
     page.clearFilters();
-    expect(service.listGroups).toHaveBeenLastCalledWith(
-      { band: null, status: null, in_kev: null, exposed: null },
-      null,
-      25,
-    );
-    expect(service.levelCounts).toHaveBeenLastCalledWith({
-      band: null,
-      status: null,
-      in_kev: null,
-      exposed: null,
-    });
+    expect(service.listGroups).toHaveBeenLastCalledWith(NO_FILTERS, null, 25);
+    expect(service.levelCounts).toHaveBeenLastCalledWith(NO_FILTERS);
+  });
+
+  it('filters by classification, owner, custodian and the days of «Última vez vista» in every view', async () => {
+    const service = new FakeService();
+    const { fixture, element } = await render(service, '/vulnerabilidades?vista=activo');
+    const page = fixture.componentInstance;
+    page.setClassification('highly_classified');
+    const owner = element.querySelector(
+      '[aria-label="Responsable (texto exacto)"]',
+    ) as HTMLInputElement;
+    owner.value = '  Ana  ';
+    owner.dispatchEvent(new Event('change'));
+    const custodian = element.querySelector(
+      '[aria-label="Custodio (texto exacto)"]',
+    ) as HTMLInputElement;
+    custodian.value = 'Plataforma';
+    custodian.dispatchEvent(new Event('change'));
+    page.setDateFrom('2026-11-01');
+    page.setDateTo('2026-11-20');
+    const expected = {
+      ...NO_FILTERS,
+      classification: 'highly_classified',
+      owner: 'Ana',
+      custodian: 'Plataforma',
+      // Whole days in the person's time zone, both ends included.
+      date_from: new Date(2026, 10, 1, 0, 0, 0, 0).toISOString(),
+      date_to: new Date(2026, 10, 20, 23, 59, 59, 999).toISOString(),
+    };
+    expect(service.listAssets).toHaveBeenLastCalledWith(expected, null, 25);
+    expect(service.levelCounts).toHaveBeenLastCalledWith(expected);
+
+    page.setView('criticality');
+    expect(service.listBands).toHaveBeenLastCalledWith(expected, null, 25);
+
+    await fixture.whenStable();
+    page.clearFilters();
+    await fixture.whenStable();
+    expect(service.listBands).toHaveBeenLastCalledWith(NO_FILTERS, null, 25);
+    expect(owner.value).toBe('');
+    expect(page.hasFilters()).toBe(false);
+  });
+
+  it('does not reload when a filter keeps its value and ignores a malformed day', async () => {
+    const service = new FakeService();
+    const { fixture } = await render(service);
+    const page = fixture.componentInstance;
+    const calls = service.listGroups.mock.calls.length;
+    page.setOwner('   ');
+    page.setStatus('');
+    expect(service.listGroups.mock.calls.length).toBe(calls);
+    page.setDateFrom('20-11-2026');
+    expect(page.filters().date_from).toBeNull();
   });
 
   it('reloads the current view from the first page with a new page size', async () => {
     const service = new FakeService();
     const { fixture } = await render(service, '/vulnerabilidades?vista=activo');
     fixture.componentInstance.setPageSize(50);
-    expect(service.listAssets).toHaveBeenLastCalledWith(
-      { band: null, status: null, in_kev: null, exposed: null },
-      null,
-      50,
-    );
+    expect(service.listAssets).toHaveBeenLastCalledWith(NO_FILTERS, null, 50);
     fixture.componentInstance.setView('asset');
     expect(service.listAssets).toHaveBeenCalledTimes(2);
   });
