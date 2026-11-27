@@ -14,7 +14,7 @@ import {
   VulnerabilityDetail,
   VulnerabilityGroup,
 } from './vulnerabilities.service';
-import { RUN_KIND_LABELS } from './vulnerability-texts';
+import { RUN_KIND_LABELS, RUN_STATUS_LABELS } from './vulnerability-texts';
 
 export type StixScope = StixExportRequest['scope'];
 
@@ -83,7 +83,7 @@ export class StixExportPage {
   readonly runOptions = computed(() =>
     this.runs.items().map((run) => ({
       id: run.id,
-      label: `${RUN_KIND_LABELS[run.kind]} · ${formatDateTime(run.started_at)} · ${run.status}`,
+      label: `${RUN_KIND_LABELS[run.kind]} · ${formatDateTime(run.started_at)} · ${RUN_STATUS_LABELS[run.status]}`,
     })),
   );
 

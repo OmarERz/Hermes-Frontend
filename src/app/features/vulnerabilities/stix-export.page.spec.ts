@@ -183,10 +183,11 @@ describe('StixExportPage', () => {
     });
   });
 
-  it('lists the runs with their kind in Spanish', async () => {
+  it('lists the runs with their kind and state in Spanish', async () => {
     const { page } = await render(new FakeStix());
     expect(page.runOptions()[0].label).toContain('Escaneo');
-    expect(page.runOptions()[0].label).toContain('succeeded');
+    expect(page.runOptions()[0].label).toContain('Terminó bien');
+    expect(page.runOptions()[0].label).not.toContain('succeeded');
   });
 
   it('drops a late bundle once the person has left the screen', async () => {
