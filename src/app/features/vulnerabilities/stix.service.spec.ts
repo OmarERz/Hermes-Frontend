@@ -49,12 +49,19 @@ describe('StixService', () => {
     vi.restoreAllMocks();
   });
 
-  it('lists the latest runs', async () => {
-    const result = firstValueFrom(service.latestRuns(10));
+  it('lists the runs page by page with the cursor of the API', async () => {
+    const first = firstValueFrom(service.listRuns(null, 10));
     const request = backend.expectOne((req) => req.url.endsWith('/api/runs'));
     expect(request.request.params.get('limit')).toBe('10');
-    request.flush({ items: [{ id: 'r-1' }], next_cursor: null });
-    await expect(result).resolves.toEqual([{ id: 'r-1' }]);
+    expect(request.request.params.has('cursor')).toBe(false);
+    request.flush({ items: [{ id: 'r-1' }], next_cursor: 'n.sig' });
+    await expect(first).resolves.toEqual({ items: [{ id: 'r-1' }], nextCursor: 'n.sig' });
+
+    const second = firstValueFrom(service.listRuns('n.sig', 10));
+    const next = backend.expectOne((req) => req.url.endsWith('/api/runs'));
+    expect(next.request.params.get('cursor')).toBe('n.sig');
+    next.flush({ items: [{ id: 'r-0' }] });
+    await expect(second).resolves.toEqual({ items: [{ id: 'r-0' }], nextCursor: null });
   });
 });
 

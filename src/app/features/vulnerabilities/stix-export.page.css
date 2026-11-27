@@ -56,6 +56,26 @@ form {
   align-items: center;
   gap: 8px;
 }
+.load-more {
+  justify-self: start;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border, #dddbe7);
+  border-radius: 8px;
+  background: var(--surface-raised, #fff);
+  color: var(--text-secondary, #675b70);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.load-more:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+.load-more:focus-visible {
+  outline: 2px solid #ed079b;
+  outline-offset: 2px;
+}
 .hint {
   margin: 0;
   color: var(--text-muted, #6b6175);

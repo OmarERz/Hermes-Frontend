@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { ApiBody, ApiClient, ApiSchema } from '../../core/api/api-client';
+import type { CursorPage } from '../../shared/cursor-pager';
 
 export type StixExportRequest = ApiBody<'/api/stix/export', 'post'>;
 export type StixBundle = ApiSchema<'StixBundle'>;
@@ -21,9 +22,11 @@ export class StixService {
     downloadJson(bundle, fileName);
   }
 
-  /** The latest runs, to pick one to export. */
-  latestRuns(limit = 50): Observable<Run[]> {
-    return this.api.get('/api/runs', { query: { limit } }).pipe(map((page) => page.items));
+  /** One page of runs, newest first, to pick one to export. */
+  listRuns(cursor: string | null, limit: number): Observable<CursorPage<Run>> {
+    return this.api
+      .get('/api/runs', { query: { cursor, limit } })
+      .pipe(map((page) => ({ items: page.items, nextCursor: page.next_cursor ?? null })));
   }
 }
 

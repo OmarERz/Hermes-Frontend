@@ -28,42 +28,60 @@
         @case ('vulnerability') {
           <label class="field"
             >Vulnerabilidad
-            <select
-              name="group"
-              [ngModel]="groupId()"
-              (ngModelChange)="groupId.set($event)"
-              [disabled]="groups.loading()"
-            >
+            <select name="group" [ngModel]="groupId()" (ngModelChange)="groupId.set($event)">
               <option value="">
-                {{ groups.loading() ? 'Cargando vulnerabilidades…' : 'Elige una vulnerabilidad' }}
+                {{
+                  groups.state.loading() && groupOptions().length === 0
+                    ? 'Cargando vulnerabilidades…'
+                    : 'Elige una vulnerabilidad'
+                }}
               </option>
-              @for (group of groups.value() ?? []; track group.group_id) {
-                <option [value]="group.group_id">{{ group.cve }} · {{ group.product }}</option>
+              @for (group of groupOptions(); track group.id) {
+                <option [value]="group.id">{{ group.label }}</option>
               }
             </select>
           </label>
-          @if (groups.error(); as failure) {
+          @if (groups.hasMore()) {
+            <button
+              type="button"
+              class="load-more"
+              (click)="groups.more()"
+              [disabled]="groups.state.loading()"
+            >
+              {{ groups.state.loading() ? 'Cargando…' : 'Cargar más vulnerabilidades' }}
+            </button>
+          }
+          @if (groups.state.error(); as failure) {
             <p class="field-error" role="alert">{{ failure.message }}</p>
           }
         }
         @case ('run') {
           <label class="field"
             >Corrida
-            <select
-              name="run"
-              [ngModel]="runId()"
-              (ngModelChange)="runId.set($event)"
-              [disabled]="runs.loading()"
-            >
+            <select name="run" [ngModel]="runId()" (ngModelChange)="runId.set($event)">
               <option value="">
-                {{ runs.loading() ? 'Cargando corridas…' : 'Elige una corrida' }}
+                {{
+                  runs.state.loading() && runOptions().length === 0
+                    ? 'Cargando corridas…'
+                    : 'Elige una corrida'
+                }}
               </option>
               @for (run of runOptions(); track run.id) {
                 <option [value]="run.id">{{ run.label }}</option>
               }
             </select>
           </label>
-          @if (runs.error(); as failure) {
+          @if (runs.hasMore()) {
+            <button
+              type="button"
+              class="load-more"
+              (click)="runs.more()"
+              [disabled]="runs.state.loading()"
+            >
+              {{ runs.state.loading() ? 'Cargando…' : 'Cargar corridas anteriores' }}
+            </button>
+          }
+          @if (runs.state.error(); as failure) {
             <p class="field-error" role="alert">{{ failure.message }}</p>
           }
         }

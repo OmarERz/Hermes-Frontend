@@ -3,13 +3,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { LucideDownload } from '@lucide/angular';
-import { map } from 'rxjs';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { ApiError, toApiError } from '../../core/api/api-error';
 import { AsyncState } from '../../shared/async-state';
 import { formatDateTime } from '../../shared/labels';
+import { LoadMoreList } from './load-more-list';
 import { Run, StixBundle, StixExportRequest, StixService } from './stix.service';
-import { VulnerabilitiesService, VulnerabilityGroup } from './vulnerabilities.service';
+import {
+  VulnerabilitiesService,
+  VulnerabilityDetail,
+  VulnerabilityGroup,
+} from './vulnerabilities.service';
 import { RUN_KIND_LABELS } from './vulnerability-texts';
 
 export type StixScope = StixExportRequest['scope'];
@@ -20,8 +24,8 @@ const SCOPE_LABELS: Record<StixScope, string> = {
   date_range: 'Un rango de fechas',
 };
 
-/** How many groups and runs the pickers offer. */
-const PICKER_LIMIT = 200;
+/** Groups and runs per page of the pickers (the API maximum); «Cargar más» reaches the rest. */
+const PICKER_PAGE = 200;
 
 /**
  * Exportación STIX (FRO-20, role analyst): a STIX 2.1 bundle of one vulnerability, one run or a date range,
@@ -49,15 +53,35 @@ export class StixExportPage {
   readonly dateTo = signal('');
   readonly excludeHighlyClassified = signal(true);
 
-  readonly groups = new AsyncState<VulnerabilityGroup[]>();
-  readonly runs = new AsyncState<Run[]>();
+  readonly groups = new LoadMoreList<VulnerabilityGroup>((cursor) =>
+    this.vulnerabilities.listGroups({}, cursor, PICKER_PAGE),
+  );
+  readonly runs = new LoadMoreList<Run>((cursor) => this.stix.listRuns(cursor, PICKER_PAGE));
+  /** The group of `?grupo=`, which may be on a page the picker has not loaded yet. */
+  private readonly presetId = inject(ActivatedRoute).snapshot.queryParamMap.get('grupo');
+  readonly preset = new AsyncState<VulnerabilityDetail>();
 
   readonly exporting = signal(false);
   readonly error = signal<ApiError | null>(null);
   readonly result = signal<string>('');
 
+  /** Groups of the loaded pages, with the group of the link first when it is not among them. */
+  readonly groupOptions = computed(() => {
+    const options = this.groups.items().map((group) => ({
+      id: group.group_id,
+      label: `${group.cve} · ${group.product}`,
+    }));
+    const presetId = this.presetId;
+    if (presetId && !options.some((option) => option.id === presetId)) {
+      const detail = this.preset.value();
+      const label = detail ? `${detail.cve} · ${detail.product}` : 'La vulnerabilidad del enlace';
+      options.unshift({ id: presetId, label });
+    }
+    return options;
+  });
+
   readonly runOptions = computed(() =>
-    (this.runs.value() ?? []).map((run) => ({
+    this.runs.items().map((run) => ({
       id: run.id,
       label: `${RUN_KIND_LABELS[run.kind]} · ${formatDateTime(run.started_at)} · ${run.status}`,
     })),
@@ -79,15 +103,16 @@ export class StixExportPage {
   });
 
   constructor() {
-    const preset = inject(ActivatedRoute).snapshot.queryParamMap.get('grupo');
-    if (preset) this.groupId.set(preset);
-    this.groups.run(
-      this.vulnerabilities.listGroups({}, null, PICKER_LIMIT).pipe(map((page) => page.items)),
-    );
-    this.runs.run(this.stix.latestRuns(PICKER_LIMIT));
+    if (this.presetId) {
+      this.groupId.set(this.presetId);
+      this.preset.run(this.vulnerabilities.getDetail(this.presetId));
+    }
+    this.groups.first();
+    this.runs.first();
     this.destroyRef.onDestroy(() => {
       this.groups.cancel();
       this.runs.cancel();
+      this.preset.cancel();
     });
   }
 

@@ -13,17 +13,20 @@ class FakeStix {
   exportBundle = vi.fn<StixService['exportBundle']>(() =>
     of({ type: 'bundle', id: 'bundle--1', objects: [{}, {}, {}] }),
   );
-  latestRuns = vi.fn<StixService['latestRuns']>(() =>
-    of([
-      {
-        id: 'r-1',
-        kind: 'scan',
-        status: 'succeeded',
-        started_at: '2026-11-24T00:00:00Z',
-        finished_at: '2026-11-24T00:05:00Z',
-        progress: 100,
-      },
-    ]),
+  listRuns = vi.fn<StixService['listRuns']>(() =>
+    of({
+      items: [
+        {
+          id: 'r-1',
+          kind: 'scan',
+          status: 'succeeded',
+          started_at: '2026-11-24T00:00:00Z',
+          finished_at: '2026-11-24T00:05:00Z',
+          progress: 100,
+        },
+      ],
+      nextCursor: null,
+    }),
   );
 }
 
@@ -40,13 +43,20 @@ class FakeVulnerabilities {
       nextCursor: null,
     }),
   );
+  getDetail = vi.fn<VulnerabilitiesService['getDetail']>(
+    (groupId) => of({ group_id: groupId, cve: 'CVE-2025-0001', product: 'nginx' }) as never,
+  );
 }
 
-async function render(stixService: FakeStix, url = '/exportacion-stix') {
+async function render(
+  stixService: FakeStix,
+  url = '/exportacion-stix',
+  vulnerabilities = new FakeVulnerabilities(),
+) {
   TestBed.configureTestingModule({
     providers: [
       { provide: StixService, useValue: stixService },
-      { provide: VulnerabilitiesService, useValue: new FakeVulnerabilities() },
+      { provide: VulnerabilitiesService, useValue: vulnerabilities },
       ...provideFakeSession('analyst'),
       provideRouter([
         { path: 'exportacion-stix', component: StixExportPage },
@@ -80,6 +90,54 @@ describe('StixExportPage', () => {
     expect(element.querySelector('[role="status"]')?.textContent).toContain(
       'Bundle descargado con 3 objetos.',
     );
+  });
+
+  it('offers the vulnerability of the link once, even before its page is loaded', async () => {
+    const { page } = await render(new FakeStix(), '/exportacion-stix?grupo=g-1');
+    expect(page.groupOptions()).toEqual([{ id: 'g-1', label: 'CVE-2026-10001 · OpenSSL' }]);
+
+    TestBed.resetTestingModule();
+    const other = await render(new FakeStix(), '/exportacion-stix?grupo=g-far');
+    expect(other.page.groupOptions()[0]).toEqual({ id: 'g-far', label: 'CVE-2025-0001 · nginx' });
+    expect(other.page.groupId()).toBe('g-far');
+    const select = other.element.querySelector('select[name="group"]') as HTMLSelectElement;
+    expect(select.options[select.selectedIndex].textContent?.trim()).toBe('CVE-2025-0001 · nginx');
+  });
+
+  it('loads further pages of vulnerabilities and runs with the API cursors', async () => {
+    const vulnerabilities = new FakeVulnerabilities();
+    vulnerabilities.listGroups.mockImplementation((_filters, cursor) =>
+      of(
+        cursor === null
+          ? {
+              items: [{ group_id: 'g-1', cve: 'CVE-2026-10001', product: 'OpenSSL' } as never],
+              nextCursor: 'g.sig',
+            }
+          : {
+              items: [{ group_id: 'g-2', cve: 'CVE-2020-0002', product: 'bash' } as never],
+              nextCursor: null,
+            },
+      ),
+    );
+    const stix = new FakeStix();
+    stix.listRuns.mockReturnValueOnce(of({ items: [], nextCursor: 'r.sig' }));
+    const { page, harness, element } = await render(stix, '/exportacion-stix', vulnerabilities);
+    expect(vulnerabilities.listGroups).toHaveBeenCalledWith({}, null, 200);
+    const more = () => element.querySelector('button.load-more') as HTMLButtonElement | null;
+    expect(more()?.textContent).toContain('Cargar más vulnerabilidades');
+    more()!.click();
+    await harness.fixture.whenStable();
+    expect(vulnerabilities.listGroups).toHaveBeenLastCalledWith({}, 'g.sig', 200);
+    expect(page.groupOptions().map((option) => option.id)).toEqual(['g-1', 'g-2']);
+    expect(more()).toBeNull();
+
+    page.setScope('run');
+    await harness.fixture.whenStable();
+    expect(more()?.textContent).toContain('Cargar corridas anteriores');
+    more()!.click();
+    await harness.fixture.whenStable();
+    expect(stix.listRuns).toHaveBeenLastCalledWith('r.sig', 200);
+    expect(page.runOptions().map((option) => option.id)).toEqual(['r-1']);
   });
 
   it('asks for the missing choice of each scope and keeps the button disabled', async () => {
