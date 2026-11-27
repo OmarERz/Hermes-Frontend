@@ -22,7 +22,8 @@
     "api:check": "openapi-typescript openapi/openapi.json -o src/app/core/api/schema.d.ts --check",
     "verify": "npm run api:check && npm run lint && npm run format:check && npm run e2e:check && npm run test:coverage && npm run build",
     "audit": "npm audit --omit=dev --audit-level=high",
-    "semgrep": "bash scripts/semgrep.sh"
+    "semgrep": "bash scripts/semgrep.sh",
+    "zap": "bash scripts/zap.sh"
   },
   "dependencies": {
     "@angular/common": "^21.2.0",
