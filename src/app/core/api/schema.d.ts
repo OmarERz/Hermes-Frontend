@@ -428,6 +428,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Historial de eventos
+         * @description Una sola línea de tiempo con las corridas, las revisiones de IA y los cambios de configuración, del más reciente al más antiguo. Cada revisión trae la evaluación que alimentó (para ligar su feedback) y cada cambio de configuración su versión y su autor. La auditoría completa sigue siendo solo de `admin` (`GET /api/audit`). Filtros por tipo, estado y fechas. Pagina por cursor. Rol mínimo: `reader`.
+         */
+        get: operations["list_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventory/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inventario de activos
+         * @description Todos los CIs vigentes de la réplica de iTop, con o sin hallazgos, en orden alfabético: clase, criticidad, exposición, clasificación, dueño, custodio, liga a iTop, hallazgos abiertos, en KEV y su riesgo (el mayor final de sus hallazgos abiertos, nunca una suma). Búsqueda y filtros. Pagina por cursor. Rol mínimo: `reader`.
+         */
+        get: operations["list_inventory_assets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventory/assets/{ci_id}/software": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Software instalado en un activo
+         * @description El software de un CI vigente con su versión, su CPE y el peor nivel de sus vulnerabilidades abiertas en ese CI; 404 si el CI no está en el inventario vigente. Rol mínimo: `reader`.
+         */
+        get: operations["list_asset_software"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventory/software": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Software del inventario
+         * @description El software instalado en CIs vigentes, en orden alfabético: versiones, instancias, CIs, CPE y el peor nivel de sus vulnerabilidades abiertas. Filtros. Pagina por cursor. Rol mínimo: `reader`.
+         */
+        get: operations["list_inventory_software"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventory/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resumen del inventario
+         * @description Totales de los CIs vigentes por clase, criticidad, exposición y clasificación; dueños, custodios, CIs con hallazgos y en KEV, última sincronización con iTop y la salud del software (con CPE, con versión conocida y sin vulnerabilidades críticas abiertas). Rol mínimo: `reader`.
+         */
+        get: operations["get_inventory_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/itop/webhook": {
         parameters: {
             query?: never;
@@ -680,6 +780,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/recommendations/{assessment_id}/judge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Detalle del juez
+         * @description La revisión del juez que usó una evaluación: estado, resumen, ajuste propuesto y aplicado (y si cayó en la zona muerta), motivos aceptados y rechazados con sus puntos, su cita y la regla que los rechazó, y la doble revisión ciega (si coincidieron y el ajuste de cada una). Las citas son texto externo: muéstralas como datos, escapadas. Nunca trae el prompt ni las llamadas crudas. Rol mínimo: `reader`.
+         */
+        get: operations["get_recommendation_judge"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/recommendations/{id}/feedback": {
         parameters: {
             query?: never;
@@ -709,7 +829,7 @@ export interface paths {
         };
         /**
          * Listar corridas
-         * @description Corridas de escaneo, ingesta, recálculo y nocturnas, las más recientes primero.
+         * @description Corridas de escaneo, ingesta, recálculo y nocturnas, las más recientes primero. Filtros opcionales por tipo, estado y fecha de inicio; cada corrida dice por qué se lanzó y quién la lanzó.
          */
         get: operations["list_runs"];
         put?: never;
@@ -864,6 +984,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/telemetry/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Series diarias de telemetría
+         * @description Un punto por día UTC, del más antiguo a hoy, con ceros en los días sin actividad: corridas terminadas bien y con error, y por agente revisiones, % de éxito, latencia promedio y costo. Rol mínimo: `reader`.
+         */
+        get: operations["get_telemetry_daily"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/telemetry/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bitácora de revisiones de IA
+         * @description Cada interacción con un LLM, de la más reciente a la más antigua: agente, modo, modelo, estado, intentos, latencia, tokens, costo y la evaluación ligada. Solo metadatos (X-2). Pagina por cursor. Rol mínimo: `reader`.
+         */
+        get: operations["list_llm_reviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/telemetry/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resumen de telemetría
+         * @description Corridas por estado y tipo, una tarjeta por agente (revisiones, éxito, latencia promedio y p95, tokens, costo, proveedor y modelo, gasto del día contra el presupuesto, nivel de la escalera del juez) y los motivos del juez más usados, en la ventana pedida. Rol mínimo: `reader`.
+         */
+        get: operations["get_telemetry_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tickets": {
         parameters: {
             query?: never;
@@ -876,6 +1056,46 @@ export interface paths {
          * @description Tickets ya creados en iTop, los más urgentes primero.
          */
         get: operations["list_tickets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tickets/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resumen de tickets
+         * @description Todos los tickets por estado (`pending_creation`, `open`, `resolved`, `closed`, los que Hermes mantiene al día con iTop), los de iTop por urgencia, cuántos cambió una persona en iTop, el % resuelto y el tiempo promedio de resolución en horas. Rol mínimo: `reader`.
+         */
+        get: operations["get_ticket_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tickets/updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bitácora de tickets
+         * @description Lo que Hermes hizo en cada ticket y por qué, de lo más reciente a lo más antiguo: creación, CIs agregados, urgencia subida o bajada, comentarios y correcciones verificadas, con la evaluación que lo motivó y el estado de la escritura en iTop. Filtros por ticket y acción. Pagina por cursor. Rol mínimo: `reader`.
+         */
+        get: operations["list_ticket_updates"];
         put?: never;
         post?: never;
         delete?: never;
@@ -928,6 +1148,37 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AcceptedReason
+         * @description A judge reason that reached the score (FRO-13): its points and the quote it cites, shown as data (SEG-02).
+         */
+        AcceptedReason: {
+            /**
+             * Ci Id
+             * @description CI al que se suma el motivo (`more_critical_asset`); nulo si es del grupo.
+             */
+            ci_id: string | null;
+            /**
+             * Code
+             * @description Código del motivo, por ejemplo `mass_exploitation`.
+             */
+            code: string;
+            /**
+             * Label
+             * @description Descripción del motivo, en español.
+             */
+            label: string;
+            /**
+             * Points
+             * @description Puntos aplicados (con el perfil de sensibilidad de ese momento).
+             */
+            points: number;
+            /**
+             * Quote
+             * @description Cita textual de la evidencia; es texto externo: muéstrala como dato, escapada.
+             */
+            quote: string;
+        };
         /** AffectedAsset */
         AffectedAsset: {
             /**
@@ -993,6 +1244,117 @@ export interface components {
              * @description Puntaje final del activo (0 a 100).
              */
             score: number;
+        };
+        /** AgentDay */
+        AgentDay: {
+            /**
+             * Agent
+             * @description Agente de IA: analista de noticias, analista de CVE o juez. Valores: `news_analyst`: Analista de noticias; `cve_analyst`: Analista de CVE; `judge`: Juez.
+             * @enum {string}
+             */
+            agent: "news_analyst" | "cve_analyst" | "judge";
+            /**
+             * Cost Usd
+             * @description Costo en dólares (USD), como texto.
+             */
+            cost_usd: string;
+            /**
+             * Latency Avg Ms
+             * @description Latencia promedio de una llamada al LLM, en milisegundos.
+             */
+            latency_avg_ms: number | null;
+            /**
+             * Reviews
+             * @description Revisiones del agente ese día.
+             */
+            reviews: number;
+            /**
+             * Success Percent
+             * @description Revisiones válidas sobre las terminadas, en %, como texto; nulo sin revisiones.
+             */
+            success_percent: string | null;
+        };
+        /** AgentTelemetry */
+        AgentTelemetry: {
+            /**
+             * Active
+             * @description Si el agente puede trabajar: queda presupuesto hoy y, para el juez, la escalera no lo apagó.
+             */
+            active: boolean;
+            /**
+             * Agent
+             * @description Agente de IA: analista de noticias, analista de CVE o juez. Valores: `news_analyst`: Analista de noticias; `cve_analyst`: Analista de CVE; `judge`: Juez.
+             * @enum {string}
+             */
+            agent: "news_analyst" | "cve_analyst" | "judge";
+            /**
+             * By Status
+             * @description Cantidad por estado: estado -> cantidad.
+             */
+            by_status: {
+                [key: string]: number;
+            };
+            /**
+             * Cost Usd
+             * @description Costo en dólares (USD), como texto.
+             */
+            cost_usd: string;
+            /**
+             * Ladder Level
+             * @description Nivel de la escalera del juez: 0 normal, 1 vigilado, 2 cauteloso, 3 apagado.
+             */
+            ladder_level: number | null;
+            /**
+             * Last Model
+             * @description Modelo de la última revisión guardada de ese agente, si hubo.
+             */
+            last_model: string | null;
+            /**
+             * Latency Avg Ms
+             * @description Latencia promedio de una llamada al LLM, en milisegundos.
+             */
+            latency_avg_ms: number | null;
+            /**
+             * Latency P95 Ms
+             * @description Latencia p95 de una llamada al LLM, en milisegundos.
+             */
+            latency_p95_ms: number | null;
+            /**
+             * Model
+             * @description Modelo configurado para el agente con el proveedor vigente.
+             */
+            model: string;
+            /**
+             * Provider
+             * @description Proveedor del LLM. Valores: `deepseek`: API de DeepSeek; `claude-code`: Claude por la CLI de Claude Code.
+             * @enum {string}
+             */
+            provider: "deepseek" | "claude-code";
+            /**
+             * Reviews
+             * @description Revisiones del agente en la ventana.
+             */
+            reviews: number;
+            /**
+             * Spend Today Usd
+             * @description Gasto de LLM de hoy (UTC) en dólares, como texto.
+             */
+            spend_today_usd: string;
+            /**
+             * Success Percent
+             * @description Revisiones válidas sobre las terminadas, en %, como texto; nulo sin revisiones.
+             */
+            success_percent: string | null;
+            /**
+             * Tokens Input
+             * @description Tokens de entrada.
+             */
+            tokens_input: number;
+            /**
+             * Tokens Output
+             * @description Tokens de salida.
+             */
+            tokens_output: number;
         };
         /**
          * Alert
@@ -1643,6 +2005,30 @@ export interface components {
              */
             uid: string;
         };
+        /** DoubleReviewInfo */
+        DoubleReviewInfo: {
+            /**
+             * Agreed
+             * @description Si las dos revisiones coincidieron; sin acuerdo, final = base. Nulo si la comparación no decidió el resultado (la revisión quedó obsoleta antes de aplicarse).
+             */
+            agreed: boolean | null;
+            /**
+             * First Adjustment
+             * @description Ajuste propuesto por la primera revisión.
+             */
+            first_adjustment: number | null;
+            /**
+             * Second Adjustment
+             * @description Ajuste propuesto por la segunda revisión; nulo si falló.
+             */
+            second_adjustment: number | null;
+            /**
+             * Second Status
+             * @description Resultado guardado de la segunda revisión. Valores: `applied`: Aplicada: su ajuste llegó a la puntuación; `suggestion`: Solo sugerencia (ticket que cambió una persona); `partial_review`: Revisión parcial: se aplicó lo validado; `judge_disagreement`: Desacuerdo en la doble revisión: final = base; `no_judge_review`: Sin juez (respaldo): final = base; `rejected`: Rechazada por la validación; `queued`: En cola para la siguiente corrida.
+             * @enum {string}
+             */
+            second_status: "applied" | "suggestion" | "partial_review" | "judge_disagreement" | "no_judge_review" | "rejected" | "queued";
+        };
         /** ErrorBody */
         ErrorBody: {
             /**
@@ -1811,6 +2197,246 @@ export interface components {
              */
             replaced_previous: boolean;
         };
+        /**
+         * HistoryEvent
+         * @example {
+         *       "actor": "Ana Analista",
+         *       "agent": null,
+         *       "assessment_id": null,
+         *       "at": "2026-11-23T10:30:00Z",
+         *       "config_version": null,
+         *       "duration_seconds": 412,
+         *       "id": "0192f3a6-2d3e-7f40-8b5c-6d7e8f9a0b1c",
+         *       "run_kind": "scan",
+         *       "status": "succeeded",
+         *       "title": "Escaneo simulado",
+         *       "trigger": "manual",
+         *       "type": "run"
+         *     }
+         */
+        HistoryEvent: {
+            /**
+             * Actor
+             * @description Quién: la persona que lanzó o cambió, el agente de IA o `sistema`.
+             */
+            actor: string;
+            /**
+             * Agent
+             * @description Agente de IA: analista de noticias, analista de CVE o juez. Valores: `news_analyst`: Analista de noticias; `cve_analyst`: Analista de CVE; `judge`: Juez.
+             */
+            agent: ("news_analyst" | "cve_analyst" | "judge") | null;
+            /**
+             * Assessment Id
+             * @description Evaluación que alimentó la revisión; con ella se lee su feedback.
+             */
+            assessment_id: string | null;
+            /**
+             * At
+             * @description Cuándo ocurrió (UTC).
+             */
+            at: string;
+            /**
+             * Config Version
+             * @description Versión de la configuración que creó el cambio.
+             */
+            config_version: number | null;
+            /**
+             * Duration Seconds
+             * @description Duración en segundos; nula si no terminó.
+             */
+            duration_seconds: number | null;
+            /**
+             * Id
+             * @description Id del evento (el de la corrida, la revisión o el registro del cambio).
+             */
+            id: string;
+            /**
+             * Run Kind
+             * @description Tipo de corrida, si el evento es una corrida. Valores: `scan`: Escaneo simulado de vulnerabilidades; `ingestion`: Ingesta y análisis de noticias; `recalculation`: Recálculo por un cambio de fórmula, sin juez; `nightly`: Recálculo nocturno por el paso del tiempo; `inventory_sync`: Sincronización del inventario con iTop; `calibration`: Calibración semanal (modo 4).
+             */
+            run_kind: ("scan" | "ingestion" | "recalculation" | "nightly" | "inventory_sync" | "calibration") | null;
+            /**
+             * Status
+             * @description Estado final: el de la corrida, el de la revisión o `applied` en un cambio.
+             */
+            status: string;
+            /**
+             * Title
+             * @description Título del evento, en español.
+             */
+            title: string;
+            /**
+             * Trigger
+             * @description Por qué se lanzó la corrida. Valores: `schedule`: Por la agenda; `manual`: Lanzada por una persona; `after_scan`: Después de un escaneo; `formula_change`: Por un cambio de fórmula.
+             */
+            trigger: ("schedule" | "manual" | "after_scan" | "formula_change") | null;
+            /**
+             * Type
+             * @description Tipo de evento. Valores: `run`: Corrida (escaneo, noticias, recálculo, sincronización o calibración); `llm_review`: Revisión de un agente de IA; `config_change`: Cambio de configuración.
+             * @enum {string}
+             */
+            type: "run" | "llm_review" | "config_change";
+        };
+        /** InstalledSoftwareItem */
+        InstalledSoftwareItem: {
+            /**
+             * Cpe
+             * @description Identificador CPE 2.3 del software.
+             */
+            cpe: string | null;
+            /**
+             * Has Cpe
+             * @description Si tiene un CPE asignado.
+             */
+            has_cpe: boolean;
+            /**
+             * Name
+             * @description Nombre del software en iTop.
+             */
+            name: string;
+            /**
+             * Open Vulnerabilities
+             * @description Vulnerabilidades abiertas del software en este CI.
+             */
+            open_vulnerabilities: number;
+            /**
+             * Software Id
+             * @description Id (UUID) del producto de software.
+             */
+            software_id: string;
+            /**
+             * Version
+             * @description Versión instalada, tal como la da iTop.
+             */
+            version: string;
+            /**
+             * Version Known
+             * @description Si iTop da una versión real (no vacía ni un marcador como `N/A`).
+             */
+            version_known: boolean;
+            /**
+             * Worst Level
+             * @description Peor nivel de sus vulnerabilidades abiertas; nulo si no tiene. Valores: `critical`: Crítica (urgencia 1); `high`: Alta (urgencia 2); `medium`: Media (urgencia 3); `low`: Baja (urgencia 4).
+             */
+            worst_level: ("critical" | "high" | "medium" | "low") | null;
+        };
+        /**
+         * InventoryAsset
+         * @example {
+         *       "ci_id": "CI-0001",
+         *       "classification": "highly_classified",
+         *       "criticality": "high",
+         *       "custodian": "Infraestructura Linux",
+         *       "exposed": true,
+         *       "itop_class": "Server",
+         *       "itop_url": "https://itop.example.test/pages/UI.php?operation=details&class=Server&id=CI-0001",
+         *       "kev_findings": 1,
+         *       "level": "critical",
+         *       "name": "srv-pagos-01",
+         *       "open_findings": 2,
+         *       "os": "Ubuntu 22.04",
+         *       "owner": "Dueña de Pagos",
+         *       "personal_data": true,
+         *       "risk": 90,
+         *       "service": "Pagos",
+         *       "software_count": 4,
+         *       "synced_at": "2026-11-23T06:00:00Z"
+         *     }
+         */
+        InventoryAsset: {
+            /**
+             * Ci Id
+             * @description Id del CI en iTop.
+             */
+            ci_id: string;
+            /**
+             * Classification
+             * @description Clasificación de datos del CI en iTop. Valores: `public`: Información pública; `classified`: Clasificada; `highly_classified`: Altamente clasificada (se puede excluir de las exportaciones); `unclassified`: Sin clasificación asignada en iTop.
+             * @enum {string}
+             */
+            classification: "public" | "classified" | "highly_classified" | "unclassified";
+            /**
+             * Criticality
+             * @description Criticidad del activo en iTop. Valores: `high`: Alta; `medium`: Media; `low`: Baja; `unknown`: Sin dato en iTop.
+             * @enum {string}
+             */
+            criticality: "high" | "medium" | "low" | "unknown";
+            /**
+             * Custodian
+             * @description Equipo custodio del activo.
+             */
+            custodian: string | null;
+            /**
+             * Exposed
+             * @description Si está expuesto a internet; nulo si iTop no lo dice.
+             */
+            exposed: boolean | null;
+            /**
+             * Itop Class
+             * @description Clase del CI en iTop, por ejemplo `Server`.
+             */
+            itop_class: string;
+            /**
+             * Itop Url
+             * @description Enlace al activo en iTop.
+             */
+            itop_url: string;
+            /**
+             * Kev Findings
+             * @description Hallazgos abiertos del CI con CVE en el catálogo KEV.
+             */
+            kev_findings: number;
+            /**
+             * Level
+             * @description Nivel de su riesgo; nulo sin hallazgos. Valores: `critical`: Crítica (urgencia 1); `high`: Alta (urgencia 2); `medium`: Media (urgencia 3); `low`: Baja (urgencia 4).
+             */
+            level: ("critical" | "high" | "medium" | "low") | null;
+            /**
+             * Name
+             * @description Nombre del CI.
+             */
+            name: string;
+            /**
+             * Open Findings
+             * @description Hallazgos abiertos del CI (vulnerabilidades distintas).
+             */
+            open_findings: number;
+            /**
+             * Os
+             * @description Sistema operativo del CI, según iTop.
+             */
+            os: string | null;
+            /**
+             * Owner
+             * @description Responsable del activo.
+             */
+            owner: string | null;
+            /**
+             * Personal Data
+             * @description Si el CI guarda datos personales; nulo si iTop no lo dice.
+             */
+            personal_data: boolean | null;
+            /**
+             * Risk
+             * @description Riesgo del CI: el mayor final de sus hallazgos abiertos; nulo sin hallazgos.
+             */
+            risk: number | null;
+            /**
+             * Service
+             * @description Servicio de negocio del CI, según iTop.
+             */
+            service: string | null;
+            /**
+             * Software Count
+             * @description Instalaciones de software en el CI.
+             */
+            software_count: number;
+            /**
+             * Synced At
+             * @description Última sincronización del CI con iTop (UTC).
+             */
+            synced_at: string;
+        };
         /** InventoryItem */
         InventoryItem: {
             /**
@@ -1862,6 +2488,74 @@ export interface components {
              */
             without_owner: components["schemas"]["InventoryItem"][];
         };
+        /** InventorySummary */
+        InventorySummary: {
+            /**
+             * By Class
+             * @description CIs por clase de iTop.
+             */
+            by_class: {
+                [key: string]: number;
+            };
+            /**
+             * By Classification
+             * @description CIs por clasificación de datos.
+             */
+            by_classification: {
+                [key: string]: number;
+            };
+            /**
+             * By Criticality
+             * @description CIs por criticidad.
+             */
+            by_criticality: {
+                [key: string]: number;
+            };
+            /**
+             * By Exposure
+             * @description CIs por exposición: `exposed`, `internal` o `unknown` (sin dato).
+             */
+            by_exposure: {
+                [key: string]: number;
+            };
+            /**
+             * Custodians
+             * @description Equipos custodios distintos de los CIs.
+             */
+            custodians: number;
+            /**
+             * Last Sync At
+             * @description Última sincronización de un CI con iTop (UTC).
+             */
+            last_sync_at: string | null;
+            /**
+             * Owners
+             * @description Responsables distintos de los CIs.
+             */
+            owners: number;
+            /** @description Salud del software del inventario. */
+            software: components["schemas"]["SoftwareHealth"];
+            /**
+             * Total Assets
+             * @description CIs vigentes.
+             */
+            total_assets: number;
+            /**
+             * With Kev Findings
+             * @description CIs con algún hallazgo abierto en KEV.
+             */
+            with_kev_findings: number;
+            /**
+             * With Open Findings
+             * @description CIs con hallazgos abiertos.
+             */
+            with_open_findings: number;
+            /**
+             * Without Owner
+             * @description Activos sin responsable.
+             */
+            without_owner: number;
+        };
         /**
          * ItopWebhookCall
          * @description What iTop sends: the class, id and reference of the changed object, nothing else.
@@ -1883,6 +2577,278 @@ export interface components {
              * @description Referencia del ticket en iTop.
              */
             ref?: string | null;
+        };
+        /**
+         * JudgeDetail
+         * @example {
+         *       "accepted_reasons": [
+         *         {
+         *           "ci_id": null,
+         *           "code": "mass_exploitation",
+         *           "element_id": "news-1",
+         *           "label": "Explotación masiva",
+         *           "points": 12,
+         *           "quote": "se observa explotación masiva desde el 20 de noviembre",
+         *           "rejection_rule": null,
+         *           "seq": 1,
+         *           "status": "accepted"
+         *         }
+         *       ],
+         *       "applied_adjustment": 12,
+         *       "assessment_id": "0192f3a4-7b1e-7c2d-8a5f-3e4d5c6b7a89",
+         *       "dead_zone_applied": false,
+         *       "double_review": null,
+         *       "mitigation_status": "accepted",
+         *       "model": "deepseek-v4-pro",
+         *       "proposed_adjustment": 12,
+         *       "rejected_reasons": [
+         *         {
+         *           "ci_id": null,
+         *           "code": "requires_authentication",
+         *           "element_id": "news-2",
+         *           "label": "Requiere autenticación",
+         *           "points": -8,
+         *           "quote": "requiere una cuenta válida",
+         *           "rejection_rule": "L6",
+         *           "seq": 2,
+         *           "status": "rejected"
+         *         }
+         *       ],
+         *       "review_id": "0192f3a8-4f50-7162-8d7e-8f9a0b1c2d3e",
+         *       "reviewed_at": "2026-11-23T10:34:12Z",
+         *       "status": "applied",
+         *       "summary": "Explotación masiva reportada por dos fuentes; el servidor está expuesto."
+         *     }
+         */
+        JudgeDetail: {
+            /**
+             * Accepted Reasons
+             * @description Motivos aceptados.
+             */
+            accepted_reasons: components["schemas"]["JudgeReasonItem"][];
+            /**
+             * Applied Adjustment
+             * @description Ajuste del grupo que llegó a la puntuación (ya con la zona muerta).
+             */
+            applied_adjustment: number;
+            /**
+             * Assessment Id
+             * @description Id de la evaluación.
+             */
+            assessment_id: string;
+            /**
+             * Dead Zone Applied
+             * @description Si el ajuste propuesto cayó dentro de la zona muerta y no se aplicó.
+             */
+            dead_zone_applied: boolean;
+            /** @description Doble revisión ciega; nula si no la hubo. */
+            double_review: components["schemas"]["DoubleReviewInfo"] | null;
+            /**
+             * Mitigation Status
+             * @description Mitigación redactada por el juez. Valores: `accepted`: Aceptada: se muestra como «redactado por IA»; `discarded`: Descartada por una regla; `absent`: El juez no la redactó.
+             */
+            mitigation_status: ("accepted" | "discarded" | "absent") | null;
+            /**
+             * Model
+             * @description Modelo de IA.
+             */
+            model: string | null;
+            /**
+             * Proposed Adjustment
+             * @description Suma de los motivos aceptados del grupo, antes de la zona muerta.
+             */
+            proposed_adjustment: number | null;
+            /**
+             * Rejected Reasons
+             * @description Motivos rechazados o retirados.
+             */
+            rejected_reasons: components["schemas"]["JudgeReasonItem"][];
+            /**
+             * Review Id
+             * @description Id de la revisión; nulo si la evaluación no tuvo juez.
+             */
+            review_id: string | null;
+            /**
+             * Reviewed At
+             * @description Cuándo revisó el juez (UTC).
+             */
+            reviewed_at: string | null;
+            /**
+             * Status
+             * @description Resultado de la revisión; nulo sin revisión. Valores: `applied`: Aplicada: su ajuste llegó a la puntuación; `suggestion`: Solo sugerencia (ticket que cambió una persona); `partial_review`: Revisión parcial: se aplicó lo validado; `judge_disagreement`: Desacuerdo en la doble revisión: final = base; `no_judge_review`: Sin juez (respaldo): final = base; `rejected`: Rechazada por la validación; `queued`: En cola para la siguiente corrida.
+             */
+            status: ("applied" | "suggestion" | "partial_review" | "judge_disagreement" | "no_judge_review" | "rejected" | "queued") | null;
+            /**
+             * Summary
+             * @description Resumen del juez.
+             */
+            summary: string | null;
+        };
+        /** JudgeReasonItem */
+        JudgeReasonItem: {
+            /**
+             * Ci Id
+             * @description CI al que se suma el motivo (`more_critical_asset`); nulo si es del grupo.
+             */
+            ci_id: string | null;
+            /**
+             * Code
+             * @description Código del motivo.
+             */
+            code: string;
+            /**
+             * Element Id
+             * @description Elemento del paquete que cita (noticia, CVE o CI).
+             */
+            element_id: string;
+            /**
+             * Label
+             * @description Descripción del motivo, en español.
+             */
+            label: string;
+            /**
+             * Points
+             * @description Puntos: los aplicados si se aceptó, los propuestos si no.
+             */
+            points: number;
+            /**
+             * Quote
+             * @description Cita textual de la evidencia; es texto externo: muéstrala como dato, escapada.
+             */
+            quote: string;
+            /**
+             * Rejection Rule
+             * @description Regla que lo rechazó (por ejemplo `L5.quote` o `L6`); nula si se aceptó.
+             */
+            rejection_rule: string | null;
+            /**
+             * Seq
+             * @description Orden en que el juez propuso el motivo.
+             */
+            seq: number;
+            /**
+             * Status
+             * @description Qué decidió la validación. Valores: `accepted`: Aceptado por la validación; `rejected`: Rechazado por una regla; `withdrawn`: Retirado por el juez.
+             * @enum {string}
+             */
+            status: "accepted" | "rejected" | "withdrawn";
+        };
+        /**
+         * LlmReviewEntry
+         * @example {
+         *       "agent": "judge",
+         *       "assessment_id": "0192f3a4-7b1e-7c2d-8a5f-3e4d5c6b7a89",
+         *       "attempts": 1,
+         *       "cost_usd": "0.004120",
+         *       "created_at": "2026-11-23T10:34:12Z",
+         *       "id": "0192f3a8-4f50-7162-8d7e-8f9a0b1c2d3e",
+         *       "ladder_level": 0,
+         *       "latency_ms": 9800,
+         *       "mode": "scoring",
+         *       "model": "deepseek-v4-pro",
+         *       "reasons_accepted": 2,
+         *       "reasons_rejected": 1,
+         *       "second_review": false,
+         *       "status": "applied",
+         *       "tokens_cached": 9000,
+         *       "tokens_input": 14200,
+         *       "tokens_output": 820,
+         *       "tokens_reasoning": 0
+         *     }
+         */
+        LlmReviewEntry: {
+            /**
+             * Agent
+             * @description Agente de IA: analista de noticias, analista de CVE o juez. Valores: `news_analyst`: Analista de noticias; `cve_analyst`: Analista de CVE; `judge`: Juez.
+             * @enum {string}
+             */
+            agent: "news_analyst" | "cve_analyst" | "judge";
+            /**
+             * Assessment Id
+             * @description Evaluación que usó esta revisión, si la hay.
+             */
+            assessment_id: string | null;
+            /**
+             * Attempts
+             * @description Intentos (reintentos de formato incluidos).
+             */
+            attempts: number;
+            /**
+             * Cost Usd
+             * @description Costo en dólares (USD), como texto.
+             */
+            cost_usd: string;
+            /**
+             * Created At
+             * @description Fecha y hora de creación (UTC).
+             */
+            created_at: string;
+            /**
+             * Id
+             * @description Id de la revisión.
+             */
+            id: string;
+            /**
+             * Ladder Level
+             * @description Nivel de la escalera del juez cuando se hizo la revisión.
+             */
+            ladder_level: number;
+            /**
+             * Latency Ms
+             * @description Latencia total de la revisión, en milisegundos.
+             */
+            latency_ms: number;
+            /**
+             * Mode
+             * @description Modo del agente (por ejemplo `scoring` o `dismissals`).
+             */
+            mode: string | null;
+            /**
+             * Model
+             * @description Modelo de IA.
+             */
+            model: string;
+            /**
+             * Reasons Accepted
+             * @description Motivos del juez aceptados en esta revisión.
+             */
+            reasons_accepted: number;
+            /**
+             * Reasons Rejected
+             * @description Motivos del juez rechazados en esta revisión.
+             */
+            reasons_rejected: number;
+            /**
+             * Second Review
+             * @description Si es la segunda revisión ciega de una doble revisión.
+             */
+            second_review: boolean;
+            /**
+             * Status
+             * @description Resultado de la revisión. Valores: `applied`: Aplicada: su ajuste llegó a la puntuación; `suggestion`: Solo sugerencia (ticket que cambió una persona); `partial_review`: Revisión parcial: se aplicó lo validado; `judge_disagreement`: Desacuerdo en la doble revisión: final = base; `no_judge_review`: Sin juez (respaldo): final = base; `rejected`: Rechazada por la validación; `queued`: En cola para la siguiente corrida.
+             * @enum {string}
+             */
+            status: "applied" | "suggestion" | "partial_review" | "judge_disagreement" | "no_judge_review" | "rejected" | "queued";
+            /**
+             * Tokens Cached
+             * @description Tokens de entrada leídos de la caché.
+             */
+            tokens_cached: number;
+            /**
+             * Tokens Input
+             * @description Tokens de entrada.
+             */
+            tokens_input: number;
+            /**
+             * Tokens Output
+             * @description Tokens de salida.
+             */
+            tokens_output: number;
+            /**
+             * Tokens Reasoning
+             * @description Tokens de razonamiento.
+             */
+            tokens_reasoning: number;
         };
         /** Mapping */
         Mapping: {
@@ -2046,6 +3012,45 @@ export interface components {
              */
             next_cursor?: string | null;
         };
+        /** Page[HistoryEvent] */
+        Page_HistoryEvent_: {
+            /**
+             * Items
+             * @description Elementos de la página.
+             */
+            items: components["schemas"]["HistoryEvent"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null if none
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[InventoryAsset] */
+        Page_InventoryAsset_: {
+            /**
+             * Items
+             * @description Elementos de la página.
+             */
+            items: components["schemas"]["InventoryAsset"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null if none
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[LlmReviewEntry] */
+        Page_LlmReviewEntry_: {
+            /**
+             * Items
+             * @description Elementos de la página.
+             */
+            items: components["schemas"]["LlmReviewEntry"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null if none
+             */
+            next_cursor?: string | null;
+        };
         /** Page[NotificationEventRow] */
         Page_NotificationEventRow_: {
             /**
@@ -2098,6 +3103,19 @@ export interface components {
              */
             next_cursor?: string | null;
         };
+        /** Page[SoftwareItem] */
+        Page_SoftwareItem_: {
+            /**
+             * Items
+             * @description Elementos de la página.
+             */
+            items: components["schemas"]["SoftwareItem"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null if none
+             */
+            next_cursor?: string | null;
+        };
         /** Page[Source] */
         Page_Source_: {
             /**
@@ -2105,6 +3123,19 @@ export interface components {
              * @description Elementos de la página.
              */
             items: components["schemas"]["Source"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null if none
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[TicketUpdateEntry] */
+        Page_TicketUpdateEntry_: {
+            /**
+             * Items
+             * @description Elementos de la página.
+             */
+            items: components["schemas"]["TicketUpdateEntry"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null if none
@@ -2237,6 +3268,29 @@ export interface components {
              */
             subsectors: string[];
         };
+        /** ReasonUsage */
+        ReasonUsage: {
+            /**
+             * Accepted
+             * @description Veces que se aceptó.
+             */
+            accepted: number;
+            /**
+             * Code
+             * @description Código del motivo, por ejemplo `mass_exploitation`.
+             */
+            code: string;
+            /**
+             * Label
+             * @description Descripción del motivo, en español.
+             */
+            label: string;
+            /**
+             * Rejected
+             * @description Veces que se rechazó.
+             */
+            rejected: number;
+        };
         /**
          * Recommendation
          * @example {
@@ -2261,6 +3315,11 @@ export interface components {
          *     }
          */
         Recommendation: {
+            /**
+             * Accepted Reasons
+             * @description Motivos del juez que llegaron a la puntuación, con su cita (FRO-13); vacío sin juez, con respaldo o con desacuerdo.
+             */
+            accepted_reasons?: components["schemas"]["AcceptedReason"][];
             /**
              * Assessment Id
              * @description Id de la evaluación.
@@ -2299,6 +3358,16 @@ export interface components {
              */
             judge_adjustment: number;
             /**
+             * Judge Status
+             * @description Resultado de la revisión del juez; nulo sin revisión. Valores: `applied`: Aplicada: su ajuste llegó a la puntuación; `suggestion`: Solo sugerencia (ticket que cambió una persona); `partial_review`: Revisión parcial: se aplicó lo validado; `judge_disagreement`: Desacuerdo en la doble revisión: final = base; `no_judge_review`: Sin juez (respaldo): final = base; `rejected`: Rechazada por la validación; `queued`: En cola para la siguiente corrida.
+             */
+            judge_status?: ("applied" | "suggestion" | "partial_review" | "judge_disagreement" | "no_judge_review" | "rejected" | "queued") | null;
+            /**
+             * Judge Summary
+             * @description Resumen del juez, si hubo revisión.
+             */
+            judge_summary?: string | null;
+            /**
              * Justification
              * @description Por qué tiene esta prioridad, en español.
              */
@@ -2329,6 +3398,11 @@ export interface components {
              * @description Producto afectado; nulo en alertas inferidas.
              */
             product: string | null;
+            /**
+             * Ticket Itop Id
+             * @description Id del ticket de iTop que se muestra (el del custodio del CI mostrado).
+             */
+            ticket_itop_id?: string | null;
             /**
              * Ticket Url
              * @description Enlace al ticket de iTop, si existe.
@@ -2424,6 +3498,45 @@ export interface components {
              * @enum {string}
              */
             status: "queued" | "running" | "succeeded" | "failed";
+            /**
+             * Trigger Reason
+             * @description Por qué se lanzó la corrida. Valores: `schedule`: Por la agenda; `manual`: Lanzada por una persona; `after_scan`: Después de un escaneo; `formula_change`: Por un cambio de fórmula.
+             */
+            trigger_reason?: ("schedule" | "manual" | "after_scan" | "formula_change") | null;
+            /**
+             * Triggered By
+             * @description Nombre de quien la lanzó; nulo si la lanzó la agenda.
+             */
+            triggered_by?: string | null;
+        };
+        /** RunCounts */
+        RunCounts: {
+            /**
+             * Failed
+             * @description Terminadas con error (o canceladas).
+             */
+            failed: number;
+            /**
+             * Kind
+             * @description Tipo de corrida. Valores: `scan`: Escaneo simulado de vulnerabilidades; `ingestion`: Ingesta y análisis de noticias; `recalculation`: Recálculo por un cambio de fórmula, sin juez; `nightly`: Recálculo nocturno por el paso del tiempo; `inventory_sync`: Sincronización del inventario con iTop; `calibration`: Calibración semanal (modo 4).
+             * @enum {string}
+             */
+            kind: "scan" | "ingestion" | "recalculation" | "nightly" | "inventory_sync" | "calibration";
+            /**
+             * Queued
+             * @description En cola.
+             */
+            queued: number;
+            /**
+             * Running
+             * @description En ejecución.
+             */
+            running: number;
+            /**
+             * Succeeded
+             * @description Terminadas bien.
+             */
+            succeeded: number;
         };
         /**
          * ScanRequest
@@ -2571,6 +3684,113 @@ export interface components {
              */
             top_movers: string[];
         };
+        /** SoftwareHealth */
+        SoftwareHealth: {
+            /**
+             * Cpe Percent
+             * @description Software con CPE, en %, como texto; nulo sin software.
+             */
+            cpe_percent: string | null;
+            /**
+             * Known Version Percent
+             * @description Software con versión conocida, en %, como texto; nulo sin software.
+             */
+            known_version_percent: string | null;
+            /**
+             * Total
+             * @description Software instalado en CIs vigentes.
+             */
+            total: number;
+            /**
+             * With Cpe
+             * @description Software con CPE.
+             */
+            with_cpe: number;
+            /**
+             * With Known Version
+             * @description Software con versión conocida.
+             */
+            with_known_version: number;
+            /**
+             * Without Critical
+             * @description Software sin vulnerabilidades críticas abiertas.
+             */
+            without_critical: number;
+            /**
+             * Without Critical Percent
+             * @description Software sin vulnerabilidades críticas abiertas, en %, como texto; nulo sin software.
+             */
+            without_critical_percent: string | null;
+        };
+        /**
+         * SoftwareItem
+         * @example {
+         *       "ci_count": 3,
+         *       "cpe": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*",
+         *       "has_cpe": true,
+         *       "id": "0192f3a9-5061-7273-9e8f-9a0b1c2d3e4f",
+         *       "instances": 3,
+         *       "name": "OpenSSL",
+         *       "open_vulnerabilities": 2,
+         *       "version_known": true,
+         *       "versions": [
+         *         "3.0.7"
+         *       ],
+         *       "worst_level": "critical"
+         *     }
+         */
+        SoftwareItem: {
+            /**
+             * Ci Count
+             * @description CIs vigentes con el software.
+             */
+            ci_count: number;
+            /**
+             * Cpe
+             * @description CPE 2.3 del producto (versión comodín); nulo si no tiene.
+             */
+            cpe: string | null;
+            /**
+             * Has Cpe
+             * @description Si tiene un CPE asignado.
+             */
+            has_cpe: boolean;
+            /**
+             * Id
+             * @description Id (UUID) del producto de software.
+             */
+            id: string;
+            /**
+             * Instances
+             * @description Instalaciones del software en CIs vigentes.
+             */
+            instances: number;
+            /**
+             * Name
+             * @description Nombre del software en iTop.
+             */
+            name: string;
+            /**
+             * Open Vulnerabilities
+             * @description Vulnerabilidades abiertas (CVE por producto) en CIs vigentes.
+             */
+            open_vulnerabilities: number;
+            /**
+             * Version Known
+             * @description Si iTop da una versión real (no vacía ni un marcador como `N/A`).
+             */
+            version_known: boolean;
+            /**
+             * Versions
+             * @description Versiones conocidas instaladas, ordenadas (hasta 20).
+             */
+            versions: string[];
+            /**
+             * Worst Level
+             * @description Peor nivel de sus vulnerabilidades abiertas; nulo si no tiene. Valores: `critical`: Crítica (urgencia 1); `high`: Alta (urgencia 2); `medium`: Media (urgencia 3); `low`: Baja (urgencia 4).
+             */
+            worst_level: ("critical" | "high" | "medium" | "low") | null;
+        };
         /**
          * Source
          * @example {
@@ -2591,6 +3811,11 @@ export interface components {
              * @description Si está activo.
              */
             active: boolean;
+            /**
+             * Description
+             * @description Qué es la fuente; nulo en los feeds propios.
+             */
+            description?: string | null;
             /**
              * Health
              * @description Salud de la fuente. Valores: `ok`: Responde bien; `degraded`: Responde con fallas; `failing`: No responde.
@@ -2623,6 +3848,16 @@ export interface components {
              * @description Nombre de la fuente.
              */
             name: string;
+            /**
+             * Provider
+             * @description Quién la publica; nulo en los feeds propios.
+             */
+            provider?: string | null;
+            /**
+             * Refresh Interval Minutes
+             * @description Cada cuántos minutos la lee Hermes; nulo si no tiene agenda propia.
+             */
+            refresh_interval_minutes?: number | null;
             /**
              * Structural
              * @description Si es una fuente estructural: no se puede apagar.
@@ -2743,6 +3978,121 @@ export interface components {
              */
             vulnerability_id?: string | null;
         };
+        /** TelemetryDaily */
+        TelemetryDaily: {
+            /**
+             * Days
+             * @description Días de la serie.
+             */
+            days: number;
+            /**
+             * Series
+             * @description Un punto por día, del más antiguo al más reciente.
+             */
+            series: components["schemas"]["TelemetryDay"][];
+        };
+        /** TelemetryDay */
+        TelemetryDay: {
+            /**
+             * Agents
+             * @description Revisiones del día por agente.
+             */
+            agents: components["schemas"]["AgentDay"][];
+            /**
+             * Date
+             * @description Día (UTC), `AAAA-MM-DD`.
+             */
+            date: string;
+            /**
+             * Runs Failed
+             * @description Corridas que terminaron con error.
+             */
+            runs_failed: number;
+            /**
+             * Runs Succeeded
+             * @description Corridas que terminaron bien.
+             */
+            runs_succeeded: number;
+        };
+        /** TelemetrySummary */
+        TelemetrySummary: {
+            /**
+             * Agents
+             * @description Una entrada por agente de IA.
+             */
+            agents: components["schemas"]["AgentTelemetry"][];
+            /**
+             * Daily Budget Usd
+             * @description Presupuesto diario de LLM en dólares, como texto.
+             */
+            daily_budget_usd: string;
+            /**
+             * Generated At
+             * @description Cuándo se calculó el resumen (UTC).
+             */
+            generated_at: string;
+            /**
+             * Ladder Label
+             * @description Nombre del nivel de la escalera del juez.
+             */
+            ladder_label: string;
+            /**
+             * Ladder Level
+             * @description Nivel vigente de la escalera del juez (0 a 3).
+             */
+            ladder_level: number;
+            /**
+             * Run Success Percent
+             * @description Corridas terminadas bien sobre las terminadas, en %, como texto; nulo sin corridas.
+             */
+            run_success_percent: string | null;
+            /**
+             * Runs
+             * @description Corridas por tipo y estado.
+             */
+            runs: components["schemas"]["RunCounts"][];
+            /**
+             * Runs Failed
+             * @description Corridas que terminaron con error.
+             */
+            runs_failed: number;
+            /**
+             * Runs Queued
+             * @description Corridas en cola.
+             */
+            runs_queued: number;
+            /**
+             * Runs Running
+             * @description Corridas en ejecución.
+             */
+            runs_running: number;
+            /**
+             * Runs Succeeded
+             * @description Corridas que terminaron bien.
+             */
+            runs_succeeded: number;
+            /**
+             * Since
+             * @description Inicio de la ventana (UTC).
+             */
+            since: string;
+            /**
+             * Spend Today Usd
+             * @description Gasto de LLM de hoy (UTC) en dólares, como texto.
+             */
+            spend_today_usd: string;
+            /**
+             * Top Reasons
+             * @description Motivos del juez más usados en la ventana, con cuántas veces se aceptaron y rechazaron.
+             */
+            top_reasons: components["schemas"]["ReasonUsage"][];
+            /**
+             * Window
+             * @description Ventana del resumen. Valores: `24h`: Últimas 24 horas; `7d`: Últimos 7 días; `30d`: Últimos 30 días.
+             * @enum {string}
+             */
+            window: "24h" | "7d" | "30d";
+        };
         /**
          * Ticket
          * @example {
@@ -2797,6 +4147,107 @@ export interface components {
              * @description Enlace.
              */
             url: string;
+        };
+        /** TicketSummary */
+        TicketSummary: {
+            /**
+             * Avg Resolution Hours
+             * @description Horas promedio desde la creación en iTop hasta la resolución, como texto.
+             */
+            avg_resolution_hours: string | null;
+            /**
+             * By Status
+             * @description Tickets por estado: `pending_creation`, `open`, `resolved` y `closed`.
+             */
+            by_status: {
+                [key: string]: number;
+            };
+            /**
+             * By Urgency
+             * @description Tickets ya en iTop por urgencia (`1` crítica a `4` baja).
+             */
+            by_urgency: {
+                [key: string]: number;
+            };
+            /**
+             * Changed By Person
+             * @description Tickets cuya urgencia cambió una persona en iTop (D-007).
+             */
+            changed_by_person: number;
+            /**
+             * Resolved
+             * @description Tickets resueltos o cerrados.
+             */
+            resolved: number;
+            /**
+             * Resolved Percent
+             * @description Resueltos o cerrados sobre los que están en iTop, en %, como texto.
+             */
+            resolved_percent: string | null;
+            /**
+             * Total
+             * @description Todos los tickets, también los que esperan crearse en iTop.
+             */
+            total: number;
+        };
+        /** TicketUpdateEntry */
+        TicketUpdateEntry: {
+            /**
+             * Action
+             * @description Qué hizo Hermes en el ticket. Valores: `create`: Ticket creado; `add_ci`: CI agregado al ticket; `add_owner`: Dueño agregado; `comment`: Comentario; `raise_urgency`: Urgencia subida; `lower_urgency`: Urgencia bajada; `suggest`: Sugerencia de urgencia (ticket que cambió una persona); `partial_fix`: Corrección parcial; `fix_comment`: Corrección verificada; `reopen`: Reabierto.
+             * @enum {string}
+             */
+            action: "create" | "add_ci" | "add_owner" | "comment" | "raise_urgency" | "lower_urgency" | "suggest" | "partial_fix" | "fix_comment" | "reopen";
+            /**
+             * Assessment Id
+             * @description Evaluación que lo motivó, si la hay.
+             */
+            assessment_id: string | null;
+            /**
+             * Created At
+             * @description Fecha y hora de creación (UTC).
+             */
+            created_at: string;
+            /**
+             * Custodian
+             * @description Equipo custodio del activo.
+             */
+            custodian: string;
+            /**
+             * Cve
+             * @description Identificador CVE.
+             */
+            cve: string;
+            /**
+             * Id
+             * @description Id del registro.
+             */
+            id: string;
+            /**
+             * Itop Status
+             * @description Estado de la escritura en iTop; nulo si ya se purgó (90 días). Valores: `pending`: Espera su envío a iTop; `in_progress`: Enviándose a iTop; `done`: Escrito en iTop; `failed`: Falló; está en la cola de error.
+             */
+            itop_status: ("pending" | "in_progress" | "done" | "failed") | null;
+            /**
+             * Label
+             * @description La acción, en español.
+             */
+            label: string;
+            /**
+             * Ticket Itop Id
+             * @description Id numérico del ticket en iTop; nulo mientras no se crea.
+             */
+            ticket_itop_id: string | null;
+            /**
+             * Ticket Ref
+             * @description Referencia del ticket en iTop (por ejemplo `R-000123`).
+             */
+            ticket_ref: string | null;
+            /**
+             * Ticket Url
+             * @description Enlace al ticket de iTop, si existe.
+             */
+            ticket_url: string | null;
         };
         /** VulnerabilityBand */
         VulnerabilityBand: {
@@ -5344,6 +6795,561 @@ export interface operations {
             };
         };
     };
+    list_history: {
+        parameters: {
+            query?: {
+                /** @description Tipo de evento. Valores: `run`: Corrida (escaneo, noticias, recálculo, sincronización o calibración); `llm_review`: Revisión de un agente de IA; `config_change`: Cambio de configuración. */
+                type?: ("run" | "llm_review" | "config_change") | null;
+                /** @description Estado final exacto: el de la corrida (`succeeded`, `failed`…) o el de la revisión (`applied`, `no_judge_review`…); los cambios de configuración tienen `applied`. */
+                status?: string | null;
+                /** @description On or after (RFC 3339) */
+                date_from?: string | null;
+                /** @description On or before (RFC 3339) */
+                date_to?: string | null;
+                /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
+                cursor?: string | null;
+                /** @description Page size */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_HistoryEvent_"];
+                };
+            };
+            /** @description Cursor inválido o alterado (code: invalid_cursor) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_inventory_assets: {
+        parameters: {
+            query?: {
+                /** @description Texto a buscar en el nombre o el id del CI. */
+                q?: string | null;
+                /** @description Clase de iTop exacta, por ejemplo `Server`. */
+                itop_class?: string | null;
+                /** @description Criticidad del CI en iTop. Valores: `high`: Alta; `medium`: Media; `low`: Baja; `unknown`: Sin dato en iTop. */
+                criticality?: ("high" | "medium" | "low" | "unknown") | null;
+                /** @description Solo activos expuestos a internet (`true`) o no (`false`). */
+                exposed?: boolean | null;
+                /** @description Clasificación de los activos afectados. Valores: `public`: Información pública; `classified`: Clasificada; `highly_classified`: Altamente clasificada (se puede excluir de las exportaciones); `unclassified`: Sin clasificación asignada en iTop. */
+                classification?: ("public" | "classified" | "highly_classified" | "unclassified") | null;
+                /** @description Responsable del activo (texto exacto). */
+                owner?: string | null;
+                /** @description Equipo custodio del activo (texto exacto). */
+                custodian?: string | null;
+                /** @description Solo CIs con (`true`) o sin (`false`) hallazgos abiertos. */
+                with_findings?: boolean | null;
+                /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
+                cursor?: string | null;
+                /** @description Page size */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_InventoryAsset_"];
+                };
+            };
+            /** @description Cursor inválido o alterado (code: invalid_cursor) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_asset_software: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id del CI en iTop (por ejemplo `CI-0001`). */
+                ci_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstalledSoftwareItem"][];
+                };
+            };
+            /** @description La solicitud no es válida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_inventory_software: {
+        parameters: {
+            query?: {
+                /** @description Texto a buscar en el nombre del software. */
+                q?: string | null;
+                /** @description Solo software con (`true`) o sin (`false`) CPE. */
+                has_cpe?: boolean | null;
+                /** @description Peor nivel de sus vulnerabilidades abiertas. Valores: `critical`: Crítica (urgencia 1); `high`: Alta (urgencia 2); `medium`: Media (urgencia 3); `low`: Baja (urgencia 4). */
+                worst_level?: ("critical" | "high" | "medium" | "low") | null;
+                /** @description Solo software con (`true`) o sin (`false`) vulnerabilidades abiertas. */
+                with_vulnerabilities?: boolean | null;
+                /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
+                cursor?: string | null;
+                /** @description Page size */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_SoftwareItem_"];
+                };
+            };
+            /** @description Cursor inválido o alterado (code: invalid_cursor) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_inventory_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventorySummary"];
+                };
+            };
+            /** @description La solicitud no es válida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     receive_itop_webhook: {
         parameters: {
             query?: never;
@@ -6727,6 +8733,14 @@ export interface operations {
                 group_id?: string | null;
                 /** @description Timeline of one CI (iTop id) */
                 ci_id?: string | null;
+                /** @description Solo las evaluaciones del grupo de ese ticket de iTop. */
+                ticket_itop_id?: string | null;
+                /** @description Solo las recomendaciones de ese nivel. Valores: `critical`: Crítica (urgencia 1); `high`: Alta (urgencia 2); `medium`: Media (urgencia 3); `low`: Baja (urgencia 4). */
+                level?: ("critical" | "high" | "medium" | "low") | null;
+                /** @description Solo las que tienen un feedback vigente con ese veredicto. Valores: `relevant`: La recomendación es útil; `false_positive`: No aplica: suprime los hallazgos evaluados hasta que cambien; `wrong_priority`: Prioridad incorrecta; exige `proposed_level`; `investigating`: Se está investigando; `stop_suggestions`: No sugerir más en el ticket. */
+                verdict?: ("relevant" | "false_positive" | "wrong_priority" | "investigating" | "stop_suggestions") | null;
+                /** @description Solo las que no tienen (`true`) o sí tienen (`false`) feedback vigente. */
+                without_feedback?: boolean | null;
                 /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
                 cursor?: string | null;
                 /** @description Page size */
@@ -6934,6 +8948,110 @@ export interface operations {
             };
         };
     };
+    get_recommendation_judge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Id (UUID) de la evaluación. */
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgeDetail"];
+                };
+            };
+            /** @description La solicitud no es válida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_recommendation_feedback: {
         parameters: {
             query?: never;
@@ -7041,6 +9159,14 @@ export interface operations {
     list_runs: {
         parameters: {
             query?: {
+                /** @description Tipo de corrida. Valores: `scan`: Escaneo simulado de vulnerabilidades; `ingestion`: Ingesta y análisis de noticias; `recalculation`: Recálculo por un cambio de fórmula, sin juez; `nightly`: Recálculo nocturno por el paso del tiempo. */
+                kind?: ("scan" | "ingestion" | "recalculation" | "nightly") | null;
+                /** @description Estado de la corrida. Valores: `queued`: En cola; el worker aún no la toma; `running`: En ejecución; `succeeded`: Terminó bien; `failed`: Terminó con error. */
+                status?: ("queued" | "running" | "succeeded" | "failed") | null;
+                /** @description Started on or after (RFC 3339) */
+                date_from?: string | null;
+                /** @description Started on or before (RFC 3339) */
+                date_to?: string | null;
                 /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
                 cursor?: string | null;
                 /** @description Page size */
@@ -7991,6 +10117,328 @@ export interface operations {
             };
         };
     };
+    get_telemetry_daily: {
+        parameters: {
+            query?: {
+                /** @description Days back */
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelemetryDaily"];
+                };
+            };
+            /** @description La solicitud no es válida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_llm_reviews: {
+        parameters: {
+            query?: {
+                /** @description Agente de IA. Valores: `news_analyst`: Analista de noticias; `cve_analyst`: Analista de CVE; `judge`: Juez. */
+                agent?: ("news_analyst" | "cve_analyst" | "judge") | null;
+                /** @description Estado de la revisión. Valores: `applied`: Aplicada: su ajuste llegó a la puntuación; `suggestion`: Solo sugerencia (ticket que cambió una persona); `partial_review`: Revisión parcial: se aplicó lo validado; `judge_disagreement`: Desacuerdo en la doble revisión: final = base; `no_judge_review`: Sin juez (respaldo): final = base; `rejected`: Rechazada por la validación; `queued`: En cola para la siguiente corrida. */
+                status?: ("applied" | "suggestion" | "partial_review" | "judge_disagreement" | "no_judge_review" | "rejected" | "queued") | null;
+                /** @description On or after (RFC 3339) */
+                date_from?: string | null;
+                /** @description On or before (RFC 3339) */
+                date_to?: string | null;
+                /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
+                cursor?: string | null;
+                /** @description Page size */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_LlmReviewEntry_"];
+                };
+            };
+            /** @description Cursor inválido o alterado (code: invalid_cursor) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_telemetry_summary: {
+        parameters: {
+            query?: {
+                /** @description Ventana del resumen: últimas 24 horas, 7 días o 30 días. Valores: `24h`: Últimas 24 horas; `7d`: Últimos 7 días; `30d`: Últimos 30 días. */
+                window?: "24h" | "7d" | "30d";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelemetrySummary"];
+                };
+            };
+            /** @description La solicitud no es válida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_tickets: {
         parameters: {
             query?: {
@@ -8014,6 +10462,217 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_Ticket_"];
+                };
+            };
+            /** @description Cursor inválido o alterado (code: invalid_cursor) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_ticket_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketSummary"];
+                };
+            };
+            /** @description La solicitud no es válida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_ticket_updates: {
+        parameters: {
+            query?: {
+                /** @description Id numérico del ticket en iTop. */
+                ticket_itop_id?: string | null;
+                /** @description Acción registrada. Valores: `create`: Ticket creado; `add_ci`: CI agregado al ticket; `add_owner`: Dueño agregado; `comment`: Comentario; `raise_urgency`: Urgencia subida; `lower_urgency`: Urgencia bajada; `suggest`: Sugerencia de urgencia (ticket que cambió una persona); `partial_fix`: Corrección parcial; `fix_comment`: Corrección verificada; `reopen`: Reabierto. */
+                action?: ("create" | "add_ci" | "add_owner" | "comment" | "raise_urgency" | "lower_urgency" | "suggest" | "partial_fix" | "fix_comment" | "reopen") | null;
+                /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
+                cursor?: string | null;
+                /** @description Page size */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_TicketUpdateEntry_"];
                 };
             };
             /** @description Cursor inválido o alterado (code: invalid_cursor) */
