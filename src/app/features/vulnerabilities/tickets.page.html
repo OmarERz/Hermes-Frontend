@@ -66,9 +66,7 @@
                 <td>{{ ticket.cve }}</td>
                 <td>{{ ticket.custodian }}</td>
                 <td>
-                  <span [class]="'urgency-chip urgency-' + ticket.urgency">{{
-                    ticket.urgencyLabel
-                  }}</span>
+                  <app-chip [tone]="ticket.urgencyTone">{{ ticket.urgencyLabel }}</app-chip>
                 </td>
                 <td>
                   <span class="status">{{ ticket.status }}</span>

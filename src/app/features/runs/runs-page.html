@@ -158,7 +158,9 @@
 
       <div class="live-progress">
         <div class="live-line">
-          <span [class]="'run-status status-' + run.status">{{ run.statusLabel }}</span>
+          <app-chip class="run-status" [tone]="statusTones[run.status]">{{
+            run.statusLabel
+          }}</app-chip>
           <strong class="numeric">{{ run.progress }} %</strong>
           @switch (liveState()) {
             @case ('live') {
@@ -269,7 +271,9 @@
                   <strong>{{ row.kindLabel }}</strong>
                 </td>
                 <td>
-                  <span [class]="'run-status status-' + row.status">{{ row.statusLabel }}</span>
+                  <app-chip class="run-status" [tone]="statusTones[row.status]">{{
+                    row.statusLabel
+                  }}</app-chip>
                 </td>
                 <td>
                   <span class="progress-cell">

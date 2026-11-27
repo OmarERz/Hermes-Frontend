@@ -28,6 +28,7 @@ import {
 } from '@lucide/angular';
 import { finalize, Subscription } from 'rxjs';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
+import { Chip } from '../../shared/chip';
 import { KpiCard } from '../../shared/kpi-card';
 import { ApiError, toApiError } from '../../core/api/api-error';
 import { IfRoleDirective } from '../../core/auth/if-role.directive';
@@ -48,6 +49,7 @@ import {
   RunStatus,
   RunView,
   STATUS_LABELS,
+  STATUS_TONES,
   toRunView,
 } from './run-labels';
 import { RunFilters, RunsService, TelemetrySummary } from './runs.service';
@@ -80,6 +82,7 @@ type CountKey = 'runs_queued' | 'runs_running' | 'runs_succeeded' | 'runs_failed
     BannerPagina,
     AsyncStateComponent,
     IfRoleDirective,
+    Chip,
     KpiCard,
     LucideArrowLeft,
     LucideArrowRight,
@@ -116,6 +119,7 @@ export class RunsPage {
   readonly statuses = RUN_STATUSES;
   readonly kindLabels = KIND_LABELS;
   readonly statusLabels = STATUS_LABELS;
+  readonly statusTones = STATUS_TONES;
 
   readonly kind = signal<RunKind | ''>('');
   readonly status = signal<RunStatus | ''>('');

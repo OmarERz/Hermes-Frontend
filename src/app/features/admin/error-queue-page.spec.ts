@@ -107,7 +107,7 @@ describe('ErrorQueuePage', () => {
     const [notification, itop, llm] = rows(element);
     expect(cells(notification)).toEqual([
       formatDateTime(NOTIFICATION.created_at),
-      'Notificación new_ticket',
+      'Notificación Ticket nuevo',
       'Agotó sus reintentos',
       '5',
       'Sin reintento',
@@ -123,14 +123,16 @@ describe('ErrorQueuePage', () => {
     expect(cells(itop)[6]).toBe('CVE-2026-10002 Ticket 124');
     expect(itop.querySelector('button')).toBeNull();
     expect(cells(llm).slice(1, 7)).toEqual([
-      'Validación del LLM news_analyst',
+      'Validación del LLM Analista de noticias',
       'Pendiente, sin reintento programado',
       '3',
       'Sin reintento',
       'Sin detalle',
       '—',
     ]);
-    expect(llm.querySelector('.chip')?.classList).toContain('bad');
+    expect(llm.querySelector('app-chip')?.getAttribute('data-tone')).toBe('danger');
+    // The raw value of the API stays in the tooltip.
+    expect(llm.querySelector('small[title]')?.getAttribute('title')).toBe('news_analyst');
   });
 
   it('says a retry is scheduled only when the API gives its date', async () => {
@@ -150,7 +152,7 @@ describe('ErrorQueuePage', () => {
       '3',
       formatDateTime(scheduled.next_attempt_at),
     ]);
-    expect(row.querySelector('.chip')?.classList).toContain('warn');
+    expect(row.querySelector('app-chip')?.getAttribute('data-tone')).toBe('warning');
     // Values the front does not know yet are shown as they come.
     expect(cells(other).slice(1, 3)).toEqual(['other add_ci', 'stuck']);
   });
@@ -173,7 +175,7 @@ describe('ErrorQueuePage', () => {
     await settle();
     expect(queue.retry).toHaveBeenCalledWith(NOTIFICATION.id);
     expect(text(element.querySelector('.admin-notice[role="status"]'))).toBe(
-      'La notificación new_ticket volvió a la cola: Hermes intentará entregarla de nuevo.',
+      'La notificación «Ticket nuevo» volvió a la cola: Hermes intentará entregarla de nuevo.',
     );
     expect(queue.list.mock.calls.length).toBe(listed + 1);
   });

@@ -12,6 +12,7 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
+import { Chip } from '../../shared/chip';
 import { KpiCard } from '../../shared/kpi-card';
 import { LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
 import { ComparisonRow, ComparisonService, ComparisonSummary } from './comparison.service';
@@ -30,7 +31,7 @@ function rank(level: Level): number {
  */
 @Component({
   selector: 'app-comparison-page',
-  imports: [BannerPagina, AsyncStateComponent, KpiCard, LucideArrowLeft, LucideArrowRight],
+  imports: [BannerPagina, AsyncStateComponent, Chip, KpiCard, LucideArrowLeft, LucideArrowRight],
   templateUrl: './comparison.page.html',
   styleUrls: ['./vulnerability-chips.css', './comparison.page.css'],
 })

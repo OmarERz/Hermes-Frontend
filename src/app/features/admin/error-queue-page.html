@@ -84,12 +84,12 @@
                 <td class="numeric">{{ row.when }}</td>
                 <td>
                   <strong>{{ row.kindLabel }}</strong>
-                  <small class="code">{{ row.component }}</small>
+                  <small [attr.title]="row.componentCode">{{ row.component }}</small>
                 </td>
                 <td>
-                  <span class="chip" [class.bad]="!row.scheduled" [class.warn]="row.scheduled">{{
+                  <app-chip [tone]="row.scheduled ? 'warning' : 'danger'">{{
                     row.statusLabel
-                  }}</span>
+                  }}</app-chip>
                 </td>
                 <td class="numeric">{{ row.attempts }}</td>
                 <td>{{ row.nextAttempt }}</td>

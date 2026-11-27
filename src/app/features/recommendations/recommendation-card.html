@@ -5,7 +5,7 @@
       <small>Evaluación del {{ createdAt() }}</small>
       <h3>Final {{ rec.final }} · {{ levelLabels[rec.level] }}</h3>
     </div>
-    <span class="level-chip" [class]="'level-' + rec.level">{{ levelLabels[rec.level] }}</span>
+    <app-chip [tone]="rec.level">{{ levelLabels[rec.level] }}</app-chip>
   </div>
 
   <div class="before-after" role="group" aria-label="Cambio contra la evaluación anterior">

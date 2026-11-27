@@ -80,7 +80,7 @@ describe('RunsPage', () => {
     expect(cells(rows[1])).toContain('3 min 20 s');
     expect(cells(rows[1])).toContain('Agenda');
     expect(cells(rows[1])[7]).toBe('—');
-    expect(rows[2].querySelector('.run-status')?.classList).toContain('status-failed');
+    expect(rows[2].querySelector('.run-status')?.getAttribute('data-tone')).toBe('danger');
   });
 
   it('shows the counts of the last 24 hours', async () => {

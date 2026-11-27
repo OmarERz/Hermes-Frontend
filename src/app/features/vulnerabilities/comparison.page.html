@@ -58,7 +58,7 @@
               <th scope="col"><span class="visually-hidden">Nivel por CVSS</span></th>
               @for (level of levels; track level) {
                 <th scope="col">
-                  <span [class]="'level-chip level-' + level">{{ levelLabels[level] }}</span>
+                  <app-chip [tone]="level">{{ levelLabels[level] }}</app-chip>
                 </th>
               }
             </tr>
@@ -67,7 +67,7 @@
             @for (row of matrix(); track row.from) {
               <tr>
                 <th scope="row">
-                  <span [class]="'level-chip level-' + row.from">{{ levelLabels[row.from] }}</span>
+                  <app-chip [tone]="row.from">{{ levelLabels[row.from] }}</app-chip>
                 </th>
                 @for (cell of row.cells; track cell.to) {
                   <td

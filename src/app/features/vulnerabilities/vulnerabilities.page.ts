@@ -23,6 +23,7 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
+import { Chip } from '../../shared/chip';
 import { KpiCard, kpiState } from '../../shared/kpi-card';
 import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
@@ -43,6 +44,7 @@ import {
   LEVEL_LABELS,
   LEVELS,
   STATUS_LABELS,
+  STATUS_TONES,
   STATUSES,
 } from '../../shared/labels';
 
@@ -106,6 +108,7 @@ function groupRow(group: VulnerabilityGroup, key: string): GroupTableRow {
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    Chip,
     KpiCard,
     ScrollFade,
     LucideArrowLeft,
@@ -137,6 +140,7 @@ export class VulnerabilitiesPage {
   readonly statuses = STATUSES;
   readonly levelLabels = LEVEL_LABELS;
   readonly statusLabels = STATUS_LABELS;
+  readonly statusTones = STATUS_TONES;
   readonly classificationLabels = CLASSIFICATION_LABELS;
   readonly classifications = CLASSIFICATIONS;
   readonly views = Object.keys(VIEW_LABELS) as VulnerabilityView[];
