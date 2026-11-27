@@ -8,7 +8,7 @@ import {
   type InstallStatus,
   type SoftwareCategory,
 } from './inventory-labels';
-import type { SoftwareItem } from './inventory.service';
+import type { LevelCounts, SoftwareItem } from './inventory.service';
 
 /** One live licence of a product, with the installations that have it. */
 export interface LicenceRow {
@@ -90,12 +90,21 @@ export function catalogueTotals(items: readonly SoftwareItem[]): CatalogueTotals
   };
 }
 
-export type SoftwareChart = 'category' | 'level' | 'cpe';
+export type SoftwareChart = 'category' | 'priority' | 'level' | 'cpe';
 
 export const CHART_TITLES: Record<SoftwareChart, string> = {
   category: 'Instalaciones por categoría',
+  priority: 'Vulnerabilidades por prioridad',
   level: 'Software por peor nivel de vulnerabilidad',
   cpe: 'Software con y sin CPE',
+};
+
+/** Spanish plural of each priority, as the prototype's «Vulnerabilidades por prioridad» counts them. */
+export const PRIORITY_LABELS: Record<Level, string> = {
+  critical: 'Críticas',
+  high: 'Altas',
+  medium: 'Medias',
+  low: 'Bajas',
 };
 export const CHARTS = Object.keys(CHART_TITLES) as SoftwareChart[];
 
@@ -104,7 +113,7 @@ const PINK = '#ed079b';
 const VIOLET = '#9844df';
 const AXIS = '#51465e';
 const GRID = '#e9e6ef';
-const LEVEL_COLORS: Record<Level | 'none', string> = {
+export const LEVEL_COLORS: Record<Level | 'none', string> = {
   critical: '#dc2626',
   high: '#ea580c',
   medium: '#ca8a04',
@@ -140,8 +149,22 @@ function barChart(labels: string[], values: number[], colors: string[]): ECharts
   };
 }
 
-/** The option of the selected chart, drawn from the totals as they are (nothing estimated). */
-export function softwareChart(kind: SoftwareChart, totals: CatalogueTotals): EChartsCoreOption {
+/**
+ * The option of the selected chart, drawn from the totals as they are (nothing estimated). «Vulnerabilidades por
+ * prioridad» counts vulnerability groups per level of the whole inventory (`priority`, from the criticality view).
+ */
+export function softwareChart(
+  kind: SoftwareChart,
+  totals: CatalogueTotals,
+  priority: LevelCounts | null = null,
+): EChartsCoreOption {
+  if (kind === 'priority') {
+    return barChart(
+      LEVELS.map((level) => PRIORITY_LABELS[level]),
+      LEVELS.map((level) => priority?.[level] ?? 0),
+      LEVELS.map((level) => LEVEL_COLORS[level]),
+    );
+  }
   if (kind === 'level') {
     const keys = [...LEVELS, 'none'] as const;
     return barChart(
@@ -186,6 +209,11 @@ export function softwareChart(kind: SoftwareChart, totals: CatalogueTotals): ECh
 }
 
 /** Whether the selected chart has anything to draw. */
-export function chartHasData(kind: SoftwareChart, totals: CatalogueTotals): boolean {
+export function chartHasData(
+  kind: SoftwareChart,
+  totals: CatalogueTotals,
+  priority: LevelCounts | null = null,
+): boolean {
+  if (kind === 'priority') return LEVELS.some((level) => (priority?.[level] ?? 0) > 0);
   return kind === 'category' ? totals.instances > 0 : totals.products > 0;
 }

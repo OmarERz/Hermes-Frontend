@@ -104,6 +104,12 @@
           </button>
         </div>
       </header>
+      @if (catalogue.value()?.complete === false) {
+        <p class="hint" role="note">
+          El catálogo es muy grande: la exportación y los totales incluyen solo los primeros
+          {{ totals().products }} productos.
+        </p>
+      }
 
       <div class="table-tools filters" role="group" aria-label="Filtros">
         <label class="search-filter"
@@ -301,7 +307,10 @@
   </section>
 
   <section class="dashboard-lower-grid" aria-label="Gráfica e indicadores del catálogo">
-    <article class="panel chart-panel">
+    <article
+      class="panel chart-panel"
+      [class.vulnerability-priority-panel]="chart() === 'priority'"
+    >
       <header class="chart-panel-header">
         <div>
           <svg lucideChartColumn class="section-icon" aria-hidden="true"></svg>
@@ -321,23 +330,43 @@
             ><svg lucideChevronDown aria-hidden="true"></svg></span
         ></label>
       </header>
-      @if (catalogueState(); as state) {
+      @if (chartState(); as state) {
         <app-async-state
           [state]="state"
-          loadingText="Cargando el catálogo…"
-          [error]="catalogue.error()"
-          (retry)="loadCatalogue()"
+          loadingText="Cargando la gráfica…"
+          [error]="chart() === 'priority' ? priority.error() : catalogue.error()"
+          (retry)="retryChart()"
         />
       } @else if (chartReady()) {
+        @if (chart() === 'priority') {
+          <div
+            class="vulnerability-counts"
+            role="group"
+            aria-label="Conteo de vulnerabilidades únicas por prioridad"
+          >
+            @for (item of priorityCounts(); track item.level) {
+              <div class="vulnerability-count" [style.--priority-color]="item.color">
+                <span>{{ item.label }}</span
+                ><strong>{{ item.count }}</strong>
+              </div>
+            }
+          </div>
+        }
         <app-grafico-dashboard
           class="selected-chart"
           [option]="chartOption()"
           [label]="chartLabel()"
         />
       } @else {
-        <p class="empty-state chart-empty">Aún no hay software para graficar.</p>
+        <p class="empty-state chart-empty">
+          {{
+            chart() === 'priority'
+              ? 'Sin vulnerabilidades abiertas en el inventario.'
+              : 'Aún no hay software para graficar.'
+          }}
+        </p>
       }
-      @if (catalogue.value()?.complete === false) {
+      @if (catalogue.value()?.complete === false && chart() !== 'priority') {
         <p class="hint">
           El catálogo es muy grande: los totales cuentan los primeros {{ totals().products }}
           productos.

@@ -179,15 +179,64 @@ describe('CpeMappingDialog', () => {
     expect(element.querySelector('[role="alert"]')?.textContent).toContain('NVD no responde.');
   });
 
-  it('closes with Cancelar, Escape or a click outside, but not with a click inside', async () => {
+  it('opens as a modal dialog and closes once with Cancelar', async () => {
     const { fixture, host, element } = await render();
-    const modal = element.querySelector('.mapping-modal') as HTMLElement;
-    modal.click();
-    expect(host.cancelled()).toBe(0);
-    (element.querySelector('.modal-backdrop') as HTMLElement).click();
-    modal.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    const dialog = element.querySelector('dialog') as HTMLDialogElement;
+    expect(dialog.hasAttribute('open')).toBe(true);
+    (element.querySelector('.cpe-form footer button[type="button"]') as HTMLButtonElement).click();
     (element.querySelector('.cpe-form footer button[type="button"]') as HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(host.cancelled()).toBe(3);
+    expect(host.cancelled()).toBe(1);
+    expect(dialog.hasAttribute('open')).toBe(false);
+  });
+
+  it('closes with Escape through the same rule', async () => {
+    const { fixture, host, element } = await render();
+    const escape = new Event('cancel', { cancelable: true });
+    element.querySelector('dialog')?.dispatchEvent(escape);
+    await fixture.whenStable();
+    expect(escape.defaultPrevented).toBe(true);
+    expect(host.cancelled()).toBe(1);
+  });
+
+  it('stays open while a save runs, whatever tries to close it', async () => {
+    const service = new FakeService();
+    service.setMapping.mockReturnValue(NEVER);
+    const { fixture, host, dialog, element } = await render(service);
+    dialog.cpe.set(KERNEL_CPE);
+    dialog.save();
+    await fixture.whenStable();
+    const native = element.querySelector('dialog') as HTMLDialogElement;
+    expect(
+      (element.querySelector('.cpe-form footer button[type="button"]') as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    dialog.close();
+    native.dispatchEvent(new Event('cancel', { cancelable: true }));
+    // The browser may close the modal on its own (a second Escape): it opens again.
+    native.removeAttribute('open');
+    native.dispatchEvent(new Event('close'));
+    await fixture.whenStable();
+    expect(host.cancelled()).toBe(0);
+    expect(native.hasAttribute('open')).toBe(true);
+  });
+
+  it('counts a close by the browser as a cancel when nothing is saving', async () => {
+    const { fixture, host, element } = await render();
+    const native = element.querySelector('dialog') as HTMLDialogElement;
+    native.removeAttribute('open');
+    native.dispatchEvent(new Event('close'));
+    await fixture.whenStable();
+    expect(host.cancelled()).toBe(1);
+  });
+
+  it('closes the dialog when the mapping is saved', async () => {
+    const { fixture, host, dialog, element } = await render();
+    dialog.cpe.set(KERNEL_CPE);
+    dialog.save();
+    await fixture.whenStable();
+    expect(host.saved()).toEqual({ software: KERNEL.id, cpe: KERNEL_CPE });
+    expect((element.querySelector('dialog') as HTMLDialogElement).hasAttribute('open')).toBe(false);
+    expect(host.cancelled()).toBe(0);
   });
 });

@@ -29,17 +29,17 @@
           <strong>{{ asset.risk }}</strong>
           <em [class]="'level-chip level-' + level">{{ levelLabels[level] }}</em>
         } @else {
-          <strong class="unknown">Sin vulnerabilidades</strong>
+          <strong class="unknown">Sin vulnerabilidades abiertas</strong>
         }
       </article>
       <article class="stat-card">
         <span><svg lucideTriangleAlert aria-hidden="true"></svg></span>
-        <small>Vulnerabilidades</small>
-        <strong>{{ findings().length }}</strong>
+        <small>Vulnerabilidades abiertas</small>
+        <strong>{{ openFindings().length }}</strong>
       </article>
       <article class="stat-card">
         <span class="warning"><svg lucideFlame aria-hidden="true"></svg></span>
-        <small>En el catálogo KEV</small>
+        <small>Abiertas en el catálogo KEV</small>
         <strong>{{ kevCount() }}</strong>
       </article>
       <article class="stat-card">

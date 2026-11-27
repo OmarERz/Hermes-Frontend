@@ -63,6 +63,41 @@ describe('InventoryService', () => {
     expect(await missing).toBeNull();
   });
 
+  it('follows the search pages until the exact id appears', async () => {
+    const found = firstValueFrom(service.findAsset('CI-1'));
+    backend
+      .expectOne((req) => !req.params.has('cursor'))
+      .flush({ items: [{ ...PAYMENTS, ci_id: 'CI-10' }], next_cursor: 'p2.sig' });
+    const second = backend.expectOne((req) => req.params.get('cursor') === 'p2.sig');
+    expect(second.request.params.get('q')).toBe('CI-1');
+    second.flush({ items: [PAYMENTS], next_cursor: 'p3.sig' });
+    // Found: the third page is never asked for.
+    expect(await found).toEqual(PAYMENTS);
+  });
+
+  it('stops following the search at the page cap', async () => {
+    const found = firstValueFrom(service.findAsset('CI-1'));
+    for (let page = 1; page <= MAX_CATALOGUE_PAGES; page += 1) {
+      backend
+        .expectOne((req) => req.url === `${API}/api/inventory/assets`)
+        .flush({ items: [WEB], next_cursor: `p${page + 1}.sig` });
+    }
+    expect(await found).toBeNull();
+  });
+
+  it('counts the vulnerability groups per priority from the criticality view', async () => {
+    const counts = firstValueFrom(service.vulnerabilityCounts());
+    const request = backend.expectOne((req) => req.url === `${API}/api/vulnerabilities`);
+    expect(request.request.params.get('view')).toBe('criticality');
+    expect(request.request.params.get('limit')).toBe('1');
+    request.flush({ view: 'criticality', bands: [{ level: 'critical', count: 3, groups: [] }] });
+    expect(await counts).toEqual({ critical: 3, high: 0, medium: 0, low: 0 });
+
+    const none = firstValueFrom(service.vulnerabilityCounts());
+    backend.expectOne(() => true).flush({ view: 'criticality' });
+    expect(await none).toEqual({ critical: 0, high: 0, medium: 0, low: 0 });
+  });
+
   it('reads the summary, the asset detail, its software and the pending items', async () => {
     const summary = firstValueFrom(service.summary());
     backend.expectOne(`${API}/api/inventory/summary`).flush(SUMMARY);

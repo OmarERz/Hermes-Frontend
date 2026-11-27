@@ -1,13 +1,13 @@
-<div class="modal-backdrop" role="presentation" (click)="cancelled.emit()">
-  <section
-    class="mapping-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="cpe-mapping-title"
-    aria-describedby="cpe-mapping-hint"
-    (click)="$event.stopPropagation()"
-    (keydown.escape)="cancelled.emit()"
-  >
+<dialog
+  #dialogElement
+  class="mapping-modal"
+  aria-modal="true"
+  aria-labelledby="cpe-mapping-title"
+  aria-describedby="cpe-mapping-hint"
+  (cancel)="onCancel($event)"
+  (close)="onNativeClose()"
+>
+  <div class="mapping-body">
     <h2 id="cpe-mapping-title">Mapear CPE · {{ software().name }}</h2>
     <p id="cpe-mapping-hint">
       Sin CPE, Hermes no puede buscar las vulnerabilidades de este software. Busca el producto en el
@@ -84,12 +84,7 @@
         <p class="field-error" role="alert">{{ message }}</p>
       }
       <footer>
-        <button
-          type="button"
-          class="secondary-button"
-          [disabled]="saving()"
-          (click)="cancelled.emit()"
-        >
+        <button type="button" class="secondary-button" [disabled]="saving()" (click)="close()">
           Cancelar
         </button>
         <button
@@ -102,5 +97,5 @@
         </button>
       </footer>
     </form>
-  </section>
-</div>
+  </div>
+</dialog>

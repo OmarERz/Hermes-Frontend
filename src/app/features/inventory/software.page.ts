@@ -37,6 +37,7 @@ import {
   Catalogue,
   InventoryService,
   InventorySummary,
+  LevelCounts,
   Mapping,
   SoftwareFilters,
   SoftwareItem,
@@ -47,6 +48,8 @@ import {
   chartHasData,
   CHART_TITLES,
   CHARTS,
+  LEVEL_COLORS,
+  PRIORITY_LABELS,
   SoftwareChart,
   softwareChart,
 } from './software-charts';
@@ -162,9 +165,31 @@ export class SoftwarePage {
 
   readonly catalogueState = computed(() => viewState(this.catalogue));
   readonly totals = computed(() => catalogueTotals(this.catalogue.value()?.items ?? []));
-  readonly chartOption = computed(() => softwareChart(this.chart(), this.totals()));
-  readonly chartLabel = computed(() => `${CHART_TITLES[this.chart()]} del catálogo de software`);
-  readonly chartReady = computed(() => chartHasData(this.chart(), this.totals()));
+  /** Vulnerability groups per level of the whole inventory, for «Vulnerabilidades por prioridad». */
+  readonly priority = new AsyncState<LevelCounts>();
+  /** The panel waits for the data of the selected chart: the priority counts or the catalogue. */
+  readonly chartState = computed(() =>
+    this.chart() === 'priority' ? viewState(this.priority) : this.catalogueState(),
+  );
+  readonly chartOption = computed(() =>
+    softwareChart(this.chart(), this.totals(), this.priority.value()),
+  );
+  readonly chartLabel = computed(() =>
+    this.chart() === 'priority'
+      ? 'Vulnerabilidades únicas por prioridad en el inventario'
+      : `${CHART_TITLES[this.chart()]} del catálogo de software`,
+  );
+  readonly chartReady = computed(() =>
+    chartHasData(this.chart(), this.totals(), this.priority.value()),
+  );
+  readonly priorityCounts = computed(() =>
+    LEVELS.map((level) => ({
+      level,
+      label: PRIORITY_LABELS[level],
+      color: LEVEL_COLORS[level],
+      count: this.priority.value()?.[level] ?? 0,
+    })),
+  );
 
   constructor() {
     this.refresh();
@@ -172,6 +197,7 @@ export class SoftwarePage {
       this.pager.state.cancel();
       this.summary.cancel();
       this.catalogue.cancel();
+      this.priority.cancel();
     });
   }
 
@@ -184,6 +210,13 @@ export class SoftwarePage {
 
   loadCatalogue(): void {
     this.catalogue.run(this.service.catalogue());
+    this.priority.run(this.service.vulnerabilityCounts());
+  }
+
+  /** Retries what the selected chart waits for. */
+  retryChart(): void {
+    if (this.chart() === 'priority') this.priority.run(this.service.vulnerabilityCounts());
+    else this.catalogue.run(this.service.catalogue());
   }
 
   setQuery(value: string): void {

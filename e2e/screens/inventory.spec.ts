@@ -99,6 +99,14 @@ test.describe('inventory as reader', () => {
     await expect(page.getByRole('button', { name: /CPE de/ })).toHaveCount(0);
 
     await page
+      .getByRole('combobox', { name: 'Seleccionar visualización del catálogo' })
+      .selectOption({ label: 'Vulnerabilidades por prioridad' });
+    await expect(
+      page.getByRole('group', { name: 'Conteo de vulnerabilidades únicas por prioridad' }),
+    ).toContainText(/Críticas\s*[1-9]/);
+    await expect(page.locator('app-grafico-dashboard svg')).toBeVisible();
+
+    await page
       .getByRole('combobox', { name: 'Categoría' })
       .selectOption({ label: 'Otro software' });
     await expect(table.getByRole('row')).toHaveCount(2);

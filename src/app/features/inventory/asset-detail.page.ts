@@ -120,17 +120,27 @@ export class AssetDetailPage {
     ];
   });
 
-  /** Vulnerability groups of the CI, most urgent first. */
+  /** Vulnerability groups of the CI (open and fixed, each with this CI's score and status), most urgent first. */
   readonly findings = computed(() =>
     [...(this.detail.value()?.findings ?? [])].sort((a, b) => b.final - a.final),
   );
-  readonly kevCount = computed(() => this.findings().filter((finding) => finding.in_kev).length);
-  readonly worstLevel = computed(() => this.findings()[0]?.level ?? null);
+  /**
+   * The open ones (not `fixed`): the backend computes the CI's risk from them when there are any (D-035), so the
+   * risk card shows the level of the top open finding and, without open findings, no risk at all.
+   */
+  readonly openFindings = computed(() =>
+    this.findings().filter((finding) => finding.status !== 'fixed'),
+  );
+  readonly kevCount = computed(
+    () => this.openFindings().filter((finding) => finding.in_kev).length,
+  );
+  readonly worstLevel = computed(() => this.openFindings()[0]?.level ?? null);
 
   readonly softwareRows = computed(() =>
-    (this.software.value() ?? []).map((item) => ({
+    (this.software.value() ?? []).map((item, index) => ({
       ...item,
-      key: `${item.software_id}-${item.version}`,
+      // One row per iTop installation: two of the same product and version on a CI are still two rows.
+      key: `${index}-${item.software_id}-${item.version}`,
       categoryLabel: item.category ? CATEGORY_LABELS[item.category] : 'Sin dato',
       statusKey: item.status ?? 'unknown',
       statusLabel: INSTALL_STATUS_LABELS[item.status ?? 'unknown'],

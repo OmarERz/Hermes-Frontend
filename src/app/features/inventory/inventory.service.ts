@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { defer, EMPTY, expand, map, Observable, reduce } from 'rxjs';
 import { ApiClient, ApiQuery, ApiSchema } from '../../core/api/api-client';
 import type { CursorPage } from '../../shared/cursor-pager';
+import { LEVELS, type Level } from '../../shared/labels';
 
 export type InventoryAsset = ApiSchema<'InventoryAsset'>;
 export type InventorySummary = ApiSchema<'InventorySummary'>;
@@ -15,6 +16,9 @@ export type InventoryPending = ApiSchema<'InventoryPending'>;
 export type PendingItem = ApiSchema<'InventoryItem'>;
 export type CpeCandidate = ApiSchema<'CpeCandidate'>;
 export type Mapping = ApiSchema<'Mapping'>;
+
+/** Vulnerability groups per priority level. */
+export type LevelCounts = Record<Level, number>;
 
 /** Filters of `GET /api/inventory/assets` (the page and the cursor are the pager's). */
 export type AssetFilters = Omit<ApiQuery<'/api/inventory/assets'>, 'cursor' | 'limit'>;
@@ -53,12 +57,28 @@ export class InventoryService {
 
   /**
    * The inventory row of one CI (criticality, exposure, OS, service, iTop link…), which the detail route does not
-   * carry: the search matches the name or the id, so the exact id is picked from the matches; null if none.
+   * carry. The search matches the name or the id anywhere, alphabetically, so the exact id may come on a later page:
+   * the pages are followed until it appears or the matches end (up to MAX_CATALOGUE_PAGES); null if none.
    */
   findAsset(ciId: string): Observable<InventoryAsset | null> {
-    return this.api
-      .get('/api/inventory/assets', { query: { q: ciId, limit: MAX_PAGE_SIZE } })
-      .pipe(map((page) => page.items.find((asset) => asset.ci_id === ciId) ?? null));
+    const page = (cursor: string | null) =>
+      this.api.get('/api/inventory/assets', { query: { q: ciId, cursor, limit: MAX_PAGE_SIZE } });
+    const exact = (asset: InventoryAsset) => asset.ci_id === ciId;
+    return defer(() => {
+      let read = 0;
+      return page(null).pipe(
+        expand((current) => {
+          read += 1;
+          return current.items.some(exact) || !current.next_cursor || read >= MAX_CATALOGUE_PAGES
+            ? EMPTY
+            : page(current.next_cursor);
+        }),
+        reduce<{ items: InventoryAsset[] }, InventoryAsset | null>(
+          (found, current) => found ?? current.items.find(exact) ?? null,
+          null,
+        ),
+      );
+    });
   }
 
   /** Totals of the live inventory and the health of its software (already computed by the API). */
@@ -112,6 +132,20 @@ export class InventoryService {
   /** A CI with its risk and its vulnerability groups (and its iTop CPU, RAM, description and class). */
   asset(ciId: string): Observable<AssetDetail> {
     return this.api.get('/api/assets/{ci_id}', { path: { ci_id: ciId } });
+  }
+
+  /**
+   * Vulnerability groups per priority level in the whole inventory («Vulnerabilidades por prioridad»), from the
+   * criticality view: each band carries the count of all its groups, so one row per band is enough.
+   */
+  vulnerabilityCounts(): Observable<LevelCounts> {
+    return this.api.get('/api/vulnerabilities', { query: { view: 'criticality', limit: 1 } }).pipe(
+      map((page) => {
+        const counts = Object.fromEntries(LEVELS.map((level) => [level, 0])) as LevelCounts;
+        for (const band of page.bands ?? []) counts[band.level] = band.count;
+        return counts;
+      }),
+    );
   }
 
   /** Inventory items waiting for a person (FRO-17, ESC-03c, ESC-07), up to 200 per type. */

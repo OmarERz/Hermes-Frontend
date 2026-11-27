@@ -79,6 +79,24 @@ describe('software charts', () => {
     ]);
   });
 
+  it('draws the vulnerability groups by priority as the API counts them', () => {
+    const totals = catalogueTotals([]);
+    const option = softwareChart('priority', totals, {
+      critical: 2,
+      high: 1,
+      medium: 0,
+      low: 4,
+    }) as unknown as BarOption;
+    expect(option.xAxis.data).toEqual(['Críticas', 'Altas', 'Medias', 'Bajas']);
+    expect(option.series[0]!.data.map((point) => point.value)).toEqual([2, 1, 0, 4]);
+    const empty = softwareChart('priority', totals) as unknown as BarOption;
+    expect(empty.series[0]!.data.map((point) => point.value)).toEqual([0, 0, 0, 0]);
+    expect(chartHasData('priority', totals, { critical: 0, high: 0, medium: 0, low: 1 })).toBe(
+      true,
+    );
+    expect(chartHasData('priority', totals, null)).toBe(false);
+  });
+
   it('knows when there is nothing to draw', () => {
     const empty = catalogueTotals([]);
     expect(chartHasData('category', empty)).toBe(false);

@@ -179,7 +179,7 @@ describe('AssetDetailPage', () => {
     expect(element.textContent).toContain('iTop no registra software instalado en este activo.');
     expect(element.textContent).toContain('Este activo no tiene vulnerabilidades registradas.');
     expect(element.querySelector('.stat-card strong')?.textContent?.trim()).toBe(
-      'Sin vulnerabilidades',
+      'Sin vulnerabilidades abiertas',
     );
   });
 
@@ -190,6 +190,59 @@ describe('AssetDetailPage', () => {
     const { element } = await render(service);
     expect(facts(element)['Criticidad']).toBe('Cargando…');
     expect(element.textContent).toContain('Cargando el software instalado…');
+  });
+
+  it('takes the risk level from the open findings, never from a fixed one', async () => {
+    const service = new FakeService();
+    const [critical] = DETAIL.findings;
+    service.asset.mockReturnValue(
+      of({
+        ...DETAIL,
+        risk: 30,
+        findings: [
+          { ...critical!, status: 'fixed', final: 95, level: 'critical' },
+          {
+            ...critical!,
+            group_id: 'a1',
+            cve: 'CVE-2026-2',
+            status: 'persistent',
+            final: 30,
+            level: 'low',
+            in_kev: false,
+          },
+        ],
+      }),
+    );
+    const { element } = await render(service);
+    const cards = Array.from(element.querySelectorAll('.stat-card strong')).map((item) =>
+      item.textContent?.trim(),
+    );
+    expect(cards.slice(0, 3)).toEqual(['30', '1', '0']);
+    expect(element.querySelector('.stat-card em')?.textContent?.trim()).toBe('Baja');
+    // The fixed group is still listed, with its status.
+    expect(rowsOf(element, 'Vulnerabilidades del activo')).toHaveLength(2);
+    expect(element.textContent).toContain('Corregido');
+  });
+
+  it('shows no risk when every finding of the CI is fixed', async () => {
+    const service = new FakeService();
+    service.asset.mockReturnValue(
+      of({ ...DETAIL, findings: [{ ...DETAIL.findings[0]!, status: 'fixed' }] }),
+    );
+    const { element } = await render(service);
+    expect(element.querySelector('.stat-card strong')?.textContent?.trim()).toBe(
+      'Sin vulnerabilidades abiertas',
+    );
+  });
+
+  it('keeps two installations of the same product and version as two rows', async () => {
+    const service = new FakeService();
+    service.assetSoftware.mockReturnValue(
+      of([INSTALLED_OPENSSL, { ...INSTALLED_OPENSSL, status: 'inactive', licence: null }]),
+    );
+    const { element } = await render(service);
+    const rows = rowsOf(element, 'Software instalado');
+    expect(rows.map((row) => row[3])).toEqual(['Activa', 'Inactiva']);
   });
 
   it('shows the API error of the detail and loads again on retry', async () => {

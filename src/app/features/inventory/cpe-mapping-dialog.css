@@ -1,24 +1,21 @@
-.modal-backdrop {
-  position: fixed;
-  z-index: 1000;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 18px;
-  background: #16091fbb;
-}
 .mapping-modal {
-  display: grid;
-  gap: 12px;
-  width: min(100%, 620px);
+  width: min(100% - 36px, 620px);
   max-height: min(88vh, 780px);
   overflow: auto;
-  padding: 20px;
+  padding: 0;
   border: 1px solid var(--border, #d8b0ea);
   border-radius: 15px;
   background: var(--surface, #fff);
   color: var(--text-primary, #321044);
   box-shadow: 0 20px 70px #0005;
+}
+.mapping-modal::backdrop {
+  background: #16091fbb;
+}
+.mapping-body {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
 }
 h2 {
   margin: 0;

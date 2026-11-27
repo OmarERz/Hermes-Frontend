@@ -27,6 +27,9 @@ class FakeService {
   catalogue = vi.fn<InventoryService['catalogue']>(() =>
     of({ items: [OPENSSL, KERNEL], complete: true }),
   );
+  vulnerabilityCounts = vi.fn<InventoryService['vulnerabilityCounts']>(() =>
+    of({ critical: 1, high: 0, medium: 0, low: 2 }),
+  );
   cpeCandidates = vi.fn<InventoryService['cpeCandidates']>(() => of([]));
   setMapping = vi.fn<InventoryService['setMapping']>(() =>
     of({ software: KERNEL.id, cpe: 'cpe:2.3:o:amazon:linux_kernel:*:*:*:*:*:*:*:*' }),
@@ -175,16 +178,59 @@ describe('SoftwarePage', () => {
     expect(element.textContent).toContain('No hay software que coincida con los filtros.');
   });
 
-  it('switches the chart and says when the totals only cover part of the catalogue', async () => {
+  it('switches the chart and says when the totals and the export cover part of the catalogue', async () => {
     const service = new FakeService();
     service.catalogue.mockReturnValue(of({ items: [OPENSSL], complete: false }));
     const { fixture, page, element } = await render(service);
     expect(element.textContent).toContain('los totales cuentan los primeros 1');
+    expect(element.querySelector('.table-panel [role="note"]')?.textContent).toContain(
+      'la exportación y los totales incluyen solo los primeros 1 productos',
+    );
     page.chart.set('cpe');
     await fixture.whenStable();
     expect(element.querySelector('.chart-panel h2')?.textContent).toContain(
       'Software con y sin CPE',
     );
+  });
+
+  it('keeps the prototype chart of vulnerabilities by priority with its counts', async () => {
+    const service = new FakeService();
+    const { fixture, page, element } = await render(service);
+    expect(service.vulnerabilityCounts).toHaveBeenCalledTimes(1);
+    page.chart.set('priority');
+    await fixture.whenStable();
+    const counts = Array.from(element.querySelectorAll('.vulnerability-count')).map((item) =>
+      item.textContent?.replace(/\s+/g, ' ').trim(),
+    );
+    expect(counts).toEqual(['Críticas1', 'Altas0', 'Medias0', 'Bajas2']);
+    expect(
+      (element.querySelector('.vulnerability-count') as HTMLElement).style.getPropertyValue(
+        '--priority-color',
+      ),
+    ).toBe('#dc2626');
+    expect(element.querySelector('app-grafico-dashboard')?.getAttribute('aria-label')).toBe(
+      'Vulnerabilidades únicas por prioridad en el inventario',
+    );
+    expect(element.querySelector('.chart-panel')?.classList).toContain(
+      'vulnerability-priority-panel',
+    );
+  });
+
+  it('says when the inventory has no open vulnerabilities and retries a failed count', async () => {
+    const service = new FakeService();
+    service.vulnerabilityCounts.mockReturnValue(
+      throwError(() => new ApiError(500, 'internal_error', 'Sin conteos.')),
+    );
+    const { fixture, page, element } = await render(service);
+    page.chart.set('priority');
+    await fixture.whenStable();
+    expect(element.querySelector('.chart-panel [role="alert"]')?.textContent).toContain(
+      'Sin conteos.',
+    );
+    service.vulnerabilityCounts.mockReturnValue(of({ critical: 0, high: 0, medium: 0, low: 0 }));
+    (element.querySelector('.chart-panel [role="alert"] button') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(element.textContent).toContain('Sin vulnerabilidades abiertas en el inventario.');
   });
 
   it('shows the errors of the table, the cards and the totals, each with its retry', async () => {

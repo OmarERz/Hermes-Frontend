@@ -49,6 +49,9 @@ export function cpeProblem(value: string): string | null {
  * Maps one software product to a CPE (ESC-05, ESC-06), for analysts and admins: it searches candidates in NVD's
  * CPE dictionary and in what Hermes already holds (`GET /api/cpe/candidates`), lets the person pick one or type a
  * CPE, and saves it (`PUT /api/mappings/{software}`). Without a CPE a product never produces findings (ESC-07).
+ * A native modal `<dialog>` (as the feedback dialog): the page behind is inert, Tab stays inside and closing gives
+ * the focus back to the button that opened it. Every way out (Cancelar, Escape, the browser closing it) waits for a
+ * save in flight, so the page always learns whether the mapping was saved.
  */
 @Component({
   selector: 'app-cpe-mapping-dialog',
@@ -60,6 +63,10 @@ export class CpeMappingDialog implements OnInit {
   private readonly service = inject(InventoryService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  private readonly dialogElement =
+    viewChild.required<ElementRef<HTMLDialogElement>>('dialogElement');
+  /** Set once the dialog emitted its outcome (saved or cancelled). */
+  private done = false;
 
   readonly software = input.required<MappingTarget>();
   readonly saved = output<Mapping>();
@@ -92,7 +99,10 @@ export class CpeMappingDialog implements OnInit {
   });
 
   constructor() {
-    afterNextRender(() => this.searchInput()?.nativeElement.focus());
+    afterNextRender(() => {
+      this.show();
+      this.searchInput()?.nativeElement.focus();
+    });
     this.destroyRef.onDestroy(() => this.candidates.cancel());
   }
 
@@ -131,9 +141,51 @@ export class CpeMappingDialog implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (mapping) => this.saved.emit(mapping),
+        next: (mapping) => this.finish(() => this.saved.emit(mapping)),
         error: (error: unknown) => this.error.set(toApiError(error)),
       });
+  }
+
+  /** Cancelar or Escape: never while a save runs. */
+  close(): void {
+    if (this.saving()) return;
+    this.finish(() => this.cancelled.emit());
+  }
+
+  /** Escape asks to close through the same rule. */
+  onCancel(event: Event): void {
+    event.preventDefault();
+    this.close();
+  }
+
+  /**
+   * The browser closed the modal on its own (it may skip the cancelable `cancel` event, for example on a second
+   * Escape): it opens again while a save runs, and otherwise counts as a cancel.
+   */
+  onNativeClose(): void {
+    if (this.done) return;
+    if (this.saving()) {
+      this.show();
+      return;
+    }
+    this.finish(() => this.cancelled.emit());
+  }
+
+  private show(): void {
+    const dialog = this.dialogElement().nativeElement;
+    if (dialog.open) return;
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+  }
+
+  /** Closes the native dialog (which gives the focus back to the opener) and emits the outcome once. */
+  private finish(emit: () => void): void {
+    if (this.done) return;
+    this.done = true;
+    const dialog = this.dialogElement().nativeElement;
+    if (dialog.open && typeof dialog.close === 'function') dialog.close();
+    else dialog.removeAttribute('open');
+    emit();
   }
 
   /** Match score of a candidate as a whole percent. */
