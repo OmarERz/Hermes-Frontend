@@ -211,6 +211,30 @@ describe('VulnerabilitiesPage', () => {
     expect(element.querySelector('tbody a.row-link')?.getAttribute('href')).toBe('/activos/SRV-01');
   });
 
+  it('follows the view of the URL when the page is reused (section tab, back button)', async () => {
+    const service = new FakeService();
+    const { fixture, element } = await render(service, '/vulnerabilidades?vista=activo');
+    expect(fixture.componentInstance.view()).toBe('asset');
+    expect(service.listGroups).not.toHaveBeenCalled();
+
+    await TestBed.inject(Router).navigateByUrl('/vulnerabilidades');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.view()).toBe('vulnerability');
+    expect(service.listGroups).toHaveBeenCalledWith(
+      { band: null, status: null, in_kev: null, exposed: null },
+      null,
+      25,
+    );
+    expect(element.querySelector('tbody a.row-link')?.getAttribute('href')).toBe(
+      `/vulnerabilidades/${GROUP.group_id}`,
+    );
+
+    await TestBed.inject(Router).navigateByUrl('/vulnerabilidades?vista=criticidad');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.view()).toBe('criticality');
+    expect(service.listBands).toHaveBeenCalledTimes(1);
+  });
+
   it('opens the criticality view from the URL with a header row per band', async () => {
     const service = new FakeService();
     const { element } = await render(service, '/vulnerabilidades?vista=criticidad');

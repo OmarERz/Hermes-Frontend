@@ -1,4 +1,5 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -204,6 +205,13 @@ export class VulnerabilitiesPage {
 
   constructor() {
     this.refresh();
+    // The view lives in the URL: a link or the section tab can change `?vista=` while the page is reused.
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const view = viewFromQuery(params.get('vista'));
+      if (view === this.view()) return;
+      this.view.set(view);
+      this.pager().first();
+    });
     inject(DestroyRef).onDestroy(() => {
       for (const pager of [this.groupPager, this.assetPager, this.bandPager]) pager.state.cancel();
       this.counts.cancel();
