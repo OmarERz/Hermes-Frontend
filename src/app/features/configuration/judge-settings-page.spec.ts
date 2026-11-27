@@ -41,7 +41,7 @@ async function render(role: Role, api = new FakeConfigApi()) {
     (element.querySelector('#advanced-mode') as HTMLInputElement).click();
     await fixture.whenStable();
   };
-  return { fixture, element, api, button, advanced };
+  return { fixture, element, api, button, advanced, page: fixture.componentInstance };
 }
 
 describe('JudgeSettingsPage', () => {
@@ -115,7 +115,11 @@ describe('JudgeSettingsPage', () => {
 
     button('Simular')?.click();
     await fixture.whenStable();
-    expect(api.simulate).toHaveBeenCalledWith({ sensitivity_profile: 'broad' }, expect.any(Set));
+    // D-091: the profile travels with its dead zone, in the simulation and in the save.
+    expect(api.simulate).toHaveBeenCalledWith(
+      { sensitivity_profile: 'broad', dead_zone: '2' },
+      expect.any(Set),
+    );
     expect(element.querySelector('.sim-note')?.textContent).toContain(
       'Perfil de sensibilidad del juez',
     );
@@ -129,10 +133,76 @@ describe('JudgeSettingsPage', () => {
 
     button('Confirmar cambios')?.click();
     await fixture.whenStable();
-    expect(api.update).toHaveBeenCalledWith({ sensitivity_profile: 'broad' }, 7);
+    expect(api.update).toHaveBeenCalledWith({ sensitivity_profile: 'broad', dead_zone: '2' }, 7);
     expect(element.querySelector('[role="dialog"]')).toBeNull();
     expect(element.textContent).toContain('Se guardó la versión 8 de la configuración.');
     expect(element.querySelector('.config-summary')?.textContent).toContain('Influencia amplia');
+  });
+
+  it('shows the dead zone of each profile on its card', async () => {
+    const { element } = await render('admin');
+    expect(
+      Array.from(element.querySelectorAll('.profile-dead-zone')).map((s) => s.textContent?.trim()),
+    ).toEqual(['Zona muerta: ≤ 6', 'Zona muerta: ≤ 4', 'Zona muerta: ≤ 2']);
+  });
+
+  it('drafts the dead zone of the chosen profile without opening the advanced mode', async () => {
+    const { fixture, element, page } = await render('admin');
+    element.querySelectorAll<HTMLInputElement>('.profile-option input')[0].click();
+    await fixture.whenStable();
+    expect(page.editor.changes()).toEqual({ sensitivity_profile: 'minimal', dead_zone: '6' });
+    const toggle = element.querySelector('#advanced-mode') as HTMLInputElement;
+    expect(toggle.checked).toBe(false);
+    expect(toggle.disabled).toBe(false);
+
+    // A dead zone edited by hand is an advanced change: the advanced mode stays open.
+    page.editor.set('dead_zone', '7');
+    await fixture.whenStable();
+    expect(toggle.checked).toBe(true);
+    expect(toggle.disabled).toBe(true);
+  });
+
+  it('restores the saved dead zone when the saved profile is chosen again', async () => {
+    const api = new FakeConfigApi();
+    api.config.mockReturnValue(of(configDocument(7, { dead_zone: '5' })));
+    const { fixture, element, page, button } = await render('admin', api);
+    const options = element.querySelectorAll<HTMLInputElement>('.profile-option input');
+    options[2].click();
+    await fixture.whenStable();
+    expect(page.editor.changes()).toEqual({ sensitivity_profile: 'broad', dead_zone: '2' });
+
+    options[1].click();
+    await fixture.whenStable();
+    expect(page.editor.changes()).toEqual({});
+    expect(button('Simular')?.disabled).toBe(true);
+  });
+
+  it('sends only the profile when the API does not publish the dead zone or the profile is unknown', async () => {
+    const api = new FakeConfigApi();
+    api.schema.mockReturnValue(of(SCHEMA.filter((param) => param.key !== 'dead_zone')));
+    const { fixture, element, page } = await render('admin', api);
+    element.querySelectorAll<HTMLInputElement>('.profile-option input')[2].click();
+    await fixture.whenStable();
+    expect(page.editor.changes()).toEqual({ sensitivity_profile: 'broad' });
+
+    TestBed.resetTestingModule();
+    const other = new FakeConfigApi();
+    other.schema.mockReturnValue(
+      of(
+        SCHEMA.map((param) =>
+          param.key === 'sensitivity_profile'
+            ? { ...param, options: [...(param.options ?? []), 'custom'] }
+            : param,
+        ),
+      ),
+    );
+    const second = await render('admin', other);
+    const custom = second.element.querySelectorAll<HTMLInputElement>('.profile-option input')[3];
+    expect(custom.value).toBe('custom');
+    custom.click();
+    await second.fixture.whenStable();
+    expect(second.page.editor.changes()).toEqual({ sensitivity_profile: 'custom' });
+    expect(second.element.querySelectorAll('.profile-dead-zone').length).toBe(3);
   });
 
   it('asks to simulate again when the draft changes after simulating', async () => {
