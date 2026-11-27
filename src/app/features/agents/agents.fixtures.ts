@@ -155,17 +155,6 @@ export const INVENTORY_SUMMARY: ApiSchema<'InventorySummary'> = {
   },
 };
 
-export const LATEST_RUN: ApiSchema<'Run'> = {
-  id: '0196a6f0-0000-7000-8000-0000000000aa',
-  kind: 'scan',
-  status: 'succeeded',
-  started_at: '2026-11-27T07:00:00Z',
-  finished_at: '2026-11-27T07:02:05Z',
-  progress: 100,
-  trigger_reason: 'manual',
-  triggered_by: 'Ana Analista',
-};
-
 export const ASSESSMENT_ID = '0196a6f0-0000-7000-8000-000000000001';
 
 export const LLM_REVIEW: ApiSchema<'LlmReviewEntry'> = {

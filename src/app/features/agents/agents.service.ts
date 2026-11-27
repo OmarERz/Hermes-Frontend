@@ -11,7 +11,6 @@ export type TelemetryDay = ApiSchema<'TelemetryDay'>;
 export type ReasonUsage = ApiSchema<'ReasonUsage'>;
 export type LlmReview = ApiSchema<'LlmReviewEntry'>;
 export type TicketSummary = ApiSchema<'TicketSummary'>;
-export type Run = ApiSchema<'Run'>;
 export type HistoryEvent = ApiSchema<'HistoryEvent'>;
 export type TicketUpdate = ApiSchema<'TicketUpdateEntry'>;
 export type JudgeDetail = ApiSchema<'JudgeDetail'>;
@@ -69,10 +68,13 @@ export class AgentsService {
     return this.api.get('/api/tickets/summary');
   }
 
-  /** The run the API lists first: a queued one, else the most recent; null when there is none. */
-  latestRun(): Observable<Run | null> {
+  /**
+   * The last run that started, from the history timeline (it lists runs by their start and leaves out the queued
+   * ones, which `GET /api/runs` would list first); null when no run has started.
+   */
+  latestRun(): Observable<HistoryEvent | null> {
     return this.api
-      .get('/api/runs', { query: { limit: 1 } })
+      .get('/api/history', { query: { type: 'run', limit: 1 } })
       .pipe(map((page) => page.items[0] ?? null));
   }
 

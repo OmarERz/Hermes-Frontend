@@ -25,10 +25,9 @@ import {
   AGENT_DESCRIPTIONS,
   AGENT_LABELS,
   AGENTS,
+  historyStatusLabel,
   labelOf,
   PROVIDER_LABELS,
-  RUN_KIND_LABELS,
-  RUN_STATUS_LABELS,
   TelemetryWindow,
   WINDOW_LABELS,
   WINDOWS,
@@ -42,8 +41,8 @@ import {
 import {
   AgentsService,
   AgentTelemetry,
+  HistoryEvent,
   MetricsDashboard,
-  Run,
   TelemetryDaily,
   TelemetrySummary,
   TicketSummary,
@@ -155,7 +154,7 @@ export class AgentsDashboardPage {
   readonly summary = new AsyncState<TelemetrySummary>();
   readonly daily = new AsyncState<TelemetryDaily>();
   readonly tickets = new AsyncState<TicketSummary>();
-  readonly latestRun = new AsyncState<Run | null>();
+  readonly latestRun = new AsyncState<HistoryEvent | null>();
   readonly metrics = new AsyncState<MetricsDashboard>();
 
   readonly summaryState = computed(() => loadState(this.summary));
@@ -226,7 +225,7 @@ export class AgentsDashboardPage {
     if (this.latestRun.status() !== 'ready') return null;
     const run = this.latestRun.value();
     if (!run) return 'Aún no hay corridas.';
-    return `${labelOf(RUN_KIND_LABELS, run.kind)} · ${labelOf(RUN_STATUS_LABELS, run.status)} · ${formatDateTime(run.started_at)}`;
+    return `${run.title} · ${historyStatusLabel('run', run.status)} · ${formatDateTime(run.at)}`;
   });
 
   readonly ticketKpis = computed(() => {

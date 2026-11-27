@@ -7,7 +7,6 @@ import {
   ASSESSMENT_ID,
   HISTORY_RUN,
   JUDGE_DETAIL,
-  LATEST_RUN,
   LLM_REVIEW,
   TICKET_UPDATE,
 } from './agents.fixtures';
@@ -79,15 +78,16 @@ describe('AgentsService', () => {
     await expect(result).resolves.toEqual({ total: 2 });
   });
 
-  it('reads the first run the API lists, or null without runs', async () => {
+  it('reads the last started run from the history timeline, or null without runs', async () => {
     let result = firstValueFrom(service.latestRun());
-    let request = backend.expectOne((req) => req.url === `${API}/api/runs`);
+    let request = backend.expectOne((req) => req.url === `${API}/api/history`);
+    expect(request.request.params.get('type')).toBe('run');
     expect(request.request.params.get('limit')).toBe('1');
-    request.flush({ items: [LATEST_RUN], next_cursor: null });
-    await expect(result).resolves.toEqual(LATEST_RUN);
+    request.flush({ items: [HISTORY_RUN], next_cursor: null });
+    await expect(result).resolves.toEqual(HISTORY_RUN);
 
     result = firstValueFrom(service.latestRun());
-    request = backend.expectOne((req) => req.url === `${API}/api/runs`);
+    request = backend.expectOne((req) => req.url === `${API}/api/history`);
     request.flush({ items: [], next_cursor: null });
     await expect(result).resolves.toBeNull();
   });

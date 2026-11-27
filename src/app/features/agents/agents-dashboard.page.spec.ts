@@ -7,7 +7,7 @@ import { ApiError } from '../../core/api/api-error';
 import { provideFakeSession } from '../../testing/fake-session';
 import {
   AGENT_JUDGE,
-  LATEST_RUN,
+  HISTORY_RUN,
   METRICS,
   TELEMETRY_DAILY,
   TELEMETRY_SUMMARY,
@@ -21,7 +21,7 @@ class FakeService {
   summary = vi.fn<AgentsService['summary']>(() => of(TELEMETRY_SUMMARY));
   daily = vi.fn<AgentsService['daily']>(() => of(TELEMETRY_DAILY));
   ticketSummary = vi.fn<AgentsService['ticketSummary']>(() => of(TICKET_SUMMARY));
-  latestRun = vi.fn<AgentsService['latestRun']>(() => of(LATEST_RUN));
+  latestRun = vi.fn<AgentsService['latestRun']>(() => of(HISTORY_RUN));
   metrics = vi.fn<AgentsService['metrics']>(() => of(METRICS));
   reviews = vi.fn<AgentsService['reviews']>(() => of({ items: [], nextCursor: null }));
 }
@@ -170,6 +170,17 @@ describe('AgentsDashboardPage', () => {
     ]);
     expect(text(element.querySelector('.last-run'))).toContain(
       'Última corrida: Escaneo simulado · Terminó bien',
+    );
+  });
+
+  it('shows a run in progress as the last run', async () => {
+    const service = new FakeService();
+    service.latestRun.mockReturnValue(
+      of({ ...HISTORY_RUN, status: 'running', duration_seconds: null }),
+    );
+    const { element } = await render(service);
+    expect(text(element.querySelector('.last-run'))).toContain(
+      'Última corrida: Escaneo simulado · En ejecución',
     );
   });
 
