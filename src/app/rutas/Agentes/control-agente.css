@@ -179,40 +179,67 @@
     font-size: calc((13px) + var(--font-size-increase));
     line-height: 1.4;
   }
+  /*
+   * AGE-3 (F19.6): each fact has its icon in line with its label, and the four facts sit in one row when the panel
+   * is wide enough (640 px), two per row otherwise; the separators follow the row.
+   */
+  .agent-status {
+    container: agent-status / inline-size;
+  }
   .agent-facts {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--space-3);
   }
   .agent-facts > div {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;
+    align-items: center;
+    column-gap: var(--space-2);
     min-width: 0;
-    padding: 0 8px;
-    border-right: 1px solid #e7e4ee;
+    padding: 0 var(--space-3);
+    border-left: 1px solid #e7e4ee;
   }
-  .agent-facts > div:first-child {
+  .agent-facts > div:nth-child(2n + 1) {
     padding-left: 0;
+    border-left: 0;
   }
-  .agent-facts > div:last-child {
-    padding-right: 0;
-    border: 0;
+  @container agent-status (min-width: 640px) {
+    .agent-facts {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .agent-facts > div:nth-child(2n + 1) {
+      padding-left: var(--space-3);
+      border-left: 1px solid #e7e4ee;
+    }
+    .agent-facts > div:first-child {
+      padding-left: 0;
+      border-left: 0;
+    }
   }
   .agent-facts svg {
-    display: block;
-    width: 19px;
-    height: 19px;
+    width: 18px;
+    height: 18px;
     color: #83179a;
     stroke-width: 1.9;
+  }
+  .agent-facts strong,
+  .agent-facts .fact-note {
+    grid-column: 1 / -1;
   }
   .agent-facts small,
   .agent-facts strong {
     display: block;
   }
   .agent-facts small {
-    margin: 5px 0 3px;
+    margin: 0;
     color: #625871;
     font-size: calc((10px) + var(--font-size-increase));
     line-height: 1.25;
   }
   .agent-facts strong {
+    margin-top: var(--space-1);
     font-size: calc((12px) + var(--font-size-increase));
     line-height: 1.35;
     overflow-wrap: anywhere;
@@ -599,30 +626,17 @@
     .agent-status {
       grid-column: span 1;
     }
-    .agent-facts {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      row-gap: 12px;
-    }
-    .agent-facts > div:nth-child(2n) {
-      padding-right: 0;
-      border: 0;
-    }
-    .agent-facts > div:nth-child(2n + 1) {
-      padding-left: 0;
-    }
-    .metric-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
     .charts-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .success-chart,
-    .usage-chart,
-    .queue-chart {
+    .usage-chart {
       grid-column: span 1;
     }
+    /* AGE-1: two charts per row leave «Procesos» alone; it takes the whole row instead of half of it. */
     .trend-chart,
-    .agent-chart {
+    .agent-chart,
+    .queue-chart {
       grid-column: span 2;
     }
   }
@@ -650,13 +664,6 @@
     .queue-chart,
     .agent-chart {
       grid-column: span 1;
-    }
-    .agent-facts {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      row-gap: 12px;
-    }
-    .agent-facts > div:nth-child(2) {
-      border: 0;
     }
     .performance {
       padding: 12px;

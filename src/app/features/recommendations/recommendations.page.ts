@@ -8,11 +8,17 @@ import { ACTION_ROLES } from '../../core/auth/roles';
 import { SessionService } from '../../core/auth/session.service';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
+import { Chip } from '../../shared/chip';
 import { CursorPager } from '../../shared/cursor-pager';
 import { LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
 import type { FeedbackResult, Recommendation } from './feedback';
 import { FeedbackDialog } from './feedback-dialog';
-import { filterPage, groupByVulnerability, type RecommendationGroup } from './grouping';
+import {
+  evaluationCount,
+  filterPage,
+  groupByVulnerability,
+  type RecommendationGroup,
+} from './grouping';
 import { RecommendationCard } from './recommendation-card';
 import { RecommendationsService, type RecommendationScope } from './recommendations.service';
 
@@ -42,6 +48,7 @@ function linkOf(params: ParamMap): { id: string | null; scope: RecommendationSco
     RouterLink,
     BannerPagina,
     AsyncStateComponent,
+    Chip,
     FeedbackDialog,
     RecommendationCard,
     LucideArrowLeft,
@@ -60,6 +67,7 @@ export class RecommendationsPage {
   readonly bannerIcon = LucideGitCompareArrows;
   readonly levels = LEVELS;
   readonly levelLabels = LEVEL_LABELS;
+  readonly evaluationCount = evaluationCount;
 
   readonly scope = signal<RecommendationScope>({});
   readonly level = signal<Level | ''>('');

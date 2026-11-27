@@ -228,10 +228,19 @@
 @scope (.agent-history-view) {
   .history-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.85fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
-    gap: 16px;
+    gap: var(--grid-gap);
     min-width: 0;
+  }
+  @media (min-width: 1440px) {
+    .history-layout.has-detail {
+      grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.85fr);
+    }
+    .history-layout.has-detail .detail-panel {
+      position: sticky;
+      top: var(--space-4);
+    }
   }
   .history-list-column {
     min-width: 0;
@@ -240,8 +249,6 @@
     margin-bottom: 0;
   }
   .detail-panel {
-    position: sticky;
-    top: 14px;
     min-width: 0;
     color: var(--text-primary, #321044);
   }
@@ -308,12 +315,6 @@
     background: var(--surface-soft, #fcfafe);
   }
   @media (max-width: 1100px) {
-    .history-layout {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .detail-panel {
-      position: static;
-    }
     .filters {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }

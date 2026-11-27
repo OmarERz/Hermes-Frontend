@@ -39,6 +39,9 @@ test.describe('recommendations as analyst', () => {
     await page.getByRole('button', { name: 'Dar feedback' }).click();
     const dialog = page.getByRole('dialog', { name: 'Revisión humana' });
     await expect(dialog).toBeVisible();
+    // REC-6 (F19.6): 760 px at most, and the actions stay in view while the body scrolls.
+    expect((await dialog.boundingBox())!.width).toBeLessThanOrEqual(760);
+    await expect(dialog.getByRole('button', { name: 'Guardar feedback' })).toBeInViewport();
     // «Investigando» changes nothing else of the demo data (no suppression, no ticket action).
     await dialog.getByRole('radio', { name: /Investigando/ }).check();
     await dialog.getByRole('button', { name: 'Guardar feedback' }).click();

@@ -1,4 +1,4 @@
-import { filterPage, groupByVulnerability } from './grouping';
+import { evaluationCount, filterPage, groupByVulnerability } from './grouping';
 import { recommendation } from './recommendation.fixtures';
 
 const NEWEST = recommendation({ assessment_id: 'a-3', feedback_count: 0 });
@@ -40,5 +40,13 @@ describe('grouping by vulnerability', () => {
     expect(filterPage(page, { level: 'critical', withoutFeedback: false })).toEqual([ALERT]);
     expect(filterPage(page, { level: '', withoutFeedback: true })).toEqual([NEWEST, OTHER]);
     expect(filterPage(page, { level: 'medium', withoutFeedback: true })).toEqual([]);
+  });
+});
+
+describe('evaluationCount', () => {
+  it('says one evaluation or the plural, never «evaluación(es)»', () => {
+    expect(evaluationCount(1)).toBe('1 evaluación');
+    expect(evaluationCount(0)).toBe('0 evaluaciones');
+    expect(evaluationCount(3)).toBe('3 evaluaciones');
   });
 });

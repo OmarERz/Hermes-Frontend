@@ -305,21 +305,23 @@
     min-width: 0;
   }
   .ticket-option strong {
-    font-size: calc((13px) + var(--font-size-increase));
-    overflow-wrap: anywhere;
+    font-size: var(--text-md);
+  }
+  /* REC-1: the CVE stays on one line; the «Sin feedback» chip goes below it, not beside it. */
+  .ticket-option .case-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ticket-option > .case-copy {
+    flex: 1 1 auto;
+  }
+  .case-copy > app-chip {
+    justify-self: start;
   }
   .ticket-option small {
     color: var(--text-secondary, #72647c);
     font-size: calc((11px) + var(--font-size-increase));
-  }
-  .conflict-chip {
-    flex: none;
-    padding: 4px 7px;
-    border-radius: 10px;
-    background: #fff0d3;
-    color: #8b5700;
-    font-size: calc((10px) + var(--font-size-increase));
-    font-weight: 700;
   }
   .detail-heading {
     display: flex;
@@ -467,9 +469,6 @@
     gap: 4px;
     min-width: 0;
   }
-  .ticket-option > span:first-child small:last-child {
-    overflow-wrap: anywhere;
-  }
 }
 .app-shell[data-theme='dark'] .recommendations-view .source-badge {
   border-color: var(--border);
@@ -515,8 +514,7 @@
   .judge-reason span {
     font-size: calc((12px) + var(--font-size-increase));
   }
-  .decision-chip,
-  .conflict-chip {
+  .decision-chip {
     font-size: calc((12px) + var(--font-size-increase));
   }
 }
@@ -615,11 +613,6 @@
 .app-shell[data-theme='dark'] .recommendations-view .judge-reason span {
   color: var(--accent-lilac);
 }
-.app-shell[data-theme='dark'] .recommendations-view .conflict-chip {
-  border: 1px solid rgba(255, 180, 63, 0.42);
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
 .app-shell[data-theme='dark'] .recommendations-view .empty-state {
   border-color: var(--border);
   color: var(--text-secondary);
@@ -670,4 +663,64 @@
   .judge-reason span {
     font-size: calc((12px) + var(--font-size-increase));
   }
+}
+
+/*
+ * Surfaces of the detail (F19.6, REC-3, G9): three levels instead of four, the radius shrinking inwards. The panel
+ * (--surface, 16 px) holds each evaluation on a soft fill without border or shadow (12 px); inside it, every block is
+ * a raised fill without border (8 px), --space-3 apart; the three stage scores are plain columns of their block, not
+ * cards of their own.
+ */
+.app-shell[data-theme] .page-content .recommendations-view .proposal-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--card-pad-compact);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  box-shadow: none;
+}
+.app-shell[data-theme]
+  .page-content
+  .recommendations-view
+  .proposal-card
+  :is(
+    .before-after,
+    .recommendation-scores,
+    .analysis-grid section,
+    .asset-panel,
+    .ticket-line,
+    .judge-reason
+  ) {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+.app-shell[data-theme] .page-content .recommendations-view .proposal-card .judge-pending {
+  border: 1px dashed var(--border);
+  background: transparent;
+}
+.app-shell[data-theme] .page-content .recommendations-view .analysis-grid {
+  gap: var(--space-3);
+}
+.app-shell[data-theme] .page-content .recommendations-view .recommendation-score-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+}
+.app-shell[data-theme] .page-content .recommendations-view .recommendation-score-grid article {
+  padding: 0 var(--space-3);
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+}
+.app-shell[data-theme]
+  .page-content
+  .recommendations-view
+  .recommendation-score-grid
+  article:first-child {
+  padding-left: 0;
+  border-left: 0;
 }

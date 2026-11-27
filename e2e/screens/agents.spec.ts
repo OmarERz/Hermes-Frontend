@@ -96,9 +96,39 @@ test.describe('agents as reader', () => {
     ).toBeVisible();
 
     await page.getByLabel('Tipo de evento').selectOption({ label: 'Corrida' });
-    await expect(detail.getByRole('heading', { name: 'Detalle del evento' })).toBeVisible();
+    await expect(detail).toHaveClass(/is-empty/);
+    await expect(detail.getByRole('heading', { name: 'Decisión del juez' })).toHaveCount(0);
     await expect(events.getByRole('row').nth(1)).toContainText('Corrida');
     await expect(events.getByRole('row').filter({ hasText: 'Revisión de IA' })).toHaveCount(0);
+  });
+
+  // HIS-2 (F19.6): no third of the page for an empty detail; it opens beside the events only from 1440 px.
+  test('gives the events the whole width and opens the detail below them, or beside them when wide', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/historial-agente');
+    const layout = page.locator('.history-layout');
+    const list = page.locator('.history-list-column');
+    const detail = page.locator('aside.detail-panel');
+    const events = page.getByRole('region', {
+      name: 'Historial de eventos; desplazamiento horizontal',
+    });
+    await expect(events).toBeVisible();
+    const whole = (await layout.boundingBox())!;
+    expect(Math.round((await list.boundingBox())!.width)).toBe(Math.round(whole.width));
+
+    const run = events.getByRole('row').filter({ hasText: 'Corrida' }).first();
+    await run.getByRole('button', { name: 'Detalle' }).click();
+    await expect(layout).toHaveClass(/has-detail/);
+    await expect(detail.getByRole('heading', { name: /^Detalle · / })).toBeInViewport();
+    const listBox = (await list.boundingBox())!;
+    expect((await detail.boundingBox())!.y).toBeGreaterThanOrEqual(listBox.y + listBox.height - 1);
+
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await expect
+      .poll(async () => (await detail.boundingBox())!.x)
+      .toBeGreaterThan((await list.boundingBox())!.x + 200);
   });
 
   test('shows the ticket log with its iTop writes', async ({ page }) => {

@@ -1,4 +1,14 @@
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  Injector,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   LucideActivity,
@@ -112,6 +122,8 @@ export function eventDetail(event: HistoryEvent): { term: string; value: string 
 })
 export class AgentsHistoryPage {
   private readonly service = inject(AgentsService);
+  private readonly injector = inject(Injector);
+  private readonly detailPanel = viewChild<ElementRef<HTMLElement>>('detailPanel');
 
   readonly bannerIcon = LucideActivity;
   readonly types = HISTORY_TYPES;
@@ -181,8 +193,22 @@ export class AgentsHistoryPage {
     this.reload();
   }
 
+  /**
+   * Opens the detail of an event (HIS-2): beside the list from 1440 px, below it on narrower screens, where it is
+   * scrolled into view once it is drawn (smoothly unless the person asked for reduced motion).
+   */
   select(event: HistoryEvent): void {
     this.selected.set(event);
+    afterNextRender(() => this.revealDetail(), { injector: this.injector });
+  }
+
+  private revealDetail(): void {
+    const panel = this.detailPanel()?.nativeElement;
+    if (!panel || typeof panel.scrollIntoView !== 'function') return;
+    const reduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    panel.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
   }
 
   isSelected(event: HistoryEvent): boolean {

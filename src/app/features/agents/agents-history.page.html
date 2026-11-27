@@ -5,7 +5,7 @@
     [icono]="bannerIcon"
   />
 
-  <div class="history-layout">
+  <div class="history-layout" [class.has-detail]="!!selected()">
     <div class="history-list-column">
       <section class="history-panel" aria-labelledby="history-filters-title">
         <header>
@@ -130,7 +130,13 @@
       </section>
     </div>
 
-    <aside class="history-panel detail-panel" aria-live="polite" aria-label="Detalle del evento">
+    <aside
+      #detailPanel
+      class="history-panel detail-panel"
+      [class.is-empty]="!selected()"
+      aria-live="polite"
+      aria-label="Detalle del evento"
+    >
       @if (selected(); as event) {
         <header>
           <h2>Detalle · {{ event.title }}</h2>

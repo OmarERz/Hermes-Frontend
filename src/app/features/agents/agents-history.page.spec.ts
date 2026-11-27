@@ -152,6 +152,54 @@ describe('AgentsHistoryPage', SCREEN, () => {
     expect(element.querySelector('.detail-empty')).not.toBeNull();
   });
 
+  it('gives the list the whole width until an event is chosen, then scrolls its detail into view', async () => {
+    const scroll = vi.fn();
+    const original = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = scroll;
+    try {
+      const { fixture, element } = await render(new FakeService());
+      const layout = element.querySelector('.history-layout') as HTMLElement;
+      const panel = element.querySelector('aside.detail-panel') as HTMLElement;
+      expect(layout.classList).not.toContain('has-detail');
+      expect(panel.classList).toContain('is-empty');
+
+      (eventRows(element)[0].querySelector('button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(layout.classList).toContain('has-detail');
+      expect(panel.classList).not.toContain('is-empty');
+      expect(scroll).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
+
+      (element.querySelector('.detail-panel header button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(layout.classList).not.toContain('has-detail');
+      expect(panel.classList).toContain('is-empty');
+    } finally {
+      HTMLElement.prototype.scrollIntoView = original;
+    }
+  });
+
+  it('scrolls without animation when the person asked for reduced motion', async () => {
+    const scroll = vi.fn();
+    const originalScroll = HTMLElement.prototype.scrollIntoView;
+    const originalMatch = window.matchMedia;
+    HTMLElement.prototype.scrollIntoView = scroll;
+    window.matchMedia = vi.fn(
+      (query: string) => ({ matches: query.includes('reduce') }) as MediaQueryList,
+    );
+    try {
+      const { fixture, element } = await render(new FakeService());
+      (eventRows(element)[0].querySelector('button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(scroll).toHaveBeenCalledWith({ block: 'nearest', behavior: 'auto' });
+    } finally {
+      HTMLElement.prototype.scrollIntoView = originalScroll;
+      window.matchMedia = originalMatch;
+    }
+  });
+
   it('names the detail panel, so it is told apart from the sidebar landmark', async () => {
     const { element } = await render(new FakeService());
     expect(element.querySelector('aside.detail-panel')?.getAttribute('aria-label')).toBe(

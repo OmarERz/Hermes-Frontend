@@ -66,3 +66,8 @@ export function filterPage(
       (!filters.withoutFeedback || item.feedback_count === 0),
   );
 }
+
+/** «1 evaluación», «3 evaluaciones»: the count of a case in the list (REC-1: no «evaluación(es)» to break). */
+export function evaluationCount(count: number): string {
+  return count === 1 ? '1 evaluación' : `${count} evaluaciones`;
+}
