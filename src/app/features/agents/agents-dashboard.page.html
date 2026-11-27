@@ -35,6 +35,7 @@
       <app-async-state
         [compact]="allFailed()"
         [state]="state"
+        [lines]="4"
         loadingText="Cargando la telemetría…"
         [error]="summary.error()"
         (retry)="loadSummary()"
@@ -130,6 +131,7 @@
             <app-async-state
               [compact]="allFailed()"
               [state]="dailyState() ?? 'empty'"
+              [lines]="4"
               loadingText="Cargando las series diarias…"
               emptyText="No hay datos diarios."
               [error]="daily.error()"
@@ -164,6 +166,7 @@
             <app-async-state
               [compact]="allFailed()"
               [state]="dailyState() ?? 'empty'"
+              [lines]="4"
               loadingText="Cargando las series diarias…"
               [emptyText]="performanceEmptyText()"
               [error]="daily.error()"
@@ -270,6 +273,7 @@
         <app-async-state
           [compact]="allFailed()"
           [state]="state"
+          [lines]="5"
           loadingText="Cargando los agentes…"
           [error]="summary.error()"
           (retry)="loadSummary()"

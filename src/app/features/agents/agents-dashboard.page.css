@@ -28,13 +28,9 @@
 }
 
 /* The chips next to the indicator values are the shared .kpi-detail (src/styles/kpi.css); the retry is one of them. */
-.queue-retry {
-  outline-offset: var(--focus-offset);
-  border: 1px dashed currentColor;
-  cursor: pointer;
-}
 .queue-retry:focus-visible {
   outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .last-run {

@@ -51,6 +51,7 @@
     @if (tableState(); as state) {
       <app-async-state
         [state]="state"
+        [lines]="6"
         loadingText="Cargando la cola de errores…"
         [emptyText]="
           kind() ? 'No hay errores de este origen.' : 'No hay errores pendientes. Todo se entregó.'

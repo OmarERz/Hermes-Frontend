@@ -25,7 +25,7 @@
       <app-kpi-card
         label="Riesgo del activo"
         [icon]="kpiIcons.risk"
-        [tone]="worstLevel() ?? 'danger'"
+        [tone]="worstLevel() ?? 'success'"
         [kind]="worstLevel() ? 'number' : 'text'"
         [value]="worstLevel() ? asset.risk : 'Sin vulnerabilidades abiertas'"
       >

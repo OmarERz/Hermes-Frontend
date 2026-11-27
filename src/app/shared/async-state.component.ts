@@ -7,8 +7,8 @@ export type ViewState = 'loading' | 'empty' | 'error';
 
 /**
  * Shared loading, empty and error states (F19.4, docs/front/diseno-ronda-1.md G11, AGE-5, VUL-6).
- *   loading  a skeleton of `lines` bars (no animation with reduced motion); the loading text is read by screen readers
- *            only, so the panel keeps its height instead of jumping when the data arrive
+ *   loading  a skeleton of `lines` bars (no animation with reduced motion), set by each list to about the height of
+ *            its content so the page jumps less when the data arrive; the loading text is read by screen readers only
  *   empty    one look on every screen: a muted icon and the text
  *   error    the Spanish message of the API (or of the network fallback) as text, with a retry button; `compact` says
  *            only «No disponible», for the panels under a page notice that already gives the message and the retry

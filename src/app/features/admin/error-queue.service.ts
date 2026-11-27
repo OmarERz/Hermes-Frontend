@@ -25,6 +25,8 @@ export const COMPONENT_LABELS: Readonly<Record<string, string>> = {
   reopened: 'Ticket reabierto',
   partially_fixed: 'Corregido en parte',
   fixed: 'Corregido',
+  threat_alert: 'Alerta de amenaza',
+  inferred_alert: 'Alerta inferida por la IA',
   create: 'Crear ticket',
   update: 'Actualizar ticket',
   comment: 'Comentario en el ticket',

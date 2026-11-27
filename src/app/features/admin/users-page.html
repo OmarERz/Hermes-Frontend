@@ -33,6 +33,7 @@
     @if (tableState(); as state) {
       <app-async-state
         [state]="state"
+        [lines]="6"
         loadingText="Cargando cuentas…"
         emptyText="No hay cuentas en Firebase."
         [error]="pager.state.error()"

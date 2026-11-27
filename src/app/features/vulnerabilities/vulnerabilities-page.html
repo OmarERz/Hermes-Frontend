@@ -190,6 +190,7 @@
     @if (tableState(); as state) {
       <app-async-state
         [state]="state"
+        [lines]="6"
         loadingText="Cargando vulnerabilidades…"
         [emptyText]="emptyText()"
         [error]="pager().state.error()"

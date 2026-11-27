@@ -15,6 +15,7 @@
     <section class="panel performance">
       <app-async-state
         [state]="state"
+        [lines]="4"
         loadingText="Cargando las métricas…"
         [error]="board.error()"
         (retry)="loadBoard()"

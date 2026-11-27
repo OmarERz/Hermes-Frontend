@@ -124,6 +124,7 @@
     @if (tableState(); as state) {
       <app-async-state
         [state]="state"
+        [lines]="6"
         loadingText="Cargando los hallazgos…"
         emptyText="Aún no hay hallazgos evaluados."
         [error]="pager.state.error()"

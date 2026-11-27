@@ -31,6 +31,7 @@
     @if (ticketState(); as state) {
       <app-async-state
         [state]="state"
+        [lines]="6"
         loadingText="Cargando tickets…"
         [emptyText]="
           urgency() === null ? 'Aún no hay tickets creados.' : 'No hay tickets con esta urgencia.'
@@ -129,6 +130,7 @@
     @if (alertState(); as state) {
       <app-async-state
         [state]="state"
+        [lines]="6"
         loadingText="Cargando alertas…"
         emptyText="Aún no hay alertas de amenazas."
         [error]="alerts.state.error()"
