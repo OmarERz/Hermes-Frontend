@@ -122,13 +122,17 @@ test.describe('agents as reader', () => {
     await run.getByRole('button', { name: 'Detalle' }).click();
     await expect(layout).toHaveClass(/has-detail/);
     await expect(detail.getByRole('heading', { name: /^Detalle · / })).toBeInViewport();
-    const listBox = (await list.boundingBox())!;
-    expect((await detail.boundingBox())!.y).toBeGreaterThanOrEqual(listBox.y + listBox.height - 1);
+    // Both boxes in one read: the page is still scrolling the detail into view.
+    const gaps = () =>
+      page.evaluate(() => {
+        const listBox = document.querySelector('.history-list-column')!.getBoundingClientRect();
+        const detailBox = document.querySelector('aside.detail-panel')!.getBoundingClientRect();
+        return { below: detailBox.top - listBox.bottom, beside: detailBox.left - listBox.right };
+      });
+    expect((await gaps()).below).toBeGreaterThanOrEqual(0);
 
     await page.setViewportSize({ width: 1600, height: 900 });
-    await expect
-      .poll(async () => (await detail.boundingBox())!.x)
-      .toBeGreaterThan((await list.boundingBox())!.x + 200);
+    await expect.poll(async () => (await gaps()).beside).toBeGreaterThanOrEqual(0);
   });
 
   test('shows the ticket log with its iTop writes', async ({ page }) => {
