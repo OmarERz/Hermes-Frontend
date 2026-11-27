@@ -2,11 +2,11 @@
   <section class="welcome-main" aria-labelledby="welcome-title">
     <header class="welcome-copy">
       <p class="eyebrow">Plataforma de operación tecnológica</p>
-      <h1 id="welcome-title">Hola, {{ nombreSaludo }}</h1>
+      <h1 id="welcome-title">Hola, {{ greetingName() }}</h1>
       <h2>Hermes Control</h2>
       <p class="welcome-description">
-        Supervisa, analiza y optimiza la operación tecnológica con ayuda de agentes de IA, integrada
-        con iTop.
+        Supervisa, analiza y prioriza las vulnerabilidades de tus activos con ayuda de agentes de
+        IA, integrada con iTop.
       </p>
     </header>
     <nav class="home-links" aria-label="Módulos principales">
@@ -14,28 +14,32 @@
         ><span class="home-card-icon"><svg lucideBot aria-hidden="true"></svg></span
         ><span class="home-card-copy"
           ><strong>Agentes</strong
-          ><small>Monitorea el desempeño, historial y recomendaciones.</small></span
+          ><small
+            >Monitorea la actividad de los agentes de IA, su historial y sus recomendaciones.</small
+          ></span
         ><span class="home-card-arrow"><svg lucideArrowRight aria-hidden="true"></svg></span
       ></a>
-      <a class="home-link-card" routerLink="/stack-tecnologico"
+      <a class="home-link-card" routerLink="/software"
         ><span class="home-card-icon"><svg lucideLayers aria-hidden="true"></svg></span
         ><span class="home-card-copy"
-          ><strong>Stack Tecnológico</strong
-          ><small>Consulta el catálogo de tecnologías y su estado.</small></span
+          ><strong>Software</strong
+          ><small
+            >Consulta el software instalado en los activos de iTop y sus vulnerabilidades.</small
+          ></span
         ><span class="home-card-arrow"><svg lucideArrowRight aria-hidden="true"></svg></span
       ></a>
       <a class="home-link-card" routerLink="/activos"
         ><span class="home-card-icon"><svg lucideMonitor aria-hidden="true"></svg></span
         ><span class="home-card-copy"
           ><strong>Activos</strong
-          ><small>Administra y consulta activos y equipos de iTop.</small></span
+          ><small>Consulta los activos y equipos registrados en iTop.</small></span
         ><span class="home-card-arrow"><svg lucideArrowRight aria-hidden="true"></svg></span
       ></a>
       <a class="home-link-card" routerLink="/configuracion-agente"
         ><span class="home-card-icon"><svg lucideSlidersHorizontal aria-hidden="true"></svg></span
         ><span class="home-card-copy"
           ><strong>Control de agentes</strong
-          ><small>Ajusta perfiles de autonomía, herramientas y revisión humana.</small></span
+          ><small>Ajusta la sensibilidad del juez, la fórmula y los parámetros.</small></span
         ><span class="home-card-arrow"><svg lucideArrowRight aria-hidden="true"></svg></span
       ></a>
     </nav>
@@ -45,38 +49,43 @@
 
   <section class="home-summary" aria-label="Indicadores resumidos">
     <div class="home-metrics">
-      <article class="home-metric">
+      <article class="home-metric" [attr.aria-busy]="inventory.loading()">
         <span class="metric-icon"><svg lucideLayers aria-hidden="true"></svg></span>
         <div>
-          <strong>{{ totalTecnologias ?? 'Sin datos' }}</strong
-          ><small>Tecnologías registradas</small>
+          <strong>{{ softwareCount() }}</strong
+          ><small>Software instalado</small>
         </div>
       </article>
-      <article class="home-metric">
+      <article class="home-metric" [attr.aria-busy]="inventory.loading()">
         <span class="metric-icon violet"><svg lucideMonitor aria-hidden="true"></svg></span>
         <div>
-          <strong>{{ totalActivos ?? 'Sin datos' }}</strong
+          <strong>{{ assetCount() }}</strong
           ><small>Activos en iTop</small>
         </div>
       </article>
-      <article class="home-metric">
+      <article class="home-metric" [attr.aria-busy]="tickets.loading()">
         <span class="metric-icon"><svg lucideFileClock aria-hidden="true"></svg></span>
         <div>
-          <strong>{{ totalTickets ?? 'Sin datos' }}</strong
-          ><small>Tickets actuales</small>
+          <strong>{{ openTickets() }}</strong
+          ><small>Tickets abiertos</small>
         </div>
       </article>
-      <article class="home-metric">
+      <article class="home-metric" [attr.aria-busy]="telemetry.loading()">
         <span class="metric-icon violet"><svg lucideActivity aria-hidden="true"></svg></span>
         <div>
-          <strong>{{ tasaExito === null ? 'Sin datos' : tasaExito + ' %' }}</strong
-          ><small>Tasa de éxito del agente</small>
+          <strong>{{ runSuccess() }}</strong
+          ><small>Éxito de las corridas (7 días)</small>
         </div>
       </article>
     </div>
+    @if (failure(); as error) {
+      <app-async-state state="error" [error]="error" (retry)="retryFailed()" />
+    }
     <p class="data-origin" role="status">
-      Modo de datos reales · solo se muestran valores disponibles; tickets y métricas del agente aún
-      no tienen conexión.
+      Datos reales de iTop y de Hermes
+      @if (lastSync(); as sync) {
+        · {{ sync }}
+      }
     </p>
   </section>
 </div>
