@@ -1,11 +1,5 @@
 import type { ConfigParameter } from './config-model';
-import {
-  FALLBACK_PROFILE_VALUES,
-  profileCards,
-  profileDeadZone,
-  profileText,
-  profileValues,
-} from './sensitivity-profiles';
+import { profileCards, profileDeadZone, profileText, profileValues } from './sensitivity-profiles';
 import { parameter, SCHEMA } from './testing/config-fixtures';
 
 const PUBLISHED = SCHEMA.find((param) => param.key === 'sensitivity_profile') as ConfigParameter;
@@ -18,7 +12,7 @@ const WITHOUT_VALUES = parameter({
   options: ['broad', 'minimal', 'normal'],
 });
 
-/** A schema whose values differ from docs/07 §12, so a test can tell which source a value came from. */
+/** A schema whose values differ from docs/07 §12: the front shows what the schema says, nothing else. */
 const RETUNED = parameter({
   key: 'sensitivity_profile',
   type: 'enum',
@@ -49,22 +43,26 @@ describe('sensitivity profiles', () => {
     expect(profileDeadZone(RETUNED, 'strict')).toBe('8');
   });
 
-  it('falls back to docs/07 §12 only when the schema lacks the values', () => {
-    expect(profileDeadZone(WITHOUT_VALUES, 'minimal')).toBe('6');
-    expect(profileDeadZone(WITHOUT_VALUES, 'normal')).toBe('4');
-    expect(profileDeadZone(WITHOUT_VALUES, 'broad')).toBe('2');
-    expect(profileValues(null, 'broad')).toEqual(FALLBACK_PROFILE_VALUES['broad']);
-    // A value the schema leaves out (or sends empty) keeps the fallback; the others come from the schema.
+  it('sets nothing the schema does not publish, never a value of its own', () => {
+    // A backend without `option_values`: known profiles get no values, so no dead zone to draft.
+    expect(profileValues(WITHOUT_VALUES, 'minimal')).toEqual({});
+    expect(profileDeadZone(WITHOUT_VALUES, 'minimal')).toBeNull();
+    expect(profileDeadZone(WITHOUT_VALUES, 'broad')).toBeNull();
+    expect(profileValues(null, 'broad')).toEqual({});
+    // A value the schema leaves out (or sends empty) is left out too; the others come from the schema.
     const partial = parameter({
       key: 'sensitivity_profile',
       type: 'enum',
       options: ['minimal'],
       option_values: { minimal: { dead_zone: '', 'judge.range_multiplier': '0.25' } },
     });
-    expect(profileValues(partial, 'minimal')).toEqual({
-      ...FALLBACK_PROFILE_VALUES['minimal'],
-      'judge.range_multiplier': '0.25',
-    });
+    expect(profileValues(partial, 'minimal')).toEqual({ 'judge.range_multiplier': '0.25' });
+    expect(profileDeadZone(partial, 'minimal')).toBeNull();
+    expect(profileCards(WITHOUT_VALUES).map(({ text, deadZone }) => ({ text, deadZone }))).toEqual([
+      { text: '', deadZone: null },
+      { text: '', deadZone: null },
+      { text: '', deadZone: null },
+    ]);
   });
 
   it('gives nothing for an unknown profile without values, whatever its name', () => {

@@ -1,10 +1,8 @@
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { pendingCount, PendingKind } from '../inventory/pending-counts';
 import { InventoryPending, SetupService } from './setup.service';
-
-/** The lists of `GET /api/pending/inventory` (`totals` is not a list). */
-type PendingKind = Exclude<keyof InventoryPending, 'totals'>;
 
 /** The pendings of FRO-17, in the order of the Pendientes de inventario screen (the OpenAPI descriptions). */
 export const PENDING_LABELS: Record<PendingKind, string> = {
@@ -15,9 +13,6 @@ export const PENDING_LABELS: Record<PendingKind, string> = {
   without_custodian: 'Activos sin equipo custodio',
   outside_delivery_model: 'Activos fuera del modelo de entrega',
 };
-
-/** The API lists up to this many items of each kind: without `totals`, a full list means «this many or more». */
-export const PENDING_LIMIT = 200;
 
 /**
  * Kinds the API does not compute yet (it always answers an empty list): shown only once it sends items, so an empty
@@ -34,17 +29,16 @@ export interface PendingRow {
 }
 
 /**
- * The count of each kind: the exact total of `totals` (F18.6), which counts past the 200 of each list; without it
- * (a backend before F18.6), the list length, «or more» when the list is full.
+ * The count of each kind with the rule of Pendientes de inventario (`pendingCount`): the exact total of `totals`
+ * (F18.6), which counts past the 200 of each list; without it, the list length, «or more» when the list is full.
  */
 export function pendingRows(pending: InventoryPending | null): PendingRow[] {
   return (Object.keys(PENDING_LABELS) as PendingKind[])
     .map((kind) => {
-      const listed = pending?.[kind]?.length ?? 0;
-      const total = pending?.totals?.[kind];
-      const exact = typeof total === 'number' && Number.isFinite(total);
-      const count = exact ? Math.max(total, listed) : listed;
-      return { kind, label: PENDING_LABELS[kind], count, capped: !exact && count >= PENDING_LIMIT };
+      const { count, atLeast } = pending
+        ? pendingCount(pending, kind)
+        : { count: 0, atLeast: false };
+      return { kind, label: PENDING_LABELS[kind], count, capped: atLeast };
     })
     .filter((row) => row.count > 0 || !NOT_COMPUTED.includes(row.kind));
 }

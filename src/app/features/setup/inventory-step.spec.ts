@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
-import { PENDING_LIMIT, pendingRows, SetupInventoryStep } from './inventory-step';
+import { PENDING_PAGE as PENDING_LIMIT } from '../inventory/pending-counts';
+import { pendingRows, SetupInventoryStep } from './inventory-step';
 import { InventoryPending, SetupService } from './setup.service';
 
 const item = (id: string) => ({ id, name: id }) as unknown as InventoryPending['without_owner'][0];

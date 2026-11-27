@@ -10,32 +10,6 @@ const MIN_CONFIDENCE_KEY = 'mode2.min_confidence';
 /** What a profile sets: parameter → value, as text (like every value of the configuration API). */
 export type ProfileValues = Readonly<Record<string, string>>;
 
-/**
- * The values of docs/07 §12, used only for what the schema does not publish. Since F18.6 the API lists each profile's
- * values in `option_values` of `sensitivity_profile` (read from the table the judge applies), so these only cover a
- * backend without that field.
- */
-export const FALLBACK_PROFILE_VALUES: Readonly<Record<string, ProfileValues>> = {
-  minimal: {
-    [RANGE_MULTIPLIER_KEY]: '0.5',
-    [ALLOW_LOWERING_KEY]: 'false',
-    [DEAD_ZONE_KEY]: '6',
-    [MIN_CONFIDENCE_KEY]: '0.8',
-  },
-  normal: {
-    [RANGE_MULTIPLIER_KEY]: '1',
-    [ALLOW_LOWERING_KEY]: 'true',
-    [DEAD_ZONE_KEY]: '4',
-    [MIN_CONFIDENCE_KEY]: '0.6',
-  },
-  broad: {
-    [RANGE_MULTIPLIER_KEY]: '1.5',
-    [ALLOW_LOWERING_KEY]: 'true',
-    [DEAD_ZONE_KEY]: '2',
-    [MIN_CONFIDENCE_KEY]: '0.4',
-  },
-};
-
 /** Display order of the known profiles (the API lists its options alphabetically); others go last. */
 const PROFILE_ORDER = ['minimal', 'normal', 'broad'];
 
@@ -48,18 +22,19 @@ function own<T>(
 }
 
 /**
- * What `profile` sets: each value from the schema's `option_values` (F18.6); the fallback of docs/07 §12 only for a
- * value the schema lacks. An unknown profile without published values sets nothing.
+ * What `profile` sets, only as the schema publishes it in `option_values` (F18.6, read from the table the judge
+ * applies): the front never repeats those values (FRONTEND.md §5, D-088). A profile or a value the schema leaves out
+ * (or sends empty) sets nothing: its card shows no text or dead zone, and choosing it keeps the dead zone.
  */
 export function profileValues(param: ConfigParameter | null, profile: string): ProfileValues {
-  const values: Record<string, string> = { ...own(FALLBACK_PROFILE_VALUES, profile) };
+  const values: Record<string, string> = {};
   for (const [key, value] of Object.entries(own(param?.option_values, profile) ?? {})) {
     if (typeof value === 'string' && value.trim() !== '') values[key] = value.trim();
   }
   return values;
 }
 
-/** The dead zone that `profile` brings along (D-091), as text; null when neither the schema nor docs/07 has it. */
+/** The dead zone that `profile` brings along (D-091), as text; null when the schema does not publish it. */
 export function profileDeadZone(param: ConfigParameter | null, profile: string): string | null {
   return own(profileValues(param, profile), DEAD_ZONE_KEY) ?? null;
 }

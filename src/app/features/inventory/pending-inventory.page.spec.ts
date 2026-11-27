@@ -8,12 +8,8 @@ import { provideFakeSession } from '../../testing/fake-session';
 import { CpeMappingDialog } from './cpe-mapping-dialog';
 import { KERNEL, PENDING, testConfig } from './inventory.fixtures';
 import { InventoryPending, InventoryService } from './inventory.service';
-import {
-  PENDING_PAGE,
-  pendingCount,
-  PendingInventoryPage,
-  pendingItemId,
-} from './pending-inventory.page';
+import { PENDING_PAGE } from './pending-counts';
+import { PendingInventoryPage } from './pending-inventory.page';
 
 const TOTALS: NonNullable<InventoryPending['totals']> = {
   software_without_cpe: 1,
@@ -194,30 +190,6 @@ describe('PendingInventoryPage', () => {
     );
   });
 
-  it('reads a full list without totals as «200+» and a total as the exact count', () => {
-    const full = Array.from({ length: PENDING_PAGE }, (_item, index) => ({
-      ci_id: `CI-${index}`,
-      name: `ci-${index}`,
-      detail: '',
-    }));
-    expect(pendingCount({ ...PENDING, without_owner: full }, 'without_owner')).toEqual({
-      count: PENDING_PAGE,
-      countLabel: `${PENDING_PAGE}+`,
-      capped: true,
-      cappedText: `Se muestran los primeros ${PENDING_PAGE}; puede haber más.`,
-    });
-    expect(pendingCount({ ...PENDING, totals: TOTALS }, 'without_owner')).toEqual({
-      count: 1,
-      countLabel: '1',
-      capped: false,
-      cappedText: '',
-    });
-    // A total below the list never hides an item.
-    expect(
-      pendingCount({ ...PENDING, totals: { ...TOTALS, without_owner: 0 } }, 'without_owner').count,
-    ).toBe(1);
-  });
-
   it('maps a software item by its product id, and keeps the old ci_id when it is missing', async () => {
     const service = new FakeService();
     service.pending.mockReturnValue(
@@ -240,10 +212,6 @@ describe('PendingInventoryPage', () => {
     ).click();
     await fixture.whenStable();
     expect(page.mapping()).toEqual({ id: 'product-uuid', name: KERNEL.name, cpe: null });
-    expect(pendingItemId({ ci_id: 'CI-1', name: 'x', detail: '' }, true)).toBe('CI-1');
-    expect(
-      pendingItemId({ ci_id: 'CI-1', name: 'x', detail: '', software_product_id: 'p' }, false),
-    ).toBe('CI-1');
   });
 
   it('links each CI to its edit form in iTop by its class', async () => {
