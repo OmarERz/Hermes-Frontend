@@ -1,0 +1,144 @@
+<div class="assets-view stix-view">
+  <app-banner-pagina
+    titulo="Exportación STIX"
+    descripcion="Descarga un bundle STIX 2.1 de una vulnerabilidad, una corrida o un rango de fechas."
+    [icono]="bannerIcon"
+  />
+
+  <section class="panel export-panel" aria-labelledby="export-title">
+    <h2 id="export-title">Qué exportar</h2>
+    <form (ngSubmit)="export()" novalidate>
+      <fieldset class="scope-options">
+        <legend class="visually-hidden">Alcance</legend>
+        @for (option of scopes; track option) {
+          <label class="scope-option" [class.selected]="scope() === option">
+            <input
+              type="radio"
+              name="scope"
+              [value]="option"
+              [checked]="scope() === option"
+              (change)="setScope(option)"
+            />
+            {{ scopeLabels[option] }}
+          </label>
+        }
+      </fieldset>
+
+      @switch (scope()) {
+        @case ('vulnerability') {
+          <label class="field"
+            >Vulnerabilidad
+            <select name="group" [ngModel]="groupId()" (ngModelChange)="groupId.set($event)">
+              <option value="">
+                {{
+                  groups.state.loading() && groupOptions().length === 0
+                    ? 'Cargando vulnerabilidades…'
+                    : 'Elige una vulnerabilidad'
+                }}
+              </option>
+              @for (group of groupOptions(); track group.id) {
+                <option [value]="group.id">{{ group.label }}</option>
+              }
+            </select>
+          </label>
+          @if (groups.hasMore()) {
+            <button
+              type="button"
+              class="load-more"
+              (click)="groups.more()"
+              [disabled]="groups.state.loading()"
+            >
+              {{ groups.state.loading() ? 'Cargando…' : 'Cargar más vulnerabilidades' }}
+            </button>
+          }
+          @if (groups.state.error(); as failure) {
+            <p class="field-error" role="alert">{{ failure.message }}</p>
+          }
+        }
+        @case ('run') {
+          <label class="field"
+            >Corrida
+            <select name="run" [ngModel]="runId()" (ngModelChange)="runId.set($event)">
+              <option value="">
+                {{
+                  runs.state.loading() && runOptions().length === 0
+                    ? 'Cargando corridas…'
+                    : 'Elige una corrida'
+                }}
+              </option>
+              @for (run of runOptions(); track run.id) {
+                <option [value]="run.id">{{ run.label }}</option>
+              }
+            </select>
+          </label>
+          @if (runs.hasMore()) {
+            <button
+              type="button"
+              class="load-more"
+              (click)="runs.more()"
+              [disabled]="runs.state.loading()"
+            >
+              {{ runs.state.loading() ? 'Cargando…' : 'Cargar corridas anteriores' }}
+            </button>
+          }
+          @if (runs.state.error(); as failure) {
+            <p class="field-error" role="alert">{{ failure.message }}</p>
+          }
+        }
+        @default {
+          <div class="date-range">
+            <label class="field"
+              >Desde
+              <input
+                type="date"
+                name="from"
+                [ngModel]="dateFrom()"
+                (ngModelChange)="dateFrom.set($event)"
+              />
+            </label>
+            <label class="field"
+              >Hasta
+              <input
+                type="date"
+                name="to"
+                [ngModel]="dateTo()"
+                (ngModelChange)="dateTo.set($event)"
+              />
+            </label>
+          </div>
+          <p class="hint">Se exportan días completos en hora UTC, incluido el último.</p>
+        }
+      }
+
+      <label class="check">
+        <input
+          type="checkbox"
+          name="exclude"
+          [ngModel]="excludeHighlyClassified()"
+          (ngModelChange)="excludeHighlyClassified.set($event)"
+        />
+        Dejar fuera los activos altamente clasificados (y su TLP)
+      </label>
+
+      @if (problem(); as message) {
+        <p class="hint" aria-live="polite">{{ message }}</p>
+      }
+      @if (error(); as failure) {
+        <p class="field-error" role="alert">{{ failure.message }}</p>
+      }
+      @if (result(); as message) {
+        <p class="success" role="status">{{ message }}</p>
+      }
+
+      <button
+        type="submit"
+        class="primary-action"
+        [disabled]="!!problem() || exporting()"
+        [attr.aria-busy]="exporting()"
+      >
+        <svg lucideDownload aria-hidden="true"></svg>
+        {{ exporting() ? 'Exportando…' : 'Exportar y descargar' }}
+      </button>
+    </form>
+  </section>
+</div>

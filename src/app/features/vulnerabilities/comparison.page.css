@@ -1,0 +1,102 @@
+.panel {
+  margin-top: 15px;
+}
+.panel h2 {
+  margin: 0 0 6px;
+  font-size: calc(17px + var(--font-size-increase, 0px));
+}
+.hint {
+  margin: 0 0 10px;
+  color: var(--text-muted, #6b6175);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+}
+.stat-card.indicator {
+  grid-template-columns: minmax(0, 1fr);
+}
+.stat-card .note {
+  position: static;
+  padding: 0;
+  background: none;
+  color: var(--text-muted, #6b6175);
+  font-weight: 500;
+  white-space: normal;
+}
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 15px;
+}
+.matrix {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+.matrix th,
+.matrix td {
+  text-align: center;
+}
+.cell-up {
+  background: #ed079b1f;
+}
+.cell-down {
+  background: #2bb67324;
+}
+.cell-same {
+  background: #9844df14;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 10px 0 0;
+  color: var(--text-muted, #6b6175);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+}
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.funnel {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.funnel li {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 3rem;
+  align-items: center;
+  gap: 10px;
+}
+.funnel-bar {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--surface-soft, #f4eef9);
+}
+.funnel-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+  background: #ed079b;
+}
+.delta-up {
+  color: #c90083;
+  font-weight: 700;
+}
+.delta-down {
+  color: #157a49;
+  font-weight: 700;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

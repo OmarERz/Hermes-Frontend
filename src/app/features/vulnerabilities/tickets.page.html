@@ -1,0 +1,209 @@
+<div class="assets-view tickets-view">
+  <app-banner-pagina
+    titulo="Tickets y alertas"
+    descripcion="Tickets que Hermes creó en iTop y alertas de amenazas relacionadas con la empresa."
+    [icono]="bannerIcon"
+  />
+
+  <section class="filters" aria-label="Filtros de tickets">
+    <label class="select-filter"
+      ><svg lucideFunnel aria-hidden="true"></svg>
+      <select [ngModel]="urgency()" (ngModelChange)="setUrgency($event)" aria-label="Urgencia">
+        <option [ngValue]="null">Todas las urgencias</option>
+        @for (value of urgencies; track value) {
+          <option [ngValue]="value">Urgencia {{ value }} · {{ urgencyLabels[value] }}</option>
+        }
+      </select>
+      <svg lucideChevronDown aria-hidden="true"></svg>
+    </label>
+  </section>
+
+  <section class="panel inventory" aria-labelledby="tickets-title">
+    <header>
+      <div class="inventory-title">
+        <svg lucideTicket aria-hidden="true"></svg>
+        <h2 id="tickets-title">Tickets de iTop</h2>
+      </div>
+      <span>Página {{ tickets.pageIndex() + 1 }}</span>
+    </header>
+    @if (ticketState(); as state) {
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando tickets…"
+        [emptyText]="
+          urgency() === null ? 'Aún no hay tickets creados.' : 'No hay tickets con esta urgencia.'
+        "
+        [error]="tickets.state.error()"
+        (retry)="tickets.reload()"
+      />
+    } @else {
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Tickets; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Ticket</th>
+              <th scope="col">CVE</th>
+              <th scope="col">Custodio</th>
+              <th scope="col">Urgencia</th>
+              <th scope="col">Estado en iTop</th>
+              <th scope="col">Activos corregidos</th>
+              <th scope="col">iTop</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ticket of ticketRows(); track ticket.itop_id) {
+              <tr>
+                <td>
+                  <strong>{{ ticket.itop_id }}</strong>
+                </td>
+                <td>{{ ticket.cve }}</td>
+                <td>{{ ticket.custodian }}</td>
+                <td>
+                  <span [class]="'urgency-chip urgency-' + ticket.urgency">{{
+                    ticket.urgencyLabel
+                  }}</span>
+                </td>
+                <td>
+                  <span class="status">{{ ticket.status }}</span>
+                </td>
+                <td>
+                  <span class="fixed-count numeric"
+                    >{{ ticket.fixed_cis }} de {{ ticket.total_cis }}</span
+                  >
+                  <span
+                    class="progress"
+                    role="progressbar"
+                    [attr.aria-label]="'Activos corregidos del ticket ' + ticket.itop_id"
+                    [attr.aria-valuenow]="ticket.progress"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    ><span [style.width.%]="ticket.progress"></span
+                  ></span>
+                </td>
+                <td><app-itop-link kind="view" [href]="ticket.url" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <footer>
+      <span></span>
+      <div class="pagination">
+        <button
+          type="button"
+          [disabled]="!tickets.hasPrevious() || tickets.state.loading()"
+          (click)="tickets.previous()"
+          aria-label="Página anterior de tickets"
+        >
+          <svg lucideArrowLeft aria-hidden="true"></svg>
+        </button>
+        <button type="button" class="selected" aria-current="page">
+          {{ tickets.pageIndex() + 1 }}
+        </button>
+        <button
+          type="button"
+          [disabled]="!tickets.hasNext()"
+          (click)="tickets.next()"
+          aria-label="Página siguiente de tickets"
+        >
+          <svg lucideArrowRight aria-hidden="true"></svg>
+        </button>
+      </div>
+    </footer>
+  </section>
+
+  <section class="panel inventory" aria-labelledby="alerts-title">
+    <header>
+      <div class="inventory-title">
+        <svg lucideRadar aria-hidden="true"></svg>
+        <h2 id="alerts-title">Alertas de amenazas</h2>
+      </div>
+      <span>Página {{ alerts.pageIndex() + 1 }}</span>
+    </header>
+    @if (alertState(); as state) {
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando alertas…"
+        emptyText="Aún no hay alertas de amenazas."
+        [error]="alerts.state.error()"
+        (retry)="alerts.reload()"
+      />
+    } @else {
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Alertas; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Relevancia</th>
+              <th scope="col">Resumen</th>
+              <th scope="col">Actor</th>
+              <th scope="col">Víctima</th>
+              <th scope="col">Vector</th>
+              <th scope="col">Activo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (alert of alerts.items(); track alert.id) {
+              <tr>
+                <td>{{ formatDateTime(alert.created_at) }}</td>
+                <td>
+                  <span class="type-chip" [class.inferred]="alert.inferred">{{
+                    relevanceLabels[alert.relevance]
+                  }}</span>
+                </td>
+                <td class="summary">{{ alert.summary }}</td>
+                <td>{{ alert.actor ?? '—' }}</td>
+                <td>{{ alert.victim ?? '—' }}</td>
+                <td>{{ alert.vector ?? '—' }}</td>
+                <td>
+                  @if (alert.ci_id) {
+                    <a class="row-link" [routerLink]="['/activos', alert.ci_id]"
+                      ><strong>{{ alert.ci_id }}</strong></a
+                    >
+                  } @else {
+                    —
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <footer>
+      <span></span>
+      <div class="pagination">
+        <button
+          type="button"
+          [disabled]="!alerts.hasPrevious() || alerts.state.loading()"
+          (click)="alerts.previous()"
+          aria-label="Página anterior de alertas"
+        >
+          <svg lucideArrowLeft aria-hidden="true"></svg>
+        </button>
+        <button type="button" class="selected" aria-current="page">
+          {{ alerts.pageIndex() + 1 }}
+        </button>
+        <button
+          type="button"
+          [disabled]="!alerts.hasNext()"
+          (click)="alerts.next()"
+          aria-label="Página siguiente de alertas"
+        >
+          <svg lucideArrowRight aria-hidden="true"></svg>
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>
