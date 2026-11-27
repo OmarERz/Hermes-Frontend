@@ -1,0 +1,122 @@
+/* Shared by the admin screens: the stat cards, filters, panels, table and pagination come from the Activos design
+   (assets-view); these are the notices, chips and row actions they add. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.filters {
+  flex-wrap: wrap;
+}
+.filters .date-filter {
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+.filters .date-filter input {
+  width: auto;
+}
+.filters .text-filter {
+  flex: 1 1 180px;
+}
+.panel {
+  margin-top: 15px;
+}
+.admin-notice {
+  margin: 12px 0 0;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: calc(12px + var(--font-size-increase));
+  line-height: 1.5;
+}
+.admin-notice.error {
+  border-color: color-mix(in srgb, var(--danger-text) 55%, var(--border));
+  color: var(--danger-text);
+}
+.chip {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: calc(10px + var(--font-size-increase, 0px));
+  font-weight: 700;
+  white-space: nowrap;
+}
+.chip.ok {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+.chip.warn {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+.chip.bad {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+.chip.accent {
+  background: #ed079b14;
+  color: #c90083;
+}
+.numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: calc(10px + var(--font-size-increase, 0px));
+  overflow-wrap: anywhere;
+}
+td small {
+  display: block;
+  margin-top: 3px;
+}
+.row-actions {
+  text-align: right;
+}
+.row-button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: calc(11px + var(--font-size-increase));
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.row-button svg {
+  width: 14px;
+  height: 14px;
+}
+.row-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.row-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.row-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.row-link:hover,
+.row-link:focus-visible {
+  color: var(--accent, #c90083);
+}
