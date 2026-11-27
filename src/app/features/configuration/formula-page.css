@@ -1,11 +1,18 @@
+/*
+ * FOR-2 (F19.6): the groups flow in two columns like masonry, so a long group (Niveles de T) no longer leaves a hole
+ * next to a short one; a group never splits between columns.
+ */
 .formula-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  columns: 2;
+  column-gap: var(--grid-gap);
+}
+.formula-grid > section {
+  break-inside: avoid;
+  margin-bottom: var(--grid-gap);
 }
 .field-list {
   display: grid;
-  gap: 8px;
+  gap: var(--space-1);
 }
 .step-title {
   margin: 12px 0 8px;
@@ -45,6 +52,6 @@
 }
 @media (max-width: 900px) {
   .formula-grid {
-    grid-template-columns: minmax(0, 1fr);
+    columns: 1;
   }
 }

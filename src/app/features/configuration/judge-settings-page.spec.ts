@@ -55,8 +55,11 @@ describe('JudgeSettingsPage', () => {
       'Normal',
     );
     expect(element.querySelector('.config-summary')?.textContent).toContain('v7');
-    // Locked protections are text with 🔒, never controls.
-    expect(element.textContent).toContain('🔒 Juez sin acciones');
+    // Locked protections are text with a lock icon (no 🔒 emoji next to it, JUE-3), never controls.
+    expect(element.textContent).toContain('Juez sin acciones');
+    expect(element.textContent).not.toContain('🔒');
+    expect(element.querySelectorAll('.locked-list li svg').length).toBeGreaterThan(0);
+    expect(element.querySelector('.locked-summary')).toBeNull();
     expect(element.textContent).not.toContain('Autonomía');
 
     await advanced();

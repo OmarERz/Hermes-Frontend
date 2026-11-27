@@ -110,13 +110,18 @@ describe('SourcesPage', () => {
     ]);
   });
 
-  it('marks structural sources with 🔒 and never offers to switch them off', async () => {
+  it('marks structural sources with a lock and never offers to switch them off', async () => {
     const { element } = await render('admin');
     const center = element.querySelector('.center-card')!;
     expect(text(center)).toContain('CISA KEV');
-    expect(text(center)).toContain('🔒');
+    // FUE-4: the Lucide lock, not the emoji, outside the table; the level is the shared chip.
+    expect(text(center)).not.toContain('🔒');
+    expect(text(center.querySelector('.lock-icon'))).toBe('Estructural');
+    expect(center.querySelector('.lock-icon svg')).not.toBeNull();
+    expect(center.querySelector('app-chip.level-chip')?.getAttribute('data-tone')).toBe('violet');
     expect(center.querySelector('input[role="switch"]')).toBeNull();
-    expect(text(center.querySelector('.feed-toggle'))).toBe('🔒 Siempre activa');
+    expect(text(center.querySelector('.feed-toggle'))).toBe('Siempre activa');
+    expect(center.querySelector('.feed-toggle svg')).not.toBeNull();
     expect(text(all(element, 'tbody tr')[0])).toContain('🔒');
     expect(text(all(element, 'tbody tr')[2])).not.toContain('🔒');
   });

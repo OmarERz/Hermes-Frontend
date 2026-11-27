@@ -7,11 +7,14 @@ import type { ConfigEditor } from './config-editor';
 /**
  * The prototype's save row for a ConfigEditor: the result of the last action, "Descartar", "Simular" (admin, when
  * the screen simulates) and "Guardar cambios", which opens the shared before/after confirmation. The actions show
- * only for the role that can save a parameter of the screen; a 409 in the dialog offers to reload.
+ * only for the role that can save a parameter of the screen; a 409 in the dialog offers to reload. With unsaved
+ * changes it sticks to the bottom of the window (above the bottom bar on phones), so saving never needs a scroll
+ * back to the middle of a long screen (FOR-3).
  */
 @Component({
   selector: 'app-config-save-bar',
   imports: [ConfirmChangesDialog, IfRoleDirective],
+  host: { '[class.is-dirty]': 'editor().changeCount() > 0' },
   template: `
     <div class="save-row">
       <p class="save-notice" role="status">{{ editor().notice() }}</p>
@@ -66,8 +69,35 @@ import type { ConfigEditor } from './config-editor';
     }
   `,
   styles: `
+    :host {
+      display: block;
+    }
+    :host(.is-dirty) {
+      position: sticky;
+      z-index: var(--z-float);
+      bottom: var(--space-3);
+      margin-top: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      box-shadow: var(--shadow-2);
+    }
+    :host(.is-dirty) .save-row {
+      flex-direction: row;
+      align-items: center;
+      margin-top: 0;
+    }
     .save-row {
       flex-wrap: wrap;
+    }
+    @media (max-width: 560px) {
+      :host(.is-dirty) {
+        bottom: calc(var(--mobile-nav-h) + var(--space-2));
+      }
+      :host(.is-dirty) .save-row p {
+        flex-basis: 100%;
+      }
     }
     .save-hint {
       margin: 6px 0 0;

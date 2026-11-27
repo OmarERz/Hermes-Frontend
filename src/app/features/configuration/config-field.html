@@ -12,7 +12,7 @@
         <strong>{{ label() }}</strong>
         <small>
           @if (blocked()) {
-            🔒 Bloqueado
+            Bloqueado
           } @else {
             {{ value() === 'true' ? 'Activado' : 'Desactivado' }}{{ hint() ? ' · ' + hint() : '' }}
           }
@@ -35,7 +35,7 @@
       <label [for]="id()">
         {{ label() }}
         @if (blocked()) {
-          <span class="lock">🔒 Bloqueado</span>
+          <span class="lock"><svg lucideLock aria-hidden="true"></svg>Bloqueado</span>
         }
       </label>
       @if (hint()) {
@@ -61,7 +61,7 @@
       <label [for]="id()">
         {{ label() }}
         @if (blocked()) {
-          <span class="lock">🔒 Bloqueado</span>
+          <span class="lock"><svg lucideLock aria-hidden="true"></svg>Bloqueado</span>
         }
       </label>
       @if (hint()) {
@@ -106,7 +106,7 @@
               <label [for]="id()">{{ label() }}</label>
             </h4>
             @if (blocked()) {
-              <span class="lock">🔒 Bloqueado</span>
+              <span class="lock"><svg lucideLock aria-hidden="true"></svg>Bloqueado</span>
             }
           </header>
           @if (hint()) {
@@ -138,11 +138,15 @@
         </div>
       </article>
     } @else {
-      <div class="field-row numeric" [class.changed]="changed()">
+      <div
+        class="field-row numeric"
+        [class.changed]="changed()"
+        [attr.title]="bounds() ? 'Rango: ' + bounds() : null"
+      >
         <label [for]="id()">
           {{ label() }}
           @if (blocked()) {
-            <span class="lock">🔒 Bloqueado</span>
+            <span class="lock"><svg lucideLock aria-hidden="true"></svg>Bloqueado</span>
           }
         </label>
         @if (hint()) {
@@ -175,12 +179,12 @@
             [value]="value()"
             [disabled]="!editable()"
             [attr.aria-invalid]="!!error()"
-            [attr.aria-describedby]="error() ? errorId() : null"
+            [attr.aria-describedby]="describedBy()"
             (input)="emit($event)"
           />
         </div>
         @if (bounds()) {
-          <small class="field-hint">Rango: {{ bounds() }}</small>
+          <small class="field-range" [id]="rangeId()">Rango: {{ bounds() }}</small>
         }
       </div>
     }

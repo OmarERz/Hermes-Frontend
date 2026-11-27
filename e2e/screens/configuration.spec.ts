@@ -51,6 +51,21 @@ test.describe('configuration as admin', () => {
     await expect(page.getByRole('button', { name: 'Guardar cambios' })).toBeVisible();
   });
 
+  // FOR-3 (F19.6): with a change, the save bar sticks to the bottom of the window; FOR-4: one line of protections.
+  test('keeps the save bar in view while the formula has unsaved changes', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/formula');
+    const save = page.getByRole('button', { name: 'Guardar cambios' });
+    await expect(page.getByRole('spinbutton', { name: 'S · Severidad' })).toBeEnabled();
+    await expect(save).not.toBeInViewport();
+    await page.getByRole('spinbutton', { name: 'S · Severidad' }).fill('0.3');
+    await expect(page.locator('app-config-save-bar')).toHaveClass(/is-dirty/);
+    await expect(save).toBeInViewport();
+    await expect(page.getByRole('link', { name: 'Ver permisos y protecciones' })).toBeVisible();
+    await page.getByRole('button', { name: 'Descartar cambios' }).click();
+    await expect(page.locator('app-config-save-bar')).not.toHaveClass(/is-dirty/);
+  });
+
   test('simulates a sensitivity profile together with its dead zone (D-091)', async ({ page }) => {
     await page.goto('/configuracion-agente');
     const broad = page.getByRole('radio', { name: /^Influencia amplia/ });

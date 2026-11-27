@@ -16,6 +16,7 @@ import {
   LucideGauge,
   LucideHash,
   LucideLayers,
+  LucideLock,
   LucidePlus,
   LucideRefreshCw,
   LucideRss,
@@ -32,6 +33,7 @@ import { ACTION_ROLES } from '../../core/auth/roles';
 import { SessionService } from '../../core/auth/session.service';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
+import { Chip } from '../../shared/chip';
 import { KpiCard } from '../../shared/kpi-card';
 import { ConfirmChangesDialog } from '../../shared/confirm-changes-dialog';
 import { formatDateTime } from '../../shared/labels';
@@ -103,8 +105,8 @@ const SWIPE_DISTANCE = 45;
 
 /**
  * Fuentes (FRO-16, D-041, FE-1): the prototype's Feeds carousel over the real sources of `GET /api/sources`, with
- * their class, trust level N1 to N4, health and state, filtered by class or by level. Structural sources carry 🔒
- * and are never switched off; analysts and admins switch the optional ones on or off (`PATCH /api/sources/{id}`).
+ * their class, trust level N1 to N4, health and state, filtered by class or by level. Structural sources carry a
+ * lock and are never switched off; analysts and admins switch the optional ones on or off (`PATCH /api/sources/{id}`).
  * Admins also change a level (with confirmation) and add own HTTPS feeds (`POST /api/sources`).
  */
 @Component({
@@ -116,7 +118,9 @@ const SWIPE_DISTANCE = 45;
     ConfirmChangesDialog,
     IfRoleDirective,
     AddSourceForm,
+    Chip,
     KpiCard,
+    LucideLock,
     LucidePlus,
     LucideActivity,
     LucideCircleCheck,

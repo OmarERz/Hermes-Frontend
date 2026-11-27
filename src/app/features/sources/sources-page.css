@@ -56,8 +56,23 @@
   font-size: calc(13px + var(--font-size-increase));
   line-height: 1;
 }
-.level-chip {
-  font-weight: 700;
+/* FUE-4 (F19.6): the Lucide lock next to a structural source, in place of the 🔒 emoji (outside the table). */
+.lock-icon {
+  display: inline-flex;
+  color: var(--warning-text);
+}
+.lock-icon svg,
+.feed-toggle > svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.detail-row .inline-lock {
+  width: 14px;
+  height: 14px;
+  margin-left: var(--space-1);
+  color: var(--warning-text);
+  vertical-align: -2px;
 }
 .health {
   display: inline-flex;

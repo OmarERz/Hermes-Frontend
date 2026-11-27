@@ -224,7 +224,7 @@ describe('ProfilePanel', () => {
 });
 
 describe('CompanyPage', () => {
-  it('shows the profile summary in the stat cards', async () => {
+  it('shows the profile once, in its panel, with no indicator row repeating it', async () => {
     TestBed.configureTestingModule({
       imports: [CompanyPage],
       providers: [
@@ -236,11 +236,10 @@ describe('CompanyPage', () => {
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('h1')?.textContent).toContain('Empresa');
-    expect(Array.from(element.querySelectorAll('.kpi-value')).map(text)).toEqual([
-      'Tecnología financiera',
-      '1',
-      '1',
-      'Español',
-    ]);
+    expect(element.querySelector('app-kpi-card')).toBeNull();
+    expect(fact(element.querySelector('app-profile-panel .facts div')!)).toBe(
+      'Sector principal Tecnología financiera',
+    );
+    expect(element.querySelector('app-peers-panel')).not.toBeNull();
   });
 });
