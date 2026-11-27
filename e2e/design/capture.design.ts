@@ -6,6 +6,7 @@ import {
   designSettings,
   DESKTOP,
   focusFirstControl,
+  mainText,
   message,
   mockApiState,
   MOBILE,
@@ -55,7 +56,7 @@ for (const role of settings.roles) {
 
         await openScreen(page, screen, recorder);
         await capture(page, recorder, 'focus', combos(desktop, settings.themes), {
-          notes: focusFirstControl,
+          prepare: focusFirstControl,
         });
         for (const variant of screen.variants ?? []) {
           try {
@@ -105,10 +106,19 @@ if (settings.states.length && settings.roles.includes('admin')) {
         test(`${screen.id} ${state}`, async ({ page, recorder }) => {
           recorder.begin('admin', screen.id, state === 'error');
           const url = await openScreen(page, screen, recorder);
+          const withData = state === 'empty' ? await mainText(page) : '';
           await mockApiState(page, state);
           await page.goto(url);
           await waitForReady(page, recorder, { loading: state === 'loading' });
-          await capture(page, recorder, state, wanted);
+          // An empty view that reads exactly like the screen with its data is not an empty state: say so.
+          const notes: string[] = [];
+          if (state === 'empty' && (await mainText(page)) === withData) {
+            notes.push('same text as with data: nothing on this screen is emptied by the mock');
+            recorder.problems.push(
+              `empty state: ${screen.id} shows the same text as with its data`,
+            );
+          }
+          await capture(page, recorder, state, wanted, { prepare: async () => notes });
         });
       }
     }

@@ -372,15 +372,16 @@ export function combos(widths: number[], themes: Theme[]): Combo[] {
 
 /**
  * Captures the current view at each width and theme (full page unless `fullPage: false`, animations stopped) and,
- * if asked, runs axe once
- * per theme at the desktop width. Screens without the app shell are captured once per width with theme "none".
+ * if asked, runs axe once per theme at the desktop width. Screens without the app shell are captured once per width
+ * with theme "none". `prepare` runs right before each screenshot (after the theme and width are set), so what it does
+ * (e.g. focusing a control) is in the picture; the notes it returns go with that shot.
  */
 export async function capture(
   page: Page,
   recorder: Recorder,
   view: string,
   wanted: Combo[],
-  options: { axe?: boolean; fullPage?: boolean; notes?: (page: Page) => Promise<string[]> } = {},
+  options: { axe?: boolean; fullPage?: boolean; prepare?: (page: Page) => Promise<string[]> } = {},
 ): Promise<void> {
   const themes = [...new Set(wanted.map((combo) => combo.theme))];
   for (const theme of themes) {
@@ -396,6 +397,7 @@ export async function capture(
         `${view}-${width}-${shotTheme}.png`,
       );
       const fullPage = options.fullPage ?? true;
+      const notes = options.prepare ? await options.prepare(page) : [];
       if (fullPage) await pinFixedBar(page, true);
       await page.screenshot({ path: join(designRoot(), file), fullPage, animations: 'disabled' });
       if (fullPage) await pinFixedBar(page, false);
@@ -407,7 +409,7 @@ export async function capture(
         width,
         theme: shotTheme,
         ...(await measureOverflow(page)),
-        notes: options.notes ? await options.notes(page) : [],
+        notes,
       });
     }
     if (options.axe) {
@@ -455,7 +457,8 @@ async function runAxe(
 
 /**
  * Focuses the first control of <main> outside the section tabs (a button, field or link) as a keyboard user would,
- * so its :focus-visible style shows; notes whether it draws a visible indicator.
+ * so its :focus-visible style shows, and checks that it holds the focus; notes whether it draws a visible indicator.
+ * Used as the `prepare` step of the focus view, so it runs before every screenshot of that view.
  */
 export async function focusFirstControl(page: Page): Promise<string[]> {
   const controls = page.locator(
@@ -465,8 +468,14 @@ export async function focusFirstControl(page: Page): Promise<string[]> {
     elements.findIndex((element) => !element.closest('nav') && element.getClientRects().length > 0),
   );
   if (index < 0) return ['no visible control in main'];
+  const control = controls.nth(index);
   await page.keyboard.press('Tab');
-  await controls.nth(index).focus();
+  await control.focus();
+  try {
+    await expect(control).toBeFocused({ timeout: 2_000 });
+  } catch {
+    return ['NOT focused: the first control did not keep the focus'];
+  }
   return page.evaluate(() => {
     const active = document.activeElement as HTMLElement | null;
     if (!active) return ['nothing focused'];
@@ -491,22 +500,47 @@ const SERVER_ERROR = {
   },
 };
 
-/** Kept real in every state: the session's role and the configuration schema that draws the forms. */
-const ALWAYS_REAL = new Set(['/api/me', '/api/config/schema']);
+/**
+ * Kept real in every state: the session's role, and the settings and the schema that draw the configuration forms
+ * (a fresh install has default settings, never empty ones).
+ */
+const ALWAYS_REAL = new Set(['/api/me', '/api/config', '/api/config/schema']);
 
-function emptied(body: unknown): unknown {
+/** Counters in any response (`total`, `count`, `open_count`, `total_assets`…): zero when there is no data. */
+const COUNTER_KEY = /(^|_)(total|count)(_|$)/;
+/** Reads that only summarise the data (`/api/inventory/summary`, `/api/metrics`…): every figure is zero. */
+const SUMMARY_PATH = /\/(summary|metrics)$/;
+/** Shares in a summary, sent as decimal text (`"42.5"`). */
+const PERCENT_KEY = /percent$/;
+
+/**
+ * The response a screen would get with no data: every list emptied at any depth, every counter zero and, in a
+ * summary read, every figure and share zero. Nothing becomes null, so a field the contract never sends as null
+ * stays a value.
+ */
+export function emptied(body: unknown, summary = false, key = ''): unknown {
   if (Array.isArray(body)) return [];
   if (body && typeof body === 'object') {
     return Object.fromEntries(
-      Object.entries(body).map(([key, value]) => [key, Array.isArray(value) ? [] : value]),
+      Object.entries(body).map(([name, value]) => [name, emptied(value, summary, name)]),
     );
+  }
+  if (typeof body === 'number' && (summary || COUNTER_KEY.test(key))) return 0;
+  if (summary && typeof body === 'string' && PERCENT_KEY.test(key) && body.trim() !== '') {
+    return Number.isFinite(Number(body)) ? '0' : body;
   }
   return body;
 }
 
+/** The visible text of <main>: tells whether a state looks different from the screen with its data. */
+export async function mainText(page: Page): Promise<string> {
+  const main = page.locator('main').first();
+  return (await main.count()) ? main.innerText() : '';
+}
+
 /**
  * Mocks the API reads of the page for a state: `loading` never answers them, `error` answers the API's 500 and
- * `empty` answers the real response with every top-level list emptied. Writes are never touched.
+ * `empty` answers the real response as `emptied` leaves it. Writes are never touched.
  */
 export async function mockApiState(page: Page, state: StateName): Promise<void> {
   await page.route(
@@ -524,7 +558,11 @@ export async function mockApiState(page: Page, state: StateName): Promise<void> 
       if (!(response.headers()['content-type'] ?? '').includes('application/json')) {
         return route.fulfill({ response });
       }
-      return route.fulfill({ response, json: emptied(await response.json()) });
+      const path = new URL(request.url()).pathname;
+      return route.fulfill({
+        response,
+        json: emptied(await response.json(), SUMMARY_PATH.test(path)),
+      });
     },
   );
 }

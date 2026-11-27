@@ -114,6 +114,16 @@ export const SCREENS: readonly Screen[] = [
   { id: 'tickets', path: '/tickets', minRole: 'reader' },
   { id: 'stix-export', path: '/exportacion-stix', minRole: 'analyst' },
   { id: 'assets', path: '/activos', minRole: 'reader', pending: true },
+  {
+    id: 'asset-detail',
+    path: '/activos',
+    minRole: 'reader',
+    pending: true,
+    open: async (page) => {
+      await page.locator('main a[href^="/activos/"]').first().click();
+      await page.waitForURL(/\/activos\/[^/]+$/);
+    },
+  },
   { id: 'software', path: '/software', minRole: 'reader', pending: true },
   { id: 'pending-inventory', path: '/pendientes-inventario', minRole: 'reader', pending: true },
   { id: 'judge-settings', path: '/configuracion-agente', minRole: 'reader' },
@@ -188,7 +198,7 @@ export const SCREENS: readonly Screen[] = [
   { id: 'connections', path: '/conexiones', minRole: 'admin' },
   { id: 'audit', path: '/auditoria', minRole: 'admin' },
   { id: 'error-queue', path: '/cola-errores', minRole: 'admin' },
-  { id: 'setup', path: '/asistente', minRole: 'admin', pending: true },
+  { id: 'setup', path: '/asistente', minRole: 'admin' },
 ];
 
 /** A screen each non-admin role cannot open: it lands on the forbidden screen (/sin-permiso). */
