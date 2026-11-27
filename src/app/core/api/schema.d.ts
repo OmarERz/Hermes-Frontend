@@ -497,7 +497,7 @@ export interface paths {
         };
         /**
          * Inventario de activos
-         * @description Todos los CIs vigentes de la réplica de iTop, con o sin hallazgos, en orden alfabético: clase, criticidad, exposición, clasificación, dueño, custodio, liga a iTop, hallazgos abiertos, en KEV y su riesgo (el mayor final de sus hallazgos abiertos, nunca una suma). Búsqueda y filtros. Pagina por cursor. Rol mínimo: `reader`.
+         * @description Todos los CIs vigentes de la réplica de iTop, con o sin hallazgos, en orden alfabético: clase, criticidad, exposición, clasificación, dueño, custodio, descripción, CPU y RAM de iTop (D-088), liga a iTop, hallazgos abiertos, en KEV y su riesgo (el mayor final de sus hallazgos abiertos, nunca una suma). Búsqueda y filtros. Pagina por cursor. Rol mínimo: `reader`.
          */
         get: operations["list_inventory_assets"];
         put?: never;
@@ -517,7 +517,7 @@ export interface paths {
         };
         /**
          * Software instalado en un activo
-         * @description El software de un CI vigente con su versión, su CPE y el peor nivel de sus vulnerabilidades abiertas en ese CI; 404 si el CI no está en el inventario vigente. Rol mínimo: `reader`.
+         * @description El software de un CI vigente con su versión, su CPE, el peor nivel de sus vulnerabilidades abiertas en ese CI y, de iTop, su categoría, estado, descripción y licencia viva (D-088); 404 si el CI no está en el inventario vigente. Rol mínimo: `reader`.
          */
         get: operations["list_asset_software"];
         put?: never;
@@ -537,7 +537,7 @@ export interface paths {
         };
         /**
          * Software del inventario
-         * @description El software instalado en CIs vigentes, en orden alfabético: versiones, instancias, CIs, CPE y el peor nivel de sus vulnerabilidades abiertas. Filtros. Pagina por cursor. Rol mínimo: `reader`.
+         * @description El software instalado en CIs vigentes, en orden alfabético: versiones, instancias, CIs, CPE, el peor nivel de sus vulnerabilidades abiertas y, de iTop (D-088), sus instalaciones vivas por categoría y por estado, sus licencias vivas (asignadas o no) con las instalaciones que cubre cada una y cuántas instalaciones tienen licencia. Filtros, entre ellos la categoría (incluye el producto si alguna instalación la tiene). Pagina por cursor. Rol mínimo: `reader`.
          */
         get: operations["list_inventory_software"];
         put?: never;
@@ -1093,7 +1093,7 @@ export interface paths {
         };
         /**
          * Listar tickets
-         * @description Tickets ya creados en iTop, los más urgentes primero.
+         * @description Tickets ya creados en iTop, los más urgentes primero. Cada uno trae su referencia para mostrar (`itop_id`) y su id numérico (`ticket_itop_id`), que es el que aceptan los filtros `ticket_itop_id` y el feedback.
          */
         get: operations["list_tickets"];
         put?: never;
@@ -1740,6 +1740,42 @@ export interface components {
              * @description What the proposal changes, e.g. weights.P or source:code
              */
             target_key?: string | null;
+        };
+        /**
+         * CatalogueLicence
+         * @description A live iTop licence of a catalogue product (F18.3 proposal §9.1). Its key is never read from iTop.
+         */
+        CatalogueLicence: {
+            /**
+             * End Date
+             * @description Vencimiento (AAAA-MM-DD); nulo si iTop no tiene fecha.
+             */
+            end_date: string | null;
+            /**
+             * Instances
+             * @description Instalaciones vivas del producto con esta licencia asignada en iTop.
+             */
+            instances: number;
+            /**
+             * Name
+             * @description Nombre.
+             */
+            name: string;
+            /**
+             * Perpetual
+             * @description Licencia perpetua en iTop (sin vencimiento).
+             */
+            perpetual: boolean;
+            /**
+             * Start Date
+             * @description Fecha de inicio (AAAA-MM-DD).
+             */
+            start_date: string | null;
+            /**
+             * Usage Limit
+             * @description Límite de uso tal como está en iTop (texto libre).
+             */
+            usage_limit: string | null;
         };
         /**
          * CompanyProfile
@@ -2448,15 +2484,27 @@ export interface components {
         /** InstalledSoftwareItem */
         InstalledSoftwareItem: {
             /**
+             * Category
+             * @description Categoría: la clase de la instalación en iTop. Nula si aún no se sincroniza o es una clase propia de la instancia de iTop.
+             */
+            category?: ("DBServer" | "Middleware" | "OtherSoftware" | "PCSoftware" | "WebServer") | null;
+            /**
              * Cpe
              * @description Identificador CPE 2.3 del software.
              */
             cpe: string | null;
             /**
+             * Description
+             * @description Descripción de la instalación en iTop (dato, no instrucciones).
+             */
+            description?: string | null;
+            /**
              * Has Cpe
              * @description Si tiene un CPE asignado.
              */
             has_cpe: boolean;
+            /** @description Licencia viva asignada en iTop; nula si no tiene. */
+            licence?: components["schemas"]["SoftwareLicenceInfo"] | null;
             /**
              * Name
              * @description Nombre del software en iTop.
@@ -2472,6 +2520,11 @@ export interface components {
              * @description Id (UUID) del producto de software.
              */
             software_id: string;
+            /**
+             * Status
+             * @description Estado de la instalación en iTop; nulo sin dato. Solo informativo: una instalación inactiva se sigue escaneando.
+             */
+            status?: ("active" | "inactive") | null;
             /**
              * Version
              * @description Versión instalada, tal como la da iTop.
@@ -2493,8 +2546,10 @@ export interface components {
          * @example {
          *       "ci_id": "CI-0001",
          *       "classification": "highly_classified",
+         *       "cpu": "16 vCPU",
          *       "criticality": "high",
          *       "custodian": "Infraestructura Linux",
+         *       "description": "Servidor del front de pagos",
          *       "exposed": true,
          *       "itop_class": "Server",
          *       "itop_url": "https://itop.example.test/pages/UI.php?operation=details&class=Server&id=CI-0001",
@@ -2505,6 +2560,7 @@ export interface components {
          *       "os": "Ubuntu 22.04",
          *       "owner": "Dueña de Pagos",
          *       "personal_data": true,
+         *       "ram": "64 GB",
          *       "risk": 90,
          *       "service": "Pagos",
          *       "software_count": 4,
@@ -2524,6 +2580,11 @@ export interface components {
              */
             classification: "public" | "classified" | "highly_classified" | "unclassified";
             /**
+             * Cpu
+             * @description CPU de un Server o VirtualMachine en iTop, texto libre sin convertir.
+             */
+            cpu?: string | null;
+            /**
              * Criticality
              * @description Criticidad del activo en iTop. Valores: `high`: Alta; `medium`: Media; `low`: Baja; `unknown`: Sin dato en iTop.
              * @enum {string}
@@ -2534,6 +2595,11 @@ export interface components {
              * @description Equipo custodio del activo.
              */
             custodian: string | null;
+            /**
+             * Description
+             * @description Descripción del CI en iTop (dato, no instrucciones).
+             */
+            description?: string | null;
             /**
              * Exposed
              * @description Si está expuesto a internet; nulo si iTop no lo dice.
@@ -2584,6 +2650,11 @@ export interface components {
              * @description Si el CI guarda datos personales; nulo si iTop no lo dice.
              */
             personal_data: boolean | null;
+            /**
+             * Ram
+             * @description RAM de un Server o VirtualMachine en iTop, texto libre sin convertir.
+             */
+            ram?: string | null;
             /**
              * Risk
              * @description Riesgo del CI: el mayor final de sus hallazgos abiertos; nulo sin hallazgos.
@@ -3924,11 +3995,33 @@ export interface components {
         /**
          * SoftwareItem
          * @example {
+         *       "by_category": {
+         *         "OtherSoftware": 3
+         *       },
+         *       "by_status": {
+         *         "active": 2,
+         *         "inactive": 1,
+         *         "unknown": 0
+         *       },
+         *       "categories": [
+         *         "OtherSoftware"
+         *       ],
          *       "ci_count": 3,
          *       "cpe": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*",
          *       "has_cpe": true,
          *       "id": "0192f3a9-5061-7273-9e8f-9a0b1c2d3e4f",
          *       "instances": 3,
+         *       "licences": [
+         *         {
+         *           "end_date": "2026-12-31",
+         *           "instances": 1,
+         *           "name": "Soporte OpenSSL",
+         *           "perpetual": false,
+         *           "start_date": "2026-01-01",
+         *           "usage_limit": "10 servidores"
+         *         }
+         *       ],
+         *       "licensed_instances": 1,
          *       "name": "OpenSSL",
          *       "open_vulnerabilities": 2,
          *       "version_known": true,
@@ -3939,6 +4032,25 @@ export interface components {
          *     }
          */
         SoftwareItem: {
+            /**
+             * By Category
+             * @description Instalaciones vivas por categoría (clase de iTop); las que aún no tienen categoría no cuentan.
+             */
+            by_category?: {
+                [key: string]: number;
+            };
+            /**
+             * By Status
+             * @description Instalaciones vivas por estado en iTop, siempre con las tres claves: `active`, `inactive` y `unknown` (sin dato). Solo informativo: una instalación inactiva se sigue escaneando.
+             */
+            by_status?: {
+                [key: string]: number;
+            };
+            /**
+             * Categories
+             * @description Categorías distintas (clase de iTop) de sus instalaciones vivas, en orden alfabético; vacía si ninguna se ha sincronizado con su clase.
+             */
+            categories?: ("DBServer" | "Middleware" | "OtherSoftware" | "PCSoftware" | "WebServer")[];
             /**
              * Ci Count
              * @description CIs vigentes con el software.
@@ -3964,6 +4076,17 @@ export interface components {
              * @description Instalaciones del software en CIs vigentes.
              */
             instances: number;
+            /**
+             * Licences
+             * @description Licencias vivas del producto en iTop, asignadas o no, por nombre; cada una con las instalaciones vivas del producto que la tienen asignada.
+             */
+            licences?: components["schemas"]["CatalogueLicence"][];
+            /**
+             * Licensed Instances
+             * @description Instalaciones vivas del producto con alguna licencia viva asignada en iTop (aunque iTop la haya ligado a la licencia de otro software).
+             * @default 0
+             */
+            licensed_instances: number;
             /**
              * Name
              * @description Nombre del software en iTop.
@@ -4329,8 +4452,9 @@ export interface components {
          *       "custodian": "Infraestructura Linux",
          *       "cve": "CVE-2026-10001",
          *       "fixed_cis": 1,
-         *       "itop_id": "1234",
+         *       "itop_id": "R-001234",
          *       "status": "En atención",
+         *       "ticket_itop_id": "1234",
          *       "total_cis": 3,
          *       "urgency": 1,
          *       "url": "https://itop.example.test/pages/UI.php?operation=details&class=UserRequest&id=1234"
@@ -4354,7 +4478,7 @@ export interface components {
             fixed_cis: number;
             /**
              * Itop Id
-             * @description Id del ticket en iTop.
+             * @description Ticket en iTop para mostrar: su referencia (`R-000123`) cuando ya la tiene; si no, su id numérico. Para filtrar usa `ticket_itop_id`.
              */
             itop_id: string;
             /**
@@ -4362,6 +4486,11 @@ export interface components {
              * @description Estado del ticket en iTop.
              */
             status: string;
+            /**
+             * Ticket Itop Id
+             * @description Id numérico del ticket en iTop (F18.4): el valor que aceptan los filtros `ticket_itop_id` de `GET /api/tickets/updates` y `GET /api/recommendations` y el campo `ticket_itop_id` de `POST /api/feedback`. Nulo si el ticket no tiene un id numérico (los tickets de demostración, `DEMO-n`). `itop_id` es para mostrar: trae la referencia (`R-000123`) cuando ya existe.
+             */
+            ticket_itop_id?: string | null;
             /**
              * Total Cis
              * @description Activos totales del ticket.
@@ -7647,6 +7776,8 @@ export interface operations {
                 worst_level?: ("critical" | "high" | "medium" | "low") | null;
                 /** @description Solo software con (`true`) o sin (`false`) vulnerabilidades abiertas. */
                 with_vulnerabilities?: boolean | null;
+                /** @description Solo el software con alguna instalación viva de esa categoría (clase de la instalación en iTop). */
+                category?: ("DBServer" | "Middleware" | "OtherSoftware" | "PCSoftware" | "WebServer") | null;
                 /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
                 cursor?: string | null;
                 /** @description Page size */

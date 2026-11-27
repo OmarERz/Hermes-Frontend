@@ -1,0 +1,90 @@
+/* Chips, numbers and links shared by the Inventario screens (lane B). */
+.level-chip,
+.criticality-chip,
+.state-chip,
+.category-chip {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: calc(10px + var(--font-size-increase, 0px));
+  font-weight: 700;
+  white-space: nowrap;
+}
+.level-critical,
+.criticality-high {
+  background: #fde2e2;
+  color: #a51616;
+}
+.level-high {
+  background: #ffedd5;
+  color: #9a3412;
+}
+.level-medium,
+.criticality-medium {
+  background: #fef3c7;
+  color: #854d0e;
+}
+.level-low,
+.criticality-low {
+  background: #dcfce7;
+  color: #166534;
+}
+.criticality-unknown,
+.state-unknown {
+  background: #ece9f1;
+  color: #4f4659;
+}
+.state-active {
+  background: #dcfce7;
+  color: #166534;
+}
+.state-inactive {
+  background: #fef3c7;
+  color: #854d0e;
+}
+.category-chip {
+  background: #f2e4fb;
+  color: #601279;
+}
+.chip-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.numeric {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.muted {
+  color: var(--text-muted, #6b6175);
+}
+.cpe {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: calc(10px + var(--font-size-increase, 0px));
+  overflow-wrap: anywhere;
+}
+.row-link {
+  color: inherit;
+  text-decoration: none;
+}
+.row-link:hover strong,
+.row-link:focus-visible strong {
+  color: var(--accent, #c90083);
+  text-decoration: underline;
+}
+.clamped {
+  display: -webkit-box;
+  max-width: 320px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -1,0 +1,410 @@
+<div class="assets-view inventory-assets">
+  <app-banner-pagina
+    titulo="Activos"
+    descripcion="Inventario de iTop: cada activo con su clase, su hardware, sus responsables y sus vulnerabilidades. Los activos se registran y se cambian en iTop."
+    [icono]="bannerIcon"
+  />
+
+  <div class="dashboard-grid">
+    <div class="main-column">
+      <section class="stats-grid" aria-label="Resumen del inventario">
+        <article class="stat-card">
+          <span><svg lucideLayers aria-hidden="true"></svg></span><small>Total de activos</small>
+          @if (summary.value(); as totals) {
+            <strong>{{ totals.total_assets }}</strong>
+          } @else {
+            <strong class="unknown">{{
+              summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
+            }}</strong>
+          }
+        </article>
+        <article class="stat-card">
+          <span class="warning"><svg lucideTriangleAlert aria-hidden="true"></svg></span
+          ><small>Criticidad alta</small>
+          @if (summary.value(); as totals) {
+            <strong>{{ highCriticality() }}</strong>
+          } @else {
+            <strong class="unknown">{{
+              summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
+            }}</strong>
+          }
+        </article>
+        <article class="stat-card">
+          <span><svg lucideUsers aria-hidden="true"></svg></span
+          ><small>Responsables asignados</small>
+          @if (summary.value(); as totals) {
+            <strong>{{ totals.owners }}</strong>
+            <em>{{ totals.without_owner }} sin responsable</em>
+          } @else {
+            <strong class="unknown">{{
+              summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
+            }}</strong>
+          }
+        </article>
+        <article class="stat-card">
+          <span class="warning"><svg lucideShieldAlert aria-hidden="true"></svg></span
+          ><small>Con vulnerabilidades abiertas</small>
+          @if (summary.value(); as totals) {
+            <strong>{{ totals.with_open_findings }}</strong>
+            <em class="risk">{{ totals.with_kev_findings }} con KEV</em>
+          } @else {
+            <strong class="unknown">{{
+              summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
+            }}</strong>
+          }
+        </article>
+      </section>
+
+      <div class="action-row">
+        <button type="button" (click)="showInventory.set(!showInventory())">
+          <svg lucideLayers aria-hidden="true"></svg>
+          {{ showInventory() ? 'Ocultar inventario' : 'Ver inventario' }}
+        </button>
+        <button type="button" (click)="refresh()">
+          <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+        </button>
+        <span class="sync-note"
+          ><svg lucideCalendar aria-hidden="true"></svg> Última sincronización con iTop:
+          {{ lastSync() }}</span
+        >
+      </div>
+
+      <section class="itop-note" aria-label="Registrar activos">
+        <p>
+          iTop es el inventario: un activo nuevo, otro responsable o su software se registran en
+          iTop y Hermes los toma en la siguiente sincronización.
+        </p>
+        @if (itopConfigured) {
+          <div class="itop-create">
+            <label
+              >Clase
+              <select [ngModel]="createClass()" (ngModelChange)="createClass.set($event)">
+                @for (option of hostClasses; track option) {
+                  <option [value]="option">{{ itopClassLabel(option) }}</option>
+                }
+              </select>
+            </label>
+            <app-itop-link kind="create" [itopClass]="createClass()" />
+          </div>
+        }
+      </section>
+
+      <section class="filters" aria-label="Filtros">
+        <label class="asset-search"
+          ><svg lucideSearch aria-hidden="true"></svg>
+          <input
+            #queryInput
+            type="search"
+            enterkeyhint="search"
+            maxlength="100"
+            [value]="q()"
+            (change)="setQuery(queryInput.value)"
+            placeholder="Buscar por nombre o ID del activo…"
+            aria-label="Buscar por nombre o ID del activo"
+        /></label>
+        <label class="select-filter"
+          ><svg lucideFunnel aria-hidden="true"></svg>
+          <select
+            [ngModel]="itopClass()"
+            (ngModelChange)="setItopClass($event)"
+            aria-label="Clase de iTop"
+          >
+            <option value="">Todas las clases</option>
+            @for (option of classOptions(); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+          <svg lucideChevronDown aria-hidden="true"></svg>
+        </label>
+        <label class="select-filter"
+          ><svg lucideTriangleAlert aria-hidden="true"></svg>
+          <select
+            [ngModel]="criticality()"
+            (ngModelChange)="setCriticality($event)"
+            aria-label="Criticidad"
+          >
+            <option value="">Toda criticidad</option>
+            @for (option of criticalities; track option) {
+              <option [value]="option">{{ criticalityLabels[option] }}</option>
+            }
+          </select>
+          <svg lucideChevronDown aria-hidden="true"></svg>
+        </label>
+        <label class="select-filter"
+          ><svg lucideGlobe aria-hidden="true"></svg>
+          <select
+            [ngModel]="exposed()"
+            (ngModelChange)="setExposed($event)"
+            aria-label="Exposición a internet"
+          >
+            <option value="">Exposición: todas</option>
+            <option value="true">Expuestos a internet</option>
+            <option value="false">Internos</option>
+          </select>
+          <svg lucideChevronDown aria-hidden="true"></svg>
+        </label>
+        <label class="select-filter"
+          ><svg lucideLock aria-hidden="true"></svg>
+          <select
+            [ngModel]="classification()"
+            (ngModelChange)="setClassification($event)"
+            aria-label="Clasificación"
+          >
+            <option value="">Todas las clasificaciones</option>
+            @for (option of classifications; track option) {
+              <option [value]="option">{{ classificationLabels[option] }}</option>
+            }
+          </select>
+          <svg lucideChevronDown aria-hidden="true"></svg>
+        </label>
+        <label class="select-filter"
+          ><svg lucideShieldAlert aria-hidden="true"></svg>
+          <select
+            [ngModel]="withFindings()"
+            (ngModelChange)="setWithFindings($event)"
+            aria-label="Vulnerabilidades abiertas"
+          >
+            <option value="">Vulnerabilidades: todos</option>
+            <option value="true">Con vulnerabilidades</option>
+            <option value="false">Sin vulnerabilidades</option>
+          </select>
+          <svg lucideChevronDown aria-hidden="true"></svg>
+        </label>
+        <label class="asset-search text-filter"
+          ><svg lucideUser aria-hidden="true"></svg>
+          <input
+            #ownerInput
+            type="text"
+            enterkeyhint="search"
+            maxlength="100"
+            [value]="owner()"
+            (change)="setOwner(ownerInput.value)"
+            placeholder="Responsable"
+            aria-label="Responsable (texto exacto)"
+          />
+        </label>
+        <label class="asset-search text-filter"
+          ><svg lucideUsers aria-hidden="true"></svg>
+          <input
+            #custodianInput
+            type="text"
+            enterkeyhint="search"
+            maxlength="100"
+            [value]="custodian()"
+            (change)="setCustodian(custodianInput.value)"
+            placeholder="Custodio"
+            aria-label="Custodio (texto exacto)"
+          />
+        </label>
+        @if (hasFilters()) {
+          <button type="button" class="more-filter" (click)="clearFilters()">Quitar filtros</button>
+        }
+      </section>
+
+      <section
+        class="panel inventory"
+        aria-labelledby="inventory-title"
+        [hidden]="!showInventory()"
+      >
+        <header>
+          <div class="inventory-title">
+            <svg lucideLayers aria-hidden="true"></svg>
+            <h2 id="inventory-title">Inventario de activos</h2>
+          </div>
+          <span>Página {{ pager.pageIndex() + 1 }} · {{ rows().length }} activos</span>
+        </header>
+
+        @if (tableState(); as state) {
+          <app-async-state
+            [state]="state"
+            loadingText="Cargando el inventario…"
+            [emptyText]="emptyText()"
+            [error]="pager.state.error()"
+            (retry)="pager.reload()"
+          />
+        } @else {
+          <div
+            class="table-scroll"
+            role="region"
+            aria-label="Inventario de activos; desplazamiento horizontal"
+            tabindex="0"
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">ID del activo</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Clase</th>
+                  <th scope="col">CPU</th>
+                  <th scope="col">RAM</th>
+                  <th scope="col">Sistema operativo</th>
+                  <th scope="col">Responsable</th>
+                  <th scope="col">Custodio</th>
+                  <th scope="col">Criticidad</th>
+                  <th scope="col">Exposición</th>
+                  <th scope="col">Clasificación</th>
+                  <th scope="col">Vulnerabilidades</th>
+                  <th scope="col">Software</th>
+                  <th scope="col">iTop</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows(); track row.ci_id) {
+                  <tr>
+                    <td>{{ row.ci_id }}</td>
+                    <td class="name-cell">
+                      <a class="row-link" [routerLink]="['/activos', row.ci_id]"
+                        ><strong>{{ row.name }}</strong></a
+                      >
+                      @if (row.service) {
+                        <small>{{ row.service }}</small>
+                      }
+                      @if (row.description) {
+                        <small class="clamped">{{ row.description }}</small>
+                      }
+                    </td>
+                    <td>
+                      <span class="type-chip">{{ row.classLabel }}</span>
+                    </td>
+                    <td>{{ text(row.cpu) }}</td>
+                    <td>{{ text(row.ram) }}</td>
+                    <td>{{ text(row.os) }}</td>
+                    <td>{{ row.owner ?? 'Sin responsable' }}</td>
+                    <td>{{ row.custodian ?? 'Sin custodio' }}</td>
+                    <td>
+                      <span [class]="'criticality-chip criticality-' + row.criticality">{{
+                        row.criticalityLabel
+                      }}</span>
+                    </td>
+                    <td>{{ row.exposure }}</td>
+                    <td>
+                      <span class="type-chip">{{ row.classificationLabel }}</span>
+                    </td>
+                    <td>
+                      @if (row.level) {
+                        <span [class]="'level-chip level-' + row.level"
+                          >{{ levelLabels[row.level] }} · {{ row.risk }}</span
+                        >
+                        <small
+                          >{{ row.open_findings }} abiertas
+                          @if (row.kev_findings) {
+                            · {{ row.kev_findings }} en KEV
+                          }
+                        </small>
+                      } @else {
+                        <span class="muted">Sin vulnerabilidades</span>
+                      }
+                    </td>
+                    <td class="numeric">{{ row.software_count }}</td>
+                    <td><app-itop-link kind="view" [href]="row.itop_url" /></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <footer>
+          <label
+            >Filas por página
+            <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+              @for (size of pageSizes; track size) {
+                <option [ngValue]="size">{{ size }}</option>
+              }
+            </select>
+          </label>
+          <div class="pagination">
+            <button
+              type="button"
+              [disabled]="!pager.hasPrevious() || pager.state.loading()"
+              (click)="pager.previous()"
+              aria-label="Página anterior"
+            >
+              <svg lucideArrowLeft aria-hidden="true"></svg>
+            </button>
+            <button type="button" class="selected" aria-current="page">
+              {{ pager.pageIndex() + 1 }}
+            </button>
+            <button
+              type="button"
+              [disabled]="!pager.hasNext()"
+              (click)="pager.next()"
+              aria-label="Página siguiente"
+            >
+              <svg lucideArrowRight aria-hidden="true"></svg>
+            </button>
+          </div>
+        </footer>
+      </section>
+    </div>
+
+    <aside class="right-column" aria-label="Distribución del inventario">
+      <article class="panel distribution">
+        <h2><svg lucideLayers aria-hidden="true"></svg> Activos por clase de iTop</h2>
+        @if (summaryState(); as state) {
+          <app-async-state
+            [state]="state"
+            loadingText="Cargando…"
+            [error]="summary.error()"
+            (retry)="refresh()"
+          />
+        } @else {
+          @for (item of classRows(); track item.key) {
+            <div class="distribution-row">
+              <svg lucideLayers class="distribution-icon" aria-hidden="true"></svg
+              ><span
+                ><strong>{{ item.label }}</strong
+                ><small>{{ item.total }}</small></span
+              ><i><em [style.width.%]="item.percent"></em></i
+              ><strong class="percent">{{ item.percent }} %</strong>
+            </div>
+          } @empty {
+            <p class="empty">Aún no hay activos para distribuir.</p>
+          }
+        }
+      </article>
+
+      <article class="panel distribution asset-state-panel">
+        <h2><svg lucideActivity aria-hidden="true"></svg> Activos por criticidad</h2>
+        @if (summary.value()) {
+          @for (item of criticalityRows(); track item.key) {
+            <div [class]="'state-row criticality-row-' + item.key">
+              <span class="state-icon"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
+              <div class="state-copy">
+                <strong>{{ item.label }}</strong
+                ><small>{{ item.percent }} % del total</small
+                ><span
+                  class="state-progress"
+                  role="progressbar"
+                  [attr.aria-label]="'Activos de criticidad ' + item.label"
+                  [attr.aria-valuenow]="item.percent"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  ><span [style.width.%]="item.percent"></span
+                ></span>
+              </div>
+              <strong class="state-count">{{ item.total }}</strong>
+            </div>
+          }
+          <p class="state-footnote">Criticidad del activo según iTop.</p>
+        }
+      </article>
+
+      <article class="panel distribution">
+        <h2><svg lucideGlobe aria-hidden="true"></svg> Exposición a internet</h2>
+        @if (summary.value()) {
+          @for (item of exposureRows(); track item.key) {
+            <div class="distribution-row">
+              <svg lucideGlobe class="distribution-icon" aria-hidden="true"></svg
+              ><span
+                ><strong>{{ item.label }}</strong
+                ><small>{{ item.total }}</small></span
+              ><i><em [style.width.%]="item.percent"></em></i
+              ><strong class="percent">{{ item.percent }} %</strong>
+            </div>
+          }
+        }
+      </article>
+    </aside>
+  </div>
+</div>

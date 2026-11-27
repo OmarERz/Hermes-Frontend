@@ -1,0 +1,131 @@
+<div class="assets-view pending-inventory">
+  <app-banner-pagina
+    titulo="Pendientes de inventario"
+    descripcion="Lo que le falta al inventario para evaluar bien: software sin CPE y activos sin clasificación, exposición, responsable o custodio."
+    [icono]="bannerIcon"
+  />
+
+  <div class="action-row">
+    <button type="button" (click)="load()" [disabled]="pending.loading()">
+      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+    </button>
+    <p class="itop-hint">
+      Los datos de los activos se corrigen en iTop y Hermes los toma en la siguiente sincronización.
+    </p>
+  </div>
+
+  @if (notice()) {
+    <p class="notice" role="status">{{ notice() }}</p>
+  }
+
+  @if (state(); as current) {
+    <section class="panel">
+      <app-async-state
+        [state]="current"
+        loadingText="Cargando los pendientes…"
+        [error]="pending.error()"
+        (retry)="load()"
+      />
+    </section>
+  } @else {
+    <section class="pending-stats" aria-label="Pendientes por tipo">
+      @for (section of sections(); track section.kind) {
+        <article class="stat-card">
+          <span [class.warning]="section.items.length > 0"
+            ><svg [lucideIcon]="section.icon" aria-hidden="true"></svg
+          ></span>
+          <small>{{ section.card }}</small>
+          <strong>{{ section.items.length }}</strong>
+        </article>
+      }
+    </section>
+
+    @if (total() === 0) {
+      <section class="panel">
+        <p class="empty">No hay pendientes: el inventario tiene todo lo que Hermes necesita.</p>
+      </section>
+    }
+
+    @for (section of sections(); track section.kind) {
+      @if (section.items.length) {
+        <section
+          class="panel inventory"
+          [id]="'pending-' + section.kind"
+          [attr.aria-labelledby]="'pending-title-' + section.kind"
+        >
+          <header>
+            <div class="inventory-title">
+              <svg [lucideIcon]="section.icon" aria-hidden="true"></svg>
+              <h2 [id]="'pending-title-' + section.kind">{{ section.title }}</h2>
+            </div>
+            <span>{{ section.items.length }}</span>
+          </header>
+          <p class="hint">{{ section.hint }}</p>
+          @if (section.items.length >= pageLimit) {
+            <p class="hint">Se muestran los primeros {{ pageLimit }}.</p>
+          }
+          <div
+            class="table-scroll"
+            role="region"
+            [attr.aria-label]="section.title + '; desplazamiento horizontal'"
+            tabindex="0"
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{{ section.software ? 'Software' : 'Activo' }}</th>
+                  @if (!section.software) {
+                    <th scope="col">ID del activo</th>
+                  }
+                  <th scope="col">Detalle</th>
+                  <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of section.items; track item.ci_id) {
+                  <tr>
+                    @if (section.software) {
+                      <td>
+                        <strong>{{ item.name }}</strong>
+                      </td>
+                      <td>{{ item.detail }}</td>
+                      <td class="actions">
+                        <button
+                          *appIfRole="mapRole"
+                          type="button"
+                          class="row-action"
+                          (click)="openMapping(item)"
+                        >
+                          Mapear CPE
+                        </button>
+                      </td>
+                    } @else {
+                      <td>
+                        <a class="row-link" [routerLink]="['/activos', item.ci_id]"
+                          ><strong>{{ item.name }}</strong></a
+                        >
+                      </td>
+                      <td>{{ item.ci_id }}</td>
+                      <td>{{ item.detail }}</td>
+                      <td class="actions">
+                        <a class="row-action" [routerLink]="['/activos', item.ci_id]">Ver activo</a>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    }
+  }
+
+  @if (mapping(); as target) {
+    <app-cpe-mapping-dialog
+      [software]="target"
+      (saved)="mapped($event)"
+      (cancelled)="mapping.set(null)"
+    />
+  }
+</div>

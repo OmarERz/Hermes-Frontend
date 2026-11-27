@@ -1,0 +1,101 @@
+<dialog
+  #dialogElement
+  class="mapping-modal"
+  aria-modal="true"
+  aria-labelledby="cpe-mapping-title"
+  aria-describedby="cpe-mapping-hint"
+  (cancel)="onCancel($event)"
+  (close)="onNativeClose()"
+>
+  <div class="mapping-body">
+    <h2 id="cpe-mapping-title">Mapear CPE · {{ software().name }}</h2>
+    <p id="cpe-mapping-hint">
+      Sin CPE, Hermes no puede buscar las vulnerabilidades de este software. Busca el producto en el
+      diccionario CPE de NVD y en lo que Hermes ya conoce, o escribe el CPE.
+    </p>
+
+    <form class="search-row" role="search" (ngSubmit)="search()">
+      <label class="search-field"
+        ><svg lucideSearch aria-hidden="true"></svg>
+        <input
+          #searchInput
+          name="query"
+          type="search"
+          maxlength="100"
+          autocomplete="off"
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+          aria-label="Buscar candidatos de CPE"
+          [attr.aria-invalid]="!!queryError()"
+      /></label>
+      <button type="submit" class="secondary-button" [disabled]="candidates.loading()">
+        Buscar
+      </button>
+    </form>
+    @if (queryError(); as problem) {
+      <p class="field-error">{{ problem }}</p>
+    }
+
+    @if (candidateState(); as state) {
+      <app-async-state
+        [state]="state"
+        loadingText="Buscando candidatos…"
+        emptyText="No hay candidatos para esta búsqueda; prueba con el fabricante o escribe el CPE."
+        [error]="candidates.error()"
+        (retry)="search()"
+      />
+    } @else if (candidates.value(); as found) {
+      <ul class="candidate-list" aria-label="Candidatos de CPE">
+        @for (candidate of found; track candidate.cpe) {
+          <li>
+            <button
+              type="button"
+              [attr.aria-pressed]="cpe() === candidate.cpe"
+              (click)="pick(candidate)"
+            >
+              <strong>{{ candidate.title }}</strong>
+              <span class="cpe">{{ candidate.cpe }}</span>
+              <small>Coincidencia {{ score(candidate) }} %</small>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    <form class="cpe-form" novalidate (ngSubmit)="save()">
+      <label
+        >CPE
+        <input
+          name="cpe"
+          maxlength="512"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="cpe:2.3:a:fabricante:producto:*:*:*:*:*:*:*:*"
+          [ngModel]="cpe()"
+          (ngModelChange)="cpe.set($event)"
+          [attr.aria-invalid]="!!cpeError()"
+          [attr.aria-describedby]="cpeError() ? 'cpe-mapping-error' : null"
+        />
+      </label>
+      @if (cpeError(); as problem) {
+        <p class="field-error" id="cpe-mapping-error">{{ problem }}</p>
+      }
+      @if (saveError(); as message) {
+        <p class="field-error" role="alert">{{ message }}</p>
+      }
+      <footer>
+        <button type="button" class="secondary-button" [disabled]="saving()" (click)="close()">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="saving()"
+          [attr.aria-busy]="saving()"
+        >
+          {{ saving() ? 'Guardando…' : 'Guardar CPE' }}
+        </button>
+      </footer>
+    </form>
+  </div>
+</dialog>
