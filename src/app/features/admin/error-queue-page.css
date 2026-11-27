@@ -1,17 +1,7 @@
-/* Cola de errores: the table width, the error text (external data, wrapped) and the related column. */
-table.errors-table {
-  min-width: 1040px;
-}
-.errors-table td.error-text {
-  min-width: 220px;
-  max-width: 360px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-.errors-table td.related {
-  min-width: 140px;
-  white-space: normal;
-}
+/*
+ * Cola de errores: the related column. The table's widths, the error text (external data: wrapped, folded to three
+ * lines with the whole text in its title), the priority columns and the phone cards: src/styles/tables.css.
+ */
 .errors-table td.related > * {
   display: block;
 }

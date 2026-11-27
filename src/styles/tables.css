@@ -1,0 +1,158 @@
+/*
+ * Data tables (F19.5, docs/front/diseno-ronda-1.md G14). A table opts in with the class .data-table, inside its
+ * horizontal scroller (.table-scroll, which also carries the appScrollFade directive without reveal: it marks with
+ * data-fade the edges that hide columns).
+ *
+ * - The table is as wide as its columns need: no fixed minimum (the prototype's 860–1150 px minimums did not fit
+ *   at 1280 px). Text wraps at word boundaries by default, headers included (a long header folds only when the
+ *   table is squeezed); dates, figures, codes and chips do not.
+ * - Cells: .cell-date and .cell-nowrap keep one line; inside a cell, .cell-truncate cuts one line with an ellipsis
+ *   and .cell-text wraps a long text in a column with a minimum width (220 px; 160 px with .cell-text-sm), where
+ *   only a word longer than that breaks; .cell-clamp-2 and .cell-clamp-3 also fold it to two or three lines. A cut text always carries its full value in `title`, and stays whole in the DOM for
+ *   screen readers.
+ * - Columns by priority (container queries on the scroller): .col-from-md shows when the scroller is at least
+ *   760 px wide (about a 1280 px window), .col-from-lg from 1200 px (about 1600 px). Their data is also in the
+ *   detail of the row, the filters or the indicators of the screen.
+ * - .sticky-first keeps the first column in view while the table scrolls sideways, with a shadow once it covers
+ *   something.
+ *
+ * The selectors start at .app-shell .page-content so they win over the prototype's table rules (scoped to
+ * .assets-view and .agent-history-view in the global sheets, including their column-number nowrap rules) and over
+ * the component sheets, whatever the order of the sheets.
+ */
+.app-shell .page-content .table-scroll:has(> .data-table) {
+  container: data-table / inline-size;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.app-shell .page-content .data-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: var(--text-sm);
+}
+.app-shell .page-content .data-table :is(th, td) {
+  padding: var(--cell-pad-y) var(--cell-pad-x);
+  white-space: normal;
+  vertical-align: middle;
+}
+.app-shell .page-content .data-table th {
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  vertical-align: bottom;
+}
+.app-shell .page-content .data-table td {
+  line-height: var(--leading-normal);
+}
+.app-shell .page-content .data-table .numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Cells. */
+.app-shell .page-content .data-table :is(.cell-date, .cell-nowrap) {
+  white-space: nowrap;
+}
+.app-shell .page-content .data-table .cell-date {
+  font-variant-numeric: tabular-nums;
+}
+.app-shell .page-content .data-table .cell-truncate {
+  display: block;
+  max-width: var(--cell-truncate-max, 24ch);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-shell .page-content .data-table .cell-text {
+  display: block;
+  min-width: var(--cell-text-min, 13.75rem);
+  max-width: var(--cell-text-max, 26rem);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.app-shell .page-content .data-table .cell-text.cell-text-sm {
+  --cell-text-min: 10rem;
+}
+.app-shell .page-content .data-table :is(.cell-clamp-2, .cell-clamp-3) {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+.app-shell .page-content .data-table .cell-clamp-3 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/*
+ * Columns by priority: hidden until the scroller is wide enough. A narrow scroller (a phone, a tablet, a side
+ * column) scrolls its table sideways anyway, so its headers keep one line instead of folding word by word.
+ */
+@container data-table (max-width: 759.98px) {
+  .app-shell .page-content .data-table .col-from-md {
+    display: none;
+  }
+  .app-shell .page-content .data-table th {
+    white-space: nowrap;
+  }
+}
+@container data-table (max-width: 1199.98px) {
+  .app-shell .page-content .data-table .col-from-lg {
+    display: none;
+  }
+}
+
+/*
+ * Sticky first column: opaque, above the cells that scroll under it. A screen whose rows can be selected tints the
+ * selected one with --row-tint on its row (the same colour it gives the other cells), so the sticky cell matches.
+ */
+.app-shell .page-content .data-table.sticky-first > * > tr > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+.app-shell .page-content .data-table.sticky-first > tbody > tr > td:first-child {
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--row-tint, transparent), var(--row-tint, transparent));
+}
+.app-shell
+  .page-content
+  .table-scroll:is([data-fade='start'], [data-fade='both'])
+  > .data-table.sticky-first
+  > *
+  > tr
+  > :first-child {
+  box-shadow: 8px 0 8px -8px var(--table-edge-shadow);
+}
+
+/* Edges that hide columns (data-fade of appScrollFade): a soft shadow inside the scroller, under the cells. */
+.app-shell .page-content .table-scroll:has(> .data-table) {
+  --table-edge-shadow: rgba(50, 16, 68, 0.28);
+  background-repeat: no-repeat;
+  background-size: var(--space-6) 100%;
+}
+.app-shell[data-theme='dark'] .page-content .table-scroll:has(> .data-table) {
+  --table-edge-shadow: rgba(3, 0, 14, 0.7);
+}
+.app-shell .page-content .table-scroll[data-fade='end']:has(> .data-table) {
+  background-image: linear-gradient(to left, var(--table-edge-shadow), transparent);
+  background-position: right;
+}
+.app-shell .page-content .table-scroll[data-fade='start']:has(> .data-table:not(.sticky-first)) {
+  background-image: linear-gradient(to right, var(--table-edge-shadow), transparent);
+  background-position: left;
+}
+.app-shell .page-content .table-scroll[data-fade='both']:has(> .data-table) {
+  background-image:
+    linear-gradient(to right, var(--table-edge-shadow), transparent),
+    linear-gradient(to left, var(--table-edge-shadow), transparent);
+  background-position: left, right;
+}
+.app-shell .page-content .table-scroll[data-fade='both']:has(> .data-table.sticky-first) {
+  background-image: linear-gradient(to left, var(--table-edge-shadow), transparent);
+  background-position: right;
+}

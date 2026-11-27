@@ -4,6 +4,7 @@ import { of, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import { APP_CONFIG } from '../../core/config/app-config';
 import { provideFakeSession } from '../../testing/fake-session';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 import { TicketsPage } from './tickets.page';
 import { ThreatAlert, Ticket, TicketsService } from './tickets.service';
 
@@ -89,6 +90,15 @@ describe('TicketsPage', () => {
     expect(row.textContent).toContain('LockBit');
     expect(row.querySelector('.type-chip')?.classList).toContain('inferred');
     expect(row.querySelector('a.row-link')?.getAttribute('href')).toBe('/activos/SRV-01');
+    // Cut texts keep their whole value in the title; the date cell, the full date.
+    expect(row.querySelector('.relevance-chip')?.getAttribute('title')).toBe(
+      'Inferida por la IA (verificar)',
+    );
+    expect(row.querySelector('.summary span')?.getAttribute('title')).toBe(ALERT.summary);
+    expect(row.querySelector('td')?.getAttribute('title')).toBe(formatDateTime(ALERT.created_at));
+    expect(row.querySelector('td')?.textContent?.trim()).toBe(
+      formatShortDateTime(ALERT.created_at),
+    );
   });
 
   it('labels an R3 alert without claiming more than the contract (peer, sector or vector)', async () => {

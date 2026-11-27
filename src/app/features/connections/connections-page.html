@@ -83,15 +83,17 @@
             role="region"
             [attr.aria-label]="group.title + '; desplazamiento horizontal'"
             tabindex="0"
+            appScrollFade
+            [appScrollFadeReveal]="false"
           >
-            <table class="connections-table">
+            <table class="connections-table data-table sticky-first">
               <thead>
                 <tr>
                   <th scope="col">Conexión</th>
                   <th scope="col">Estado</th>
                   <th scope="col">Detalle</th>
                   <th scope="col" class="numeric">Latencia</th>
-                  <th scope="col">Comprobada</th>
+                  <th scope="col" class="col-from-lg">Comprobada</th>
                   <th scope="col">Última vez correcta</th>
                   <th *appIfRole="testRole" scope="col"><span class="sr-only">Acciones</span></th>
                 </tr>
@@ -108,10 +110,16 @@
                         >{{ row.state === 'ok' ? '✅' : '❌' }} {{ row.stateLabel }}</span
                       >
                     </td>
-                    <td class="detail">{{ row.detail }}</td>
+                    <td>
+                      <span class="cell-text">{{ row.detail }}</span>
+                    </td>
                     <td class="numeric">{{ row.latency }}</td>
-                    <td>{{ row.checkedAt }}</td>
-                    <td>{{ row.lastOkAt }}</td>
+                    <td class="cell-date col-from-lg" [title]="row.checkedAt">
+                      {{ row.checkedAtShort }}
+                    </td>
+                    <td [class.cell-date]="row.everOk" [title]="row.lastOkAt">
+                      {{ row.lastOkAtShort }}
+                    </td>
                     <td *appIfRole="testRole" class="row-actions">
                       <button
                         type="button"

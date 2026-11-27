@@ -71,6 +71,10 @@ describe('ReviewsLog', SCREEN, () => {
       'USD 0.0071',
       '2 aceptados · 1 rechazados',
     ]);
+    // The date cell drops the current year and keeps the full date in its title.
+    const date = judge.querySelector('td');
+    expect(date?.textContent?.trim()).toBe(reviewRow(LLM_REVIEW).atShort);
+    expect(date?.getAttribute('title')).toBe(reviewRow(LLM_REVIEW).at);
     expect(judge.querySelector('a.row-link')?.getAttribute('href')).toBe(
       `/recomendaciones-agente?id=${LLM_REVIEW.assessment_id}`,
     );

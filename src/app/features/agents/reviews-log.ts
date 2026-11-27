@@ -9,7 +9,8 @@ import {
 } from '@lucide/angular';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   Agent,
   AGENT_LABELS,
@@ -31,6 +32,8 @@ export function reviewRow(review: LlmReview) {
   return {
     id: review.id,
     at: formatDateTime(review.created_at),
+    /** The same date for the table cell: without the current year (the full one goes in its title). */
+    atShort: formatShortDateTime(review.created_at),
     agent: labelOf(AGENT_LABELS, review.agent),
     mode: labelOf(REVIEW_MODE_LABELS, review.mode),
     model: review.model,
@@ -63,6 +66,7 @@ export function reviewRow(review: LlmReview) {
     FormsModule,
     RouterLink,
     AsyncStateComponent,
+    ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
     LucideFileClock,

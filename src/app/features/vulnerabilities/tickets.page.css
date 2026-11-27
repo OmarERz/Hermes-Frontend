@@ -5,6 +5,7 @@
 .fixed-count {
   display: block;
   margin-bottom: 4px;
+  text-align: start;
 }
 .progress {
   display: block;
@@ -19,10 +20,15 @@
   height: 100%;
   background: #2bb673;
 }
-.summary {
-  min-width: 260px;
-  max-width: 420px;
-  white-space: normal;
+/*
+ * The tables' widths, the long texts (summary folded to three lines, names cut to one, the whole text in their title)
+ * and the priority columns: src/styles/tables.css. The relevance chip is cut to one line too (TIC-3).
+ */
+.relevance-chip {
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
 }
 .type-chip.inferred {
   background: #fff0dd;

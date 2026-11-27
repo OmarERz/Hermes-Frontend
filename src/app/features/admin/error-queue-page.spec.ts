@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import { provideFakeSession } from '../../testing/fake-session';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 import { ErrorQueuePage } from './error-queue.page';
 import { ErrorQueueItem, ErrorQueueService, NotificationEventRow } from './error-queue.service';
 
@@ -106,7 +106,7 @@ describe('ErrorQueuePage', () => {
     const { element } = await render();
     const [notification, itop, llm] = rows(element);
     expect(cells(notification)).toEqual([
-      formatDateTime(NOTIFICATION.created_at),
+      formatShortDateTime(NOTIFICATION.created_at),
       'Notificación Ticket nuevo',
       'Agotó sus reintentos',
       '5',
@@ -115,6 +115,13 @@ describe('ErrorQueuePage', () => {
       'CVE-2026-10001 Ticket R-000123 Ver recomendación',
       'Reintentar',
     ]);
+    // The cells keep the full date and the whole error in their title.
+    expect(notification.querySelector('td')?.getAttribute('title')).toBe(
+      formatDateTime(NOTIFICATION.created_at),
+    );
+    expect(notification.querySelector('td.error-text span')?.getAttribute('title')).toBe(
+      'Slack respondió 503 <b>no</b>',
+    );
     // External text is data: never HTML.
     expect(notification.querySelector('td.error-text b')).toBeNull();
     expect(notification.querySelector('a.row-link')?.getAttribute('href')).toBe(
@@ -150,7 +157,7 @@ describe('ErrorQueuePage', () => {
     expect(cells(row).slice(2, 5)).toEqual([
       'Espera su próximo reintento',
       '3',
-      formatDateTime(scheduled.next_attempt_at),
+      formatShortDateTime(scheduled.next_attempt_at),
     ]);
     expect(row.querySelector('app-chip')?.getAttribute('data-tone')).toBe('warning');
     // Values the front does not know yet are shown as they come.

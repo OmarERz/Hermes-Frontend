@@ -14,7 +14,8 @@ import { AsyncStateComponent, ViewState } from '../../shared/async-state.compone
 import { Chip, ChipTone } from '../../shared/chip';
 import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink } from '../../shared/itop-links';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import { ThreatAlert, Ticket, TicketsService } from './tickets.service';
 import { RELEVANCE_LABELS, URGENCY_LABELS } from './vulnerability-texts';
 
@@ -43,6 +44,7 @@ const URGENCY_TONES: Record<number, ChipTone> = { 1: 'critical', 2: 'high', 3: '
     AsyncStateComponent,
     Chip,
     ItopLink,
+    ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
     LucideChevronDown,
@@ -61,6 +63,7 @@ export class TicketsPage {
   readonly urgencyLabels = URGENCY_LABELS;
   readonly relevanceLabels = RELEVANCE_LABELS;
   readonly formatDateTime = formatDateTime;
+  readonly formatShortDateTime = formatShortDateTime;
 
   readonly urgency = signal<number | null>(null);
 

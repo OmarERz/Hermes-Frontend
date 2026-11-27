@@ -65,15 +65,17 @@
         role="region"
         aria-label="Cola de errores; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table class="errors-table">
+        <table class="errors-table data-table">
           <thead>
             <tr>
               <th scope="col">Fecha</th>
               <th scope="col">Origen</th>
               <th scope="col">Estado</th>
-              <th scope="col">Intentos</th>
-              <th scope="col">Próximo intento</th>
+              <th scope="col" class="col-from-lg">Intentos</th>
+              <th scope="col" class="col-from-lg">Próximo intento</th>
               <th scope="col">Error</th>
               <th scope="col">Relacionado</th>
               <th scope="col"><span class="sr-only">Acción</span></th>
@@ -82,7 +84,7 @@
           <tbody>
             @for (row of rows(); track row.id) {
               <tr>
-                <td class="numeric">{{ row.when }}</td>
+                <td class="cell-date" [title]="row.when">{{ row.whenShort }}</td>
                 <td>
                   <strong>{{ row.kindLabel }}</strong>
                   <small [attr.title]="row.componentCode">{{ row.component }}</small>
@@ -92,9 +94,13 @@
                     row.statusLabel
                   }}</app-chip>
                 </td>
-                <td class="numeric">{{ row.attempts }}</td>
-                <td>{{ row.nextAttempt }}</td>
-                <td class="error-text">{{ row.error }}</td>
+                <td class="numeric col-from-lg">{{ row.attempts }}</td>
+                <td class="cell-date col-from-lg" [title]="row.nextAttempt">
+                  {{ row.nextAttemptShort }}
+                </td>
+                <td class="error-text">
+                  <span class="cell-text cell-clamp-3" [title]="row.error">{{ row.error }}</span>
+                </td>
                 <td class="related">
                   @if (row.cve) {
                     <span class="code">{{ row.cve }}</span>

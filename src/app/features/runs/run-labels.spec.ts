@@ -1,4 +1,4 @@
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 import {
   formatDuration,
   fresher,
@@ -49,6 +49,8 @@ describe('run labels', () => {
       active: false,
       started: formatDateTime(NEWS_DONE.started_at),
       finished: formatDateTime(NEWS_DONE.finished_at!),
+      startedShort: formatShortDateTime(NEWS_DONE.started_at),
+      finishedShort: formatShortDateTime(NEWS_DONE.finished_at!),
       duration: '3 min 20 s',
       trigger: 'Agenda',
       launchedBy: '—',
@@ -58,6 +60,7 @@ describe('run labels', () => {
   it('shows a running run as in progress and lets the live progress override the listed one', () => {
     expect(toRunView(SCAN_RUNNING)).toMatchObject({
       finished: 'En curso',
+      finishedShort: 'En curso',
       duration: 'En curso',
       trigger: 'Manual',
       launchedBy: 'Ana Admin',
@@ -76,6 +79,7 @@ describe('run labels', () => {
       status: 'succeeded',
       active: false,
       finished: '—',
+      finishedShort: '—',
     });
   });
 

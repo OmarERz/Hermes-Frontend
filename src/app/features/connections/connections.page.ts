@@ -17,6 +17,7 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { KpiCard } from '../../shared/kpi-card';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   CONNECTION_NAMES,
   connectionDetail,
@@ -28,6 +29,7 @@ import {
   ConnectionStatus,
   formatLatency,
   formatMoment,
+  formatShortMoment,
   STATE_LABELS,
 } from './connection-labels';
 import { ConnectionsService } from './connections.service';
@@ -43,8 +45,15 @@ export interface ConnectionRow {
   latency: string;
   checkedAt: string;
   lastOkAt: string;
+  /** The same moments for the table cells: without the current year (the full ones go in their title). */
+  checkedAtShort: string;
+  lastOkAtShort: string;
+  /** The last success is a date (one line in the table), not the «never» text. */
+  everOk: boolean;
   detail: string;
 }
+
+const NEVER_OK = 'Sin éxito desde que arrancó la API';
 
 function toRow(status: ConnectionStatus): ConnectionRow {
   const info = connectionInfo(status.name);
@@ -58,7 +67,10 @@ function toRow(status: ConnectionStatus): ConnectionRow {
     stateLabel: STATE_LABELS[state],
     latency: formatLatency(status.latency_ms),
     checkedAt: formatMoment(status.checked_at, 'Sin comprobar'),
-    lastOkAt: formatMoment(status.last_ok_at, 'Sin éxito desde que arrancó la API'),
+    lastOkAt: formatMoment(status.last_ok_at, NEVER_OK),
+    checkedAtShort: formatShortMoment(status.checked_at, 'Sin comprobar'),
+    lastOkAtShort: formatShortMoment(status.last_ok_at, NEVER_OK),
+    everOk: Boolean(status.last_ok_at),
     detail: connectionDetail(status),
   };
 }
@@ -93,6 +105,7 @@ export function mergeStatuses(
     AsyncStateComponent,
     IfRoleDirective,
     KpiCard,
+    ScrollFade,
     LucideDatabase,
     LucideRefreshCw,
     LucideServer,

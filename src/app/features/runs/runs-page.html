@@ -250,18 +250,20 @@
         role="region"
         aria-label="Corridas; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table class="runs-table">
+        <table class="runs-table data-table sticky-first">
           <thead>
             <tr>
               <th scope="col">Tipo</th>
               <th scope="col">Estado</th>
               <th scope="col">Avance</th>
               <th scope="col">Inicio</th>
-              <th scope="col">Fin</th>
+              <th scope="col" class="col-from-lg">Fin</th>
               <th scope="col">Duración</th>
-              <th scope="col">Motivo</th>
-              <th scope="col">Lanzada por</th>
+              <th scope="col" class="col-from-lg">Motivo</th>
+              <th scope="col" class="col-from-lg">Lanzada por</th>
               <th scope="col"><span class="sr-only">Detalle</span></th>
             </tr>
           </thead>
@@ -290,11 +292,17 @@
                     <span class="numeric">{{ row.progress }} %</span>
                   </span>
                 </td>
-                <td>{{ row.started }}</td>
-                <td>{{ row.finished }}</td>
+                <td class="cell-date" [title]="row.started">
+                  {{ row.startedShort }}
+                </td>
+                <td class="cell-date col-from-lg" [title]="row.finished">
+                  {{ row.finishedShort }}
+                </td>
                 <td class="numeric">{{ row.duration }}</td>
-                <td>{{ row.trigger }}</td>
-                <td>{{ row.launchedBy }}</td>
+                <td class="col-from-lg">{{ row.trigger }}</td>
+                <td class="col-from-lg">
+                  <span class="cell-truncate" [title]="row.launchedBy">{{ row.launchedBy }}</span>
+                </td>
                 <td class="row-actions">
                   <button
                     type="button"

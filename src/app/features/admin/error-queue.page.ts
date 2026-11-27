@@ -16,7 +16,8 @@ import { toApiError } from '../../core/api/api-error';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { Chip } from '../../shared/chip';
 import { CursorPager } from '../../shared/cursor-pager';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   ERROR_KINDS,
   ErrorKind,
@@ -45,6 +46,9 @@ export interface ErrorRow {
   scheduled: boolean;
   attempts: number;
   nextAttempt: string;
+  /** The same dates for the table cells: without the current year (the full ones go in their title). */
+  whenShort: string;
+  nextAttemptShort: string;
   error: string;
   cve: string | null;
   ticket: string | null;
@@ -69,6 +73,10 @@ function toRow(item: ErrorQueueItem): ErrorRow {
     scheduled: retryScheduled(item),
     attempts: item.attempts,
     nextAttempt: item.next_attempt_at ? formatDateTime(item.next_attempt_at) : 'Sin reintento',
+    whenShort: formatShortDateTime(item.created_at),
+    nextAttemptShort: item.next_attempt_at
+      ? formatShortDateTime(item.next_attempt_at)
+      : 'Sin reintento',
     error: item.error?.trim() || 'Sin detalle',
     cve: item.cve,
     ticket: item.ticket_ref ?? item.ticket_itop_id,
@@ -93,6 +101,7 @@ const GONE_CODES = new Set(['not_in_error', 'not_found']);
     BannerPagina,
     AsyncStateComponent,
     Chip,
+    ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
     LucideChevronDown,

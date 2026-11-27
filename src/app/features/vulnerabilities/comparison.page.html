@@ -136,15 +136,17 @@
         role="region"
         aria-label="Comparación por hallazgo; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table>
+        <table class="data-table sticky-first">
           <thead>
             <tr>
               <th scope="col">CVE</th>
               <th scope="col">Producto</th>
               <th scope="col">Activo</th>
-              <th scope="col">CVSS</th>
-              <th scope="col">Crudo</th>
+              <th scope="col" class="col-from-lg">CVSS</th>
+              <th scope="col" class="col-from-lg">Crudo</th>
               <th scope="col">Base</th>
               <th scope="col">Juez</th>
               <th scope="col">Final</th>
@@ -155,13 +157,17 @@
           <tbody>
             @for (row of pager.items(); track row.cve + '|' + row.product + '|' + row.ci_id) {
               <tr>
-                <td>
+                <td class="cell-nowrap">
                   <strong>{{ row.cve }}</strong>
                 </td>
-                <td>{{ row.product }}</td>
-                <td>{{ row.ci_id }}</td>
-                <td class="numeric">{{ row.cvss ?? 'Sin CVSS' }}</td>
-                <td class="numeric">{{ row.raw }}</td>
+                <td>
+                  <span class="cell-truncate" [title]="row.product">{{ row.product }}</span>
+                </td>
+                <td>
+                  <span class="cell-truncate" [title]="row.ci_id">{{ row.ci_id }}</span>
+                </td>
+                <td class="numeric col-from-lg">{{ row.cvss ?? 'Sin CVSS' }}</td>
+                <td class="numeric col-from-lg">{{ row.raw }}</td>
                 <td class="numeric">{{ row.base }}</td>
                 <td class="numeric">{{ signed(row.judge_adjustment) }}</td>
                 <td class="numeric">{{ row.final }}</td>
@@ -172,7 +178,11 @@
                 >
                   {{ signed(row.delta) }}
                 </td>
-                <td>{{ row.main_cause }}</td>
+                <td>
+                  <span class="cell-truncate main-cause" [title]="row.main_cause">{{
+                    row.main_cause
+                  }}</span>
+                </td>
               </tr>
             }
           </tbody>

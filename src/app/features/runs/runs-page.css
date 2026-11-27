@@ -29,15 +29,12 @@
   border-color: color-mix(in srgb, var(--danger-text) 55%, var(--border));
   color: var(--danger-text);
 }
-table.runs-table {
-  min-width: 980px;
-}
-.runs-table .numeric {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+/* The table's widths, priority columns and phone cards: src/styles/tables.css. */
+.runs-table tr.selected-row {
+  --row-tint: var(--accent-wash, #fff0f9);
 }
 .runs-table tr.selected-row td {
-  background: var(--accent-wash, #fff0f9);
+  background: var(--row-tint);
 }
 /* The run status is the shared <app-chip> (src/styles/chips.css). */
 .progress-cell {
@@ -47,7 +44,7 @@ table.runs-table {
 }
 .run-progress {
   display: block;
-  width: 110px;
+  width: 80px;
   height: 7px;
   overflow: hidden;
   border-radius: 5px;

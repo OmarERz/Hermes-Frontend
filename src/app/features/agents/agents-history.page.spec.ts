@@ -80,6 +80,10 @@ describe('AgentsHistoryPage', SCREEN, () => {
     const rows = eventRows(element).map((row) =>
       Array.from(row.querySelectorAll('td')).slice(1, 8).map(text),
     );
+    // The date cell drops the current year and keeps the full date in its title.
+    const date = eventRows(element)[0].querySelector('td');
+    expect(date?.textContent?.trim()).toBe(historyRow(HISTORY_RUN).atShort);
+    expect(date?.getAttribute('title')).toBe(historyRow(HISTORY_RUN).at);
     expect(rows[0]).toEqual([
       'Corrida',
       'Escaneo simulado',

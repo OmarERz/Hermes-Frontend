@@ -10,7 +10,8 @@ import {
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   AGENT_LABELS,
   HISTORY_STATUS_OPTIONS,
@@ -51,6 +52,8 @@ export function historyRow(event: HistoryEvent) {
     event,
     id: event.id,
     at: formatDateTime(event.at),
+    /** The same date for the table cell: without the current year (the full one goes in its title). */
+    atShort: formatShortDateTime(event.at),
     type: labelOf(HISTORY_TYPE_LABELS, event.type),
     title: event.title,
     agent: labelOf(AGENT_LABELS, event.agent),
@@ -101,6 +104,7 @@ export function eventDetail(event: HistoryEvent): { term: string; value: string 
     BannerPagina,
     AsyncStateComponent,
     JudgeReview,
+    ScrollFade,
     TicketLog,
     LucideArrowLeft,
     LucideArrowRight,

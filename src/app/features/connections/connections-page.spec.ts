@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { Observable, of, Subject, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import type { Role } from '../../core/api/api-types';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 import { provideFakeSession } from '../../testing/fake-session';
 import {
   connectionDetail,
@@ -96,15 +96,23 @@ describe('ConnectionsPage', () => {
       '✅ Funciona',
       'Conexión correcta',
       '85 ms',
-      formatDateTime(CHECKED),
-      formatDateTime(CHECKED),
+      formatShortDateTime(CHECKED),
+      formatShortDateTime(CHECKED),
       'Probar de nuevo',
     ]);
+    // The table cells drop the current year; their title keeps the full date.
+    const itopCells = element.querySelectorAll('tr[data-name="itop"] td');
+    expect(itopCells[4].getAttribute('title')).toBe(formatDateTime(CHECKED));
+    expect(itopCells[5].getAttribute('title')).toBe(formatDateTime(CHECKED));
+    // A last success is a one-line date; «never» is a sentence that may wrap.
+    expect(itopCells[5].classList).toContain('cell-date');
+    const deepseekCells = element.querySelectorAll('tr[data-name="deepseek"] td');
+    expect(deepseekCells[5].classList).not.toContain('cell-date');
     expect(row(element, 'deepseek').slice(1, 6)).toEqual([
       '❌ Sin configurar',
       'Variable faltante: DEEPSEEK_API_KEY',
       '—',
-      formatDateTime(CHECKED),
+      formatShortDateTime(CHECKED),
       'Sin éxito desde que arrancó la API',
     ]);
     expect(row(element, 'nvd').slice(1, 3)).toEqual(['❌ Con falla', 'Sin conexión']);

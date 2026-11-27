@@ -53,19 +53,21 @@
         role="region"
         aria-label="Revisiones de IA; desplazamiento horizontal"
         tabindex="0"
+        appScrollFade
+        [appScrollFadeReveal]="false"
       >
-        <table>
+        <table class="data-table">
           <thead>
             <tr>
               <th scope="col">Fecha y hora</th>
               <th scope="col">Agente</th>
-              <th scope="col">Modo</th>
-              <th scope="col">Modelo</th>
+              <th scope="col" class="col-from-lg">Modo</th>
+              <th scope="col" class="col-from-lg">Modelo</th>
               <th scope="col">Estado</th>
-              <th scope="col">Intentos</th>
+              <th scope="col" class="col-from-lg">Intentos</th>
               <th scope="col">Latencia</th>
-              <th scope="col">Tokens (entrada / salida)</th>
-              <th scope="col">Costo</th>
+              <th scope="col" class="col-from-lg">Tokens (entrada / salida)</th>
+              <th scope="col" class="col-from-lg">Costo</th>
               <th scope="col">Motivos del juez</th>
               <th scope="col">Evaluación</th>
             </tr>
@@ -73,22 +75,28 @@
           <tbody>
             @for (row of rows(); track row.id) {
               <tr>
-                <td>{{ row.at }}</td>
+                <td class="cell-date" [title]="row.at">
+                  {{ row.atShort }}
+                </td>
                 <td>
                   {{ row.agent }}
                   @if (row.secondReview) {
                     <span class="tag">Segunda revisión</span>
                   }
                 </td>
-                <td>{{ row.mode }}</td>
-                <td>{{ row.model }}</td>
+                <td class="col-from-lg">{{ row.mode }}</td>
+                <td class="col-from-lg">
+                  <span class="cell-truncate" [title]="row.model">{{ row.model }}</span>
+                </td>
                 <td>
                   <span [class]="'status status-' + row.statusKey">{{ row.status }}</span>
                 </td>
-                <td class="numeric">{{ row.attempts }}</td>
+                <td class="numeric col-from-lg">{{ row.attempts }}</td>
                 <td class="numeric">{{ row.latency }}</td>
-                <td class="numeric" [attr.title]="row.tokensDetail">{{ row.tokens }}</td>
-                <td class="numeric">{{ row.cost }}</td>
+                <td class="numeric col-from-lg" [attr.title]="row.tokensDetail">
+                  {{ row.tokens }}
+                </td>
+                <td class="numeric col-from-lg">{{ row.cost }}</td>
                 <td>{{ row.reasons }}</td>
                 <td>
                   @if (row.assessmentId) {

@@ -30,6 +30,7 @@ import { finalize, Subscription } from 'rxjs';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { Chip } from '../../shared/chip';
 import { KpiCard } from '../../shared/kpi-card';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import { ApiError, toApiError } from '../../core/api/api-error';
 import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES } from '../../core/auth/roles';
@@ -82,6 +83,7 @@ type CountKey = 'runs_queued' | 'runs_running' | 'runs_succeeded' | 'runs_failed
     IfRoleDirective,
     Chip,
     KpiCard,
+    ScrollFade,
     LucideArrowLeft,
     LucideArrowRight,
     LucideCalendar,
