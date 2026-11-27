@@ -1,0 +1,83 @@
+.filters {
+  flex-wrap: wrap;
+}
+.filters .text-filter {
+  flex: 1 1 150px;
+}
+.action-row {
+  align-items: center;
+}
+.sync-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted, #6b6175);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+}
+.sync-note svg {
+  width: 15px;
+  height: 15px;
+}
+.itop-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  border: 1px dashed var(--border, #e4e3ee);
+  border-radius: 11px;
+  color: var(--text-secondary, #514662);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+}
+.itop-note p {
+  flex: 1 1 260px;
+  margin: 0;
+}
+.itop-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.itop-create label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.itop-create select {
+  min-height: 32px;
+  border: 1px solid var(--border, #e4e3ee);
+  border-radius: 8px;
+  background: var(--surface-raised, #fff);
+  color: inherit;
+  font: inherit;
+}
+.name-cell {
+  min-width: 170px;
+}
+.criticality-row-high .state-icon {
+  border-color: var(--danger-text);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+.criticality-row-high .state-progress > span {
+  background: var(--danger-text);
+}
+.criticality-row-medium .state-icon {
+  border-color: var(--warning-text);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+.criticality-row-medium .state-progress > span {
+  background: var(--warning-text);
+}
+.criticality-row-low .state-icon {
+  border-color: var(--success-text);
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+.criticality-row-low .state-progress > span {
+  background: var(--success-text);
+}
