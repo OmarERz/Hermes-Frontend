@@ -2,7 +2,7 @@ import { Component, computed, DestroyRef, effect, inject, input, untracked } fro
 import { RouterLink } from '@angular/router';
 import { VERDICT_LABELS } from '../recommendations/feedback';
 import { AsyncState } from '../../shared/async-state';
-import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
+import { AsyncStateComponent } from '../../shared/async-state.component';
 import { formatDateTime } from '../../shared/labels';
 import {
   labelOf,
@@ -12,12 +12,7 @@ import {
 } from './agent-labels';
 import { AgentsService, FeedbackEntry, JudgeDetail, JudgeReason } from './agents.service';
 import { formatSigned } from './formatting';
-
-function viewState(state: AsyncState<unknown>): ViewState | null {
-  const status = state.status();
-  if (status === 'ready') return null;
-  return status === 'error' ? 'error' : 'loading';
-}
+import { loadState } from './view-state';
 
 /** A reason of the judge for people: its points (applied if accepted, proposed if not) and where it applies. */
 export function reasonLine(reason: JudgeReason) {
@@ -82,8 +77,8 @@ export class JudgeReview {
   readonly judge = new AsyncState<JudgeDetail>();
   readonly feedback = new AsyncState<FeedbackEntry[]>();
 
-  readonly judgeState = computed(() => viewState(this.judge));
-  readonly feedbackState = computed(() => viewState(this.feedback));
+  readonly judgeState = computed(() => loadState(this.judge));
+  readonly feedbackState = computed(() => loadState(this.feedback));
 
   readonly detail = computed(() => (this.judge.status() === 'ready' ? this.judge.value() : null));
   readonly accepted = computed(() => (this.detail()?.accepted_reasons ?? []).map(reasonLine));

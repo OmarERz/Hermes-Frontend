@@ -7,7 +7,7 @@ import {
   LucideFileClock,
   LucideListFilter,
 } from '@lucide/angular';
-import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
+import { AsyncStateComponent } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
 import { formatDateTime } from '../../shared/labels';
 import {
@@ -22,15 +22,9 @@ import {
 } from './agent-labels';
 import { AgentsService, LlmReview, ReviewFilters } from './agents.service';
 import { dayBoundary, formatCount, formatLatency, formatUsd } from './formatting';
+import { pagerState } from './view-state';
 
 const PAGE_SIZE = 25;
-
-export function pagerState(pager: CursorPager<unknown>): ViewState | null {
-  const status = pager.state.status();
-  if (status === 'idle' || status === 'loading') return 'loading';
-  if (status === 'error') return 'error';
-  return pager.items().length ? null : 'empty';
-}
 
 /** One row of the log, already in Spanish. */
 export function reviewRow(review: LlmReview) {

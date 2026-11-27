@@ -18,7 +18,7 @@ import { AyudaTooltip } from '../../componentes/ayuda-tooltip/ayuda-tooltip';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { GraficoDashboard } from '../../componentes/grafico-dashboard/grafico-dashboard';
 import { AsyncState } from '../../shared/async-state';
-import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
+import { AsyncStateComponent } from '../../shared/async-state.component';
 import { formatDateTime } from '../../shared/labels';
 import {
   Agent,
@@ -57,17 +57,11 @@ import {
   NO_DATA,
 } from './formatting';
 import { ReviewsLog } from './reviews-log';
+import { loadState } from './view-state';
 
 /** Days of the daily charts: a week, or the month when the window is 30 days. */
 export function chartDays(window: TelemetryWindow): number {
   return window === '30d' ? 30 : 7;
-}
-
-/** What a panel shows instead of its content while it loads or after it failed (null: the content). */
-function panelState(state: AsyncState<unknown>): ViewState | null {
-  const status = state.status();
-  if (status === 'ready') return null;
-  return status === 'error' ? 'error' : 'loading';
 }
 
 export interface AgentCard {
@@ -164,9 +158,9 @@ export class AgentsDashboardPage {
   readonly latestRun = new AsyncState<Run | null>();
   readonly metrics = new AsyncState<MetricsDashboard>();
 
-  readonly summaryState = computed(() => panelState(this.summary));
-  readonly dailyState = computed(() => panelState(this.daily));
-  readonly ticketState = computed(() => panelState(this.tickets));
+  readonly summaryState = computed(() => loadState(this.summary));
+  readonly dailyState = computed(() => loadState(this.daily));
+  readonly ticketState = computed(() => loadState(this.tickets));
 
   readonly days = computed(() => chartDays(this.window()));
 

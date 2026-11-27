@@ -25,8 +25,8 @@ import {
 import { AgentsService, HistoryEvent, HistoryFilters } from './agents.service';
 import { dayBoundary, formatDuration } from './formatting';
 import { JudgeReview } from './judge-review';
-import { pagerState } from './reviews-log';
 import { TicketLog } from './ticket-log';
+import { pagerState } from './view-state';
 
 const PAGE_SIZE = 25;
 

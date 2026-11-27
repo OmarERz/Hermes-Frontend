@@ -1,6 +1,7 @@
 import { TELEMETRY_DAILY, TELEMETRY_SUMMARY } from './agents.fixtures';
 import {
   agentPerformanceChart,
+  dailyCostChart,
   reasonsChart,
   runsTrendChart,
   runSuccessChart,
@@ -77,5 +78,16 @@ describe('agents charts', () => {
       ['Aceptado', [4, 2]],
       ['Rechazado', [1, 0]],
     ]);
+  });
+
+  it('draws the daily cost of each agent side by side, zero on days without its reviews', () => {
+    const option = dailyCostChart(TELEMETRY_DAILY.series) as Option;
+    expect(seriesOf(option).map((series) => [series.name, series.data])).toEqual([
+      ['Juez', [0.04, 0]],
+      ['Analista de noticias', [0.01, 0]],
+      ['Analista de CVE', [0, 0]],
+    ]);
+    const tooltip = option['tooltip'] as { valueFormatter: (value: unknown) => string };
+    expect(tooltip.valueFormatter(0.04)).toBe('USD 0.04');
   });
 });

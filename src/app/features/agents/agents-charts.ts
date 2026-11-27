@@ -1,5 +1,5 @@
 import type { EChartsCoreOption } from 'echarts/core';
-import { AGENT_LABELS, type Agent } from './agent-labels';
+import { AGENT_LABELS, AGENTS, type Agent } from './agent-labels';
 import type { ReasonUsage, TelemetryDay } from './agents.service';
 import { formatDay } from './formatting';
 
@@ -244,5 +244,43 @@ export function reasonsChart(reasons: readonly ReasonUsage[]): EChartsCoreOption
         data: reasons.map((reason) => reason.rejected),
       },
     ],
+  };
+}
+
+/**
+ * «Costo de IA por día» (MET-17): the cost of each agent per UTC day, side by side, never added up. A day without
+ * an agent's reviews costs zero (the daily series is zero-filled).
+ */
+export function dailyCostChart(days: readonly TelemetryDay[]): EChartsCoreOption {
+  return {
+    color: [PINK, VIOLET, '#c179e8'],
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      valueFormatter: (value: unknown) => `USD ${String(value)}`,
+    },
+    legend: {
+      top: 0,
+      right: 0,
+      itemWidth: 11,
+      itemHeight: 11,
+      textStyle: { color: INK, fontSize: FONT },
+    },
+    grid: { left: 12, right: 12, top: 34, bottom: 8, containLabel: true },
+    xAxis: categoryAxis(days),
+    yAxis: {
+      type: 'value',
+      min: 0,
+      splitLine: { lineStyle: { color: GRID } },
+      axisLabel: { color: AXIS, fontSize: FONT, formatter: 'USD {value}' },
+    },
+    series: AGENTS.map((agent) => ({
+      name: AGENT_LABELS[agent],
+      type: 'bar',
+      barMaxWidth: 12,
+      data: days.map(
+        (day) => chartNumber(day.agents.find((entry) => entry.agent === agent)?.cost_usd) ?? 0,
+      ),
+    })),
   };
 }

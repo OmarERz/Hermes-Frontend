@@ -14,7 +14,7 @@ import {
   TicketAction,
 } from './agent-labels';
 import { AgentsService, TicketUpdate, TicketUpdateFilters } from './agents.service';
-import { pagerState } from './reviews-log';
+import { pagerState } from './view-state';
 
 const PAGE_SIZE = 25;
 
