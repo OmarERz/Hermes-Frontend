@@ -1,0 +1,160 @@
+<div class="assets-view audit-view">
+  <app-banner-pagina
+    titulo="Auditoría"
+    descripcion="Cambios hechos desde el front y por el sistema, del más reciente al más antiguo: quién hizo qué, sobre qué objeto y cuándo. Nunca muestra los valores cambiados."
+    [icono]="bannerIcon"
+  />
+
+  <section class="filters" aria-label="Filtros de auditoría">
+    <label class="asset-search text-filter"
+      ><svg lucideSearch aria-hidden="true"></svg>
+      <input
+        #actorInput
+        type="search"
+        enterkeyhint="search"
+        [value]="actor()"
+        [attr.maxlength]="maxLength"
+        (change)="setActor(actorInput.value)"
+        placeholder="Actor: correo, nombre o «sistema»"
+        aria-label="Actor (correo, nombre o «sistema» para las automáticas)"
+      />
+    </label>
+    <label class="asset-search text-filter"
+      ><svg lucideTag aria-hidden="true"></svg>
+      <input
+        #actionInput
+        type="search"
+        enterkeyhint="search"
+        list="audit-actions"
+        [value]="action()"
+        [attr.maxlength]="maxLength"
+        (change)="setAction(actionInput.value)"
+        placeholder="Acción exacta, por ejemplo source.enable"
+        aria-label="Acción (texto exacto)"
+      />
+      <datalist id="audit-actions">
+        @for (code of knownActions; track code) {
+          <option [value]="code">{{ actionLabels[code] }}</option>
+        }
+      </datalist>
+    </label>
+    <label class="asset-search date-filter"
+      ><svg lucideCalendar aria-hidden="true"></svg>
+      <span aria-hidden="true">Desde</span>
+      <input
+        #fromInput
+        type="date"
+        [value]="dateFrom()"
+        [attr.max]="dateTo() || null"
+        (change)="setDateFrom(fromInput.value)"
+        aria-label="Registrados desde"
+      />
+    </label>
+    <label class="asset-search date-filter"
+      ><svg lucideCalendar aria-hidden="true"></svg>
+      <span aria-hidden="true">hasta</span>
+      <input
+        #toInput
+        type="date"
+        [value]="dateTo()"
+        [attr.min]="dateFrom() || null"
+        (change)="setDateTo(toInput.value)"
+        aria-label="Registrados hasta"
+      />
+    </label>
+    @if (hasFilters()) {
+      <button type="button" class="more-filter" (click)="clearFilters()">Quitar filtros</button>
+    }
+    <button type="button" class="more-filter" (click)="pager.reload()">
+      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+    </button>
+  </section>
+
+  <section class="panel inventory" aria-labelledby="audit-title">
+    <header>
+      <div class="inventory-title">
+        <svg lucideFileSearch aria-hidden="true"></svg>
+        <h2 id="audit-title">Registro de auditoría</h2>
+      </div>
+      <span>Página {{ pager.pageIndex() + 1 }}</span>
+    </header>
+    @if (tableState(); as state) {
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando auditoría…"
+        [emptyText]="
+          hasFilters()
+            ? 'No hay registros con estos filtros.'
+            : 'Aún no hay registros de auditoría.'
+        "
+        [error]="pager.state.error()"
+        (retry)="pager.reload()"
+      />
+    } @else {
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Registro de auditoría; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table class="audit-table">
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Actor</th>
+              <th scope="col">Acción</th>
+              <th scope="col">Objeto</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td class="numeric">{{ row.when }}</td>
+                <td>
+                  @if (row.automatic) {
+                    <span class="chip">Sistema</span>
+                  } @else {
+                    <strong>{{ row.actor }}</strong>
+                  }
+                </td>
+                <td>
+                  @if (row.actionLabel) {
+                    <strong>{{ row.actionLabel }}</strong>
+                    <small class="code">{{ row.action }}</small>
+                  } @else {
+                    <span class="code">{{ row.action }}</span>
+                  }
+                </td>
+                <td class="code target">{{ row.target }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <footer>
+      <span></span>
+      <div class="pagination">
+        <button
+          type="button"
+          [disabled]="!pager.hasPrevious() || pager.state.loading()"
+          (click)="pager.previous()"
+          aria-label="Página anterior de auditoría"
+        >
+          <svg lucideArrowLeft aria-hidden="true"></svg>
+        </button>
+        <button type="button" class="selected" aria-current="page">
+          {{ pager.pageIndex() + 1 }}
+        </button>
+        <button
+          type="button"
+          [disabled]="!pager.hasNext()"
+          (click)="pager.next()"
+          aria-label="Página siguiente de auditoría"
+        >
+          <svg lucideArrowRight aria-hidden="true"></svg>
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>
