@@ -1,6 +1,6 @@
-/* Asistente: the stat cards, panels and buttons come from the Activos design (assets-view). */
-.stats-grid {
-  margin-bottom: 18px;
+/* Asistente: the progress cards are the shared <app-kpi-card>; panels and buttons come from the Activos design. */
+.setup-stats {
+  margin-bottom: var(--section-gap);
 }
 .setup-layout {
   display: grid;

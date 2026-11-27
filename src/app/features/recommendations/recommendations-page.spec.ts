@@ -104,6 +104,30 @@ describe('RecommendationsPage', () => {
     expect(card.querySelector('.judge-pending')?.textContent).toContain('Pendiente de la API');
   });
 
+  it('renders the justification headings as strong text, never as HTML', async () => {
+    const service = new FakeService();
+    service.list.mockReturnValue(
+      of({
+        items: [
+          recommendation({
+            justification:
+              '**Base 74 → Final 86 · impulsada por srv\\_pagos.** CVSS 7.5 <img src=x onerror=alert(1)>.',
+          }),
+        ],
+        nextCursor: null,
+      }),
+    );
+    const { element } = await render(service);
+    const justification = element.querySelector('.justification') as HTMLElement;
+    expect(texts(justification, 'strong')).toEqual([
+      'Base 74 → Final 86 · impulsada por srv_pagos.',
+    ]);
+    expect(justification.textContent).not.toContain('**');
+    expect(justification.textContent).toContain('CVSS 7.5 <img src=x onerror=alert(1)>.');
+    expect(justification.querySelector('img')).toBeNull();
+    expect(texts(element, '.ticket-option small')[1]).toContain('1 evaluación');
+  });
+
   it('never fills in what the evaluation does not have', async () => {
     const { element } = await render(new FakeService());
     const older = element.querySelectorAll('app-recommendation-card')[1] as HTMLElement;

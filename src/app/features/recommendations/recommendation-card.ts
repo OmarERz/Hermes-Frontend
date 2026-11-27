@@ -11,6 +11,7 @@ import {
   LEVEL_LABELS,
   STATUS_LABELS,
 } from '../../shared/labels';
+import { parseEmphasis } from './emphasis';
 import { ticketItopId, type Recommendation } from './feedback';
 import { FeedbackHistory } from './feedback-history';
 import { JudgeDetail } from './judge-detail';
@@ -47,6 +48,8 @@ export class RecommendationCard {
   readonly signed = signed;
 
   readonly createdAt = computed(() => formatDateTime(this.recommendation().created_at));
+  /** The justification's `**…**` headings as strong runs, rendered as text (never as HTML, REC-2). */
+  readonly justification = computed(() => parseEmphasis(this.recommendation().justification));
   readonly ticketId = computed(() => ticketItopId(this.recommendation()));
 
   readonly feedbackSummary = computed(() => {

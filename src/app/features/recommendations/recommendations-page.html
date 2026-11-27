@@ -70,17 +70,17 @@
             [attr.aria-pressed]="isActive(group)"
             (click)="selectGroup(group)"
           >
-            <span
-              ><strong>{{ group.title }}</strong
-              ><small>{{ group.subtitle }}</small
+            <span class="case-copy"
+              ><strong class="case-title">{{ group.title }}</strong>
+              @if (group.withoutFeedback) {
+                <app-chip class="conflict-chip" tone="warning">Sin feedback</app-chip>
+              }
+              <small>{{ group.subtitle }}</small
               ><small
                 >{{ levelLabels[latest.level] }} · final {{ latest.final }} ·
-                {{ group.items.length }} evaluación(es)</small
+                {{ evaluationCount(group.items.length) }}</small
               ></span
             >
-            @if (group.withoutFeedback) {
-              <span class="conflict-chip">Sin feedback</span>
-            }
           </button>
         }
       }

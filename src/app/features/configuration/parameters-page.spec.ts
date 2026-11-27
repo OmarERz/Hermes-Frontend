@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import type { Role } from '../../core/api/api-types';
 import { provideFakeSession } from '../../testing/fake-session';
@@ -20,7 +21,11 @@ class FakeConfigApi {
 async function render(role: Role, api = new FakeConfigApi()) {
   TestBed.configureTestingModule({
     imports: [ParametersPage],
-    providers: [{ provide: ConfigApi, useValue: api }, ...provideFakeSession(role)],
+    providers: [
+      { provide: ConfigApi, useValue: api },
+      ...provideFakeSession(role),
+      provideRouter([]),
+    ],
   });
   const fixture = TestBed.createComponent(ParametersPage);
   await fixture.whenStable();
@@ -94,7 +99,7 @@ describe('ParametersPage', () => {
     );
   });
 
-  it('shows a blocked parameter with 🔒 and never lets anyone edit it', async () => {
+  it('shows a blocked parameter with a lock and never lets anyone edit it', async () => {
     const api = new FakeConfigApi();
     api.schema.mockReturnValue(
       of([
@@ -118,8 +123,14 @@ describe('ParametersPage', () => {
     expect((element.querySelector('#cfg-retention-audit_days') as HTMLInputElement).disabled).toBe(
       true,
     );
-    expect(element.textContent).toContain('🔒 Bloqueado');
-    expect(element.textContent).toContain('🔒 Retención de la auditoría');
+    expect(element.textContent).not.toContain('🔒');
+    expect(element.querySelector('.lock svg')).not.toBeNull();
+    expect(element.querySelector('.lock')?.textContent?.trim()).toBe('Bloqueado');
+    // FOR-4: one line with the count and a link, not the whole list again at the end of the screen.
+    const summary = element.querySelector('.locked-summary')!;
+    expect(summary.textContent).toContain('1 parámetro bloqueado en el servidor');
+    expect(summary.querySelector('a')?.getAttribute('href')).toBe('/configuracion-agente');
+    expect(element.querySelector('.locked-list')).toBeNull();
     expect(element.textContent).toContain('Lo puede cambiar cualquier usuario.');
   });
 

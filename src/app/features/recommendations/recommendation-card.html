@@ -45,7 +45,15 @@
   <div class="analysis-grid">
     <section>
       <h4>Justificación</h4>
-      <p>{{ rec.justification }}</p>
+      <p class="justification">
+        @for (segment of justification(); track $index) {
+          @if (segment.strong) {
+            <strong>{{ segment.text }}</strong>
+          } @else {
+            <span>{{ segment.text }}</span>
+          }
+        }
+      </p>
     </section>
     <section>
       <h4>Mitigación</h4>

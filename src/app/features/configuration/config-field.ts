@@ -15,8 +15,10 @@ const SLIDER_SPAN_LIMIT = 1000;
 /**
  * One parameter of `GET /api/config/schema` as a control chosen by its type: a range slider for a bounded number
  * (with a number field for exact values in the compact row), a switch for a boolean, a list for an enum and a text
- * field for a string. Disabled when the role does not reach `min_role`; a `blocked` parameter shows 🔒 and is
- * never editable. The card variant keeps the prototype's slider card with its meter.
+ * field for a string. Disabled when the role does not reach `min_role`; a `blocked` parameter shows a lock and
+ * «Bloqueado» and is never editable. The card variant keeps the prototype's slider card with its meter. The number
+ * row is one compact line (label, slider, value) with no card of its own; its range is the row's tooltip and the
+ * description of the number field (FOR-1).
  */
 @Component({
   selector: 'app-config-field',
@@ -38,6 +40,7 @@ export class ConfigField {
 
   readonly id = computed(() => 'cfg-' + this.param().key.replace(/[^a-zA-Z0-9_-]/g, '-'));
   readonly errorId = computed(() => this.id() + '-error');
+  readonly rangeId = computed(() => this.id() + '-range');
   readonly blocked = computed(() => this.param().level === 'blocked');
   readonly hasRange = computed(() => {
     const { min, max } = this.param();
@@ -60,6 +63,14 @@ export class ConfigField {
     if (hasMin && hasMax) return `${min} – ${max}`;
     if (hasMin) return `mínimo ${min}`;
     return hasMax ? `máximo ${max}` : '';
+  });
+  /**
+   * What describes the number field of the compact row: its range (read by screen readers; on screen it is the row's
+   * tooltip, FOR-1) and the error, when there is one.
+   */
+  readonly describedBy = computed(() => {
+    const ids = [this.bounds() ? this.rangeId() : '', this.error() ? this.errorId() : ''];
+    return ids.filter(Boolean).join(' ') || null;
   });
   /** Position of the value in its range, 0 to 100, for the meter and the slider fill. */
   readonly percent = computed(() => {

@@ -194,7 +194,7 @@ h3 {
 }
 .app-shell[data-theme='dark']
   :is(.agent-view, .stack-view, .assets-view)
-  :is(.panel, .chart-card, .metric, .summary-grid article, .stat-card) {
+  :is(.panel, .chart-card, .summary-grid article) {
   border-color: var(--border);
   background: var(--surface);
   box-shadow: var(--shadow-card);
@@ -222,8 +222,7 @@ h3 {
     .agent-facts small,
     .permission small,
     .health-breakdown span,
-    .findings p,
-    .stat-card small
+    .findings p
   ) {
   color: var(--text-secondary);
 }
@@ -231,7 +230,6 @@ h3 {
 .app-shell[data-theme='dark'] .agent-view .heading-icon,
 .app-shell[data-theme='dark'] .agent-view .robot,
 .app-shell[data-theme='dark'] .assets-view .heading-icon,
-.app-shell[data-theme='dark'] .assets-view .stat-card > span,
 .app-shell[data-theme='dark'] .stack-view .heading-icon,
 .app-shell[data-theme='dark'] .stack-view .summary-icon {
   background: var(--accent-wash);
@@ -278,7 +276,6 @@ h3 {
   background: var(--accent);
 }
 .app-shell[data-theme='dark'] .agent-view .pill,
-.app-shell[data-theme='dark'] .agent-view .metric em,
 .app-shell[data-theme='dark'] .agent-view .queue-number em,
 .app-shell[data-theme='dark'] .stack-view .health-pill,
 .app-shell[data-theme='dark'] .stack-view .score,
@@ -315,8 +312,7 @@ h3 {
   background: var(--success-bg);
   color: var(--success-text);
 }
-.app-shell[data-theme='dark'] .stack-view .summary-grid em.risk,
-.app-shell[data-theme='dark'] .assets-view .stat-card em.risk {
+.app-shell[data-theme='dark'] .stack-view .summary-grid em.risk {
   background: var(--danger-bg);
   color: var(--danger-text);
 }
@@ -406,9 +402,6 @@ h3 {
   background: var(--danger-bg);
   color: var(--danger-text);
 }
-.app-shell[data-theme='dark'] .agent-view .metric-label {
-  color: var(--text-secondary);
-}
 .app-shell[data-theme='dark'] .agent-view .queue-stats b {
   color: var(--text-primary);
 }
@@ -436,9 +429,7 @@ h3 {
     .agent-view .performance-heading p,
     .agent-view .agent-summary p,
     .agent-view .agent-facts small,
-    .agent-view .ticket-kpis small,
     .agent-view .ticket-empty,
-    .agent-view .metric-label,
     .agent-view .queue-stats span,
     .stack-view .summary-grid small,
     .stack-view .health-breakdown span,
@@ -449,7 +440,6 @@ h3 {
     .stack-view .quadrant > strong,
     .stack-view .findings p,
     .assets-view .page-heading p,
-    .assets-view .stat-card small,
     .assets-view .inventory > header,
     .assets-view .inventory td:not(:has(.status)),
     .assets-view .filters label,
@@ -582,16 +572,8 @@ h3 {
   background: var(--violet-wash);
   color: var(--accent-lilac);
 }
-.app-shell[data-theme='dark'] .agent-view .ticket-kpis > div {
-  border-color: var(--border);
-  background: var(--surface-soft);
-}
-.app-shell[data-theme='dark'] .agent-view .ticket-kpis small,
 .app-shell[data-theme='dark'] .agent-view .ticket-empty {
   color: var(--text-secondary);
-}
-.app-shell[data-theme='dark'] .agent-view .ticket-kpis strong {
-  color: var(--text-primary);
 }
 .app-shell[data-theme='dark']
   :is(.agent-history-view, .recommendations-view, .human-review-view)
@@ -704,9 +686,7 @@ h3 {
   :is(
     .panel,
     .chart-card,
-    .metric,
     .summary-grid article,
-    .stat-card,
     .history-panel,
     .review-panel,
     .audit-card,
@@ -843,8 +823,7 @@ h3 {
 
 /* Retira solo los bordes decorativos de resúmenes informativos; se conserva el box model. */
 .app-shell[data-theme] .welcome-view :is(.home-link-card, .home-metrics),
-.app-shell[data-theme] .agent-view :is(.metric, .agent-status, .ticket-overview),
-.app-shell[data-theme] .agent-view .ticket-kpis > div,
+.app-shell[data-theme] .agent-view :is(.agent-status, .ticket-overview),
 .app-shell[data-theme] .agent-history-view .detail-panel,
 .app-shell[data-theme]
   .recommendations-view
@@ -863,7 +842,6 @@ h3 {
 .app-shell[data-theme]
   .stack-view
   :is(.summary-grid article, .evaluation-panel, .status-panel, .license-panel),
-.app-shell[data-theme] .assets-view .stat-card,
 .app-shell[data-theme] .agent-config-view :is(.config-summary, .config-panel, .config-card) {
   border-color: transparent;
 }

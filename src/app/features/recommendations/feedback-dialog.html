@@ -29,135 +29,139 @@
     </button>
   </header>
 
-  <section class="review-case-context" aria-label="Evaluación seleccionada">
-    <span class="review-context-icon"><svg lucideBot aria-hidden="true"></svg></span>
-    <div class="review-context-copy">
-      <strong>{{ rec.cve ?? 'Alerta inferida por IA' }}</strong
-      ><span
-        >{{ rec.product ?? rec.asset?.name ?? 'Sin activo directo' }} · evaluación del
-        {{ createdAt() }}</span
-      >
-    </div>
-    <span class="review-status-badge">{{ levelLabels[rec.level] }}</span>
-  </section>
-
-  <section class="score-stages" aria-label="Puntaje por etapa">
-    <article>
-      <small>Puntaje base</small><strong>{{ rec.base }}</strong
-      ><span>Fórmula de Hermes</span>
-    </article>
-    <article>
-      <small>Ajuste del juez</small><strong>{{ signed(rec.judge_adjustment) }}</strong
-      ><span>Puntos</span>
-    </article>
-    <article>
-      <small>Puntaje final</small><strong>{{ rec.final }}</strong
-      ><span>{{ levelLabels[rec.level] }}</span>
-    </article>
-  </section>
-
-  <section class="human-decision" aria-labelledby="feedback-decision-title">
-    <h3 id="feedback-decision-title"><svg lucideCheck aria-hidden="true"></svg> Veredicto</h3>
-    <fieldset>
-      <legend>Selecciona un veredicto</legend>
-      @for (option of options; track option.value) {
-        <label class="decision-option" [class.selected]="choice() === option.value"
-          ><input
-            type="radio"
-            name="feedback-verdict"
-            [value]="option.value"
-            [checked]="choice() === option.value"
-            [disabled]="sending()"
-            (change)="choose(option.value)"
-          /><span class="option-copy"
-            ><strong>{{ option.label }}</strong
-            ><small>{{ option.hint }}</small></span
-          ></label
+  <div class="review-modal-body">
+    <section class="review-case-context" aria-label="Evaluación seleccionada">
+      <span class="review-context-icon"><svg lucideBot aria-hidden="true"></svg></span>
+      <div class="review-context-copy">
+        <strong>{{ rec.cve ?? 'Alerta inferida por IA' }}</strong
+        ><span
+          >{{ rec.product ?? rec.asset?.name ?? 'Sin activo directo' }} · evaluación del
+          {{ createdAt() }}</span
         >
-      }
-    </fieldset>
-
-    @if (choice() === 'wrong_priority') {
-      <div class="level-picker" role="group" aria-label="Nivel propuesto">
-        <span>Nivel propuesto</span>
-        <button
-          type="button"
-          aria-label="Subir un nivel"
-          [disabled]="shownLevel() === 'critical' || sending()"
-          (click)="move('up')"
-        >
-          <svg lucideArrowUp aria-hidden="true"></svg>
-        </button>
-        <strong>{{ levelLabels[shownLevel()] }}</strong>
-        <button
-          type="button"
-          aria-label="Bajar un nivel"
-          [disabled]="shownLevel() === 'low' || sending()"
-          (click)="move('down')"
-        >
-          <svg lucideArrowDown aria-hidden="true"></svg>
-        </button>
-        <small>Nivel actual: {{ levelLabels[rec.level] }}</small>
       </div>
-      <label class="review-input-label"
-        >Puntaje propuesto (opcional, de 0 a 100)
-        <input
-          type="number"
-          min="0"
-          max="100"
-          step="1"
-          [ngModel]="proposedScore()"
-          (ngModelChange)="proposedScore.set($event)"
-          [disabled]="sending()"
-      /></label>
-    }
+      <span class="review-status-badge">{{ levelLabels[rec.level] }}</span>
+    </section>
 
-    @if (choice() === acceptOriginalValue) {
-      @let original = acceptOriginal();
-      @if (original.pending) {
-        <p class="review-footnote" role="status">Leyendo los niveles de la configuración…</p>
-      } @else if (original.problem) {
-        <p class="review-error" role="alert">{{ original.problem }}</p>
+    <section class="score-stages" aria-label="Puntaje por etapa">
+      <article>
+        <small>Puntaje base</small><strong>{{ rec.base }}</strong
+        ><span>Fórmula de Hermes</span>
+      </article>
+      <article>
+        <small>Ajuste del juez</small><strong>{{ signed(rec.judge_adjustment) }}</strong
+        ><span>Puntos</span>
+      </article>
+      <article>
+        <small>Puntaje final</small><strong>{{ rec.final }}</strong
+        ><span>{{ levelLabels[rec.level] }}</span>
+      </article>
+    </section>
+
+    <section class="human-decision" aria-labelledby="feedback-decision-title">
+      <h3 id="feedback-decision-title"><svg lucideCheck aria-hidden="true"></svg> Veredicto</h3>
+      <fieldset>
+        <legend>Selecciona un veredicto</legend>
+        @for (option of options; track option.value) {
+          <label class="decision-option" [class.selected]="choice() === option.value"
+            ><input
+              type="radio"
+              name="feedback-verdict"
+              [value]="option.value"
+              [checked]="choice() === option.value"
+              [disabled]="sending()"
+              (change)="choose(option.value)"
+            /><span class="option-copy"
+              ><strong>{{ option.label }}</strong
+              ><small>{{ option.hint }}</small></span
+            ></label
+          >
+        }
+      </fieldset>
+
+      @if (choice() === 'wrong_priority') {
+        <div class="level-picker" role="group" aria-label="Nivel propuesto">
+          <span>Nivel propuesto</span>
+          <button
+            type="button"
+            aria-label="Subir un nivel"
+            [disabled]="shownLevel() === 'critical' || sending()"
+            (click)="move('up')"
+          >
+            <svg lucideArrowUp aria-hidden="true"></svg>
+          </button>
+          <strong>{{ levelLabels[shownLevel()] }}</strong>
+          <button
+            type="button"
+            aria-label="Bajar un nivel"
+            [disabled]="shownLevel() === 'low' || sending()"
+            (click)="move('down')"
+          >
+            <svg lucideArrowDown aria-hidden="true"></svg>
+          </button>
+          <small>Nivel actual: {{ levelLabels[rec.level] }}</small>
+        </div>
+        <label class="review-input-label"
+          >Puntaje propuesto (opcional, de 0 a 100)
+          <input
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            [ngModel]="proposedScore()"
+            (ngModelChange)="proposedScore.set($event)"
+            [disabled]="sending()"
+        /></label>
+      }
+
+      @if (choice() === acceptOriginalValue) {
+        @let original = acceptOriginal();
+        @if (original.pending) {
+          <p class="review-footnote" role="status">Leyendo los niveles de la configuración…</p>
+        } @else if (original.problem) {
+          <p class="review-error" role="alert">{{ original.problem }}</p>
+        } @else {
+          <p class="review-score-diff">
+            Se enviará como «Prioridad incorrecta» con el puntaje base {{ rec.base }} (nivel
+            {{ original.level }}, según los niveles vigentes de la configuración).
+          </p>
+        }
+      }
+
+      @if (ticketId(); as id) {
+        <p class="review-footnote">
+          Ticket a la vista: {{ id }}. «Falso positivo» y «No sugerir más» solo afectan a este
+          ticket.
+        </p>
       } @else {
-        <p class="review-score-diff">
-          Se enviará como «Prioridad incorrecta» con el puntaje base {{ rec.base }} (nivel
-          {{ original.level }}, según los niveles vigentes de la configuración).
+        <p class="review-footnote">
+          Esta evaluación no muestra un ticket: «Falso positivo» y «No sugerir más» se aplican a
+          todos sus tickets.
         </p>
       }
-    }
 
-    @if (ticketId(); as id) {
+      <label class="review-input-label review-comments"
+        ><span><svg lucideMessageSquareText aria-hidden="true"></svg> Comentario (opcional)</span
+        ><textarea
+          rows="3"
+          [maxlength]="commentMaxLength"
+          [ngModel]="comment()"
+          (ngModelChange)="comment.set($event)"
+          [disabled]="sending()"
+          placeholder="Por qué das este veredicto…"
+        ></textarea>
+      </label>
       <p class="review-footnote">
-        Ticket a la vista: {{ id }}. «Falso positivo» y «No sugerir más» solo afectan a este ticket.
+        Recomendado: un comentario ayuda a calibrar el sistema. {{ comment().length }} de
+        {{ commentMaxLength }} caracteres.
       </p>
-    } @else {
-      <p class="review-footnote">
-        Esta evaluación no muestra un ticket: «Falso positivo» y «No sugerir más» se aplican a todos
-        sus tickets.
-      </p>
-    }
-
-    <label class="review-input-label review-comments"
-      ><span><svg lucideMessageSquareText aria-hidden="true"></svg> Comentario (opcional)</span
-      ><textarea
-        rows="3"
-        [maxlength]="commentMaxLength"
-        [ngModel]="comment()"
-        (ngModelChange)="comment.set($event)"
-        [disabled]="sending()"
-        placeholder="Por qué das este veredicto…"
-      ></textarea>
-    </label>
-    <p class="review-footnote">
-      Recomendado: un comentario ayuda a calibrar el sistema. {{ comment().length }} de
-      {{ commentMaxLength }} caracteres.
-    </p>
-    @if (problem()) {
-      <p class="review-error" role="alert">{{ problem() }}</p>
-    }
-  </section>
+    </section>
+  </div>
 
   <footer class="review-modal-actions">
+    <!-- Next to the button that failed, so it is in view however far the body scrolled (REC-6). -->
+    @if (problem()) {
+      <p class="review-error review-save-error" role="alert">{{ problem() }}</p>
+    }
     <button
       type="button"
       class="btn btn-secondary review-cancel"

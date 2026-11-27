@@ -1,5 +1,39 @@
+/*
+ * JUE-4 (F19.6): the three profiles are rows (radio and icon, then the name and its text) while the card is narrower
+ * than 720 px, as it is next to the permissions at 1280 px; there each text took six or seven lines. From 720 px
+ * they sit side by side as before.
+ */
+.profile-card {
+  container: profile-card / inline-size;
+}
 .profile-options.judge-profiles {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+}
+.judge-profiles .profile-option {
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+}
+.judge-profiles .profile-option-heading {
+  grid-row: 1 / span 3;
+  align-self: start;
+}
+.judge-profiles .profile-option > :not(.profile-option-heading) {
+  grid-column: 2;
+}
+@container profile-card (min-width: 720px) {
+  .profile-options.judge-profiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .judge-profiles .profile-option {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .judge-profiles .profile-option-heading {
+    grid-row: auto;
+  }
+  .judge-profiles .profile-option > :not(.profile-option-heading) {
+    grid-column: auto;
+  }
 }
 .profile-option small.profile-dead-zone {
   color: var(--text-primary);
@@ -32,8 +66,8 @@
   display: block;
   margin-top: 14px;
 }
-@media (max-width: 760px) {
-  .profile-options.judge-profiles {
-    grid-template-columns: minmax(0, 1fr);
+@media (max-width: 560px) {
+  .config-robot {
+    max-height: 160px;
   }
 }

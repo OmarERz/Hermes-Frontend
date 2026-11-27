@@ -1,7 +1,7 @@
 <div class="feeds-page sources-view">
   <app-banner-pagina
     titulo="Fuentes"
-    descripcion="Fuentes de vulnerabilidades y amenazas que Hermes lee: su clase, su nivel de confianza, su salud y si están activas. Las estructurales (🔒) no se pueden desactivar."
+    descripcion="Fuentes de vulnerabilidades y amenazas que Hermes lee: su clase, su nivel de confianza, su salud y si están activas. Las estructurales, con candado, no se pueden desactivar."
     [icono]="bannerIcon"
   />
 
@@ -135,12 +135,15 @@
             <span class="feed-card-heading"
               ><strong>{{ card.item.name }}</strong>
               @if (card.item.source.structural) {
-                <span class="lock-chip" title="Fuente estructural: no se puede desactivar"
-                  >🔒<span class="sr-only"> Estructural</span></span
+                <span class="lock-icon" title="Fuente estructural: no se puede desactivar"
+                  ><svg lucideLock aria-hidden="true"></svg
+                  ><span class="sr-only"> Estructural</span></span
                 >
               }
               <span class="category-chip">{{ card.item.typeLabel }}</span
-              ><span class="category-chip level-chip">{{ card.item.source.level }}</span></span
+              ><app-chip class="level-chip" tone="violet" [title]="card.item.levelMeaning">{{
+                card.item.source.level
+              }}</app-chip></span
             >
             <span class="feed-description">{{
               card.item.description ?? card.item.levelMeaning
@@ -162,7 +165,9 @@
             }}</span>
           </button>
           @if (card.item.source.structural && card.item.source.active) {
-            <span class="feed-toggle toggle-label">🔒 Siempre activa</span>
+            <span class="feed-toggle toggle-label"
+              ><svg lucideLock aria-hidden="true"></svg>Siempre activa</span
+            >
           } @else if (session.hasRole(toggleRole)) {
             <label
               class="feed-toggle"
@@ -259,7 +264,12 @@
         </div>
         <div class="detail-row">
           <svg lucideTag aria-hidden="true"></svg><strong>Clase</strong
-          ><span>{{ row.typeLabel }}{{ row.source.structural ? ' · Estructural 🔒' : '' }}</span>
+          ><span class="class-cell"
+            >{{ row.typeLabel }}
+            @if (row.source.structural) {
+              · Estructural <svg lucideLock class="inline-lock" aria-hidden="true"></svg>
+            }
+          </span>
         </div>
         <div class="detail-row">
           <svg lucideActivity aria-hidden="true"></svg><strong>Salud</strong

@@ -649,17 +649,17 @@
     padding: 4px 2px;
     border-color: var(--border);
   }
+  /* JUE-1 (F19.6): the label above its description, the switch on the right; side by side they overlapped. */
   .config-panel .tool-copy {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: baseline;
-    gap: 2px 8px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
   }
   .config-panel .tool-copy strong {
     font-size: calc((14px) + var(--font-size-increase));
   }
   .config-panel .tool-copy small {
     font-size: calc((11px) + var(--font-size-increase));
-    text-align: right;
+    text-align: left;
   }
   .config-panel .permission-list li {
     min-height: 35px;

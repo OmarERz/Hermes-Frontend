@@ -197,10 +197,14 @@ describe('FeedbackDialog', () => {
     service.send.mockReturnValueOnce(
       throwError(() => new ApiError(403, 'forbidden', 'No tienes permiso para dar feedback.')),
     );
-    const { pick, click, error, saved, closed } = await render(service);
+    const { element, pick, click, error, saved, closed } = await render(service);
     await pick('Relevante');
     await click('.review-save');
     expect(error()).toBe('No tienes permiso para dar feedback.');
+    // In the docked footer, next to «Guardar feedback», not at the end of the scrolling body (REC-6).
+    expect(element.querySelector('.review-modal-actions .review-error')?.getAttribute('role')).toBe(
+      'alert',
+    );
     expect(saved).not.toHaveBeenCalled();
     expect(closed).not.toHaveBeenCalled();
   });
