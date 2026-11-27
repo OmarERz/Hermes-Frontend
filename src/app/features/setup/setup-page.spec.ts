@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { Observable, of, Subject, throwError } from 'rxjs';
+import { NEVER, Observable, of, Subject, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import { provideFakeSession } from '../../testing/fake-session';
 import type { CompanyProfile } from '../company/company-labels';
@@ -10,7 +10,7 @@ import { configDocument, SCHEMA } from '../configuration/testing/config-fixtures
 import { ConnectionsService } from '../connections/connections.service';
 import { makeSource } from '../sources/source-fixtures';
 import { SourcesService } from '../sources/sources.service';
-import { SCAN_POLLING } from './scan-step';
+import { RunEventsService } from '../runs/run-events';
 import type { SetupStep, SetupStepUpdate } from './setup-steps';
 import { SetupPage } from './setup.page';
 import { SetupService } from './setup.service';
@@ -37,7 +37,11 @@ class FakeSetup {
   status = vi.fn<() => Observable<SetupStep[]>>(() => of(this.current));
   mark = vi.fn<(n: number, update: SetupStepUpdate) => Observable<SetupStep>>((n, update) => {
     const known = this.current.find((step) => step.n === n)!;
-    const marked = { ...known, done: !!update.done && !update.skipped, skipped: !!update.skipped };
+    const done = !!update.done && !update.skipped;
+    // Like the API: the data wins over a mark; a mark alone is `manual`.
+    const source = known.done_source === 'data' ? 'data' : done ? 'manual' : null;
+    const marked = { ...known, done: done || source === 'data', skipped: !!update.skipped };
+    marked.done_source = marked.done ? source : null;
     this.current = this.current.map((step) => (step.n === n ? marked : step));
     return of(marked);
   });
@@ -70,7 +74,7 @@ async function render(setup = new FakeSetup()) {
       provideRouter([]),
       ...provideFakeSession('admin'),
       { provide: SetupService, useValue: setup },
-      { provide: SCAN_POLLING, useValue: { intervalMs: 1, maxPolls: 2 } },
+      { provide: RunEventsService, useValue: { watch: () => NEVER } },
       {
         provide: ConnectionsService,
         useValue: { status: () => of([]), test: () => of([]) },
@@ -213,6 +217,34 @@ describe('SetupPage', () => {
     expect(text(element.querySelector('.setup-notice[role="status"]'))).toBe(
       '«Empresas pares» volvió a quedar pendiente.',
     );
+  });
+
+  it('says where a done step comes from and takes back only a manual mark', async () => {
+    const setup = new FakeSetup();
+    setup.current = steps({ 1: 'done', 2: 'done', 3: 'skipped' }).map((step) =>
+      step.n === 1
+        ? { ...step, done_source: 'data' as const }
+        : step.n === 2
+          ? { ...step, done_source: 'manual' as const }
+          : step,
+    );
+    const { element, press, goTo, button } = await render(setup);
+    await goTo(1);
+    expect(text(element.querySelector('.step-state'))).toBe('Hecho · detectado');
+    // The data shows it: taking the mark back would change nothing, so it is not offered.
+    expect(button('Desmarcar')).toBeUndefined();
+
+    await goTo(2);
+    expect(text(element.querySelector('.step-state'))).toBe('Hecho · marcado');
+    await press('Desmarcar');
+    expect(setup.mark).toHaveBeenLastCalledWith(2, { done: false, skipped: false });
+    expect(title(element)).toBe('Paso 2 · Perfil de la empresa');
+    expect(text(element.querySelector('.step-state'))).toBe('Pendiente');
+    expect(text(element.querySelector('.setup-notice[role="status"]'))).toBe(
+      '«Perfil de la empresa» volvió a quedar pendiente.',
+    );
+    expect(button('Desmarcar')).toBeUndefined();
+    expect(button('Marcar como hecho')).not.toBeUndefined();
   });
 
   it('never lets an older reading of the steps put back what a mark saved', async () => {

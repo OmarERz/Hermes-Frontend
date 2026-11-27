@@ -73,7 +73,7 @@
                 <svg [lucideIcon]="step.guide.icon" aria-hidden="true"></svg>
                 <h2 id="setup-step-title">Paso {{ step.n }} · {{ step.name }}</h2>
               </div>
-              <span class="step-state" [attr.data-state]="step.state">{{ step.stateLabel }}</span>
+              <span class="step-state" [attr.data-state]="step.state">{{ step.stateText }}</span>
             </header>
             <p class="step-what">{{ step.guide.what }}</p>
             <p class="step-skip"><strong>Si se omite:</strong> {{ step.guide.ifSkipped }}</p>
@@ -156,6 +156,15 @@
                     (click)="mark('reset')"
                   >
                     Retomar paso
+                  </button>
+                } @else if (step.unmarkable) {
+                  <button
+                    type="button"
+                    class="btn btn-secondary step-nav"
+                    [disabled]="marking() !== null"
+                    (click)="mark('reset')"
+                  >
+                    Desmarcar
                   </button>
                 }
               </span>

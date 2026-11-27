@@ -33,8 +33,8 @@
         <app-kpi-card
           [label]="section.card"
           [icon]="section.icon"
-          [tone]="section.items.length > 0 ? 'danger' : 'accent'"
-          [value]="section.items.length"
+          [tone]="section.count > 0 ? 'danger' : 'accent'"
+          [value]="section.countLabel"
         />
       }
     </section>
@@ -57,11 +57,11 @@
               <svg [lucideIcon]="section.icon" aria-hidden="true"></svg>
               <h2 [id]="'pending-title-' + section.kind">{{ section.title }}</h2>
             </div>
-            <span>{{ section.items.length }}</span>
+            <span>{{ section.countLabel }}</span>
           </header>
           <p class="hint">{{ section.hint }}</p>
-          @if (section.items.length >= pageLimit) {
-            <p class="hint">Se muestran los primeros {{ pageLimit }}.</p>
+          @if (section.capped) {
+            <p class="hint">{{ section.cappedText }}</p>
           }
           <div
             class="table-scroll"
@@ -81,7 +81,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (item of section.items; track item.ci_id) {
+                @for (item of section.items; track item.id) {
                   <tr>
                     @if (section.software) {
                       <td>
@@ -108,6 +108,11 @@
                       <td>{{ item.detail }}</td>
                       <td class="actions">
                         <a class="row-action" [routerLink]="['/activos', item.ci_id]">Ver activo</a>
+                        <app-itop-link
+                          kind="edit"
+                          [itopClass]="item.itop_class ?? ''"
+                          [itopId]="item.ci_id"
+                        />
                       </td>
                     }
                   </tr>

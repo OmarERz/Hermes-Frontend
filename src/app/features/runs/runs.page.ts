@@ -55,8 +55,6 @@ import {
 import { RunFilters, RunsService, TelemetrySummary } from './runs.service';
 
 const PAGE_SIZE = 25;
-/** Runs read to find the open one again after its stream ends. */
-const LOOKUP_SIZE = 50;
 
 /** What the live follow of the selected run is doing. */
 export type LiveState = 'idle' | 'live' | 'ended' | 'error';
@@ -72,9 +70,9 @@ type CountKey = 'runs_queued' | 'runs_running' | 'runs_succeeded' | 'runs_failed
  * Corridas (FRO-19, ARQ-04, ARQ-05): scans, news runs and recalculations from `GET /api/runs`, filtered by kind,
  * status and start date and paged by cursor, with the counts of the last 24 hours (`GET /api/telemetry/summary`).
  * Selecting a run opens its detail; while it is queued or running, its progress comes live from
- * `GET /api/runs/{id}/events` and, when the stream ends, the list is read again for the final state. Analysts and
- * admins launch a scan (`POST /api/scans`, ACTION_ROLES.launchScan). The API has no route to cancel a run, so the
- * screen offers none.
+ * `GET /api/runs/{id}/events` (each event carries the run's `status`) and, when the stream ends, the run itself is
+ * read again (`GET /api/runs/{id}`) for its final state. Analysts and admins launch a scan (`POST /api/scans`,
+ * ACTION_ROLES.launchScan). The API has no route to cancel a run, so the screen offers none.
  */
 @Component({
   selector: 'app-runs-page',
@@ -304,34 +302,21 @@ export class RunsPage {
   }
 
   /**
-   * The stream is over: the list and the counts are read again, and the run itself is looked up apart from the
-   * table filters (it may have left them, say «En ejecución»), so the detail gets its final status, end and duration.
+   * The stream is over: the list and the counts are read again, and the run itself (`GET /api/runs/{id}`), apart from
+   * the table filters (it may have left them, say «En ejecución»), so the detail gets its final status, end and
+   * duration.
    */
   private settle(runId: string, state: LiveState): void {
     this.watching = null;
-    const run = this.selected();
-    if (run?.id !== runId) return;
+    if (this.selected()?.id !== runId) return;
     this.liveState.set(state);
     this.refresh();
-    this.lookUp(run, this.live()?.status ?? null);
-  }
-
-  /**
-   * Reads one run again without a route for a single run: same kind and, once started, the same start instant (it
-   * never changes); a run that was still queued is looked for among the newest of its kind with its final status.
-   */
-  private lookUp(run: Run, status: RunStatus | null): void {
-    const started = run.started_at || null;
-    const filters: RunFilters = started
-      ? { kind: run.kind, date_from: started, date_to: started }
-      : { kind: run.kind, status: status && !isActive(status) ? status : null };
     this.service
-      .list(filters, null, LOOKUP_SIZE)
+      .get(runId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (page) => {
-          const found = page.items.find((item) => item.id === run.id);
-          if (found && this.selected()?.id === run.id) this.selected.set(found);
+        next: (run) => {
+          if (this.selected()?.id === runId) this.selected.set(run);
         },
         // The table and the stream already said what they could; the detail keeps that.
         error: () => undefined,

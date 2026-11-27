@@ -6,18 +6,13 @@ import { ApiError } from '../../core/api/api-error';
 import { APP_CONFIG } from '../../core/config/app-config';
 import { provideFakeSession } from '../../testing/fake-session';
 import { AssetDetailPage } from './asset-detail.page';
-import {
-  DETAIL,
-  INSTALLED_KERNEL,
-  INSTALLED_OPENSSL,
-  PAYMENTS,
-  testConfig,
-} from './inventory.fixtures';
+import { DETAIL, INSTALLED_KERNEL, INSTALLED_OPENSSL, testConfig } from './inventory.fixtures';
 import { InventoryService } from './inventory.service';
 
 class FakeService {
   asset = vi.fn<InventoryService['asset']>(() => of(DETAIL));
-  findAsset = vi.fn<InventoryService['findAsset']>(() => of(PAYMENTS));
+  /** The inventory list: the detail never needs it since F18.6. */
+  listAssets = vi.fn<InventoryService['listAssets']>(() => NEVER);
   assetSoftware = vi.fn<InventoryService['assetSoftware']>(() =>
     of([INSTALLED_OPENSSL, INSTALLED_KERNEL]),
   );
@@ -63,11 +58,12 @@ function rowsOf(element: HTMLElement, region: string): string[][] {
 }
 
 describe('AssetDetailPage', () => {
-  it('shows the iTop data of the CI from its detail and its inventory row', async () => {
+  it('shows the iTop data of the CI from its detail alone', async () => {
     const service = new FakeService();
     const { element, page } = await render(service);
     expect(service.asset).toHaveBeenCalledWith('CI-1');
-    expect(service.findAsset).toHaveBeenCalledWith('CI-1');
+    // Criticality, exposure, OS, service, personal data, sync and link come with the detail (F18.6).
+    expect(service.listAssets).not.toHaveBeenCalled();
     expect(page.title()).toBe('srv-pagos-01');
     expect(element.querySelector('.description')?.textContent).toContain(
       'Servidor de cobros con tarjeta',
@@ -144,13 +140,13 @@ describe('AssetDetailPage', () => {
       expect.stringContaining('Ver en iTop'),
       expect.stringContaining('Editar en iTop'),
     ]);
-    expect(links[0]!.href).toBe(PAYMENTS.itop_url);
+    expect(links[0]!.href).toBe(DETAIL.itop_url);
     expect(links[1]!.href).toBe(
       'https://itop.example.test/pages/UI.php?operation=modify&class=Server&id=CI-1',
     );
   });
 
-  it('shows a CI without findings, software or inventory row without inventing data', async () => {
+  it('shows a CI without findings, software or iTop data without inventing data', async () => {
     const service = new FakeService();
     service.asset.mockReturnValue(
       of({
@@ -163,15 +159,26 @@ describe('AssetDetailPage', () => {
         description: null,
         owner: null,
         custodian: null,
+        criticality: 'unknown',
+        exposed: null,
+        personal_data: null,
+        os: null,
+        service: null,
+        synced_at: null,
+        itop_url: '',
       }),
     );
-    service.findAsset.mockReturnValue(of(null));
     service.assetSoftware.mockReturnValue(of([]));
     const { element } = await render(service);
     const shown = facts(element);
     expect(shown['Clase de iTop']).toBe('Sin dato');
     expect(shown['CPU']).toBe('—');
-    expect(shown['Criticidad']).toBe('—');
+    expect(shown['Sistema operativo']).toBe('—');
+    expect(shown['Servicio']).toBe('—');
+    expect(shown['Criticidad']).toBe('Sin dato');
+    expect(shown['Exposición a internet']).toBe('Sin dato');
+    expect(shown['Datos personales']).toBe('Sin dato');
+    expect(shown['Última sincronización con iTop']).toBe('—');
     expect(shown['Responsable']).toBe('Sin responsable');
     expect(element.querySelector('.description')?.textContent).toContain(
       'Sin descripción en iTop.',
@@ -183,13 +190,40 @@ describe('AssetDetailPage', () => {
     );
   });
 
-  it('says it is still reading the inventory row', async () => {
+  it('says it is still reading the software', async () => {
     const service = new FakeService();
-    service.findAsset.mockReturnValue(NEVER);
     service.assetSoftware.mockReturnValue(NEVER);
     const { element } = await render(service);
-    expect(facts(element)['Criticidad']).toBe('Cargando…');
+    expect(facts(element)['Criticidad']).toBe('Alta');
     expect(element.textContent).toContain('Cargando el software instalado…');
+  });
+
+  it('shows «Sin dato» when a backend before F18.6 leaves out the inventory fields', async () => {
+    const service = new FakeService();
+    const older = { ...DETAIL };
+    for (const key of [
+      'criticality',
+      'exposed',
+      'personal_data',
+      'os',
+      'service',
+      'synced_at',
+      'itop_url',
+    ] as const) {
+      delete older[key];
+    }
+    service.asset.mockReturnValue(of(older));
+    const { element } = await render(service, 'https://itop.example.test');
+    const shown = facts(element);
+    expect(shown['Criticidad']).toBe('Sin dato');
+    expect(shown['Exposición a internet']).toBe('Sin dato');
+    expect(shown['Última sincronización con iTop']).toBe('—');
+    expect(service.listAssets).not.toHaveBeenCalled();
+    // Without the API link, «Ver en iTop» is built from the configured console.
+    const view = element.querySelector('.itop-links a') as HTMLAnchorElement;
+    expect(view.href).toBe(
+      'https://itop.example.test/pages/UI.php?operation=details&class=Server&id=CI-1',
+    );
   });
 
   it('takes the risk level from the open findings, never from a fixed one', async () => {
@@ -258,25 +292,22 @@ describe('AssetDetailPage', () => {
     expect(element.querySelector('.facts')).not.toBeNull();
   });
 
-  it('retries the inventory row and the software on their own', async () => {
+  it('retries the software on its own', async () => {
     const service = new FakeService();
-    service.findAsset.mockReturnValue(throwError(() => new ApiError(500, 'internal_error', 'X')));
     service.assetSoftware.mockReturnValue(
       throwError(() => new ApiError(500, 'internal_error', 'Falló el software.')),
     );
     const { fixture, element } = await render(service);
-    expect(element.textContent).toContain('No se pudieron leer la criticidad');
+    expect(facts(element)['Criticidad']).toBe('Alta');
     expect(element.textContent).toContain('Falló el software.');
     expect(Array.from(element.querySelectorAll('.kpi-value')).at(-1)?.textContent).toContain(
       'Sin datos',
     );
 
-    service.findAsset.mockReturnValue(of(PAYMENTS));
     service.assetSoftware.mockReturnValue(of([INSTALLED_OPENSSL]));
-    (element.querySelector('.link-button') as HTMLButtonElement).click();
     (element.querySelector('[role="alert"] button') as HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(facts(element)['Criticidad']).toBe('Alta');
+    expect(service.asset).toHaveBeenCalledTimes(1);
     expect(rowsOf(element, 'Software instalado')).toHaveLength(1);
   });
 });

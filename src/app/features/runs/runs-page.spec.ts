@@ -20,6 +20,10 @@ class FakeRuns {
     of({ ...SCAN_RUNNING, id: 'new-run', status: 'queued' as const, progress: 0 }),
   );
   summary = vi.fn<RunsService['summary']>(() => of(SUMMARY));
+  /** `GET /api/runs/{id}`: by default, the run as the list gives it. */
+  get = vi.fn<RunsService['get']>((id: string) =>
+    of([SCAN_RUNNING, NEWS_DONE, RECALC_FAILED].find((run) => run.id === id) ?? SCAN_RUNNING),
+  );
 }
 
 class FakeEvents {
@@ -212,19 +216,14 @@ describe('RunsPage', () => {
 
     const listed = runs.list.mock.calls.length;
     const counted = runs.summary.mock.calls.length;
-    runs.list.mockReturnValue(
-      of({
-        items: [
-          {
-            ...SCAN_RUNNING,
-            status: 'succeeded',
-            progress: 100,
-            finished_at: '2026-11-27T09:02:00Z',
-          },
-        ],
-        nextCursor: null,
-      }),
-    );
+    const ended: Run = {
+      ...SCAN_RUNNING,
+      status: 'succeeded',
+      progress: 100,
+      finished_at: '2026-11-27T09:02:00Z',
+    };
+    runs.list.mockReturnValue(of({ items: [ended], nextCursor: null }));
+    runs.get.mockReturnValue(of(ended));
     stream.next({
       runId: SCAN_RUNNING.id,
       progress: 100,
@@ -233,13 +232,9 @@ describe('RunsPage', () => {
     });
     stream.complete();
     await settle();
-    // The page again, and the run itself apart from the table filters (same kind and start instant).
-    expect(runs.list.mock.calls.length).toBe(listed + 2);
-    expect(runs.list).toHaveBeenLastCalledWith(
-      { kind: 'scan', date_from: SCAN_RUNNING.started_at, date_to: SCAN_RUNNING.started_at },
-      null,
-      50,
-    );
+    // The page again, and the run itself by its id, apart from the table filters.
+    expect(runs.list.mock.calls.length).toBe(listed + 1);
+    expect(runs.get).toHaveBeenCalledExactlyOnceWith(SCAN_RUNNING.id);
     expect(runs.summary.mock.calls.length).toBe(counted + 1);
     expect(page.liveState()).toBe('ended');
     expect(text(detail.querySelector('.live-note'))).toBe('La corrida terminó.');
@@ -259,6 +254,7 @@ describe('RunsPage', () => {
       finished_at: '2026-11-27T09:05:00Z',
     };
     runs.list.mockReturnValue(of({ items: [ended, NEWS_DONE], nextCursor: null }));
+    runs.get.mockReturnValue(of(ended));
     stream.error(new ApiError(0, 'network_error', 'No se pudo conectar con el servidor.'));
     await settle();
     const detail = element.querySelector('.run-detail')!;
@@ -285,6 +281,7 @@ describe('RunsPage', () => {
     runs.list.mockImplementation((filters) =>
       of({ items: filters.status === 'running' ? [] : [ended], nextCursor: null }),
     );
+    runs.get.mockReturnValue(of(ended));
     const stream = events.streams.get(SCAN_RUNNING.id)!;
     stream.next({ runId: SCAN_RUNNING.id, progress: 70, status: 'failed', message: 'Falló' });
     stream.complete();
@@ -295,8 +292,8 @@ describe('RunsPage', () => {
     expect(text(element.querySelector('.run-detail .run-status'))).toBe('Terminó con error');
   });
 
-  it('looks a run that was still queued up among the newest of its kind with its final status', async () => {
-    const { events, runs, page } = await render();
+  it('reads a run that was still queued by its id when its stream ends', async () => {
+    const { events, runs, page, settle } = await render();
     const queued: Run = {
       ...SCAN_RUNNING,
       id: 'queued-run',
@@ -305,26 +302,39 @@ describe('RunsPage', () => {
       started_at: '',
     };
     page.select(queued);
+    runs.get.mockReturnValue(
+      of({ ...queued, status: 'succeeded', progress: 100, started_at: SCAN_RUNNING.started_at }),
+    );
     const stream = events.streams.get('queued-run')!;
     stream.next({ runId: 'queued-run', progress: 100, status: 'succeeded', message: 'Terminado' });
     stream.complete();
-    expect(runs.list).toHaveBeenLastCalledWith({ kind: 'scan', status: 'succeeded' }, null, 50);
+    await settle();
+    expect(runs.get).toHaveBeenCalledExactlyOnceWith('queued-run');
+    expect(page.detail()?.status).toBe('succeeded');
+    expect(page.detail()?.run.started_at).toBe(SCAN_RUNNING.started_at);
   });
 
   it('keeps the detail it has when the run cannot be read again', async () => {
     const { events, runs, page } = await render();
     page.select(SCAN_RUNNING);
-    runs.list.mockReturnValue(throwError(() => new ApiError(500, 'internal_error', 'Falló.')));
+    runs.get.mockReturnValue(throwError(() => new ApiError(404, 'not_found', 'No existe.')));
     const stream = events.streams.get(SCAN_RUNNING.id)!;
     stream.next({ runId: SCAN_RUNNING.id, progress: 100, status: null, message: '' });
     stream.complete();
-    expect(runs.list).toHaveBeenLastCalledWith(
-      { kind: 'scan', date_from: SCAN_RUNNING.started_at, date_to: SCAN_RUNNING.started_at },
-      null,
-      50,
-    );
+    expect(runs.get).toHaveBeenCalledExactlyOnceWith(SCAN_RUNNING.id);
     expect(page.detail()?.id).toBe(SCAN_RUNNING.id);
     expect(page.liveState()).toBe('ended');
+  });
+
+  it('ignores the final row of a run whose detail was closed meanwhile', async () => {
+    const { events, runs, page } = await render();
+    page.select(SCAN_RUNNING);
+    const answer = new Subject<Run>();
+    runs.get.mockReturnValue(answer);
+    events.streams.get(SCAN_RUNNING.id)!.complete();
+    page.select(NEWS_DONE);
+    answer.next({ ...SCAN_RUNNING, status: 'succeeded' });
+    expect(page.detail()?.id).toBe(NEWS_DONE.id);
   });
 
   it('opens a finished run without following it', async () => {

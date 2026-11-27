@@ -74,12 +74,6 @@
           </div>
         }
       </dl>
-      @if (row.status() === 'error') {
-        <p class="hint" role="status">
-          No se pudieron leer la criticidad, la exposición y el sistema operativo del inventario.
-          <button type="button" class="link-button" (click)="loadRow()">Reintentar</button>
-        </p>
-      }
     </section>
 
     <section class="panel inventory" aria-labelledby="software-title">
