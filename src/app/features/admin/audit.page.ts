@@ -11,7 +11,7 @@ import {
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
-import { dayBound } from '../../shared/day-bound';
+import { dayBound } from '../runs/day-bound';
 import { formatDateTime } from '../../shared/labels';
 import { AUDIT_ACTION_LABELS, auditActionLabel, KNOWN_AUDIT_ACTIONS } from './audit-labels';
 import { AuditEntry, AuditFilters, AuditService } from './audit.service';

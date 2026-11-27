@@ -24,7 +24,7 @@ export class RunsService {
     return this.api.post('/api/scans', { body: { kind: 'scan' } });
   }
 
-  /** Runs queued and running now, and those that ended well or with an error in the last 24 hours (AG-9). */
+  /** Runs queued and running now (whenever they started) and, of those started in the last 24 hours, the ended ones (AG-9). */
   summary(): Observable<TelemetrySummary> {
     return this.api.get('/api/telemetry/summary', { query: { window: '24h' } });
   }

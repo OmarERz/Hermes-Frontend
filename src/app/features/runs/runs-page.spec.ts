@@ -4,7 +4,7 @@ import { Observable, of, Subject, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import type { Role } from '../../core/api/api-types';
 import { provideFakeSession } from '../../testing/fake-session';
-import { dayBound } from '../../shared/day-bound';
+import { dayBound } from './day-bound';
 import type { CursorPage } from '../../shared/cursor-pager';
 import { RunEventsService, RunProgress } from './run-events';
 import type { Run } from './run-labels';

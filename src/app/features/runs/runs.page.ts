@@ -34,7 +34,7 @@ import { ACTION_ROLES } from '../../core/auth/roles';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
-import { dayBound } from '../../shared/day-bound';
+import { dayBound } from './day-bound';
 import { RunEventsService, RunProgress } from './run-events';
 import {
   fresher,

@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import { provideFakeSession } from '../../testing/fake-session';
-import { dayBound } from '../../shared/day-bound';
+import { dayBound } from '../runs/day-bound';
 import { formatDateTime } from '../../shared/labels';
 import { AuditPage } from './audit.page';
 import { AuditEntry, AuditService } from './audit.service';

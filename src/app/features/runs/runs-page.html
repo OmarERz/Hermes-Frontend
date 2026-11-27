@@ -16,14 +16,14 @@
     </article>
     <article class="stat-card">
       <span><svg lucideCircleCheck aria-hidden="true"></svg></span
-      ><small>Terminaron bien · últimas 24 h</small>
+      ><small>Iniciadas en las últimas 24 h · terminaron bien</small>
       <strong class="numeric" [class.unknown]="succeeded() === null">{{
         succeeded() ?? '—'
       }}</strong>
     </article>
     <article class="stat-card">
       <span class="warning"><svg lucideCircleAlert aria-hidden="true"></svg></span
-      ><small>Terminaron con error · últimas 24 h</small>
+      ><small>Iniciadas en las últimas 24 h · con error</small>
       <strong class="numeric" [class.unknown]="failed() === null">{{ failed() ?? '—' }}</strong>
     </article>
   </section>
