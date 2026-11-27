@@ -99,7 +99,14 @@ mkdir -p "$root/$outputs"
 
 echo "==> e2e: backend $backend_ref from $backend_dir"
 mkdir "$tmp/backend"
-git -C "$backend_dir" archive "$backend_ref" | tar -x -C "$tmp/backend"
+# Git runs hooks (the pre-push gate) with GIT_DIR and friends pointing at the front repo, and those win over -C: without
+# clearing them, this would archive the front instead of the backend.
+env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE -u GIT_OBJECT_DIRECTORY -u GIT_ALTERNATE_OBJECT_DIRECTORIES \
+  -u GIT_COMMON_DIR -u GIT_PREFIX git -C "$backend_dir" archive "$backend_ref" | tar -x -C "$tmp/backend"
+if [ ! -f "$tmp/backend/compose.yaml" ]; then
+  echo "✖ e2e: the backend snapshot of $backend_ref from $backend_dir has no compose.yaml" >&2
+  exit 1
+fi
 
 # Only what this script sets reaches Compose: every variable the compose files interpolate, plus Compose's own
 # settings (a COMPOSE_PROFILES=slack in the caller's shell would start the Slack module), is dropped first.
