@@ -66,69 +66,77 @@
     </p>
   }
 
-  <section class="filters" aria-label="Filtros de corridas">
-    <label class="select-filter"
-      ><svg lucideLayers aria-hidden="true"></svg>
-      <select
-        #kindSelect
-        [value]="kind()"
-        (change)="setKind(kindSelect.value)"
-        aria-label="Tipo de corrida"
-      >
-        <option value="">Todos los tipos</option>
-        @for (value of kinds; track value) {
-          <option [value]="value" [selected]="kind() === value">{{ kindLabels[value] }}</option>
-        }
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <label class="select-filter"
-      ><svg lucideFunnel aria-hidden="true"></svg>
-      <select
-        #statusSelect
-        [value]="status()"
-        (change)="setStatus(statusSelect.value)"
-        aria-label="Estado de la corrida"
-      >
-        <option value="">Todos los estados</option>
-        @for (value of statuses; track value) {
-          <option [value]="value" [selected]="status() === value">
-            {{ statusLabels[value] }}
-          </option>
-        }
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <label class="asset-search date-filter"
-      ><svg lucideCalendar aria-hidden="true"></svg>
-      <span aria-hidden="true">Desde</span>
-      <input
-        #fromInput
-        type="date"
-        [value]="dateFrom()"
-        [attr.max]="dateTo() || null"
-        (change)="setDateFrom(fromInput.value)"
-        aria-label="Iniciadas desde"
-      />
-    </label>
-    <label class="asset-search date-filter"
-      ><svg lucideCalendar aria-hidden="true"></svg>
-      <span aria-hidden="true">hasta</span>
-      <input
-        #toInput
-        type="date"
-        [value]="dateTo()"
-        [attr.min]="dateFrom() || null"
-        (change)="setDateTo(toInput.value)"
-        aria-label="Iniciadas hasta"
-      />
-    </label>
-    @if (hasFilters()) {
-      <button type="button" class="more-filter" (click)="clearFilters()">Quitar filtros</button>
-    }
-    <button type="button" class="more-filter" (click)="refresh()">
-      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
-    </button>
+  <section class="filter-bar" aria-label="Filtros de corridas">
+    <label class="field"
+      ><span class="field-label">Tipo</span
+      ><span class="control"
+        ><svg lucideLayers aria-hidden="true"></svg>
+        <select
+          #kindSelect
+          [value]="kind()"
+          (change)="setKind(kindSelect.value)"
+          aria-label="Tipo de corrida"
+        >
+          <option value="">Todos los tipos</option>
+          @for (value of kinds; track value) {
+            <option [value]="value" [selected]="kind() === value">{{ kindLabels[value] }}</option>
+          }
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Estado</span
+      ><span class="control"
+        ><svg lucideFunnel aria-hidden="true"></svg>
+        <select
+          #statusSelect
+          [value]="status()"
+          (change)="setStatus(statusSelect.value)"
+          aria-label="Estado de la corrida"
+        >
+          <option value="">Todos los estados</option>
+          @for (value of statuses; track value) {
+            <option [value]="value" [selected]="status() === value">
+              {{ statusLabels[value] }}
+            </option>
+          }
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Iniciadas desde</span
+      ><span class="control"
+        ><svg lucideCalendar aria-hidden="true"></svg>
+        <input
+          #fromInput
+          type="date"
+          [value]="dateFrom()"
+          [attr.max]="dateTo() || null"
+          (change)="setDateFrom(fromInput.value)"
+          aria-label="Iniciadas desde" /></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Iniciadas hasta</span
+      ><span class="control"
+        ><svg lucideCalendar aria-hidden="true"></svg>
+        <input
+          #toInput
+          type="date"
+          [value]="dateTo()"
+          [attr.min]="dateFrom() || null"
+          (change)="setDateTo(toInput.value)"
+          aria-label="Iniciadas hasta" /></span
+    ></label>
+    <div class="filter-actions">
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+          Quitar filtros
+        </button>
+      }
+      <button type="button" class="btn btn-secondary" (click)="refresh()">
+        <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+      </button>
+    </div>
   </section>
 
   @if (detail(); as run) {
@@ -180,7 +188,7 @@
               sigue siendo el que dio la API.
             </p>
             @if (run.active) {
-              <button type="button" class="more-filter" (click)="followAgain()">
+              <button type="button" class="btn btn-secondary btn-sm" (click)="followAgain()">
                 <svg lucideRefreshCw aria-hidden="true"></svg> Seguir de nuevo
               </button>
             }

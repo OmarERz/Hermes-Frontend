@@ -25,117 +25,152 @@
     }
   </div>
 
-  <section class="filters" aria-label="Filtros">
-    <label class="select-filter"
-      ><svg lucideFunnel aria-hidden="true"></svg>
-      <select [ngModel]="band()" (ngModelChange)="setBand($event)" aria-label="Nivel">
-        <option value="">Todos los niveles</option>
-        @for (level of levels; track level) {
-          <option [value]="level">{{ levelLabels[level] }}</option>
-        }
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <label class="select-filter"
-      ><svg lucideLayers aria-hidden="true"></svg>
-      <select [ngModel]="status()" (ngModelChange)="setStatus($event)" aria-label="Estado">
-        <option value="">Todos los estados</option>
-        @for (status of statuses; track status) {
-          <option [value]="status">{{ statusLabels[status] }}</option>
-        }
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <label class="select-filter"
-      ><svg lucideFlame aria-hidden="true"></svg>
-      <select [ngModel]="inKev()" (ngModelChange)="setInKev($event)" aria-label="Catálogo KEV">
-        <option value="">KEV: todas</option>
-        <option value="true">Solo en KEV</option>
-        <option value="false">Fuera de KEV</option>
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <label class="select-filter"
-      ><svg lucideGlobe aria-hidden="true"></svg>
-      <select
-        [ngModel]="exposed()"
-        (ngModelChange)="setExposed($event)"
-        aria-label="Exposición a internet"
+  <section class="filter-bar" aria-label="Filtros">
+    <label class="field"
+      ><span class="field-label">Nivel</span
+      ><span class="control"
+        ><svg lucideFunnel aria-hidden="true"></svg>
+        <select [ngModel]="band()" (ngModelChange)="setBand($event)" aria-label="Nivel">
+          <option value="">Todos los niveles</option>
+          @for (level of levels; track level) {
+            <option [value]="level">{{ levelLabels[level] }}</option>
+          }
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Estado</span
+      ><span class="control"
+        ><svg lucideLayers aria-hidden="true"></svg>
+        <select [ngModel]="status()" (ngModelChange)="setStatus($event)" aria-label="Estado">
+          <option value="">Todos los estados</option>
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ statusLabels[status] }}</option>
+          }
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Catálogo KEV</span
+      ><span class="control"
+        ><svg lucideFlame aria-hidden="true"></svg>
+        <select [ngModel]="inKev()" (ngModelChange)="setInKev($event)" aria-label="Catálogo KEV">
+          <option value="">Todas</option>
+          <option value="true">Solo en KEV</option>
+          <option value="false">Fuera de KEV</option>
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Exposición</span
+      ><span class="control"
+        ><svg lucideGlobe aria-hidden="true"></svg>
+        <select
+          [ngModel]="exposed()"
+          (ngModelChange)="setExposed($event)"
+          aria-label="Exposición a internet"
+        >
+          <option value="">Todas</option>
+          <option value="true">Expuestas a internet</option>
+          <option value="false">No expuestas</option>
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
+
+    <div class="filter-actions">
+      <button
+        type="button"
+        class="btn btn-ghost more-toggle"
+        aria-controls="vulnerability-more-filters"
+        [attr.aria-expanded]="moreOpen()"
+        (click)="toggleMore()"
       >
-        <option value="">Exposición: todas</option>
-        <option value="true">Expuestas a internet</option>
-        <option value="false">No expuestas</option>
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <label class="select-filter"
-      ><svg lucideLock aria-hidden="true"></svg>
-      <select
-        [ngModel]="classification()"
-        (ngModelChange)="setClassification($event)"
-        aria-label="Clasificación"
-      >
-        <option value="">Todas las clasificaciones</option>
-        @for (option of classifications; track option) {
-          <option [value]="option">{{ classificationLabels[option] }}</option>
+        <svg lucideSlidersHorizontal aria-hidden="true"></svg>
+        {{ moreOpen() ? 'Menos filtros' : 'Más filtros' }}
+        @if (!moreOpen() && moreActive()) {
+          <span class="more-count"
+            >({{ moreActive() }} {{ moreActive() === 1 ? 'activo' : 'activos' }})</span
+          >
         }
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <label class="asset-search text-filter"
-      ><svg lucideUser aria-hidden="true"></svg>
-      <input
-        #ownerInput
-        type="text"
-        enterkeyhint="search"
-        [value]="owner()"
-        (change)="setOwner(ownerInput.value)"
-        placeholder="Responsable"
-        aria-label="Responsable (texto exacto)"
-      />
-    </label>
-    <label class="asset-search text-filter"
-      ><svg lucideUsers aria-hidden="true"></svg>
-      <input
-        #custodianInput
-        type="text"
-        enterkeyhint="search"
-        [value]="custodian()"
-        (change)="setCustodian(custodianInput.value)"
-        placeholder="Custodio"
-        aria-label="Custodio (texto exacto)"
-      />
-    </label>
-    <label class="asset-search date-filter"
-      ><svg lucideCalendar aria-hidden="true"></svg>
-      <span aria-hidden="true">Vista desde</span>
-      <input
-        #fromInput
-        type="date"
-        [value]="dateFrom()"
-        [attr.max]="dateTo() || null"
-        (change)="setDateFrom(fromInput.value)"
-        aria-label="Última vez vista desde"
-      />
-    </label>
-    <label class="asset-search date-filter"
-      ><svg lucideCalendar aria-hidden="true"></svg>
-      <span aria-hidden="true">hasta</span>
-      <input
-        #toInput
-        type="date"
-        [value]="dateTo()"
-        [attr.min]="dateFrom() || null"
-        (change)="setDateTo(toInput.value)"
-        aria-label="Última vez vista hasta"
-      />
-    </label>
-    @if (hasFilters()) {
-      <button type="button" class="more-filter" (click)="clearFilters()">Quitar filtros</button>
-    }
-    <button type="button" class="more-filter" (click)="refresh()">
-      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
-    </button>
+      </button>
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+          Quitar filtros
+        </button>
+      }
+      <button type="button" class="btn btn-secondary" (click)="refresh()">
+        <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+      </button>
+    </div>
+
+    <div class="filter-more" id="vulnerability-more-filters" [hidden]="!moreOpen()">
+      <label class="field"
+        ><span class="field-label">Clasificación</span
+        ><span class="control"
+          ><svg lucideLock aria-hidden="true"></svg>
+          <select
+            [ngModel]="classification()"
+            (ngModelChange)="setClassification($event)"
+            aria-label="Clasificación"
+          >
+            <option value="">Todas</option>
+            @for (option of classifications; track option) {
+              <option [value]="option">{{ classificationLabels[option] }}</option>
+            }
+          </select>
+          <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+      ></label>
+      <label class="field"
+        ><span class="field-label">Responsable</span
+        ><span class="control"
+          ><svg lucideUser aria-hidden="true"></svg>
+          <input
+            #ownerInput
+            type="text"
+            enterkeyhint="search"
+            [value]="owner()"
+            (change)="setOwner(ownerInput.value)"
+            placeholder="Texto exacto"
+            aria-label="Responsable (texto exacto)" /></span
+      ></label>
+      <label class="field"
+        ><span class="field-label">Custodio</span
+        ><span class="control"
+          ><svg lucideUsers aria-hidden="true"></svg>
+          <input
+            #custodianInput
+            type="text"
+            enterkeyhint="search"
+            [value]="custodian()"
+            (change)="setCustodian(custodianInput.value)"
+            placeholder="Texto exacto"
+            aria-label="Custodio (texto exacto)" /></span
+      ></label>
+      <label class="field"
+        ><span class="field-label">Vista desde</span
+        ><span class="control"
+          ><svg lucideCalendar aria-hidden="true"></svg>
+          <input
+            #fromInput
+            type="date"
+            [value]="dateFrom()"
+            [attr.max]="dateTo() || null"
+            (change)="setDateFrom(fromInput.value)"
+            aria-label="Última vez vista desde" /></span
+      ></label>
+      <label class="field"
+        ><span class="field-label">Vista hasta</span
+        ><span class="control"
+          ><svg lucideCalendar aria-hidden="true"></svg>
+          <input
+            #toInput
+            type="date"
+            [value]="dateTo()"
+            [attr.min]="dateFrom() || null"
+            (change)="setDateTo(toInput.value)"
+            aria-label="Última vez vista hasta" /></span
+      ></label>
+    </div>
   </section>
 
   <section class="panel inventory" aria-labelledby="vulnerabilities-title">

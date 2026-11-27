@@ -14,6 +14,7 @@ import {
   LucideLock,
   LucideRefreshCw,
   LucideShieldAlert,
+  LucideSlidersHorizontal,
   LucideTriangleAlert,
   LucideUser,
   LucideUsers,
@@ -117,6 +118,7 @@ function groupRow(group: VulnerabilityGroup, key: string): GroupTableRow {
     LucideLayers,
     LucideLock,
     LucideRefreshCw,
+    LucideSlidersHorizontal,
     LucideTriangleAlert,
     LucideUser,
     LucideUsers,
@@ -156,6 +158,19 @@ export class VulnerabilitiesPage {
   readonly dateFrom = signal('');
   readonly dateTo = signal('');
   readonly pageSize = signal(25);
+  /** «Más filtros» shows the five filters past the first four (VUL-1); they apply also while hidden. */
+  readonly moreOpen = signal(false);
+  /** Filters behind «Más filtros» with a value: the button counts them while they are hidden. */
+  readonly moreActive = computed(
+    () =>
+      [
+        this.classification(),
+        this.owner(),
+        this.custodian(),
+        this.dateFrom(),
+        this.dateTo(),
+      ].filter(Boolean).length,
+  );
 
   readonly filters = computed<VulnerabilityFilters>(() => ({
     band: this.band() || null,
@@ -266,6 +281,10 @@ export class VulnerabilitiesPage {
   refresh(): void {
     this.pager().first();
     this.counts.run(this.service.levelCounts(this.filters()));
+  }
+
+  toggleMore(): void {
+    this.moreOpen.update((open) => !open);
   }
 
   setView(view: VulnerabilityView): void {

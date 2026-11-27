@@ -5,69 +5,77 @@
     [icono]="bannerIcon"
   />
 
-  <section class="filters" aria-label="Filtros de auditoría">
-    <label class="asset-search text-filter"
-      ><svg lucideSearch aria-hidden="true"></svg>
-      <input
-        #actorInput
-        type="search"
-        enterkeyhint="search"
-        [value]="actor()"
-        [attr.maxlength]="maxLength"
-        (change)="setActor(actorInput.value)"
-        placeholder="Actor: correo, nombre o «sistema»"
-        aria-label="Actor (correo, nombre o «sistema» para las automáticas)"
-      />
-    </label>
-    <label class="asset-search text-filter"
-      ><svg lucideTag aria-hidden="true"></svg>
-      <input
-        #actionInput
-        type="search"
-        enterkeyhint="search"
-        list="audit-actions"
-        [value]="action()"
-        [attr.maxlength]="maxLength"
-        (change)="setAction(actionInput.value)"
-        placeholder="Acción exacta, por ejemplo source.enable"
-        aria-label="Acción (texto exacto)"
-      />
-      <datalist id="audit-actions">
-        @for (code of knownActions; track code) {
-          <option [value]="code">{{ actionLabels[code] }}</option>
-        }
-      </datalist>
-    </label>
-    <label class="asset-search date-filter"
-      ><svg lucideCalendar aria-hidden="true"></svg>
-      <span aria-hidden="true">Desde</span>
-      <input
-        #fromInput
-        type="date"
-        [value]="dateFrom()"
-        [attr.max]="dateTo() || null"
-        (change)="setDateFrom(fromInput.value)"
-        aria-label="Registrados desde"
-      />
-    </label>
-    <label class="asset-search date-filter"
-      ><svg lucideCalendar aria-hidden="true"></svg>
-      <span aria-hidden="true">hasta</span>
-      <input
-        #toInput
-        type="date"
-        [value]="dateTo()"
-        [attr.min]="dateFrom() || null"
-        (change)="setDateTo(toInput.value)"
-        aria-label="Registrados hasta"
-      />
-    </label>
-    @if (hasFilters()) {
-      <button type="button" class="more-filter" (click)="clearFilters()">Quitar filtros</button>
-    }
-    <button type="button" class="more-filter" (click)="pager.reload()">
-      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
-    </button>
+  <section class="filter-bar" aria-label="Filtros de auditoría">
+    <label class="field"
+      ><span class="field-label">Actor</span
+      ><span class="control"
+        ><svg lucideSearch aria-hidden="true"></svg>
+        <input
+          #actorInput
+          type="search"
+          enterkeyhint="search"
+          [value]="actor()"
+          [attr.maxlength]="maxLength"
+          (change)="setActor(actorInput.value)"
+          placeholder="Correo, nombre o «sistema»"
+          aria-label="Actor (correo, nombre o «sistema» para las automáticas)" /></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Acción</span
+      ><span class="control"
+        ><svg lucideTag aria-hidden="true"></svg>
+        <input
+          #actionInput
+          type="search"
+          enterkeyhint="search"
+          list="audit-actions"
+          [value]="action()"
+          [attr.maxlength]="maxLength"
+          (change)="setAction(actionInput.value)"
+          placeholder="Por ejemplo, source.enable"
+          aria-label="Acción (texto exacto)"
+        />
+        <datalist id="audit-actions">
+          @for (code of knownActions; track code) {
+            <option [value]="code">{{ actionLabels[code] }}</option>
+          }
+        </datalist></span
+      ></label
+    >
+    <label class="field"
+      ><span class="field-label">Registrados desde</span
+      ><span class="control"
+        ><svg lucideCalendar aria-hidden="true"></svg>
+        <input
+          #fromInput
+          type="date"
+          [value]="dateFrom()"
+          [attr.max]="dateTo() || null"
+          (change)="setDateFrom(fromInput.value)"
+          aria-label="Registrados desde" /></span
+    ></label>
+    <label class="field"
+      ><span class="field-label">Registrados hasta</span
+      ><span class="control"
+        ><svg lucideCalendar aria-hidden="true"></svg>
+        <input
+          #toInput
+          type="date"
+          [value]="dateTo()"
+          [attr.min]="dateFrom() || null"
+          (change)="setDateTo(toInput.value)"
+          aria-label="Registrados hasta" /></span
+    ></label>
+    <div class="filter-actions">
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+          Quitar filtros
+        </button>
+      }
+      <button type="button" class="btn btn-secondary" (click)="pager.reload()">
+        <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+      </button>
+    </div>
   </section>
 
   <section class="panel inventory" aria-labelledby="audit-title">

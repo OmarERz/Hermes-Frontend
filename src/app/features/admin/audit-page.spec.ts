@@ -100,7 +100,7 @@ describe('AuditPage', () => {
   it('filters by actor and exact action from the first page, trimming the text', async () => {
     const { element, audit } = await render();
     const [actor, action] = Array.from(
-      element.querySelectorAll('.filters input[type="search"]'),
+      element.querySelectorAll('.filter-bar input[type="search"]'),
     ) as HTMLInputElement[];
     type(actor, '  sistema ');
     expect(audit.list).toHaveBeenLastCalledWith(
@@ -140,7 +140,7 @@ describe('AuditPage', () => {
       50,
     );
     await settle();
-    const clear = Array.from(element.querySelectorAll('button.more-filter')).find(
+    const clear = Array.from(element.querySelectorAll('.filter-actions button')).find(
       (button) => text(button) === 'Quitar filtros',
     ) as HTMLButtonElement;
     clear.click();
@@ -191,7 +191,7 @@ describe('AuditPage', () => {
     ).click();
     await settle();
     expect(audit.list).toHaveBeenLastCalledWith(expect.anything(), 'n.s', 50);
-    const refresh = Array.from(element.querySelectorAll('button.more-filter')).find(
+    const refresh = Array.from(element.querySelectorAll('.filter-actions button')).find(
       (button) => text(button) === 'Actualizar',
     ) as HTMLButtonElement;
     refresh.click();

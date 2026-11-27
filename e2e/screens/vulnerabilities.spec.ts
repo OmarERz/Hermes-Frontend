@@ -30,6 +30,29 @@ test.describe('vulnerabilities as reader', () => {
     await expect(page.getByRole('link', { name: 'Exportar STIX' })).toHaveCount(0);
   });
 
+  test('keeps the less used filters behind «Más filtros» and counts the ones in use', async ({
+    page,
+  }) => {
+    await page.goto('/vulnerabilidades');
+    const filters = page.getByRole('region', { name: 'Filtros', exact: true });
+    // Visible labels above the main filters (G8), the rest folded (VUL-1).
+    await expect(filters.getByText('Nivel', { exact: true })).toBeVisible();
+    await expect(filters.getByLabel('Custodio (texto exacto)')).toBeHidden();
+    const more = filters.getByRole('button', { name: 'Más filtros' });
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+
+    await more.click();
+    const custodian = filters.getByLabel('Custodio (texto exacto)');
+    await expect(custodian).toBeVisible();
+    await custodian.fill('Plataforma');
+    await custodian.blur();
+    await expect(filters.getByRole('button', { name: 'Quitar filtros' })).toBeVisible();
+
+    await filters.getByRole('button', { name: 'Menos filtros' }).click();
+    await expect(custodian).toBeHidden();
+    await expect(filters.getByRole('button', { name: 'Más filtros (1 activo)' })).toBeVisible();
+  });
+
   test('draws the score charts and their tooltips within the CSP', async ({ page }) => {
     await page.goto('/vulnerabilidades');
     await page.getByRole('link', { name: 'CVE-2026-10001' }).click();

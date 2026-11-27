@@ -5,17 +5,19 @@
     [icono]="bannerIcon"
   />
 
-  <section class="filters" aria-label="Filtros de tickets">
-    <label class="select-filter"
-      ><svg lucideFunnel aria-hidden="true"></svg>
-      <select [ngModel]="urgency()" (ngModelChange)="setUrgency($event)" aria-label="Urgencia">
-        <option [ngValue]="null">Todas las urgencias</option>
-        @for (value of urgencies; track value) {
-          <option [ngValue]="value">Urgencia {{ value }} · {{ urgencyLabels[value] }}</option>
-        }
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
+  <section class="filter-bar" aria-label="Filtros de tickets">
+    <label class="field"
+      ><span class="field-label">Urgencia</span
+      ><span class="control"
+        ><svg lucideFunnel aria-hidden="true"></svg>
+        <select [ngModel]="urgency()" (ngModelChange)="setUrgency($event)" aria-label="Urgencia">
+          <option [ngValue]="null">Todas las urgencias</option>
+          @for (value of urgencies; track value) {
+            <option [ngValue]="value">Urgencia {{ value }} · {{ urgencyLabels[value] }}</option>
+          }
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
   </section>
 
   <section class="panel inventory" aria-labelledby="tickets-title">

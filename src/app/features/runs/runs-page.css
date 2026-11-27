@@ -13,16 +13,6 @@
 .action-row {
   margin: 18px 0 14px;
 }
-.filters {
-  flex-wrap: wrap;
-}
-.filters .date-filter {
-  flex: 0 1 auto;
-  white-space: nowrap;
-}
-.filters .date-filter input {
-  width: auto;
-}
 .panel {
   margin-top: 15px;
 }

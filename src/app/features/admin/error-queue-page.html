@@ -5,25 +5,29 @@
     [icono]="bannerIcon"
   />
 
-  <section class="filters" aria-label="Filtros de la cola de errores">
-    <label class="select-filter"
-      ><svg lucideFunnel aria-hidden="true"></svg>
-      <select
-        #kindSelect
-        [value]="kind()"
-        (change)="setKind(kindSelect.value)"
-        aria-label="Origen del error"
-      >
-        <option value="">Todos los orígenes</option>
-        @for (value of kinds; track value) {
-          <option [value]="value" [selected]="kind() === value">{{ kindLabels[value] }}</option>
-        }
-      </select>
-      <svg lucideChevronDown aria-hidden="true"></svg>
-    </label>
-    <button type="button" class="more-filter" (click)="refresh()">
-      <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
-    </button>
+  <section class="filter-bar" aria-label="Filtros de la cola de errores">
+    <label class="field"
+      ><span class="field-label">Origen</span
+      ><span class="control"
+        ><svg lucideFunnel aria-hidden="true"></svg>
+        <select
+          #kindSelect
+          [value]="kind()"
+          (change)="setKind(kindSelect.value)"
+          aria-label="Origen del error"
+        >
+          <option value="">Todos los orígenes</option>
+          @for (value of kinds; track value) {
+            <option [value]="value" [selected]="kind() === value">{{ kindLabels[value] }}</option>
+          }
+        </select>
+        <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+    ></label>
+    <div class="filter-actions">
+      <button type="button" class="btn btn-secondary" (click)="refresh()">
+        <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+      </button>
+    </div>
   </section>
 
   @if (notice(); as message) {

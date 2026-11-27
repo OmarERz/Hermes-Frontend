@@ -127,7 +127,7 @@ describe('RunsPage', () => {
       25,
     );
     await settle();
-    const clear = Array.from(element.querySelectorAll('button.more-filter')).find(
+    const clear = Array.from(element.querySelectorAll('.filter-actions button')).find(
       (button) => text(button) === 'Quitar filtros',
     ) as HTMLButtonElement;
     clear.click();
@@ -142,7 +142,7 @@ describe('RunsPage', () => {
   it('applies the filters chosen in the selects', async () => {
     const { element, runs } = await render();
     const [kind, status] = Array.from(
-      element.querySelectorAll('.filters select'),
+      element.querySelectorAll('.filter-bar select'),
     ) as HTMLSelectElement[];
     kind.value = 'ingestion';
     kind.dispatchEvent(new Event('change'));

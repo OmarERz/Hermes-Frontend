@@ -2,6 +2,7 @@
 @import './styles/segmented.css';
 @import './styles/buttons.css';
 @import './styles/kpi.css';
+@import './styles/forms.css';
 @import './app/componentes/layout-principal/layout-principal.css';
 @import './app/rutas/Agentes/control-agente.css';
 @import './app/rutas/Stack-tecnologico/stack-tecnologico.css';
@@ -539,7 +540,13 @@ h3 {
 }
 .app-shell[data-theme='dark']
   :is(.agent-config-view, .agent-history-view, .recommendations-view, .human-review-view)
-  :is(input, select, textarea, td button, .cancel-button):not(.btn) {
+  :is(
+    input:not([type='checkbox'], [type='radio']),
+    select,
+    textarea,
+    td button,
+    .cancel-button
+  ):not(.btn) {
   border-color: var(--border);
   background: var(--surface-raised);
   color: var(--text-primary);

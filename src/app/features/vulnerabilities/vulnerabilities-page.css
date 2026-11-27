@@ -1,15 +1,7 @@
-.filters {
-  flex-wrap: wrap;
-}
-.filters .text-filter {
-  flex: 1 1 150px;
-}
-.filters .date-filter {
-  flex: 0 1 auto;
-  white-space: nowrap;
-}
-.filters .date-filter input {
-  width: auto;
+/* The filters are the shared .filter-bar (src/styles/forms.css). */
+.more-count {
+  color: var(--text-secondary);
+  font-weight: var(--weight-semibold);
 }
 /* The views: the shared segmented control (src/styles/segmented.css). */
 .view-switch {

@@ -157,7 +157,7 @@ describe('ErrorQueuePage', () => {
 
   it('filters by origin from the first page', async () => {
     const { element, queue } = await render();
-    const select = element.querySelector('.filters select') as HTMLSelectElement;
+    const select = element.querySelector('.filter-bar select') as HTMLSelectElement;
     select.value = 'llm_validation';
     select.dispatchEvent(new Event('change'));
     expect(queue.list).toHaveBeenLastCalledWith('llm_validation', null, 50);
@@ -258,7 +258,7 @@ describe('ErrorQueuePage', () => {
     await settle();
     expect(queue.list).toHaveBeenLastCalledWith(null, 'n.s', 50);
     page.notice.set({ kind: 'ok', text: 'Hecho.' });
-    (element.querySelector('button.more-filter') as HTMLButtonElement).click();
+    (element.querySelector('.filter-actions button') as HTMLButtonElement).click();
     expect(page.notice()).toBeNull();
     expect(queue.list).toHaveBeenLastCalledWith(null, 'n.s', 50);
   });

@@ -144,12 +144,6 @@ legend {
   gap: 7px;
   font-weight: 500;
 }
-.company-form label.check input {
-  min-height: 0;
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent);
-}
 .chips {
   display: flex;
   flex-wrap: wrap;
