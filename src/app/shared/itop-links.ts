@@ -75,9 +75,9 @@ export function itopCreateUrl(base: string | null, itopClass: string): string | 
     .itop-link {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: var(--space-1);
       color: var(--accent, #c90083);
-      font-weight: 600;
+      font-weight: var(--weight-semibold);
       text-decoration: none;
       white-space: nowrap;
     }
@@ -85,8 +85,8 @@ export function itopCreateUrl(base: string | null, itopClass: string): string | 
       text-decoration: underline;
     }
     .itop-link:focus-visible {
-      outline: 2px solid var(--accent, #ff009d);
-      outline-offset: 2px;
+      outline: var(--focus-ring);
+      outline-offset: var(--focus-offset);
     }
     .itop-link svg {
       width: 14px;

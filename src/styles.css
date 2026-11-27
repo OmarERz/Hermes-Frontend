@@ -1,3 +1,4 @@
+@import './styles/tokens.css';
 @import './app/componentes/layout-principal/layout-principal.css';
 @import './app/rutas/Agentes/control-agente.css';
 @import './app/rutas/Stack-tecnologico/stack-tecnologico.css';
@@ -9,6 +10,8 @@
 @import './app/rutas/Feeds-inteligencia/feeds-inteligencia.css';
 
 :root {
+  /* Legacy +2.67 px of the prototype: only the per-screen sheets still add it, until F19.3–F19.6 move them to the
+     type scale of tokens.css. */
   --font-size-increase: 2.67px;
   --background-dark-neon:
     radial-gradient(ellipse at 8% 18%, rgba(116, 23, 121, 0.32), transparent 38%),
@@ -53,6 +56,9 @@
     sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  accent-color: var(--accent);
   color: var(--text-primary);
   background: var(--canvas);
 }
@@ -65,11 +71,12 @@ body {
 }
 body {
   font-family: inherit;
-  font-size: calc(16px + var(--font-size-increase));
-  font-weight: 400;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-regular);
   color: var(--text-primary);
 }
 .app-shell {
+  accent-color: var(--accent);
   background: var(--page-background);
 }
 .app-shell[data-theme='dark'] {
@@ -83,11 +90,11 @@ textarea {
   font: inherit;
 }
 h1 {
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 h2,
 h3 {
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
 .app-shell[data-theme='light'] {
@@ -225,7 +232,7 @@ h3 {
   border-color: transparent;
   background: var(--accent);
   color: #fff;
-  box-shadow: 0 0 18px rgba(255, 0, 157, 0.2);
+  box-shadow: var(--glow-accent);
 }
 .app-shell[data-theme='dark'] .agent-view .action.outline {
   border-color: var(--accent-violet);
@@ -374,8 +381,8 @@ h3 {
 .app-shell[data-theme='dark']
   :is(.agent-view, .stack-view, .assets-view)
   :is(button, input, select):focus-visible {
-  outline: 2px solid var(--accent-lilac);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .app-shell[data-theme='light'] .theme-toggle {
@@ -558,8 +565,8 @@ h3 {
 .app-shell[data-theme='dark']
   :is(.agent-config-view, .agent-history-view, .recommendations-view, .human-review-view)
   :is(button, a):focus-visible {
-  outline: 2px solid var(--accent-lilac);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 .app-shell[data-theme='dark']
   :is(.agent-view .agent-sections a, .human-review-view .row-actions .flag-button) {
@@ -600,7 +607,7 @@ h3 {
 .human-review-view .row-actions .flag-button.is-marked {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   border-color: #addcbb;
   background: #eef8f0;
   color: #176b35;
@@ -627,8 +634,8 @@ h3 {
 .app-shell[data-theme='dark']
   :is(.stack-view, .assets-view, .agent-history-view, .human-review-view)
   .table-scroll:focus-visible {
-  outline: 2px solid var(--accent-lilac);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 :is(.stack-view, .assets-view, .agent-history-view, .human-review-view) .table-scroll {
@@ -660,14 +667,14 @@ h3 {
     .table-panel,
     .bloque
   ) {
-  border-radius: 16px;
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
 }
 .app-shell .page-content :is(h1, h2, h3) {
   text-wrap: balance;
 }
 .app-shell .page-content :is(button, input, select, textarea) {
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 .app-shell .page-content :is(button, input, select, textarea) {
   transition:
@@ -679,8 +686,8 @@ h3 {
 }
 .app-shell .page-content :is(button, a):focus-visible,
 .app-shell .page-content :is(input, select, textarea):focus-visible {
-  outline: 2px solid var(--accent-violet);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 .app-shell .page-content button:not(:disabled):hover {
   transform: translateY(-1px);
@@ -708,7 +715,7 @@ h3 {
   background: #29133f;
   color: #f8efff;
   box-shadow:
-    0 24px 70px rgba(0, 0, 0, 0.45),
+    var(--shadow-3),
     0 0 32px rgba(165, 55, 255, 0.12);
 }
 .pantalla .logo {
@@ -821,31 +828,29 @@ h3 {
   position: absolute;
   top: auto;
   right: 0;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + var(--space-2));
   left: 0;
-  z-index: 60;
+  z-index: var(--z-nav-popover);
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  padding: 12px;
+  padding: var(--space-3);
   border: 1px solid rgba(217, 168, 255, 0.38);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   background: rgba(33, 13, 56, 0.98);
   color: #fbf5ff;
-  box-shadow:
-    0 16px 34px rgba(8, 2, 18, 0.42),
-    0 0 16px rgba(165, 55, 255, 0.12);
+  box-shadow: var(--shadow-2);
 }
 .app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown:focus-visible {
-  outline: 2px solid #ff8ee0;
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 .app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: var(--space-3);
   min-width: 0;
-  padding: 3px 4px 11px;
+  padding: var(--space-1) var(--space-1) var(--space-3);
 }
 .app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity > .avatar {
   width: 40px;
@@ -857,7 +862,7 @@ h3 {
   .profile-dropdown-identity
   > span:last-child {
   display: grid;
-  gap: 2px;
+  gap: var(--stack-xs);
   min-width: 0;
   overflow: hidden;
 }
@@ -870,15 +875,15 @@ h3 {
 }
 .app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity strong {
   color: #fbf5ff;
-  font-size: calc((13px) + var(--font-size-increase));
+  font-size: var(--text-md);
 }
 .app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-dropdown-identity small {
   color: #d9c8e8;
-  font-size: calc((11px) + var(--font-size-increase));
+  font-size: var(--text-xs);
 }
 .app-shell .profile-menu.sidebar-profile-menu.opens-up .profile-divider {
   height: 1px;
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
   background: rgba(217, 168, 255, 0.24);
 }
 .app-shell .profile-menu.sidebar-profile-menu.opens-up .auth-unavailable {
