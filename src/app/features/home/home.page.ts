@@ -29,7 +29,7 @@ function cardValue<T>(state: AsyncState<T>, read: (value: T) => string): string 
 /**
  * Inicio: the prototype's welcome screen (same design) with its four summary cards on real data. Software and assets
  * come from the iTop inventory (`GET /api/inventory/summary`), open tickets from `GET /api/tickets/summary` and the
- * success rate from the runs of the last 7 days (`GET /api/telemetry/summary`). A card whose source fails reads
+ * success rate of the judge over the last 7 days (`GET /api/telemetry/summary`). A card whose source fails reads
  * «No disponible», never an invented number.
  */
 @Component({
@@ -76,8 +76,14 @@ export class HomePage {
   readonly openTickets = computed(() =>
     cardValue(this.tickets, (summary) => formatCount(summary.by_status['open'] ?? 0)),
   );
-  readonly runSuccess = computed(() =>
-    cardValue(this.telemetry, (summary) => formatPercent(summary.run_success_percent)),
+  /**
+   * Success of the judge, the agent that decides (IN-4: Hermes has three agents and the card shows one): its valid
+   * reviews over the finished ones in the last 7 days. The two analysts are on the agents dashboard.
+   */
+  readonly judgeSuccess = computed(() =>
+    cardValue(this.telemetry, (summary) =>
+      formatPercent(summary.agents.find((agent) => agent.agent === 'judge')?.success_percent),
+    ),
   );
 
   /** Last time a CI was synchronised with iTop, for the data line under the cards. */

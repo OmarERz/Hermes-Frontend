@@ -6,7 +6,12 @@ import { ApiError } from '../../core/api/api-error';
 import type { CurrentUser } from '../../core/api/api-types';
 import { SessionService } from '../../core/auth/session.service';
 import { provideFakeSession } from '../../testing/fake-session';
-import { INVENTORY_SUMMARY, TELEMETRY_SUMMARY, TICKET_SUMMARY } from '../agents/agents.fixtures';
+import {
+  AGENT_JUDGE,
+  INVENTORY_SUMMARY,
+  TELEMETRY_SUMMARY,
+  TICKET_SUMMARY,
+} from '../agents/agents.fixtures';
 import { HomePage } from './home.page';
 import { HomeService } from './home.service';
 
@@ -53,7 +58,7 @@ describe('HomePage', () => {
       '32 Software instalado',
       '28 Activos en iTop',
       '7 Tickets abiertos',
-      '88.9 % Éxito de las corridas (7 días)',
+      '91.7 % Éxito del agente juez (7 días)',
     ]);
     expect(element.querySelector('.data-origin')?.textContent).toContain(
       'última sincronización con iTop',
@@ -75,11 +80,11 @@ describe('HomePage', () => {
   it('says «Sin datos» when there are no finished runs and when iTop was never synchronised', async () => {
     const service = new FakeService();
     service.telemetrySummary.mockReturnValue(
-      of({ ...TELEMETRY_SUMMARY, run_success_percent: null }),
+      of({ ...TELEMETRY_SUMMARY, agents: [{ ...AGENT_JUDGE, success_percent: null }] }),
     );
     service.inventorySummary.mockReturnValue(of({ ...INVENTORY_SUMMARY, last_sync_at: null }));
     const { element } = await render(service);
-    expect(cards(element)[3]).toBe('Sin datos Éxito de las corridas (7 días)');
+    expect(cards(element)[3]).toBe('Sin datos Éxito del agente juez (7 días)');
     expect(element.querySelector('.data-origin')?.textContent).toContain(
       'iTop todavía no se ha sincronizado',
     );
@@ -128,6 +133,13 @@ describe('HomePage', () => {
     expect(service.ticketSummary).toHaveBeenCalledTimes(2);
     expect(service.telemetrySummary).toHaveBeenCalledTimes(2);
     expect(service.inventorySummary).toHaveBeenCalledTimes(1);
+  });
+
+  it('says «Sin datos» when the summary has no judge', async () => {
+    const service = new FakeService();
+    service.telemetrySummary.mockReturnValue(of({ ...TELEMETRY_SUMMARY, agents: [] }));
+    const { element } = await render(service);
+    expect(cards(element)[3]).toBe('Sin datos Éxito del agente juez (7 días)');
   });
 
   it('counts only the tickets open in iTop, not the ones waiting to be created', async () => {
