@@ -174,6 +174,14 @@ export const DETAIL: AssetDetail = {
   description: 'Servidor de cobros con tarjeta',
   cpu: '16 vCPU',
   ram: '64 GB',
+  // The inventory fields of the list (F18.6), with the same values as PAYMENTS.
+  criticality: 'high',
+  exposed: true,
+  personal_data: true,
+  os: 'Ubuntu 22.04',
+  service: 'Pagos',
+  synced_at: '2026-11-22T12:00:00Z',
+  itop_url: 'https://itop.example.test/pages/UI.php?operation=details&class=Server&id=CI-1',
   findings: [
     {
       group_id: '7d9f2b1e-0c3a-4f5e-9b8d-1a2b3c4d5e6f',

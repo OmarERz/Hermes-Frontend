@@ -29,12 +29,7 @@ import {
   text,
   yesNo,
 } from './inventory-labels';
-import {
-  AssetDetail,
-  InstalledSoftware,
-  InventoryAsset,
-  InventoryService,
-} from './inventory.service';
+import { AssetDetail, InstalledSoftware, InventoryService } from './inventory.service';
 import { viewState } from './inventory-view';
 
 /** One term of the «Datos de iTop» list. */
@@ -45,10 +40,11 @@ interface Fact {
 
 /**
  * Detail of one CI (AS-2, D-088): its iTop data (class, CPU, RAM, OS, service, description, criticality, exposure,
- * classification, owner and custodian), its installed software with category, status, licence, CPE and findings
- * (`GET /api/inventory/assets/{ci_id}/software`) and its vulnerability groups (`GET /api/assets/{ci_id}`). The
- * detail route lacks the inventory fields, so the CI's row of `GET /api/inventory/assets` completes it. Read only:
- * changes are made in iTop («Ver en iTop», «Editar en iTop»).
+ * classification, personal data, owner, custodian, last sync and iTop link) and its vulnerability groups, all from
+ * `GET /api/assets/{ci_id}` (since F18.6 it carries the inventory fields of `GET /api/inventory/assets`, with the same
+ * names and values), and its installed software with category, status, licence, CPE and findings
+ * (`GET /api/inventory/assets/{ci_id}/software`). Read only: changes are made in iTop («Ver en iTop», «Editar en
+ * iTop»).
  */
 @Component({
   selector: 'app-asset-detail-page',
@@ -76,8 +72,6 @@ export class AssetDetailPage {
 
   readonly ciId = signal('');
   readonly detail = new AsyncState<AssetDetail>();
-  /** The CI's row of the inventory list (criticality, exposure, OS, service, sync, iTop link); null if absent. */
-  readonly row = new AsyncState<InventoryAsset | null>();
   readonly software = new AsyncState<InstalledSoftware[]>();
 
   readonly detailState = computed(() => viewState(this.detail));
@@ -85,16 +79,12 @@ export class AssetDetailPage {
     const value = this.detail.value();
     return value && this.detail.status() === 'ready' ? value.name : 'Detalle de activo';
   });
-  private readonly inventoryRow = computed(() =>
-    this.row.status() === 'ready' ? this.row.value() : null,
-  );
-  readonly itopUrl = computed(() => this.inventoryRow()?.itop_url ?? null);
+  /** The CI in the iTop console, as the API links it (empty without the iTop URL: the link is then built). */
+  readonly itopUrl = computed(() => this.detail.value()?.itop_url ?? null);
 
   readonly facts = computed<Fact[]>(() => {
     const detail = this.detail.value();
     if (!detail) return [];
-    const row = this.inventoryRow();
-    const pending = this.row.status() === 'loading' ? 'Cargando…' : '—';
     return [
       { term: 'ID del CI', value: detail.ci_id },
       {
@@ -105,17 +95,17 @@ export class AssetDetailPage {
       },
       { term: 'CPU', value: text(detail.cpu) },
       { term: 'RAM', value: text(detail.ram) },
-      { term: 'Sistema operativo', value: row ? text(row.os) : pending },
-      { term: 'Servicio', value: row ? text(row.service) : pending },
-      { term: 'Criticidad', value: row ? CRITICALITY_LABELS[row.criticality] : pending },
-      { term: 'Exposición a internet', value: row ? exposureLabel(row.exposed) : pending },
+      { term: 'Sistema operativo', value: text(detail.os) },
+      { term: 'Servicio', value: text(detail.service) },
+      { term: 'Criticidad', value: CRITICALITY_LABELS[detail.criticality ?? 'unknown'] },
+      { term: 'Exposición a internet', value: exposureLabel(detail.exposed) },
       { term: 'Clasificación', value: CLASSIFICATION_LABELS[detail.classification] },
-      { term: 'Datos personales', value: row ? yesNo(row.personal_data) : pending },
+      { term: 'Datos personales', value: yesNo(detail.personal_data) },
       { term: 'Responsable', value: detail.owner ?? 'Sin responsable' },
       { term: 'Custodio', value: detail.custodian ?? 'Sin custodio' },
       {
         term: 'Última sincronización con iTop',
-        value: row ? formatDateTime(row.synced_at) : pending,
+        value: detail.synced_at ? formatDateTime(detail.synced_at) : '—',
       },
     ];
   });
@@ -160,7 +150,6 @@ export class AssetDetailPage {
       });
     inject(DestroyRef).onDestroy(() => {
       this.detail.cancel();
-      this.row.cancel();
       this.software.cancel();
     });
   }
@@ -168,12 +157,7 @@ export class AssetDetailPage {
   load(): void {
     const ciId = this.ciId();
     this.detail.run(this.service.asset(ciId));
-    this.loadRow();
     this.loadSoftware();
-  }
-
-  loadRow(): void {
-    this.row.run(this.service.findAsset(this.ciId()));
   }
 
   loadSoftware(): void {
