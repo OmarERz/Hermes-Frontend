@@ -435,7 +435,7 @@
     border: 1px solid var(--border);
     border-radius: 9px;
     background: var(--accent-wash);
-    color: var(--accent);
+    color: var(--accent-text);
     font: inherit;
     font-size: calc((12px) + var(--font-size-increase));
     font-weight: 700;

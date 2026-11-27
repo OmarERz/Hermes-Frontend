@@ -1,66 +1,66 @@
 .modal-backdrop {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--z-modal);
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 18px;
+  padding: var(--space-5);
   background: #16091fbb;
 }
 .confirm-modal {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
   width: min(100%, 560px);
   max-height: min(88vh, 760px);
   overflow: auto;
-  padding: 20px;
+  padding: var(--card-pad);
   border: 1px solid var(--border, #d8b0ea);
-  border-radius: 15px;
+  border-radius: var(--radius-lg);
   background: var(--surface, #fff);
   color: var(--text-primary, #321044);
-  box-shadow: 0 20px 70px #0005;
+  box-shadow: var(--shadow-3);
 }
 .confirm-modal h2 {
   margin: 0;
-  font-size: calc(18px + var(--font-size-increase, 0px));
+  font-size: var(--text-xl);
 }
 .confirm-modal > p {
   margin: 0;
   color: var(--text-muted, #655a6e);
-  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-size: var(--text-sm);
 }
 .change-list {
   display: grid;
-  gap: 9px;
+  gap: var(--space-2);
 }
 .change-list article {
-  padding: 12px;
+  padding: var(--space-3);
   border: 1px solid var(--border, #e4e3ee);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--surface-soft, #faf8fc);
 }
 .change-list h3 {
   margin: 0;
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
 }
 .change-list article > div {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin: 9px 0;
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
   color: var(--text-secondary, #675b70);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
 }
 .change-list strong {
   display: block;
-  margin-top: 3px;
+  margin-top: var(--space-1);
   color: var(--text-primary, #321044);
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
 }
 .change-list article p {
   margin: 0;
   color: var(--text-muted, #655a6e);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
 }
 .dialog-error {
   color: var(--danger-text, #b91c1c);
@@ -68,18 +68,18 @@
 footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .save-button,
 .cancel-button {
-  min-height: 39px;
-  padding: 8px 14px;
+  min-height: var(--control-h);
+  padding: var(--space-2) var(--button-pad-x);
   border: 0;
-  border-radius: 8px;
-  background: #e9089b;
-  color: #fff;
+  border-radius: var(--radius-sm);
+  background: var(--accent-strong);
+  color: var(--on-accent);
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   cursor: pointer;
 }
 .cancel-button {
@@ -92,8 +92,8 @@ button:disabled {
   cursor: not-allowed;
 }
 button:focus-visible {
-  outline: 2px solid var(--accent, #ff009d);
-  outline-offset: 3px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 @media (max-width: 650px) {
   .change-list article > div {

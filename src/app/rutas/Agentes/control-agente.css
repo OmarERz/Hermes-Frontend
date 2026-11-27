@@ -290,8 +290,8 @@
     flex: none;
   }
   .action.primary {
-    background: #e9089b;
-    color: #fff;
+    background: var(--accent-strong);
+    color: var(--on-accent);
   }
   .action.outline {
     border: 1px solid #d76ce4;
@@ -468,7 +468,7 @@
     padding: 5px 8px;
     border-radius: 10px;
     background: #ddfbe8;
-    color: #07843f;
+    color: #06703a;
     font-size: calc((10px) + var(--font-size-increase));
     font-style: normal;
     font-weight: 700;
@@ -546,7 +546,7 @@
     padding: 5px 8px;
     border-radius: 9px;
     background: #ddfbe8;
-    color: #07843f;
+    color: #06703a;
     font-size: calc((10px) + var(--font-size-increase));
     font-style: normal;
     white-space: nowrap;

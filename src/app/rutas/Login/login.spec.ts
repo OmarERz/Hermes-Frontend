@@ -40,6 +40,13 @@ describe('Login', () => {
     );
   });
 
+  it('names the sign-in button by its visible text', async () => {
+    const { element } = await render(new FakeSession());
+    const submit = element.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    expect(submit.hasAttribute('aria-label')).toBe(false);
+    expect(submit.textContent?.trim()).toBe('Entrar');
+  });
+
   it('does not offer the retry without a kept session', async () => {
     const { retryButton } = await render(new FakeSession());
     expect(retryButton()).toBeUndefined();

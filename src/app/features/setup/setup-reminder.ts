@@ -71,7 +71,7 @@ import { SetupService } from './setup.service';
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: var(--accent);
+      color: var(--accent-text);
       font-size: calc(13px + var(--font-size-increase));
       font-weight: 700;
       white-space: nowrap;

@@ -215,6 +215,17 @@ describe('SourcesPage', () => {
     expect(text(element.querySelector('.source-description'))).toBe('Noticias de ciberseguridad.');
   });
 
+  it('names each carousel card by its visible text, so the spoken name matches what shows', async () => {
+    const { element } = await render();
+    const cards = all(element, '.feed-card-select');
+    expect(cards.length).toBeGreaterThan(0);
+    for (const card of cards) {
+      expect(card.hasAttribute('aria-label')).toBe(false);
+      expect(card.querySelector('.feed-brand')?.getAttribute('aria-hidden')).toBe('true');
+      expect(text(card.querySelector('.feed-card-heading strong'))).not.toBe('');
+    }
+  });
+
   it('selects side cards and the health table rows without switching anything', async () => {
     const { fixture, element, service } = await render();
     const side = all(element, '.side-card .feed-card-select').find((button) =>

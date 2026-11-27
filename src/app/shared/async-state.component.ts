@@ -31,14 +31,14 @@ export type ViewState = 'loading' | 'empty' | 'error';
   styles: `
     .state {
       margin: 0;
-      padding: 30px;
+      padding: var(--space-8);
       color: var(--text-muted, #6b6175);
       text-align: center;
     }
     .state-error {
       display: grid;
       justify-items: center;
-      gap: 10px;
+      gap: var(--space-3);
       color: var(--danger-text, #b91c1c);
     }
     .state-error p {
@@ -46,18 +46,18 @@ export type ViewState = 'loading' | 'empty' | 'error';
     }
     button {
       min-height: 36px;
-      padding: 6px 14px;
+      padding: var(--space-2) var(--button-pad-x);
       border: 1px solid var(--border, #e4e3ee);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       background: var(--surface-raised, #fff);
       color: var(--text-primary, #321044);
       font: inherit;
-      font-weight: 600;
+      font-weight: var(--weight-semibold);
       cursor: pointer;
     }
     button:focus-visible {
-      outline: 2px solid var(--accent, #ff009d);
-      outline-offset: 3px;
+      outline: var(--focus-ring);
+      outline-offset: var(--focus-offset);
     }
   `,
 })

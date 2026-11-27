@@ -49,8 +49,8 @@
 .panel-action,
 .primary-button {
   border-color: transparent;
-  background: var(--accent);
-  color: #fff;
+  background: var(--accent-strong);
+  color: var(--on-accent);
 }
 .panel-action svg,
 .row-action svg {

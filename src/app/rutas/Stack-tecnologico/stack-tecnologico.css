@@ -64,8 +64,8 @@
     margin-left: auto;
     padding: 11px 16px;
     border-radius: 9px;
-    background: #e80aa0;
-    color: #fff;
+    background: var(--accent-strong);
+    color: var(--on-accent);
     text-decoration: none;
     font-size: calc((13px) + var(--font-size-increase));
     font-weight: 700;
@@ -563,9 +563,9 @@
     cursor: pointer;
   }
   .pagination button.selected {
-    border-color: #bc0b9b;
-    background: #c90a9d;
-    color: #fff;
+    border-color: var(--accent-strong);
+    background: var(--accent-strong);
+    color: var(--on-accent);
   }
   .dashboard-lower-grid {
     display: grid;

@@ -3,15 +3,15 @@
   min-width: 0;
 }
 .section-tabs {
-  margin: 0 0 14px;
+  margin: 0 0 var(--space-4);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   min-width: 0;
   overflow-x: auto;
-  padding: 4px;
+  padding: var(--space-1);
   border: 1px solid var(--border, #e4e3ee);
-  border-radius: 11px;
+  border-radius: var(--radius-md);
   background: var(--surface, #fff);
 }
 .section-tabs a {
@@ -19,14 +19,14 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 8px 13px;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: var(--space-2) var(--space-3);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--text-secondary, #675b70);
-  font-size: calc((13px) + var(--font-size-increase));
-  font-weight: 650;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
   text-decoration: none;
   white-space: nowrap;
   transition:
@@ -45,14 +45,11 @@
 .section-tabs a.active {
   border-color: #ed079b44;
   background: #ed079b12;
-  color: #c90083;
+  color: var(--accent-text);
 }
 .section-tabs a:focus-visible {
-  outline: 2px solid #ed079b;
-  outline-offset: 2px;
-}
-:host-context(.app-shell[data-theme='dark']) .section-tabs a.active {
-  color: #ff78cf;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 :host-context(.app-shell[data-theme='dark']) .section-tabs a:hover {
   color: var(--text-primary);
@@ -62,8 +59,7 @@
     justify-content: flex-start;
   }
   .section-tabs a {
-    min-height: 42px;
-    padding-inline: 11px;
+    padding-inline: var(--space-3);
   }
 }
 @media (prefers-reduced-motion: reduce) {

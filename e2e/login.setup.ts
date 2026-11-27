@@ -8,7 +8,7 @@ for (const role of ROLES) {
     await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     await page.getByLabel('Correo').fill(email(role));
     await page.getByLabel('Contraseña', { exact: true }).fill(PASSWORD);
-    await page.getByRole('button', { name: 'Iniciar sesión' }).click();
+    await page.getByRole('button', { name: 'Entrar', exact: true }).click();
     await expect(page).toHaveURL(/\/inicio$/);
     // The effective role comes from GET /api/me (the profile menu shows it).
     await expect(page.locator('.sidebar-profile .profile-trigger')).toContainText(

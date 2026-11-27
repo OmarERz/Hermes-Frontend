@@ -12,13 +12,12 @@
     [attr.aria-expanded]="menuAbierto"
     aria-haspopup="true"
     [attr.aria-controls]="menuId"
-    [attr.aria-label]="menuAbierto ? 'Cerrar menú del perfil' : 'Abrir menú del perfil'"
   >
     <span class="avatar" aria-hidden="true">{{ usuario.initials }}</span>
     <span class="profile-copy"
       ><strong>{{ usuario.name }}</strong
       ><small>{{ usuario.role }}</small></span
-    >
+    ><span class="visually-hidden">Menú del perfil</span>
     <svg lucideChevronDown class="profile-chevron" aria-hidden="true"></svg>
   </button>
   @if (menuAbierto) {

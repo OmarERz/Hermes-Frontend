@@ -9,15 +9,15 @@
 .sidebar-profile-menu .profile-trigger {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
   justify-content: flex-start;
   min-height: 58px;
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid rgba(217, 168, 255, 0.28);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(33, 13, 56, 0.9);
   color: #fbf5ff;
   font: inherit;
@@ -37,9 +37,8 @@
   background: rgba(52, 22, 78, 0.96);
 }
 .sidebar-profile-menu .profile-trigger:focus-visible {
-  outline: 2px solid #ff8ee0;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(237, 7, 155, 0.16);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 .sidebar-profile-menu .profile-copy {
   display: grid;
@@ -69,21 +68,30 @@
 .profile-dropdown:focus {
   outline: none;
 }
+/* Read by screen readers, not drawn: the trigger's name is its visible text plus what it opens. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 .logout-button {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
   width: 100%;
   min-width: 0;
   min-height: 42px;
-  padding: 8px 9px;
+  padding: var(--space-2);
   border: 1px solid rgba(217, 168, 255, 0.24);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: rgba(33, 13, 56, 0.42);
   color: #f5eaff;
   font: inherit;
-  font-size: calc((13px) + var(--font-size-increase));
-  font-weight: 600;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
   text-align: left;
   cursor: pointer;
   transition:
@@ -118,19 +126,18 @@
   box-shadow: 0 0 5px rgba(237, 7, 155, 0.12);
 }
 .logout-button:focus-visible {
-  outline: 2px solid #ff8ee0;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(237, 7, 155, 0.16);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 .logout-button:disabled {
   opacity: 0.68;
   cursor: progress;
 }
 .auth-unavailable {
-  margin: 5px 4px 1px;
+  margin: var(--space-1) var(--space-1) 0;
   color: #ead8f5;
-  font-size: calc((11px) + var(--font-size-increase));
-  line-height: 1.45;
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
 }
 .auth-unavailable[role='alert'] {
   color: #ffc4dc;
@@ -146,7 +153,15 @@
   }
 }
 @media (max-width: 850px) {
-  .sidebar-profile-menu .profile-copy,
+  /* Only the avatar shows; the name and role stay in the trigger's accessible name. */
+  .sidebar-profile-menu .profile-copy {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
   .sidebar-profile-menu .profile-chevron {
     display: none;
   }

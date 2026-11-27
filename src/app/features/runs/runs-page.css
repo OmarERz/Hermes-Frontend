@@ -134,7 +134,7 @@ table.runs-table {
 }
 .detail-button[aria-pressed='true'] {
   border-color: #ed079b66;
-  color: #c90083;
+  color: var(--accent-text);
 }
 .close-detail svg {
   width: 15px;

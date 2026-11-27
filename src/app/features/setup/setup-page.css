@@ -127,7 +127,7 @@
   font-size: calc(12px + var(--font-size-increase));
 }
 .step-links a {
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 700;
 }
 .step-links a:focus-visible {
@@ -166,8 +166,8 @@
   margin-left: auto;
 }
 .step-actions .primary-action {
-  background: #e9089b;
-  color: #fff;
+  background: var(--accent-strong);
+  color: var(--on-accent);
 }
 .step-nav {
   min-height: 40px;

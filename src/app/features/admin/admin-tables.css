@@ -65,7 +65,7 @@
 }
 .chip.accent {
   background: #ed079b14;
-  color: #c90083;
+  color: var(--accent-text);
 }
 .numeric {
   font-variant-numeric: tabular-nums;
@@ -118,5 +118,5 @@ td small {
 }
 .row-link:hover,
 .row-link:focus-visible {
-  color: var(--accent, #c90083);
+  color: var(--accent-text);
 }
