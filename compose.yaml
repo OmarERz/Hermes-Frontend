@@ -1,0 +1,46 @@
+# The front next to the backend stack: docker compose up --build -d (from this folder, with the backend up).
+# Joins the backend's Compose network (HERMES_NETWORK, default hermes_default: the backend project "hermes"), so the
+# nginx /api/ proxy reaches its api service and the browser talks to one origin (no CORS in production).
+# FRONT_RUNTIME_CONFIG is the runtime-config.json to serve (copy src/environments/runtime-config.example.json and fill
+# the Firebase web config of the real project); it is mounted read-only, never baked into the image.
+name: hermes-front
+
+services:
+  front:
+    build:
+      context: .
+      args:
+        BUILD_CONFIGURATION: ${FRONT_BUILD_CONFIGURATION:-production}
+    environment:
+      API_UPSTREAM: ${API_UPSTREAM:-http://api:8000}
+      CSP_CONNECT_EXTRA: ${CSP_CONNECT_EXTRA:-}
+      HSTS_INCLUDE_SUBDOMAINS: ${HSTS_INCLUDE_SUBDOMAINS:-false}
+    volumes:
+      - ${FRONT_RUNTIME_CONFIG:?set FRONT_RUNTIME_CONFIG to the runtime-config.json to serve}:/usr/share/nginx/html/runtime-config.json:ro
+    ports:
+      - '127.0.0.1:${FRONT_PORT:-4280}:8080'
+    networks: [hermes]
+    # Same hardening as the backend services: read-only root, no capabilities, no new privileges, bounded processes and
+    # rotated logs. nginx writes only its pid, temp files and the rendered config, all in /tmp (tmpfs).
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:8080/index.html']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  hermes:
+    external: true
+    name: ${HERMES_NETWORK:-hermes_default}

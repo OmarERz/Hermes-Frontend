@@ -1,0 +1,81 @@
+# Server of the front image (Dockerfile). The image entrypoint renders this template with envsubst at start, into
+# /tmp/conf.d: API_UPSTREAM, CSP_CONNECT_EXTRA and HSTS_INCLUDE_SUBDOMAINS come from the environment (defaults in the
+# Dockerfile) and NGINX_LOCAL_RESOLVERS from /etc/resolv.conf (Docker's DNS), so the API host is resolved per request
+# and the front starts even when the backend is not up yet.
+
+# Content-Security-Policy: scripts only from this origin (no inline scripts: the build inlines no critical CSS loader
+# and index.html has no inline script); styles also inline, because Angular injects component styles at run time and
+# the prototype templates carry style attributes; fonts are self-hosted (@fontsource). connect-src: this origin (the
+# API behind /api/) and Firebase Auth; CSP_CONNECT_EXTRA adds origins such as the Auth emulator of the e2e suite.
+# The map has a constant key: it only names the policy for the included header file and never reads the request.
+map "" $hermes_csp {
+    default "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com ${CSP_CONNECT_EXTRA}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+}
+
+# HSTS like the backend: one year, includeSubDomains only when HSTS_INCLUDE_SUBDOMAINS=true. Browsers honour it only
+# over HTTPS (behind the TLS proxy of the deployment).
+map "${HSTS_INCLUDE_SUBDOMAINS}" $hermes_hsts {
+    true    "max-age=31536000; includeSubDomains";
+    default "max-age=31536000";
+}
+
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+    server_tokens off;
+    charset utf-8;
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+
+    # The API on the same origin: proxied to the backend api service, so the browser needs no CORS. The backend sets
+    # its own security headers on these answers; none of the front's are added here.
+    location /api/ {
+        resolver ${NGINX_LOCAL_RESOLVERS} valid=10s ipv6=off;
+        set $hermes_api "${API_UPSTREAM}";
+        proxy_pass $hermes_api;
+        proxy_http_version 1.1;
+        # The upstream's own host name (nginx's default), never the client's Host header: the API does not use it.
+        proxy_set_header Host $proxy_host;
+        proxy_set_header Connection "";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # The run progress (GET /api/runs/{id}/events) is a server-sent event stream: no buffering, long reads.
+        proxy_buffering off;
+        proxy_read_timeout 1h;
+        client_max_body_size 2m;
+    }
+
+    # Mounted at run time (compose.yaml), never baked into the image; absent, the app uses its build defaults.
+    location = /runtime-config.json {
+        include /etc/nginx/hermes/security-headers.conf;
+        add_header Cache-Control "no-store" always;
+        try_files $uri =404;
+    }
+
+    location = /index.html {
+        include /etc/nginx/hermes/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    # Bundles with a content hash in the name (outputHashing: all) never change.
+    location ~ "^/[A-Za-z0-9._-]+-[A-Z0-9]{8}\.(js|css)$" {
+        include /etc/nginx/hermes/security-headers.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
+    }
+
+    # A missing file (any path with an extension) is a 404, not the app.
+    location ~ "\.[A-Za-z0-9]+$" {
+        include /etc/nginx/hermes/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri =404;
+    }
+
+    # Every other path is a route of the app (single-page fallback).
+    location / {
+        include /etc/nginx/hermes/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri /index.html;
+    }
+}

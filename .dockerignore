@@ -1,0 +1,13 @@
+# Only what the build stage copies is needed; keep local state and secrets out of the build context.
+*
+!package.json
+!package-lock.json
+!angular.json
+!tsconfig.json
+!tsconfig.app.json
+!public/
+!src/
+!docker/nginx/
+public/runtime-config.json
+src/environments/firebase.ts
+**/*.spec.ts
