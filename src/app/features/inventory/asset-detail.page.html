@@ -1,0 +1,245 @@
+<div class="assets-view asset-detail">
+  <app-banner-pagina
+    [titulo]="title()"
+    descripcion="Datos de iTop del activo, su software instalado y sus vulnerabilidades. Los cambios se hacen en iTop."
+    [icono]="bannerIcon"
+  />
+
+  <p class="back-row">
+    <a routerLink="/activos" class="back-link"
+      ><svg lucideArrowLeft aria-hidden="true"></svg> Volver a activos</a
+    >
+  </p>
+
+  @if (detailState(); as state) {
+    <section class="panel">
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando el activo…"
+        [error]="detail.error()"
+        (retry)="load()"
+      />
+    </section>
+  } @else if (detail.value(); as asset) {
+    <section class="stats-grid" aria-label="Resumen del activo">
+      <article class="stat-card">
+        <span class="warning"><svg lucideShieldAlert aria-hidden="true"></svg></span>
+        <small>Riesgo del activo</small>
+        @if (worstLevel(); as level) {
+          <strong>{{ asset.risk }}</strong>
+          <em [class]="'level-chip level-' + level">{{ levelLabels[level] }}</em>
+        } @else {
+          <strong class="unknown">Sin vulnerabilidades abiertas</strong>
+        }
+      </article>
+      <article class="stat-card">
+        <span><svg lucideTriangleAlert aria-hidden="true"></svg></span>
+        <small>Vulnerabilidades abiertas</small>
+        <strong>{{ openFindings().length }}</strong>
+      </article>
+      <article class="stat-card">
+        <span class="warning"><svg lucideFlame aria-hidden="true"></svg></span>
+        <small>Abiertas en el catálogo KEV</small>
+        <strong>{{ kevCount() }}</strong>
+      </article>
+      <article class="stat-card">
+        <span><svg lucideLayers aria-hidden="true"></svg></span>
+        <small>Software instalado</small>
+        @if (software.status() === 'ready') {
+          <strong>{{ softwareRows().length }}</strong>
+        } @else {
+          <strong class="unknown">{{
+            software.status() === 'error' ? 'Sin datos' : 'Cargando…'
+          }}</strong>
+        }
+      </article>
+    </section>
+
+    <section class="panel" aria-labelledby="itop-data-title">
+      <header class="panel-heading">
+        <h2 id="itop-data-title">Datos de iTop</h2>
+        <span class="itop-links">
+          <app-itop-link
+            kind="view"
+            [href]="itopUrl()"
+            [itopClass]="asset.itop_class ?? ''"
+            [itopId]="asset.ci_id"
+          />
+          <app-itop-link kind="edit" [itopClass]="asset.itop_class ?? ''" [itopId]="asset.ci_id" />
+        </span>
+      </header>
+      <p class="description">{{ asset.description || 'Sin descripción en iTop.' }}</p>
+      <dl class="facts">
+        @for (fact of facts(); track fact.term) {
+          <div>
+            <dt>{{ fact.term }}</dt>
+            <dd>{{ fact.value }}</dd>
+          </div>
+        }
+      </dl>
+      @if (row.status() === 'error') {
+        <p class="hint" role="status">
+          No se pudieron leer la criticidad, la exposición y el sistema operativo del inventario.
+          <button type="button" class="link-button" (click)="loadRow()">Reintentar</button>
+        </p>
+      }
+    </section>
+
+    <section class="panel inventory" aria-labelledby="software-title">
+      <header>
+        <div class="inventory-title">
+          <svg lucideLayers aria-hidden="true"></svg>
+          <h2 id="software-title">Software instalado</h2>
+        </div>
+        <span>{{ softwareRows().length }} instalaciones</span>
+      </header>
+      @if (softwareState(); as state) {
+        <app-async-state
+          [state]="state"
+          loadingText="Cargando el software instalado…"
+          emptyText="iTop no registra software instalado en este activo."
+          [error]="software.error()"
+          (retry)="loadSoftware()"
+        />
+      } @else {
+        <div
+          class="table-scroll"
+          role="region"
+          aria-label="Software instalado; desplazamiento horizontal"
+          tabindex="0"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Software</th>
+                <th scope="col">Versión</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Licencia</th>
+                <th scope="col">CPE</th>
+                <th scope="col">Vulnerabilidades</th>
+                <th scope="col">Descripción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of softwareRows(); track item.key) {
+                <tr>
+                  <td>
+                    <strong>{{ item.name }}</strong>
+                  </td>
+                  <td>
+                    {{ item.version || '—' }}
+                    @if (!item.version_known) {
+                      <small>Versión desconocida</small>
+                    }
+                  </td>
+                  <td>
+                    <span class="category-chip">{{ item.categoryLabel }}</span>
+                  </td>
+                  <td>
+                    <span [class]="'state-chip state-' + item.statusKey">{{
+                      item.statusLabel
+                    }}</span>
+                  </td>
+                  <td>
+                    @if (item.licence; as licence) {
+                      <strong>{{ licence.name }}</strong>
+                      @if (licence.usage_limit) {
+                        <small>Límite: {{ licence.usage_limit }}</small>
+                      }
+                      <small>{{ item.validity }}</small>
+                    } @else {
+                      <span class="muted">Sin licencia</span>
+                    }
+                  </td>
+                  <td>
+                    @if (item.cpe) {
+                      <span class="cpe">{{ item.cpe }}</span>
+                    } @else {
+                      <span class="muted">Sin CPE</span>
+                      <small><a routerLink="/pendientes-inventario">Ver pendientes</a></small>
+                    }
+                  </td>
+                  <td>
+                    @if (item.worst_level; as level) {
+                      <span [class]="'level-chip level-' + level"
+                        >{{ levelLabels[level] }} · {{ item.open_vulnerabilities }}</span
+                      >
+                    } @else {
+                      <span class="muted">Sin vulnerabilidades</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="clamped">{{ item.description || '—' }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">
+          El estado viene de iTop y es informativo: una instalación inactiva se sigue escaneando.
+        </p>
+      }
+    </section>
+
+    <section class="panel inventory" aria-labelledby="findings-title">
+      <header>
+        <div class="inventory-title">
+          <svg lucideShieldAlert aria-hidden="true"></svg>
+          <h2 id="findings-title">Vulnerabilidades del activo</h2>
+        </div>
+        <span>{{ findings().length }} grupos</span>
+      </header>
+      @if (findings().length) {
+        <div
+          class="table-scroll"
+          role="region"
+          aria-label="Vulnerabilidades del activo; desplazamiento horizontal"
+          tabindex="0"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">CVE</th>
+                <th scope="col">Producto</th>
+                <th scope="col">Nivel</th>
+                <th scope="col">Puntaje final</th>
+                <th scope="col">Estado</th>
+                <th scope="col">KEV</th>
+                <th scope="col">Tickets</th>
+                <th scope="col">Última vez vista</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (finding of findings(); track finding.group_id) {
+                <tr>
+                  <td>
+                    <a class="row-link" [routerLink]="['/vulnerabilidades', finding.group_id]"
+                      ><strong>{{ finding.cve }}</strong></a
+                    >
+                  </td>
+                  <td>{{ finding.product }}</td>
+                  <td>
+                    <span [class]="'level-chip level-' + finding.level">{{
+                      levelLabels[finding.level]
+                    }}</span>
+                  </td>
+                  <td class="numeric">{{ finding.final }}</td>
+                  <td>
+                    <span class="status">{{ statusLabels[finding.status] }}</span>
+                  </td>
+                  <td>{{ finding.in_kev ? 'Sí' : 'No' }}</td>
+                  <td>{{ finding.tickets.join(', ') || 'Sin tickets' }}</td>
+                  <td>{{ formatDateTime(finding.last_seen) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="empty">Este activo no tiene vulnerabilidades registradas.</p>
+      }
+    </section>
+  }
+</div>
