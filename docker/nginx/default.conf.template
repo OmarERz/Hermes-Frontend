@@ -29,8 +29,9 @@ server {
     gzip_types text/css application/javascript application/json image/svg+xml;
 
     # The API on the same origin: proxied to the backend api service, so the browser needs no CORS. The backend sets
-    # its own security headers on these answers; none of the front's are added here.
-    location /api/ {
+    # its own security headers on these answers; none of the front's are added here. `^~`: the regular expressions
+    # below are never tried for /api/, so an id with a dot (GET /api/assets/host.example) still reaches the API.
+    location ^~ /api/ {
         resolver ${NGINX_LOCAL_RESOLVERS} valid=10s ipv6=off;
         set $hermes_api "${API_UPSTREAM}";
         proxy_pass $hermes_api;
@@ -65,8 +66,9 @@ server {
         try_files $uri =404;
     }
 
-    # A missing file (any path with an extension) is a 404, not the app.
-    location ~ "\.[A-Za-z0-9]+$" {
+    # A missing file of the build (a file at the root, or under assets/ or media/) is a 404, not the app. Other paths
+    # with a dot are routes of the app (/activos/host.example) and go to the single-page fallback.
+    location ~ "^/((assets|media)/.+|[^/]+)\.[A-Za-z0-9]+$" {
         include /etc/nginx/hermes/security-headers.conf;
         add_header Cache-Control "no-cache" always;
         try_files $uri =404;
