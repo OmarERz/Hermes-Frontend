@@ -120,7 +120,12 @@ test.describe('agents as reader', () => {
     await expect(page.getByRole('heading', { name: 'Juez', exact: true })).toBeVisible();
     await expect(page.locator('[data-metric="judge_ladder_level"] .kpi-value')).toHaveText(/·/);
     await expect(page.getByRole('heading', { name: 'Costo de IA por día' })).toBeVisible();
-    await expect(page.locator('.cost-chart svg')).toBeVisible();
+    // The demo's AI costs nothing (fake model): the section then says so instead of drawing empty axes (MET-3).
+    await expect(
+      page
+        .locator('.cost-chart svg')
+        .or(page.locator('.cost-section').getByText(/La IA no tuvo costo en los últimos \d+ días/)),
+    ).toBeVisible();
     await settle(page);
   });
 });
