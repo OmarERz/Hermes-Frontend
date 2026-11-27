@@ -13,6 +13,7 @@ export default defineConfig([
       '.angular/',
       'tmp/',
       'e2e/test-output/',
+      'e2e/design-output/',
       'src/app/core/api/schema.d.ts',
     ],
   },

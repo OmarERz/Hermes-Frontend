@@ -14,6 +14,8 @@
 # A heavy job: where the shared heavy-work slots exist (hermes-heavy on PATH), it waits for one, unless the caller
 # already holds one (HERMES_HEAVY_LOCK_HELD=1, which hermes-heavy sets; the local gate runs inside it).
 # Usage: npm run e2e [-- <playwright args>]   e.g. npm run e2e -- e2e/screens/vulnerabilities.spec.ts
+# Design capture (F19): npm run design:capture, which sets E2E_DESIGN=1 and runs only the design project; the
+# E2E_DESIGN_* variables (roles, widths, themes, states, screens, pending) reach the Playwright container.
 set -euo pipefail
 
 PLAYWRIGHT_IMAGE="mcr.microsoft.com/playwright:v1.65.0-noble@sha256:9beb546099e11f52d62e505537914870e01a67e0e6b00ae41da4775324e73dbe"
@@ -149,6 +151,11 @@ echo "==> e2e: Playwright"
 docker run --rm --init --ipc host --network host --user "$(id -u):$(id -g)" -e HOME=/tmp -e CI=1 \
   -e E2E_BASE_URL="http://127.0.0.1:$FRONT_PORT" -e E2E_AUTH_EMULATOR_URL="http://127.0.0.1:$AUTH_EMULATOR_PORT" \
   -e E2E_OUTPUT_DIR="/work/$outputs" \
+  -e E2E_DESIGN -e E2E_DESIGN_ROLES -e E2E_DESIGN_WIDTHS -e E2E_DESIGN_THEMES -e E2E_DESIGN_STATES \
+  -e E2E_DESIGN_SCREENS -e E2E_DESIGN_PENDING \
   -v "$root:/work" -w /work "$PLAYWRIGHT_IMAGE" npx --no-install playwright test -c e2e/playwright.config.ts "$@"
 
 echo "✔ e2e green in $(($(date +%s) - started))s (report: $outputs/report/index.html)"
+if [ "${E2E_DESIGN:-}" = "1" ]; then
+  echo "  design captures: e2e/design-output/${outputs##*/}/index.html (summary.md, axe/, shots/)"
+fi
