@@ -496,6 +496,10 @@
 .app-shell[data-theme='light'] .feeds-page .side-card .feed-brand {
   color: #9c0063;
 }
+/* Same for the level chip (F19.6): the shared violet (#8d20b8) gives 4.24:1 over the faded card; this ≈ 6.5:1. */
+.app-shell[data-theme='light'] .feeds-page .side-card .ui-chip[data-tone='violet'] {
+  color: #5f1280;
+}
 .app-shell[data-theme='light'] .feeds-page .carousel-card.center-card {
   border-color: #e72ac4;
   background: linear-gradient(145deg, #fff, #f3e5fb);
