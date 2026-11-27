@@ -82,6 +82,31 @@
 .budget strong {
   color: #351044;
 }
+.connections {
+  margin-top: 6px;
+}
+.connections strong.failing {
+  color: #985800;
+}
+.connections-link {
+  color: #a10f7d;
+  font-weight: 700;
+}
+.inline-retry {
+  padding: 2px 8px;
+  border: 1px solid #e2d5e9;
+  border-radius: 7px;
+  background: var(--surface-raised, #fff);
+  color: #8d137c;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.connections-link:focus-visible,
+.inline-retry:focus-visible {
+  outline: 3px solid #9e4be1;
+  outline-offset: 2px;
+}
 
 .agent-block + .agent-block {
   margin-top: 14px;
@@ -129,6 +154,15 @@
 :host-context(.app-shell[data-theme='dark']) .budget strong {
   color: var(--text-primary);
 }
+:host-context(.app-shell[data-theme='dark']) .connections strong.failing {
+  color: var(--warning-text);
+}
+:host-context(.app-shell[data-theme='dark']) .inline-retry {
+  border-color: var(--border);
+  background: var(--surface-raised);
+  color: var(--accent-lilac);
+}
+:host-context(.app-shell[data-theme='dark']) .connections-link,
 :host-context(.app-shell[data-theme='dark']) .ticket-link {
   color: var(--accent-lilac, #d9a8ff);
 }

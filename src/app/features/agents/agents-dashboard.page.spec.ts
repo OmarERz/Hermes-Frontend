@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { NEVER, of, throwError } from 'rxjs';
 import { GraficoDashboard } from '../../componentes/grafico-dashboard/grafico-dashboard';
 import { ApiError } from '../../core/api/api-error';
+import type { Role } from '../../core/api/api-types';
 import { provideFakeSession } from '../../testing/fake-session';
 import {
   AGENT_JUDGE,
@@ -24,17 +25,23 @@ class FakeService {
   latestRun = vi.fn<AgentsService['latestRun']>(() => of(HISTORY_RUN));
   metrics = vi.fn<AgentsService['metrics']>(() => of(METRICS));
   reviews = vi.fn<AgentsService['reviews']>(() => of({ items: [], nextCursor: null }));
+  connections = vi.fn<AgentsService['connections']>(() =>
+    of([
+      { name: 'itop', ok: true, latency_ms: 40, missing_variable: null },
+      { name: 'deepseek', ok: false, latency_ms: null, missing_variable: 'DEEPSEEK_API_KEY' },
+    ]),
+  );
 }
 
 const failure = (message = 'Telemetría no disponible.') =>
   throwError(() => new ApiError(503, 'service_unavailable', message));
 
-async function render(service: FakeService) {
+async function render(service: FakeService, role: Role = 'reader') {
   TestBed.configureTestingModule({
     imports: [AgentsDashboardPage],
     providers: [
       { provide: AgentsService, useValue: service },
-      ...provideFakeSession('reader'),
+      ...provideFakeSession(role),
       provideRouter([]),
     ],
   });
@@ -304,6 +311,42 @@ describe('AgentsDashboardPage', () => {
     service.metrics.mockReturnValue(NEVER);
     const { element } = await render(service);
     expect(metricValues(element)[4]).toBe('1 Cola de error: …');
+  });
+});
+
+describe('AgentsDashboardPage connections (AG-4)', () => {
+  it('never loads or shows the connections to a reader', async () => {
+    const service = new FakeService();
+    const { element } = await render(service, 'reader');
+    expect(service.connections).not.toHaveBeenCalled();
+    expect(element.querySelector('.connections')).toBeNull();
+  });
+
+  it('shows an admin how many connections work, with the link to the screen', async () => {
+    const service = new FakeService();
+    const { element } = await render(service, 'admin');
+    const line = element.querySelector('.connections')!;
+    expect(text(line.querySelector('strong'))).toBe('1 de 2 funcionan');
+    expect(line.querySelector('strong')?.classList).toContain('failing');
+    expect(line.querySelector('a')?.getAttribute('href')).toBe('/conexiones');
+  });
+
+  it('retries the connections when they fail', async () => {
+    const service = new FakeService();
+    service.connections.mockReturnValue(failure());
+    const { fixture, element } = await render(service, 'admin');
+    expect(text(element.querySelector('.connections'))).toContain('no disponibles');
+    service.connections.mockReturnValue(of([]));
+    (element.querySelector('.connections .inline-retry') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(text(element.querySelector('.connections strong'))).toBe('0 de 0 funcionan');
+  });
+
+  it('marks the connections as loading until they answer', async () => {
+    const service = new FakeService();
+    service.connections.mockReturnValue(NEVER);
+    const { element } = await render(service, 'admin');
+    expect(text(element.querySelector('.connections'))).toContain('Conexiones externas: …');
   });
 });
 

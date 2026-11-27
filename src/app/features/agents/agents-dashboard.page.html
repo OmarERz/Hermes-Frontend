@@ -280,6 +280,31 @@
             texto="Gasto de los tres agentes contra el presupuesto diario; al agotarse, los agentes se detienen hasta el día siguiente."
           />
         </p>
+        @if (showConnections()) {
+          <p class="budget connections">
+            Conexiones externas:
+            @switch (connections.status()) {
+              @case ('ready') {
+                <strong [class.failing]="connectionSummary()?.failing">{{
+                  connectionSummary()?.text
+                }}</strong>
+              }
+              @case ('error') {
+                <span>no disponibles</span>
+                <button type="button" class="inline-retry" (click)="loadConnections()">
+                  Reintentar
+                </button>
+              }
+              @default {
+                <span>…</span>
+              }
+            }
+            <a class="connections-link" routerLink="/conexiones">Ver conexiones</a>
+            <app-ayuda-tooltip
+              texto="Solo administradores: última comprobación de iTop, DeepSeek, Firebase y las fuentes de datos. Ninguna respuesta trae una llave."
+            />
+          </p>
+        }
         @for (card of agents(); track card.agent) {
           <div class="agent-block">
             <div class="agent-summary">

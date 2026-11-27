@@ -17,6 +17,7 @@ export type JudgeDetail = ApiSchema<'JudgeDetail'>;
 export type JudgeReason = ApiSchema<'JudgeReasonItem'>;
 export type FeedbackEntry = ApiSchema<'FeedbackEntry'>;
 export type MetricsDashboard = ApiSchema<'MetricsDashboard'>;
+export type ConnectionStatus = ApiSchema<'ConnectionStatus'>;
 export type Metric = ApiSchema<'Metric'>;
 
 export type ReviewFilters = Pick<
@@ -108,6 +109,11 @@ export class AgentsService {
   /** The feedback people gave on an evaluation. */
   feedback(assessmentId: string): Observable<FeedbackEntry[]> {
     return this.api.get('/api/recommendations/{id}/feedback', { path: { id: assessmentId } });
+  }
+
+  /** Last check of each external connection (admin only); it only verifies and never carries a key (SEG-23). */
+  connections(): Observable<ConnectionStatus[]> {
+    return this.api.get('/api/connections/status');
   }
 
   metrics(): Observable<MetricsDashboard> {

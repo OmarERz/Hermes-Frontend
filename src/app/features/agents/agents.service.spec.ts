@@ -92,6 +92,12 @@ describe('AgentsService', () => {
     await expect(result).resolves.toBeNull();
   });
 
+  it('reads the status of the connections', async () => {
+    const result = firstValueFrom(service.connections());
+    backend.expectOne(`${API}/api/connections/status`).flush([]);
+    await expect(result).resolves.toEqual([]);
+  });
+
   it('reads the metrics board', async () => {
     const result = firstValueFrom(service.metrics());
     backend.expectOne(`${API}/api/metrics`).flush({ generated_at: 'x', metrics: [] });

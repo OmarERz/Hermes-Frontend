@@ -17,6 +17,7 @@ import {
 import { AyudaTooltip } from '../../componentes/ayuda-tooltip/ayuda-tooltip';
 import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { GraficoDashboard } from '../../componentes/grafico-dashboard/grafico-dashboard';
+import { SessionService } from '../../core/auth/session.service';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { formatDateTime } from '../../shared/labels';
@@ -41,6 +42,7 @@ import {
 import {
   AgentsService,
   AgentTelemetry,
+  ConnectionStatus,
   HistoryEvent,
   MetricsDashboard,
   TelemetryDaily,
@@ -139,6 +141,7 @@ export function orderAgents(agents: readonly AgentTelemetry[]): AgentTelemetry[]
 })
 export class AgentsDashboardPage {
   private readonly service = inject(AgentsService);
+  private readonly session = inject(SessionService);
 
   readonly bannerIcon = LucideBot;
   readonly windows = WINDOWS;
@@ -156,6 +159,20 @@ export class AgentsDashboardPage {
   readonly tickets = new AsyncState<TicketSummary>();
   readonly latestRun = new AsyncState<HistoryEvent | null>();
   readonly metrics = new AsyncState<MetricsDashboard>();
+  readonly connections = new AsyncState<ConnectionStatus[]>();
+
+  /**
+   * AG-4 reconverts the invented uptime into the judge ladder and the state of the connections. The connections are
+   * admin only (ROUTE_ROLES of `GET /api/connections/status`; ACTION_ROLES has no key for it), so only an admin sees
+   * and loads them.
+   */
+  readonly showConnections = computed(() => this.session.hasRole('admin'));
+  readonly connectionSummary = computed(() => {
+    if (this.connections.status() !== 'ready') return null;
+    const list = this.connections.value() ?? [];
+    const working = list.filter((connection) => connection.ok).length;
+    return { text: `${working} de ${list.length} funcionan`, failing: working < list.length };
+  });
 
   readonly summaryState = computed(() => loadState(this.summary));
   readonly dailyState = computed(() => loadState(this.daily));
@@ -281,8 +298,16 @@ export class AgentsDashboardPage {
     this.loadTickets();
     this.loadLatestRun();
     this.loadMetrics();
+    if (this.showConnections()) this.loadConnections();
     inject(DestroyRef).onDestroy(() => {
-      for (const state of [this.summary, this.daily, this.tickets, this.latestRun, this.metrics]) {
+      for (const state of [
+        this.summary,
+        this.daily,
+        this.tickets,
+        this.latestRun,
+        this.metrics,
+        this.connections,
+      ]) {
         state.cancel();
       }
     });
@@ -299,6 +324,10 @@ export class AgentsDashboardPage {
 
   loadDaily(): void {
     this.daily.run(this.service.daily(this.days()));
+  }
+
+  loadConnections(): void {
+    this.connections.run(this.service.connections());
   }
 
   loadMetrics(): void {
