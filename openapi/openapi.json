@@ -514,6 +514,24 @@
             "description": "CPU de un Server o VirtualMachine en iTop, texto libre sin convertir.",
             "title": "Cpu"
           },
+          "criticality": {
+            "anyOf": [
+              {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Criticidad del CI en iTop (`unknown` si iTop no la tiene); igual que en el inventario. Valores: `high`: Alta; `medium`: Media; `low`: Baja; `unknown`: Sin dato en iTop.",
+            "title": "Criticality"
+          },
           "custodian": {
             "anyOf": [
               {
@@ -538,6 +556,18 @@
             "description": "Descripción del CI en iTop (dato, no instrucciones).",
             "title": "Description"
           },
+          "exposed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Si el CI está expuesto a internet; nulo si iTop no lo dice. Igual que en el inventario.",
+            "title": "Exposed"
+          },
           "findings": {
             "description": "Hallazgos del activo.",
             "items": {
@@ -558,10 +588,34 @@
             "description": "Clase del CI en iTop (Server, VirtualMachine…).",
             "title": "Itop Class"
           },
+          "itop_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Enlace al CI en la consola de iTop (para editarlo allá); vacío si el backend no tiene la URL de iTop configurada, igual que en el inventario.",
+            "title": "Itop Url"
+          },
           "name": {
             "description": "Nombre.",
             "title": "Name",
             "type": "string"
+          },
+          "os": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sistema operativo del CI, según iTop; nulo sin dato.",
+            "title": "Os"
           },
           "owner": {
             "anyOf": [
@@ -574,6 +628,18 @@
             ],
             "description": "Responsable del activo.",
             "title": "Owner"
+          },
+          "personal_data": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Si el CI guarda datos personales; nulo si iTop no lo dice.",
+            "title": "Personal Data"
           },
           "ram": {
             "anyOf": [
@@ -592,6 +658,18 @@
             "title": "Risk",
             "type": "integer"
           },
+          "service": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Servicio de negocio del CI, según iTop; nulo sin dato.",
+            "title": "Service"
+          },
           "software": {
             "description": "Software instalado vivo del CI, por producto y versión.",
             "items": {
@@ -599,6 +677,18 @@
             },
             "title": "Software",
             "type": "array"
+          },
+          "synced_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Última sincronización del CI con iTop (UTC).",
+            "title": "Synced At"
           }
         },
         "required": [
@@ -1377,6 +1467,17 @@
             "title": "Min Role",
             "type": "string"
           },
+          "option_values": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "description": "Lo que fija cada opción de un parámetro `enum`: por opción, cada parámetro y su valor como texto. Hoy solo `sensitivity_profile` (docs/07 §12), con `judge.range_multiplier` y `judge.allow_lowering` (fijos del perfil), `dead_zone` (la zona muerta del perfil: mándala junto con el perfil al simular y al guardar, D-091) y `mode2.min_confidence` (la usa el juez mientras un admin no la fije). Vacío en los demás parámetros.",
+            "title": "Option Values",
+            "type": "object"
+          },
           "options": {
             "description": "Allowed values of an enum parameter",
             "items": {
@@ -1907,7 +2008,7 @@
                 "type": "null"
               }
             ],
-            "description": "Id del ticket en iTop, si el error es de un ticket.",
+            "description": "Id numérico del ticket en iTop, el que acepta el filtro `ticket_itop_id` de `GET /api/tickets/updates` (F18.5); nulo si el error no es de un ticket o si el ticket no tiene un id numérico (los de demostración, `DEMO-n`): para mostrarlo usa `ticket_ref`.",
             "title": "Ticket Itop Id"
           },
           "ticket_ref": {
@@ -2767,7 +2868,7 @@
         "additionalProperties": false,
         "properties": {
           "ci_id": {
-            "description": "Id del CI en iTop.",
+            "description": "Id del CI en iTop. En `software_without_cpe` trae el id (UUID) del producto de software, como antes de F18.6: usa `software_product_id` para el software y `ci_id` solo para los CIs.",
             "title": "Ci Id",
             "type": "string"
           },
@@ -2776,10 +2877,34 @@
             "title": "Detail",
             "type": "string"
           },
+          "itop_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Clase del CI en iTop (Server, VirtualMachine…), para enlazarlo en la consola de iTop. Solo en las listas de activos; nula en `software_without_cpe`.",
+            "title": "Itop Class"
+          },
           "name": {
             "description": "Nombre del activo o del software.",
             "title": "Name",
             "type": "string"
+          },
+          "software_product_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Id (UUID) del producto de software, el `{software}` de `PUT /api/mappings/{software}`. Solo en `software_without_cpe`; nulo en las listas de activos.",
+            "title": "Software Product Id"
           }
         },
         "required": [
@@ -2794,7 +2919,7 @@
         "additionalProperties": false,
         "properties": {
           "outside_delivery_model": {
-            "description": "Activos fuera del modelo de entrega de Hermes.",
+            "description": "Equipos custodios fuera del modelo de entrega de la organización en iTop (los equipos a los que iTop deja asignar sus tickets). Siempre vacía por ahora: Hermes no lee el modelo de entrega de iTop, así que no puede saber qué equipo queda fuera; si iTop rechaza un equipo, el ticket se crea con el equipo por defecto (TIC-09).",
             "items": {
               "$ref": "#/components/schemas/InventoryItem"
             },
@@ -2808,6 +2933,17 @@
             },
             "title": "Software Without Cpe",
             "type": "array"
+          },
+          "totals": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InventoryPendingTotals"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Total de pendientes de cada tipo. Cada lista trae a lo más 200 elementos (sin paginación): si su total es mayor, la lista está cortada."
           },
           "without_classification": {
             "description": "Activos sin clasificación.",
@@ -2851,6 +2987,58 @@
           "outside_delivery_model"
         ],
         "title": "InventoryPending",
+        "type": "object"
+      },
+      "InventoryPendingTotals": {
+        "additionalProperties": false,
+        "description": "How many items of each type wait for a person, whatever the cap of each list (F18.6).",
+        "properties": {
+          "outside_delivery_model": {
+            "description": "Siempre 0 por ahora (ver `outside_delivery_model`).",
+            "minimum": 0.0,
+            "title": "Outside Delivery Model",
+            "type": "integer"
+          },
+          "software_without_cpe": {
+            "description": "Productos de software sin CPE.",
+            "minimum": 0.0,
+            "title": "Software Without Cpe",
+            "type": "integer"
+          },
+          "without_classification": {
+            "description": "CIs sin clasificación de datos.",
+            "minimum": 0.0,
+            "title": "Without Classification",
+            "type": "integer"
+          },
+          "without_custodian": {
+            "description": "CIs sin equipo custodio.",
+            "minimum": 0.0,
+            "title": "Without Custodian",
+            "type": "integer"
+          },
+          "without_exposure": {
+            "description": "CIs sin dato de exposición a internet.",
+            "minimum": 0.0,
+            "title": "Without Exposure",
+            "type": "integer"
+          },
+          "without_owner": {
+            "description": "CIs sin responsable.",
+            "minimum": 0.0,
+            "title": "Without Owner",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "software_without_cpe",
+          "without_classification",
+          "without_exposure",
+          "without_owner",
+          "without_custodian",
+          "outside_delivery_model"
+        ],
+        "title": "InventoryPendingTotals",
         "type": "object"
       },
       "InventorySummary": {
@@ -3445,12 +3633,12 @@
         "additionalProperties": false,
         "properties": {
           "cpe": {
-            "description": "Identificador CPE 2.3 del software.",
+            "description": "CPE 2.3 guardado para el producto, tal como se mandó.",
             "title": "Cpe",
             "type": "string"
           },
           "software": {
-            "description": "Nombre del software en el inventario.",
+            "description": "Id (UUID) del producto de software mapeado: el mismo `{software}` de la ruta, no su nombre.",
             "title": "Software",
             "type": "string"
           }
@@ -4550,7 +4738,7 @@
                 "type": "null"
               }
             ],
-            "description": "Id del ticket de iTop que se muestra (el del custodio del CI mostrado).",
+            "description": "Id numérico del ticket de iTop que se muestra (el del custodio del CI mostrado), con el formato que aceptan el filtro `ticket_itop_id` y `POST /api/feedback` (F18.5; el feedback además exige que el ticket sea de la evaluación). Nulo sin ticket o si el ticket no tiene un id numérico (los de demostración, `DEMO-n`): entonces no hay a qué ticket acotar «No sugerir más» ni «Falso positivo», y sin `ticket_itop_id` se aplican a todos los tickets de la evaluación.",
             "title": "Ticket Itop Id"
           },
           "ticket_url": {
@@ -4885,6 +5073,22 @@
             "description": "Si el paso está hecho.",
             "title": "Done",
             "type": "boolean"
+          },
+          "done_source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "data",
+                  "manual"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "De dónde sale `done` (F18.6): `data` si los datos ya lo muestran (desmarcarlo no cambia nada), `manual` si solo lo marcó un admin (`PUT /api/setup/steps/{n}` con `done: false` lo desmarca). Nulo si el paso no está hecho. Valores: `data`: Los datos ya muestran el paso hecho; `manual`: Solo lo marcó un admin; se puede desmarcar.",
+            "title": "Done Source"
           },
           "n": {
             "description": "Número del paso.",
@@ -6089,7 +6293,7 @@
                 "type": "null"
               }
             ],
-            "description": "Estado de la escritura en iTop; nulo si ya se purgó (90 días). Valores: `pending`: Espera su envío a iTop; `in_progress`: Enviándose a iTop; `done`: Escrito en iTop; `failed`: Falló; está en la cola de error.",
+            "description": "Estado de la escritura en iTop. Nulo en dos casos: la escritura terminó bien y ya se purgó (retención de 90 días), o la acción no escribió nada en iTop (una `suggest` que solo queda en la bitácora: una persona cambió la urgencia y las sugerencias están apagadas, en ese ticket o en general). Con una acción distinta de `suggest`, nulo siempre es una escritura hecha y purgada; en `suggest` los dos casos no se distinguen. Valores: `pending`: Espera su envío a iTop; `in_progress`: Enviándose a iTop; `done`: Escrito en iTop; `failed`: Falló; está en la cola de error.",
             "title": "Itop Status"
           },
           "label": {
@@ -6106,7 +6310,7 @@
                 "type": "null"
               }
             ],
-            "description": "Id numérico del ticket en iTop; nulo mientras no se crea.",
+            "description": "Id numérico del ticket en iTop, el que acepta el filtro `ticket_itop_id` (F18.5); nulo mientras no se crea o si no es numérico (los de demostración, `DEMO-n`): para mostrarlo usa `ticket_ref`.",
             "title": "Ticket Itop Id"
           },
           "ticket_ref": {
@@ -12529,7 +12733,7 @@
     },
     "/api/pending/inventory": {
       "get": {
-        "description": "Activos y software con datos faltantes: sin CPE, sin clasificación, sin exposición o sin responsable.",
+        "description": "Activos y software con datos faltantes: software sin CPE y CIs sin clasificación, sin dato de exposición, sin responsable o sin custodio. Cada lista trae a lo más 200 elementos, sin paginación; `totals` da el total de cada tipo. En el software, el id del producto va en `software_product_id`; en los CIs, `itop_class` trae su clase de iTop. `outside_delivery_model` siempre llega vacía (Hermes aún no lee el modelo de entrega de iTop).",
         "operationId": "get_pending_inventory",
         "responses": {
           "200": {
@@ -13808,9 +14012,143 @@
         ]
       }
     },
+    "/api/runs/{id}": {
+      "get": {
+        "description": "Una corrida por su id, con el mismo modelo que cada elemento de `GET /api/runs`: tipo, estado actual (el final cuando termina), avance, fechas, por qué se lanzó y quién la lanzó. 404 si no existe. Rol mínimo: `reader`.",
+        "operationId": "get_run",
+        "parameters": [
+          {
+            "description": "Identificador del recurso (UUID).",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "examples": [
+                "0196a6f0-0000-7000-8000-000000000001"
+              ],
+              "maxLength": 36,
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "La solicitud no es válida."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Se requiere autenticación válida."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "No tienes permiso para realizar esta acción."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "El recurso solicitado no existe."
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Método no permitido para esta ruta."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "La solicitud entra en conflicto con el estado actual del recurso."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Los datos enviados no son válidos."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Demasiadas solicitudes; intenta de nuevo más tarde."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error interno del servidor."
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Una corrida",
+        "tags": [
+          "runs"
+        ]
+      }
+    },
     "/api/runs/{id}/events": {
       "get": {
-        "description": "Flujo `text/event-stream` con el progreso hasta que la corrida termina. Si se corta, reconecta con `Last-Event-ID`.",
+        "description": "Flujo `text/event-stream` con un evento `progress` cada vez que cambia el estado o el avance, hasta que la corrida termina. Cada evento trae `run_id`, `progress`, `status` y `message`. Si se corta, reconecta y consulta `GET /api/runs/{id}` para el estado final.",
         "operationId": "stream_run_events",
         "parameters": [
           {
@@ -13836,10 +14174,47 @@
                 "schema": {
                   "properties": {
                     "data": {
-                      "description": "JSON text: run_id, progress (0-100) and message",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "properties": {
+                          "message": {
+                            "description": "El estado para la persona, en español.",
+                            "type": "string"
+                          },
+                          "progress": {
+                            "description": "Avance de 0 a 100.",
+                            "maximum": 100,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "run_id": {
+                            "description": "Id (UUID) de la corrida.",
+                            "type": "string"
+                          },
+                          "status": {
+                            "description": "Estado de la corrida, el mismo de `GET /api/runs/{id}`; `succeeded` y `failed` son finales y cierran el flujo.",
+                            "enum": [
+                              "queued",
+                              "running",
+                              "succeeded",
+                              "failed"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "run_id",
+                          "progress",
+                          "status",
+                          "message"
+                        ],
+                        "type": "object"
+                      },
+                      "description": "Texto JSON con `run_id`, `progress` (0 a 100), `status` (`queued`, `running`, `succeeded` o `failed`) y `message` (el estado en español). El flujo termina después del evento con estado final (`succeeded` o `failed`).",
                       "type": "string"
                     },
                     "event": {
+                      "description": "Nombre del evento: siempre `progress`.",
                       "enum": [
                         "progress"
                       ],
@@ -14087,7 +14462,7 @@
     },
     "/api/setup/status": {
       "get": {
-        "description": "Pasos del asistente de instalación y cuáles están hechos. Solo `admin`.",
+        "description": "Pasos del asistente de instalación y cuáles están hechos u omitidos; `done_source` dice si un paso hecho sale de los datos o de la marca de un admin. Solo `admin`.",
         "operationId": "get_setup_status",
         "responses": {
           "200": {
@@ -14208,7 +14583,7 @@
     },
     "/api/setup/steps/{n}": {
       "put": {
-        "description": "Marca un paso del asistente como hecho u omitido. Solo `admin`.",
+        "description": "Marca un paso del asistente como hecho u omitido, o lo desmarca con `done: false` (desmarcar solo tiene efecto si su `done_source` es `manual`). Solo `admin`.",
         "operationId": "update_setup_step",
         "parameters": [
           {

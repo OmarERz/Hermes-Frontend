@@ -20,8 +20,8 @@ import { CpeMappingDialog, MappingTarget } from './cpe-mapping-dialog';
 import { InventoryPending, InventoryService, Mapping, PendingItem } from './inventory.service';
 import { viewState } from './inventory-view';
 
-/** The lists of `GET /api/pending/inventory`, in the order of the screen. */
-type PendingKind = keyof InventoryPending;
+/** The lists of `GET /api/pending/inventory`, in the order of the screen (`totals` is not a list). */
+type PendingKind = Exclude<keyof InventoryPending, 'totals'>;
 
 interface PendingSection {
   kind: PendingKind;

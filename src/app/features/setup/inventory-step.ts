@@ -3,7 +3,8 @@ import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { InventoryPending, SetupService } from './setup.service';
 
-type PendingKind = keyof InventoryPending;
+/** The lists of `GET /api/pending/inventory` (`totals` is not a list). */
+type PendingKind = Exclude<keyof InventoryPending, 'totals'>;
 
 /** The pendings of FRO-17, in the order of the Pendientes de inventario screen (the OpenAPI descriptions). */
 export const PENDING_LABELS: Record<PendingKind, string> = {
