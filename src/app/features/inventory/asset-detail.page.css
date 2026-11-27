@@ -1,0 +1,84 @@
+.back-row {
+  margin: 0 0 12px;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent, #c90083);
+  font-weight: 600;
+  text-decoration: none;
+}
+.back-link svg {
+  width: 16px;
+  height: 16px;
+}
+.back-link:hover {
+  text-decoration: underline;
+}
+.panel {
+  margin-top: 15px;
+}
+.panel-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.panel-heading h2 {
+  margin: 0;
+  font-size: calc(17px + var(--font-size-increase, 0px));
+}
+.itop-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.description {
+  margin: 0 0 12px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+.facts dt {
+  color: var(--text-muted, #6b6175);
+  font-size: calc(10px + var(--font-size-increase, 0px));
+  font-weight: 700;
+}
+.facts dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+.stat-card em.level-chip {
+  position: absolute;
+  right: 9px;
+  bottom: 10px;
+}
+.hint {
+  margin: 10px 0 0;
+  color: var(--text-muted, #6b6175);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+}
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent, #c90083);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.link-button:focus-visible {
+  outline: 2px solid var(--accent, #ed079b);
+  outline-offset: 2px;
+}
+td a {
+  color: var(--accent, #c90083);
+}

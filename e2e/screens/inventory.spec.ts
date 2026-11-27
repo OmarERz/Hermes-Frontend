@@ -37,4 +37,44 @@ test.describe('inventory as reader', () => {
     await expect(table).toContainText('vm-intranet-02');
     await expect(table).toContainText('4 vCPU');
   });
+
+  test('opens a CI with its iTop data, installed software and vulnerabilities', async ({
+    page,
+  }) => {
+    await page.goto('/activos');
+    await page.getByRole('link', { name: 'srv-pagos-01' }).click();
+    await expect(page).toHaveURL(/\/activos\/CI-1$/);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('srv-pagos-01');
+    const facts = page.getByRole('region', { name: 'Datos de iTop' });
+    await expect(facts).toContainText(/CPU\s*16 vCPU/);
+    await expect(facts).toContainText(/RAM\s*64 GB/);
+    await expect(facts).toContainText(/Clase de iTop\s*Servidor · Server/);
+    await expect(facts).toContainText(/Criticidad\s*Alta/);
+
+    const software = page.getByRole('region', {
+      name: 'Software instalado; desplazamiento horizontal',
+    });
+    const openssl = software.getByRole('row').filter({ hasText: 'OpenSSL' });
+    await expect(openssl).toContainText('3.0.7');
+    await expect(openssl).toContainText('Otro software');
+    await expect(openssl).toContainText('Activa');
+    await expect(openssl).toContainText('Soporte OpenSSL');
+    await expect(openssl).toContainText('cpe:2.3:a:openssl:openssl');
+
+    const findings = page.getByRole('region', {
+      name: 'Vulnerabilidades del activo; desplazamiento horizontal',
+    });
+    await expect(findings.getByRole('link', { name: 'CVE-2026-10001' })).toBeVisible();
+  });
+
+  test('shows an inactive installation as iTop has it', async ({ page }) => {
+    await page.goto('/activos/CI-2');
+    const software = page.getByRole('region', {
+      name: 'Software instalado; desplazamiento horizontal',
+    });
+    await expect(software.getByRole('row').filter({ hasText: 'OpenSSL' })).toContainText(
+      'Inactiva',
+    );
+    await expect(page.getByRole('link', { name: 'Volver a activos' })).toBeVisible();
+  });
 });
