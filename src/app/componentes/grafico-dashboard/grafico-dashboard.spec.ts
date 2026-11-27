@@ -17,6 +17,17 @@ function createChartComponent() {
 }
 
 describe('GraficoDashboard', () => {
+  // The first lazy load pays the cold import of the four ECharts modules, which can pass the default 5 s test timeout
+  // on a busy machine (seen in the local gate); load them once here, with room, so each test only times its own work.
+  beforeAll(async () => {
+    await Promise.all([
+      import('echarts/core'),
+      import('echarts/charts'),
+      import('echarts/components'),
+      import('echarts/renderers'),
+    ]);
+  }, 60_000);
+
   afterEach(() => {
     vi.unstubAllGlobals();
     document.body.replaceChildren();
