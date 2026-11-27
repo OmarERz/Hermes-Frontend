@@ -1,0 +1,27 @@
+import { join } from 'node:path';
+
+export type Role = 'reader' | 'analyst' | 'admin';
+
+export const ROLES: readonly Role[] = ['reader', 'analyst', 'admin'];
+
+/** Firebase project of the backend's Auth emulator (compose.yaml) and of the e2e build (src/environments). */
+export const EMULATOR_PROJECT = 'demo-hermes';
+
+/** Fixed password of the throwaway emulator users (the same as the backend's core.devtools.emulator). */
+export const PASSWORD = 'emulator-test-password';
+
+/** Spanish name of each role, as the profile menu shows it (src/app/core/auth/roles.ts). */
+export const ROLE_LABELS: Record<Role, string> = {
+  reader: 'Lector',
+  analyst: 'Analista',
+  admin: 'Administrador',
+};
+
+export function email(role: Role): string {
+  return `${role}@hermes.test`;
+}
+
+/** Saved session (cookies, local storage and the IndexedDB where Firebase keeps it) of each role. */
+export function sessionFile(role: Role): string {
+  return join(__dirname, '..', 'test-output', 'sessions', `${role}.json`);
+}
