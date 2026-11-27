@@ -120,10 +120,12 @@ describe('VulnerabilitiesService', () => {
     await expect(history).resolves.toEqual([]);
   });
 
-  it('takes the waterfall from the latest assessment of the group', async () => {
+  it('takes the waterfall from the latest assessment of the group that scored the asset', async () => {
     const result = firstValueFrom(service.getLatestBreakdown('g-1', 'SRV-01'));
     const recommendations = backend.expectOne((req) => req.url.endsWith('/api/recommendations'));
     expect(recommendations.request.params.get('group_id')).toBe('g-1');
+    // A newer assessment of the group may have scored only other CIs: ask for the latest one of this CI.
+    expect(recommendations.request.params.get('ci_id')).toBe('SRV-01');
     expect(recommendations.request.params.get('limit')).toBe('1');
     recommendations.flush({ items: [{ assessment_id: 'a-9' }], next_cursor: null });
     const breakdown = backend.expectOne((req) =>

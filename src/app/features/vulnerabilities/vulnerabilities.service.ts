@@ -84,11 +84,13 @@ export class VulnerabilitiesService {
   }
 
   /**
-   * The Δ waterfall of one asset in the latest assessment of the group. The assessment id comes from the newest
-   * recommendation of the group (the comparison rows and the detail do not carry it); null when there is none.
+   * The Δ waterfall of one asset in the latest assessment of the group that scored that asset. The assessment id
+   * comes from the newest recommendation of the group and the CI (the comparison rows and the detail do not carry
+   * it; a newer assessment of the group may have scored only other CIs); null when there is none.
    */
   getLatestBreakdown(groupId: string, ciId: string): Observable<Breakdown | null> {
-    return this.api.get('/api/recommendations', { query: { group_id: groupId, limit: 1 } }).pipe(
+    const query = { group_id: groupId, ci_id: ciId, limit: 1 };
+    return this.api.get('/api/recommendations', { query }).pipe(
       switchMap((page) => {
         const latest = page.items[0];
         if (!latest) return of(null);
