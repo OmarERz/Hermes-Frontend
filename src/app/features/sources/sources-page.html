@@ -144,7 +144,6 @@
             class="feed-card-select"
             type="button"
             [attr.aria-pressed]="card.offset === 0"
-            [attr.aria-label]="'Seleccionar fuente ' + card.item.name"
             (click)="selectCard(card.item.id, card.virtualIndex)"
           >
             <span class="feed-brand" aria-hidden="true">{{ card.item.initials }}</span>

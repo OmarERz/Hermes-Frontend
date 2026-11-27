@@ -120,7 +120,6 @@
           type="submit"
           class="login-button"
           [disabled]="cargando() || !sesion.loginAvailable"
-          aria-label="Iniciar sesión"
         >
           <svg lucideUserRound aria-hidden="true"></svg>
           <span>{{ cargando() ? 'Entrando...' : 'Entrar' }}</span>

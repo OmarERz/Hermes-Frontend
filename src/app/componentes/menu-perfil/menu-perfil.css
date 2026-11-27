@@ -68,6 +68,15 @@
 .profile-dropdown:focus {
   outline: none;
 }
+/* Read by screen readers, not drawn: the trigger's name is its visible text plus what it opens. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 .logout-button {
   display: flex;
   align-items: center;
@@ -144,7 +153,15 @@
   }
 }
 @media (max-width: 850px) {
-  .sidebar-profile-menu .profile-copy,
+  /* Only the avatar shows; the name and role stay in the trigger's accessible name. */
+  .sidebar-profile-menu .profile-copy {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
   .sidebar-profile-menu .profile-chevron {
     display: none;
   }

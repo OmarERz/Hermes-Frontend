@@ -771,6 +771,11 @@
   font-size: calc((12px) + var(--font-size-increase));
   font-weight: 700;
 }
+/* The lilac of the dark theme is 1.64:1 on the light wash: the light theme uses its violet (5.98:1). */
+.app-shell[data-theme='light']
+  :is(.review-status-badge, .judge-decision-badge, .disagreement-badge) {
+  color: var(--accent-violet);
+}
 .review-conflict-note {
   display: flex;
   align-items: center;

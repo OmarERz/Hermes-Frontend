@@ -126,7 +126,7 @@ h3 {
   --warning-bg: #fff0dd;
   --warning-text: #96540a;
   --danger-bg: #ffe4f2;
-  --danger-text: #ce1767;
+  --danger-text: #b51459; /* 5.49:1 on --danger-bg */
   --shadow-card: 0 3px 10px #3510440a;
 }
 
@@ -294,10 +294,15 @@ h3 {
 .app-shell[data-theme='dark'] .stack-view .health-breakdown > div > i {
   background: #49345e;
 }
+/* Every table header of the dark theme, also the compact tables outside .inventory (detail, comparison matrix). */
 .app-shell[data-theme='dark'] .stack-view .table-panel th,
-.app-shell[data-theme='dark'] .assets-view .inventory th {
+.app-shell[data-theme='dark'] .assets-view .inventory th,
+.app-shell[data-theme='dark'] .assets-view th {
   background: var(--surface-raised);
   color: var(--text-primary);
+}
+.app-shell[data-theme='dark'] .assets-view .inventory footer {
+  color: var(--text-muted);
 }
 .app-shell[data-theme='dark'] .stack-view .table-panel td,
 .app-shell[data-theme='dark'] .assets-view .inventory td {

@@ -152,6 +152,13 @@ describe('AgentsHistoryPage', SCREEN, () => {
     expect(element.querySelector('.detail-empty')).not.toBeNull();
   });
 
+  it('names the detail panel, so it is told apart from the sidebar landmark', async () => {
+    const { element } = await render(new FakeService());
+    expect(element.querySelector('aside.detail-panel')?.getAttribute('aria-label')).toBe(
+      'Detalle del evento',
+    );
+  });
+
   it('says when a judge review fed no evaluation', async () => {
     const service = new FakeService();
     service.history.mockReturnValue(
