@@ -103,7 +103,7 @@ describe('AddSourceForm', () => {
     const { fixture, element, service } = await render();
     let cancelled = 0;
     fixture.componentInstance.cancelled.subscribe(() => cancelled++);
-    element.querySelector<HTMLButtonElement>('.secondary-button')!.click();
+    element.querySelector<HTMLButtonElement>('.btn-secondary')!.click();
     expect(cancelled).toBe(1);
     expect(service.create).not.toHaveBeenCalled();
   });

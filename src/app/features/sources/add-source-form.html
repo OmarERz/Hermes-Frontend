@@ -55,10 +55,20 @@
     <p class="form-error" role="alert">{{ failure.message }}</p>
   }
   <footer>
-    <button type="button" class="secondary-button" [disabled]="saving()" (click)="cancelled.emit()">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="saving()"
+      (click)="cancelled.emit()"
+    >
       Cancelar
     </button>
-    <button type="submit" class="primary-button" [disabled]="saving()" [attr.aria-busy]="saving()">
+    <button
+      type="submit"
+      class="btn btn-gradient"
+      [disabled]="saving()"
+      [attr.aria-busy]="saving()"
+    >
       {{ saving() ? 'Agregando…' : 'Agregar fuente' }}
     </button>
   </footer>

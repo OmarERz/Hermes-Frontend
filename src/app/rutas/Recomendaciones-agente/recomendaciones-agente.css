@@ -430,28 +430,7 @@
   color: var(--text-primary);
 }
 @scope (.recommendations-view) {
-  .review-open-button {
-    padding: 9px 13px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--accent-wash);
-    color: var(--accent-text);
-    font: inherit;
-    font-size: calc((12px) + var(--font-size-increase));
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .review-open-button:hover {
-    border-color: var(--accent);
-  }
-  .review-open-button:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-  .review-open-button:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
+  /* The feedback actions are the shared .btn (src/styles/buttons.css). */
   .review-saved-message {
     margin: 0 0 12px;
     padding: 10px 13px;

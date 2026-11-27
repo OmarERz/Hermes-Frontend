@@ -26,16 +26,14 @@
   border-color: color-mix(in srgb, var(--danger-text) 55%, var(--border));
   color: var(--danger-text);
 }
-.panel-action,
-.primary-button,
-.secondary-button,
+/* Panel and form actions are the shared .btn (src/styles/buttons.css); the row actions stay dense. */
 .row-action {
-  min-height: 36px;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 0 13px;
+  padding: 0 9px;
   border: 1px solid var(--border);
   border-radius: 9px;
   background: var(--surface-raised);
@@ -46,21 +44,10 @@
   white-space: nowrap;
   cursor: pointer;
 }
-.panel-action,
-.primary-button {
-  border-color: transparent;
-  background: var(--accent-strong);
-  color: var(--on-accent);
-}
-.panel-action svg,
 .row-action svg {
   width: 15px;
   height: 15px;
   flex: none;
-}
-.row-action {
-  min-height: 30px;
-  padding: 0 9px;
 }
 .row-action.danger {
   color: var(--danger-text);

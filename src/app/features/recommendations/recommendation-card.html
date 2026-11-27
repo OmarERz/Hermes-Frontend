@@ -137,7 +137,7 @@
     <div class="feedback-actions">
       <button
         type="button"
-        class="review-open-button"
+        class="btn btn-secondary btn-sm"
         [attr.aria-expanded]="historyOpen()"
         (click)="historyOpen.set(!historyOpen())"
       >
@@ -146,7 +146,7 @@
       <button
         *appIfRole="feedbackRole"
         type="button"
-        class="review-open-button give-feedback"
+        class="btn btn-primary btn-sm give-feedback"
         (click)="giveFeedback.emit()"
       >
         Dar feedback

@@ -13,10 +13,6 @@
 .action-row {
   margin: 18px 0 14px;
 }
-.launch-scan:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
 .filters {
   flex-wrap: wrap;
 }

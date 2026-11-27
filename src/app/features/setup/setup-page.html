@@ -122,7 +122,7 @@
             <footer class="step-actions">
               <button
                 type="button"
-                class="step-nav"
+                class="btn btn-secondary step-nav"
                 [disabled]="previous() === null"
                 (click)="select(previous())"
               >
@@ -132,7 +132,7 @@
                 @if (step.state === 'pending') {
                   <button
                     type="button"
-                    class="step-nav"
+                    class="btn btn-secondary step-nav"
                     [disabled]="marking() !== null"
                     (click)="mark('skipped')"
                   >
@@ -140,7 +140,7 @@
                   </button>
                   <button
                     type="button"
-                    class="primary-action"
+                    class="btn btn-primary"
                     [disabled]="marking() !== null"
                     [attr.aria-busy]="marking() === step.n"
                     (click)="mark('done')"
@@ -151,7 +151,7 @@
                 } @else if (step.state === 'skipped') {
                   <button
                     type="button"
-                    class="step-nav"
+                    class="btn btn-secondary step-nav"
                     [disabled]="marking() !== null"
                     (click)="mark('reset')"
                   >
@@ -161,7 +161,7 @@
               </span>
               <button
                 type="button"
-                class="step-nav"
+                class="btn btn-secondary step-nav"
                 [disabled]="next() === null"
                 (click)="select(next())"
               >

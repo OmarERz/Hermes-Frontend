@@ -73,26 +73,7 @@ footer {
   gap: 9px;
   margin-top: 14px;
 }
-footer button {
-  min-height: 40px;
-  padding: 0 16px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface-raised);
-  color: var(--text-primary);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-footer .primary-button {
-  border-color: var(--accent);
-  background: linear-gradient(110deg, var(--accent-strong), #a90be2); /* D-097: white text */
-  color: #fff;
-}
-footer button:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
+/* The actions are the shared .btn (src/styles/buttons.css); the submit keeps the gradient (.btn-gradient, D-097). */
 @media (max-width: 760px) {
   .form-grid {
     grid-template-columns: 1fr;

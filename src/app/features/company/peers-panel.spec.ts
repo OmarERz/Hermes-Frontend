@@ -89,7 +89,7 @@ describe('PeersPanel', () => {
     await type('peer-sector', 'transportation');
     await type('peer-country', 'co');
     await type('peer-alias', 'MovEj');
-    await click('.inline-add .secondary-button');
+    await click('.inline-add .btn-secondary');
     await type('peer-alias', 'Movilidad   MX');
     element
       .querySelector<HTMLInputElement>('[name="peer-alias"]')!
@@ -124,7 +124,7 @@ describe('PeersPanel', () => {
     expect(text(element.querySelector('#peer-country-error'))).toContain('dos letras');
     expect(element.querySelector('[name="peer-name"]')?.getAttribute('aria-invalid')).toBe('true');
 
-    await click('.peer-form footer .secondary-button');
+    await click('.peer-form footer .btn-secondary');
     expect(element.querySelector('form')).toBeNull();
   });
 
@@ -133,17 +133,17 @@ describe('PeersPanel', () => {
     await click('.row-action[aria-label="Editar Pagos Ejemplo"]');
     expect(panel.aliases()).toEqual(['PagosEj', 'Pagos MX']);
     await type('peer-alias', '   ');
-    await click('.inline-add .secondary-button');
+    await click('.inline-add .btn-secondary');
     expect(panel.aliases()).toHaveLength(2);
     await type('peer-alias', 'pagosej');
-    await click('.inline-add .secondary-button');
+    await click('.inline-add .btn-secondary');
     expect(text(element.querySelector('#peer-alias-error'))).toBe('«pagosej» ya está en la lista.');
     await type('peer-alias', 'x'.repeat(201));
-    await click('.inline-add .secondary-button');
+    await click('.inline-add .btn-secondary');
     expect(text(element.querySelector('#peer-alias-error'))).toContain('hasta 200 caracteres');
     panel.aliases.set(Array.from({ length: 50 }, (_, index) => `Alias ${index}`));
     await type('peer-alias', 'Uno más');
-    await click('.inline-add .secondary-button');
+    await click('.inline-add .btn-secondary');
     expect(text(element.querySelector('#peer-alias-error'))).toContain('hasta 50 alias');
 
     panel.aliases.set(['PagosEj', 'Pagos MX']);

@@ -1,0 +1,151 @@
+/*
+ * Buttons (F19.4, docs/front/diseno-ronda-1.md G7, COR-3): one .btn with a variant and, when needed, a size.
+ *   .btn-primary    the action of a panel or dialog (one per panel): --accent-strong with white text (D-093)
+ *   .btn-gradient   a primary with the prototype's gradient (Sources, D-097: first stop darkened for the text)
+ *   .btn-secondary  the other actions: border and raised surface
+ *   .btn-ghost      a quiet action next to text: pink text, no surface until hover
+ *   .btn-danger     removes or revokes: danger colours of the theme
+ *   .btn-icon       a square icon button (with an aria-label)
+ *   .btn-sm         32 px visible inside panel headers and rows; the hit area stays 40 px high
+ * The control is --control-h high (40 px, 44 on touch widths). Nothing moves on hover; a press scales it to 0.96 (no
+ * scale with reduced motion). Dense controls (table rows, pagination, the segmented control) are not .btn and do not
+ * move at all.
+ *
+ * The selectors start at .app-shell .page-content so they win over the base rules of every button in the page
+ * (styles.css) and over the prototype's scoped sheets, whatever the order of the sheets.
+ */
+.app-shell .page-content .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  box-sizing: border-box;
+  padding: 0 var(--button-pad-x);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  box-shadow: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-snug);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.12s ease;
+}
+.app-shell .page-content .btn > svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke-width: 2;
+}
+.app-shell .page-content .btn:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+.app-shell .page-content .btn:not(:disabled):active {
+  transform: scale(0.96);
+}
+/* Dense places (table cells and pagers): nothing moves, not even on press. */
+.app-shell .page-content :is(td, th, nav) .btn:not(:disabled):active {
+  transform: none;
+}
+.app-shell .page-content .btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.app-shell .page-content .btn[aria-busy='true'] {
+  cursor: progress;
+}
+
+/* Variants. */
+.app-shell .page-content .btn-primary {
+  border-color: transparent;
+  background: var(--accent-strong);
+  color: var(--on-accent);
+}
+.app-shell .page-content .btn-primary:not(:disabled):hover {
+  background: var(--accent-strong-hover);
+  box-shadow: var(--glow-accent);
+}
+.app-shell .page-content .btn-gradient {
+  border-color: var(--accent);
+  background: var(--accent-gradient);
+  color: var(--on-accent);
+}
+.app-shell .page-content .btn-gradient:not(:disabled):hover {
+  background: var(--accent-gradient);
+  box-shadow: 0 0 18px rgba(255, 0, 157, 0.32);
+}
+.app-shell .page-content .btn-secondary {
+  border-color: var(--border);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+.app-shell .page-content .btn-secondary:not(:disabled):hover {
+  border-color: var(--accent-violet);
+  background: var(--violet-wash);
+  box-shadow: none;
+}
+.app-shell .page-content .btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--accent-text);
+}
+.app-shell .page-content .btn-ghost:not(:disabled):hover {
+  background: var(--accent-wash);
+  box-shadow: none;
+}
+.app-shell .page-content .btn-danger {
+  border-color: color-mix(in srgb, var(--danger-text) 45%, transparent);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+.app-shell .page-content .btn-danger:not(:disabled):hover {
+  border-color: var(--danger-text);
+  box-shadow: none;
+}
+
+/* Sizes and shapes. */
+.app-shell .page-content .btn-icon {
+  width: var(--control-h);
+  padding: 0;
+}
+.app-shell .page-content .btn-sm {
+  position: relative;
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+.app-shell .page-content .btn-sm.btn-icon {
+  width: 32px;
+  padding: 0;
+}
+.app-shell .page-content .btn-sm > svg {
+  width: 16px;
+  height: 16px;
+}
+/* The small button keeps a 40 px high hit area (make-interfaces-feel-better: minimum hit area). */
+.app-shell .page-content .btn-sm::after {
+  position: absolute;
+  inset: -4px 0;
+  content: '';
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .page-content .btn {
+    transition: none;
+  }
+  .app-shell .page-content .btn:not(:disabled):active {
+    transform: none;
+  }
+}

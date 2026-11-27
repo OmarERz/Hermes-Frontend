@@ -89,33 +89,13 @@ form {
   color: #157a49;
   font-weight: 600;
 }
-.primary-action {
-  display: inline-flex;
-  align-items: center;
+/* The submit is the shared .btn .btn-primary (src/styles/buttons.css). */
+.export-submit {
   justify-self: start;
-  gap: 8px;
-  min-height: 40px;
-  padding: 8px 16px;
-  border: 0;
-  border-radius: 9px;
-  background: var(--accent-strong);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
 }
-.primary-action:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.primary-action svg {
-  width: 17px;
-  height: 17px;
-}
-.primary-action:focus-visible,
 .scope-option:focus-within {
-  outline: 2px solid #ed079b;
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 .visually-hidden {
   position: absolute;

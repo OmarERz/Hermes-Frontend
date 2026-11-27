@@ -30,7 +30,7 @@
   <div class="action-row" *appIfRole="testRole">
     <button
       type="button"
-      class="primary-action test-all"
+      class="btn btn-primary test-all"
       [disabled]="busy() || load.status() !== 'ready'"
       [attr.aria-busy]="testing() === 'all'"
       (click)="test(null)"

@@ -33,6 +33,15 @@ describe('ConfirmChangesDialog', () => {
     expect(fixture.componentInstance.events).toEqual(['confirm']);
   });
 
+  it('uses the shared buttons: one primary action and a secondary cancel', async () => {
+    const fixture = TestBed.createComponent(Host);
+    const element = fixture.nativeElement as HTMLElement;
+    await fixture.whenStable();
+    expect(element.querySelectorAll('footer .btn-primary')).toHaveLength(1);
+    expect(element.querySelector('footer .btn-primary')?.classList).toContain('save-button');
+    expect(element.querySelector('footer .btn-secondary')?.classList).toContain('cancel-button');
+  });
+
   it('offers to reload instead of saving on a version conflict', async () => {
     const fixture = TestBed.createComponent(Host);
     const element = fixture.nativeElement as HTMLElement;

@@ -386,6 +386,8 @@ describe('RunsPage', () => {
     const { element, runs, events, settle } = await render();
     const launch = element.querySelector('.launch-scan') as HTMLButtonElement;
     expect(text(launch)).toBe('Lanzar escaneo');
+    // The shared primary button, the same in both themes (COR-3).
+    expect(launch.classList).toContain('btn-primary');
     launch.click();
     await settle();
     expect(runs.launchScan).toHaveBeenCalledTimes(1);

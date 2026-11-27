@@ -21,7 +21,12 @@
         <svg lucideUsers aria-hidden="true"></svg>
         <h2 id="users-title">Cuentas</h2>
       </div>
-      <button type="button" (click)="refresh()" [disabled]="pager.state.loading()">
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        (click)="refresh()"
+        [disabled]="pager.state.loading()"
+      >
         <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
       </button>
     </header>
