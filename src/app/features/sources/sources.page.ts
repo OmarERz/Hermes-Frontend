@@ -24,6 +24,7 @@ import {
   LucideTag,
 } from '@lucide/angular';
 import { finalize, Observable, tap } from 'rxjs';
+import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { ApiError, toApiError } from '../../core/api/api-error';
 import type { Role } from '../../core/api/api-types';
 import { IfRoleDirective } from '../../core/auth/if-role.directive';
@@ -33,7 +34,6 @@ import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { ConfirmChangesDialog } from '../../shared/confirm-changes-dialog';
 import { formatDateTime } from '../../shared/labels';
-import { SectionTabs } from '../../shared/section-tabs';
 import type { ChangeRow } from '../../shared/versioned-save';
 import { AddSourceForm } from './add-source-form';
 import { CarouselState } from './carousel-state';
@@ -108,7 +108,7 @@ const SWIPE_DISTANCE = 45;
 @Component({
   selector: 'app-sources-page',
   imports: [
-    SectionTabs,
+    BannerPagina,
     AsyncStateComponent,
     ConfirmChangesDialog,
     IfRoleDirective,
@@ -122,7 +122,6 @@ const SWIPE_DISTANCE = 45;
     LucideHash,
     LucideLayers,
     LucideRefreshCw,
-    LucideRss,
     LucideShield,
     LucideSignal,
     LucideTag,
@@ -135,6 +134,7 @@ export class SourcesPage {
   private readonly destroyRef = inject(DestroyRef);
   readonly session = inject(SessionService);
 
+  readonly bannerIcon = LucideRss;
   readonly toggleRole = ACTION_ROLES.toggleSource;
   readonly types = SOURCE_TYPES;
   readonly levels = SOURCE_LEVELS;

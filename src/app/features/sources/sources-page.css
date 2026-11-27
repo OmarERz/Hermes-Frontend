@@ -7,6 +7,13 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+/* Banner, indicators and every block below, --section-gap apart (the grid gap; the banner adds no margin here). */
+.feeds-page {
+  gap: var(--section-gap);
+}
+.feeds-page > app-banner-pagina {
+  margin-bottom: 0;
+}
 .notice-error {
   border-color: color-mix(in srgb, var(--danger-text) 55%, var(--border));
   color: var(--danger-text);

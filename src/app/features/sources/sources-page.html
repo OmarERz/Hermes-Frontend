@@ -1,48 +1,40 @@
 <div class="feeds-page sources-view">
-  <header class="feeds-header">
-    <div class="heading-copy">
-      <div class="title-line">
-        <svg lucideRss aria-hidden="true"></svg>
-        <h1 id="feeds-title">Fuentes</h1>
-      </div>
-      <p>
-        Fuentes de vulnerabilidades y amenazas que Hermes lee: su clase, su nivel de confianza, su
-        salud y si están activas. Las estructurales (🔒) no se pueden desactivar.
-      </p>
-    </div>
-    <section class="feed-stats" aria-label="Indicadores de fuentes">
-      <article class="stat-card">
-        <svg lucideLayers aria-hidden="true"></svg>
-        <div>
-          <strong>{{ total() ?? '—' }}</strong
-          ><span>Fuentes totales</span>
-        </div>
-      </article>
-      <article class="stat-card active-stat">
-        <svg lucideCircleCheck aria-hidden="true"></svg>
-        <div>
-          <strong>{{ activeCount() ?? '—' }}</strong
-          ><span>Activas</span>
-        </div>
-      </article>
-      <article class="stat-card inactive-stat">
-        <svg lucideCirclePause aria-hidden="true"></svg>
-        <div>
-          <strong>{{ inactiveCount() ?? '—' }}</strong
-          ><span>Inactivas</span>
-        </div>
-      </article>
-      <article class="stat-card sync-stat">
-        <svg lucideRefreshCw aria-hidden="true"></svg>
-        <div>
-          <strong>{{ capturedToday() ?? '—' }}</strong
-          ><span>Con captura · últimas 24 h</span>
-        </div>
-      </article>
-    </section>
-  </header>
+  <app-banner-pagina
+    titulo="Fuentes"
+    descripcion="Fuentes de vulnerabilidades y amenazas que Hermes lee: su clase, su nivel de confianza, su salud y si están activas. Las estructurales (🔒) no se pueden desactivar."
+    [icono]="bannerIcon"
+  />
 
-  <app-section-tabs />
+  <section class="feed-stats" aria-label="Indicadores de fuentes">
+    <article class="stat-card">
+      <svg lucideLayers aria-hidden="true"></svg>
+      <div>
+        <strong>{{ total() ?? '—' }}</strong
+        ><span>Fuentes totales</span>
+      </div>
+    </article>
+    <article class="stat-card active-stat">
+      <svg lucideCircleCheck aria-hidden="true"></svg>
+      <div>
+        <strong>{{ activeCount() ?? '—' }}</strong
+        ><span>Activas</span>
+      </div>
+    </article>
+    <article class="stat-card inactive-stat">
+      <svg lucideCirclePause aria-hidden="true"></svg>
+      <div>
+        <strong>{{ inactiveCount() ?? '—' }}</strong
+        ><span>Inactivas</span>
+      </div>
+    </article>
+    <article class="stat-card sync-stat">
+      <svg lucideRefreshCw aria-hidden="true"></svg>
+      <div>
+        <strong>{{ capturedToday() ?? '—' }}</strong
+        ><span>Con captura · últimas 24 h</span>
+      </div>
+    </article>
+  </section>
 
   @if (notice(); as message) {
     <p

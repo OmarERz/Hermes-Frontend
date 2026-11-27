@@ -69,6 +69,14 @@ const detailRows = (root: HTMLElement) =>
   );
 
 describe('SourcesPage', () => {
+  it('starts with the shared page banner and the indicators in their own row below it', async () => {
+    const { element } = await render();
+    const banner = element.querySelector('.feeds-page > app-banner-pagina')!;
+    expect(text(banner.querySelector('h1'))).toBe('Fuentes');
+    expect(banner.querySelector('.feed-stats')).toBeNull();
+    expect(banner.nextElementSibling?.matches('section.feed-stats')).toBe(true);
+  });
+
   it('shows the real sources with their totals and never the invented feeds', async () => {
     const { element } = await render();
     expect(all(element, '.feed-stats strong').map(text)).toEqual(['4', '3', '1', '2']);
