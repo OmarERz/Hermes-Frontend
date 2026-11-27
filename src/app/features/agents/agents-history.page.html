@@ -1,0 +1,168 @@
+<div class="agent-history-view">
+  <app-banner-pagina
+    titulo="Historial del agente"
+    descripcion="Consulta corridas, revisiones de los agentes de IA, decisiones del juez y cambios de configuración."
+    [icono]="bannerIcon"
+  />
+
+  <div class="history-layout">
+    <div class="history-list-column">
+      <section class="history-panel" aria-labelledby="history-filters-title">
+        <header>
+          <h2 id="history-filters-title">
+            <svg lucideListFilter aria-hidden="true"></svg> Filtros
+          </h2>
+          <button type="button" class="clear" [disabled]="!filtered()" (click)="clear()">
+            Limpiar filtros
+          </button>
+        </header>
+        <div class="filters">
+          <label
+            >Desde<input type="date" [ngModel]="from()" (ngModelChange)="setFrom($event)"
+          /></label>
+          <label>Hasta<input type="date" [ngModel]="to()" (ngModelChange)="setTo($event)" /></label>
+          <label
+            >Tipo de evento<select [ngModel]="type()" (ngModelChange)="setType($event)">
+              <option value="">Todos</option>
+              @for (item of types; track item) {
+                <option [value]="item">{{ typeLabels[item] }}</option>
+              }
+            </select></label
+          >
+          <label
+            >Estado final<select [ngModel]="status()" (ngModelChange)="setStatus($event)">
+              <option value="">Todos</option>
+              @for (item of statuses(); track item.value) {
+                <option [value]="item.value">{{ item.label }}</option>
+              }
+            </select></label
+          >
+        </div>
+      </section>
+
+      <section class="history-panel table-panel" aria-labelledby="history-events-title">
+        <header>
+          <h2 id="history-events-title">
+            <svg lucideClock aria-hidden="true"></svg> Eventos
+            <span>Página {{ pager.pageIndex() + 1 }}</span>
+          </h2>
+        </header>
+        @if (state(); as current) {
+          <app-async-state
+            [state]="current"
+            loadingText="Cargando el historial…"
+            [emptyText]="
+              filtered()
+                ? 'No hay eventos con estos filtros.'
+                : 'Aún no hay eventos en el historial.'
+            "
+            [error]="pager.state.error()"
+            (retry)="pager.reload()"
+          />
+        } @else {
+          <div
+            class="table-scroll"
+            role="region"
+            aria-label="Historial de eventos; desplazamiento horizontal"
+            tabindex="0"
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Fecha y hora</th>
+                  <th scope="col">Evento</th>
+                  <th scope="col">Descripción</th>
+                  <th scope="col">Agente</th>
+                  <th scope="col">Estado final</th>
+                  <th scope="col">Quién</th>
+                  <th scope="col">Motivo</th>
+                  <th scope="col">Duración</th>
+                  <th scope="col"><span class="visually-hidden">Detalle</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows(); track row.id) {
+                  <tr [class.is-selected]="isSelected(row.event)">
+                    <td>{{ row.at }}</td>
+                    <td>{{ row.type }}</td>
+                    <td>{{ row.title }}</td>
+                    <td>{{ row.agent }}</td>
+                    <td>
+                      <span [class]="'status status-' + row.statusKey">{{ row.status }}</span>
+                    </td>
+                    <td>{{ row.actor }}</td>
+                    <td>{{ row.trigger }}</td>
+                    <td class="numeric">{{ row.duration }}</td>
+                    <td>
+                      <button
+                        type="button"
+                        [attr.aria-pressed]="isSelected(row.event)"
+                        (click)="select(row.event)"
+                      >
+                        Detalle
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        <nav class="pager" aria-label="Páginas del historial">
+          <button
+            type="button"
+            [disabled]="!pager.hasPrevious()"
+            (click)="pager.previous()"
+            aria-label="Página anterior del historial"
+          >
+            <svg lucideArrowLeft aria-hidden="true"></svg>
+          </button>
+          <button
+            type="button"
+            [disabled]="!pager.hasNext()"
+            (click)="pager.next()"
+            aria-label="Página siguiente del historial"
+          >
+            <svg lucideArrowRight aria-hidden="true"></svg>
+          </button>
+        </nav>
+      </section>
+    </div>
+
+    <aside class="history-panel detail-panel" aria-live="polite">
+      @if (selected(); as event) {
+        <header>
+          <h2>Detalle · {{ event.title }}</h2>
+          <button type="button" (click)="selected.set(null)" aria-label="Limpiar detalle">×</button>
+        </header>
+        <dl>
+          @for (fact of detail(); track fact.term) {
+            <dt>{{ fact.term }}</dt>
+            <dd>{{ fact.value }}</dd>
+          }
+        </dl>
+        @if (event.type === 'llm_review') {
+          @if (event.assessment_id) {
+            <app-judge-review [assessmentId]="event.assessment_id" />
+          } @else {
+            <p class="detail-note">
+              {{
+                event.agent === 'judge'
+                  ? 'Esta revisión no alimentó ninguna evaluación.'
+                  : 'Los analistas no deciden puntuaciones: su revisión no tiene decisión del juez ni feedback.'
+              }}
+            </p>
+          }
+        }
+      } @else {
+        <div class="detail-empty">
+          <svg lucideClock aria-hidden="true"></svg>
+          <h2>Detalle del evento</h2>
+          <p>Selecciona un evento del listado para consultar sus datos.</p>
+        </div>
+      }
+    </aside>
+  </div>
+
+  <app-ticket-log />
+</div>

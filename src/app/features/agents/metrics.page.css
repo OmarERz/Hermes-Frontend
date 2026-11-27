@@ -1,0 +1,29 @@
+/* Additions to the prototype's agent view (control-agente.css, global): spacing between sections and the chart. */
+.metric-group + .metric-group {
+  margin-top: 14px;
+}
+.metric-group .performance-heading {
+  margin-bottom: 12px;
+}
+.metric strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.cost-chart {
+  height: 240px;
+}
+.calculation-note {
+  margin: 0 0 12px 4px;
+  padding: 10px 13px;
+  border: 1px solid #decce9;
+  border-radius: 10px;
+  background: #f8f4fb;
+  color: #654d72;
+  font-size: calc((12px) + var(--font-size-increase));
+  line-height: 1.45;
+}
+:host-context(.app-shell[data-theme='dark']) .calculation-note {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+}

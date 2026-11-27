@@ -1,0 +1,85 @@
+<div class="agent-view metrics-page">
+  <app-banner-pagina
+    titulo="Métricas"
+    descripcion="Tablero de Hermes: calidad de las recomendaciones, juez, costo de la IA, operación y notificaciones."
+    [icono]="bannerIcon"
+  />
+  @if (current(); as board) {
+    <p class="source-badge real-source">
+      Datos reales · último valor calculado de cada métrica · generado
+      {{ formatDateTime(board.generated_at) }}
+    </p>
+  }
+
+  @if (boardState(); as state) {
+    <section class="panel performance">
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando las métricas…"
+        [error]="board.error()"
+        (retry)="loadBoard()"
+      />
+    </section>
+  } @else {
+    @if (nothingCalculated()) {
+      <p class="calculation-note" role="status">
+        Las métricas diarias todavía no se han calculado: se calculan una vez al día con la
+        actividad de Hermes.
+      </p>
+    }
+    @for (group of groups(); track group.id) {
+      <section class="panel performance metric-group" [attr.aria-labelledby]="'group-' + group.id">
+        <div class="performance-heading">
+          <svg [lucideIcon]="group.icon" class="heading-icon small" aria-hidden="true"></svg>
+          <div>
+            <h2 [id]="'group-' + group.id">{{ group.title }}</h2>
+            <p>{{ group.description }}</p>
+          </div>
+        </div>
+        <div class="metric-grid">
+          @for (metric of group.metrics; track metric.key) {
+            <article class="metric" [attr.data-metric]="metric.key">
+              <span class="metric-label"
+                >{{ metric.label }}
+                @if (metric.help) {
+                  <app-ayuda-tooltip [texto]="metric.help" />
+                }
+              </span>
+              <div>
+                <strong>{{ metric.value }}</strong>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+  }
+
+  <section class="panel performance metric-group" aria-labelledby="cost-title">
+    <div class="performance-heading">
+      <svg lucideCoins class="heading-icon small" aria-hidden="true"></svg>
+      <div>
+        <h2 id="cost-title">Costo de IA por día</h2>
+        <p>
+          Costo de cada agente en los últimos {{ costDays }} días (UTC), calculado con la tabla de
+          precios.
+        </p>
+      </div>
+    </div>
+    @if (costChart(); as option) {
+      <app-grafico-dashboard
+        class="echart cost-chart"
+        [option]="option"
+        [label]="'Costo de IA por día y por agente en los últimos ' + costDays + ' días'"
+      />
+    } @else {
+      <app-async-state
+        [state]="dailyState() ?? 'empty'"
+        loadingText="Cargando el costo diario…"
+        emptyText="No hay datos diarios."
+        [error]="daily.error()"
+        (retry)="loadDaily()"
+      />
+    }
+  </section>
+</div>

@@ -1,0 +1,175 @@
+/*
+ * Shared by the lane's tables (review log, history and ticket log), on top of the prototype's history table and
+ * filters (historial-agente.css, global, scoped to `.agent-history-view`): note, clear button, tags, state chips,
+ * links and the pager.
+ */
+.page-label {
+  color: #62576c;
+  font-size: calc((12px) + var(--font-size-increase));
+}
+.log-note {
+  margin: 0 0 12px;
+  color: #62576c;
+  font-size: calc((12px) + var(--font-size-increase));
+  line-height: 1.4;
+}
+.filters {
+  margin-bottom: 14px;
+}
+.clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid #e2d5e9;
+  border-radius: 7px;
+  background: var(--surface-raised, #fff);
+  color: #8d137c;
+  font: inherit;
+  font-size: calc((11px) + var(--font-size-increase));
+  font-weight: 700;
+  cursor: pointer;
+}
+.clear svg {
+  width: 15px;
+  height: 15px;
+}
+.clear:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.field-error {
+  margin: -6px 0 12px;
+  color: var(--danger-text, #b91c1c);
+  font-size: calc((11px) + var(--font-size-increase));
+}
+.tag {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: #f4e8fb;
+  color: #71148c;
+  font-size: calc((10px) + var(--font-size-increase));
+  font-weight: 700;
+  white-space: nowrap;
+}
+.status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #f1edf5;
+  color: #4b3f58;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.status-applied,
+.status-succeeded,
+.write-done {
+  background: #dcf9e5;
+  color: #08723e;
+}
+.status-rejected,
+.status-failed,
+.status-judge_disagreement,
+.write-failed {
+  background: #fde7ec;
+  color: #a1123a;
+}
+.status-no_judge_review,
+.status-partial_review,
+.status-suggestion,
+.write-pending,
+.write-in_progress {
+  background: #fff1d9;
+  color: #985800;
+}
+.numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.row-link {
+  color: #a10f7d;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pager {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pager button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #e2d5e9;
+  border-radius: 8px;
+  background: var(--surface-raised, #fff);
+  color: #8d137c;
+  cursor: pointer;
+}
+.pager button svg {
+  width: 17px;
+  height: 17px;
+}
+.pager button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.clear:focus-visible,
+.pager button:focus-visible,
+.row-link:focus-visible {
+  outline: 3px solid #9e4be1;
+  outline-offset: 2px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+:host-context(.app-shell[data-theme='dark']) .page-label,
+:host-context(.app-shell[data-theme='dark']) .log-note {
+  color: var(--text-secondary);
+}
+:host-context(.app-shell[data-theme='dark']) .clear,
+:host-context(.app-shell[data-theme='dark']) .pager button {
+  border-color: var(--border);
+  background: var(--surface-raised);
+  color: var(--accent-lilac);
+}
+:host-context(.app-shell[data-theme='dark']) .tag,
+:host-context(.app-shell[data-theme='dark']) .status {
+  background: var(--violet-wash);
+  color: var(--accent-lilac);
+}
+:host-context(.app-shell[data-theme='dark']) .status-applied,
+:host-context(.app-shell[data-theme='dark']) .status-succeeded,
+:host-context(.app-shell[data-theme='dark']) .write-done {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+:host-context(.app-shell[data-theme='dark']) .status-no_judge_review,
+:host-context(.app-shell[data-theme='dark']) .status-partial_review,
+:host-context(.app-shell[data-theme='dark']) .status-suggestion,
+:host-context(.app-shell[data-theme='dark']) .write-pending,
+:host-context(.app-shell[data-theme='dark']) .write-in_progress {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+:host-context(.app-shell[data-theme='dark']) .status-rejected,
+:host-context(.app-shell[data-theme='dark']) .status-failed,
+:host-context(.app-shell[data-theme='dark']) .status-judge_disagreement,
+:host-context(.app-shell[data-theme='dark']) .write-failed {
+  background: var(--danger-bg, rgba(255, 92, 122, 0.16));
+  color: var(--danger-text, #ffb3c1);
+}
+:host-context(.app-shell[data-theme='dark']) .row-link {
+  color: var(--accent-lilac);
+}
