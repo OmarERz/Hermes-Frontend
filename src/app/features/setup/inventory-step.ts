@@ -16,7 +16,7 @@ export const PENDING_LABELS: Record<PendingKind, string> = {
   outside_delivery_model: 'Activos fuera del modelo de entrega',
 };
 
-/** The API lists up to this many items of each kind: a full list means «this many or more». */
+/** The API lists up to this many items of each kind: without `totals`, a full list means «this many or more». */
 export const PENDING_LIMIT = 200;
 
 /**
@@ -29,15 +29,22 @@ export interface PendingRow {
   kind: PendingKind;
   label: string;
   count: number;
-  /** The API cut the list at its limit: there are at least `count`. */
+  /** Only without `totals`: the API cut the list at its limit, so there are at least `count`. */
   capped: boolean;
 }
 
+/**
+ * The count of each kind: the exact total of `totals` (F18.6), which counts past the 200 of each list; without it
+ * (a backend before F18.6), the list length, «or more» when the list is full.
+ */
 export function pendingRows(pending: InventoryPending | null): PendingRow[] {
   return (Object.keys(PENDING_LABELS) as PendingKind[])
     .map((kind) => {
-      const count = pending?.[kind]?.length ?? 0;
-      return { kind, label: PENDING_LABELS[kind], count, capped: count >= PENDING_LIMIT };
+      const listed = pending?.[kind]?.length ?? 0;
+      const total = pending?.totals?.[kind];
+      const exact = typeof total === 'number' && Number.isFinite(total);
+      const count = exact ? Math.max(total, listed) : listed;
+      return { kind, label: PENDING_LABELS[kind], count, capped: !exact && count >= PENDING_LIMIT };
     })
     .filter((row) => row.count > 0 || !NOT_COMPUTED.includes(row.kind));
 }
@@ -54,8 +61,8 @@ export function pendingTotal(rows: readonly PendingRow[]): string {
 
 /**
  * Paso 5 · Revisión del inventario (docs/13 §9, FRO-17): what `GET /api/pending/inventory` finds missing in the iTop
- * inventory, as counts (a list cut at the API limit reads «200 o más»). The data is fixed in iTop and the CPE mapping
- * in Pendientes de inventario.
+ * inventory, as counts (its `totals`; without them, a list cut at the API limit reads «200 o más»). The data is fixed
+ * in iTop and the CPE mapping in Pendientes de inventario.
  */
 @Component({
   selector: 'app-setup-inventory-step',

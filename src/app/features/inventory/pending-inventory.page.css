@@ -31,6 +31,10 @@
   text-align: right;
   white-space: nowrap;
 }
+/* «Editar en iTop» next to «Ver activo» in the CI rows. */
+.actions app-itop-link {
+  margin-left: var(--space-2, 8px);
+}
 .row-action {
   display: inline-flex;
   align-items: center;

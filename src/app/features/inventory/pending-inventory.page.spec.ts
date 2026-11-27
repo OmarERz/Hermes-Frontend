@@ -3,11 +3,26 @@ import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
 import type { Role } from '../../core/api/api-types';
+import { APP_CONFIG } from '../../core/config/app-config';
 import { provideFakeSession } from '../../testing/fake-session';
 import { CpeMappingDialog } from './cpe-mapping-dialog';
-import { KERNEL, PENDING } from './inventory.fixtures';
-import { InventoryService } from './inventory.service';
-import { PENDING_PAGE, PendingInventoryPage } from './pending-inventory.page';
+import { KERNEL, PENDING, testConfig } from './inventory.fixtures';
+import { InventoryPending, InventoryService } from './inventory.service';
+import {
+  PENDING_PAGE,
+  pendingCount,
+  PendingInventoryPage,
+  pendingItemId,
+} from './pending-inventory.page';
+
+const TOTALS: NonNullable<InventoryPending['totals']> = {
+  software_without_cpe: 1,
+  without_classification: 0,
+  without_exposure: 1,
+  without_owner: 1,
+  without_custodian: 1,
+  outside_delivery_model: 0,
+};
 
 class FakeService {
   pending = vi.fn<InventoryService['pending']>(() => of(PENDING));
@@ -17,11 +32,16 @@ class FakeService {
   );
 }
 
-async function render(service = new FakeService(), role: Role = 'reader') {
+async function render(
+  service = new FakeService(),
+  role: Role = 'reader',
+  itopBaseUrl: string | null = null,
+) {
   TestBed.configureTestingModule({
     imports: [PendingInventoryPage],
     providers: [
       { provide: InventoryService, useValue: service },
+      { provide: APP_CONFIG, useValue: testConfig(itopBaseUrl) },
       ...provideFakeSession(role),
       provideRouter([]),
     ],
@@ -85,7 +105,7 @@ describe('PendingInventoryPage', () => {
     expect(button.textContent?.trim()).toBe('Mapear CPE');
     button.click();
     await fixture.whenStable();
-    // The software items carry the product id in `ci_id`.
+    // Without `software_product_id` (a backend before F18.6) the product id comes in `ci_id`.
     expect(page.mapping()).toEqual({ id: KERNEL.id, name: KERNEL.name, cpe: null });
 
     service.pending.mockReturnValue(of({ ...PENDING, software_without_cpe: [] }));
@@ -137,10 +157,117 @@ describe('PendingInventoryPage', () => {
     );
     page.load();
     await fixture.whenStable();
-    expect(element.querySelector('#pending-without_classification')?.textContent).toContain(
-      `Se muestran los primeros ${PENDING_PAGE}.`,
-    );
+    // Without totals (a backend before F18.6) a full list only says «at least».
+    const cut = element.querySelector('#pending-without_classification') as HTMLElement;
+    expect(cut.textContent).toContain(`Se muestran los primeros ${PENDING_PAGE}; puede haber más.`);
+    expect(cut.querySelector('header > span')?.textContent?.trim()).toBe(`${PENDING_PAGE}+`);
     expect(element.querySelector('#pending-outside_delivery_model')).not.toBeNull();
+  });
+
+  it('counts each kind with the API totals and says how much of a cut list it shows', async () => {
+    const service = new FakeService();
+    const many = Array.from({ length: PENDING_PAGE }, (_item, index) => ({
+      ci_id: `CI-${index}`,
+      name: `ci-${index}`,
+      detail: 'Sin clasificación de datos',
+      itop_class: 'Server',
+    }));
+    service.pending.mockReturnValue(
+      of({
+        ...PENDING,
+        without_classification: many,
+        totals: { ...TOTALS, without_classification: 206 },
+      }),
+    );
+    const { element } = await render(service);
+    const cards = Array.from(element.querySelectorAll('.pending-stats .stat-card')).map((card) =>
+      card.textContent?.replace(/\s+/g, ' ').trim(),
+    );
+    expect(cards[1]).toBe('Sin clasificación206');
+    const section = element.querySelector('#pending-without_classification') as HTMLElement;
+    expect(section.querySelector('header > span')?.textContent?.trim()).toBe('206');
+    expect(section.textContent).toContain(`Se muestran los primeros ${PENDING_PAGE} de 206.`);
+    expect(section.querySelectorAll('tbody tr')).toHaveLength(PENDING_PAGE);
+    // A list that holds all its total is not cut.
+    expect(element.querySelector('#pending-without_owner')?.textContent).not.toContain(
+      'Se muestran',
+    );
+  });
+
+  it('reads a full list without totals as «200+» and a total as the exact count', () => {
+    const full = Array.from({ length: PENDING_PAGE }, (_item, index) => ({
+      ci_id: `CI-${index}`,
+      name: `ci-${index}`,
+      detail: '',
+    }));
+    expect(pendingCount({ ...PENDING, without_owner: full }, 'without_owner')).toEqual({
+      count: PENDING_PAGE,
+      countLabel: `${PENDING_PAGE}+`,
+      capped: true,
+      cappedText: `Se muestran los primeros ${PENDING_PAGE}; puede haber más.`,
+    });
+    expect(pendingCount({ ...PENDING, totals: TOTALS }, 'without_owner')).toEqual({
+      count: 1,
+      countLabel: '1',
+      capped: false,
+      cappedText: '',
+    });
+    // A total below the list never hides an item.
+    expect(
+      pendingCount({ ...PENDING, totals: { ...TOTALS, without_owner: 0 } }, 'without_owner').count,
+    ).toBe(1);
+  });
+
+  it('maps a software item by its product id, and keeps the old ci_id when it is missing', async () => {
+    const service = new FakeService();
+    service.pending.mockReturnValue(
+      of({
+        ...PENDING,
+        software_without_cpe: [
+          {
+            ci_id: KERNEL.id,
+            name: KERNEL.name,
+            detail: 'Software sin CPE',
+            software_product_id: 'product-uuid',
+            itop_class: null,
+          },
+        ],
+      }),
+    );
+    const { fixture, page, element } = await render(service, 'analyst');
+    (
+      element.querySelector('#pending-software_without_cpe button.row-action') as HTMLButtonElement
+    ).click();
+    await fixture.whenStable();
+    expect(page.mapping()).toEqual({ id: 'product-uuid', name: KERNEL.name, cpe: null });
+    expect(pendingItemId({ ci_id: 'CI-1', name: 'x', detail: '' }, true)).toBe('CI-1');
+    expect(
+      pendingItemId({ ci_id: 'CI-1', name: 'x', detail: '', software_product_id: 'p' }, false),
+    ).toBe('CI-1');
+  });
+
+  it('links each CI to its edit form in iTop by its class', async () => {
+    const service = new FakeService();
+    service.pending.mockReturnValue(
+      of({
+        ...PENDING,
+        without_owner: [
+          { ci_id: 'CI-3', name: 'srv-web-03', detail: 'Sin dueño', itop_class: 'Server' },
+          { ci_id: 'CI-4', name: 'sin-clase', detail: 'Sin dueño', itop_class: null },
+        ],
+      }),
+    );
+    const { element } = await render(service, 'reader', 'https://itop.example.test');
+    const rows = element.querySelectorAll('#pending-without_owner tbody tr');
+    const edit = rows[0]!.querySelector('.itop-link') as HTMLAnchorElement;
+    expect(edit.textContent).toContain('Editar en iTop');
+    expect(edit.href).toBe(
+      'https://itop.example.test/pages/UI.php?operation=modify&class=Server&id=CI-3',
+    );
+    // Without its class the console cannot be linked: no link rather than a broken one.
+    expect(rows[1]!.querySelector('.itop-link')).toBeNull();
+    // The software has no iTop link.
+    expect(element.querySelector('#pending-software_without_cpe .itop-link')).toBeNull();
   });
 
   it('shows the API error with a retry', async () => {

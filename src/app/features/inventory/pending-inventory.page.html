@@ -31,11 +31,11 @@
     <section class="pending-stats" aria-label="Pendientes por tipo">
       @for (section of sections(); track section.kind) {
         <article class="stat-card">
-          <span [class.warning]="section.items.length > 0"
+          <span [class.warning]="section.count > 0"
             ><svg [lucideIcon]="section.icon" aria-hidden="true"></svg
           ></span>
           <small>{{ section.card }}</small>
-          <strong>{{ section.items.length }}</strong>
+          <strong>{{ section.countLabel }}</strong>
         </article>
       }
     </section>
@@ -58,11 +58,11 @@
               <svg [lucideIcon]="section.icon" aria-hidden="true"></svg>
               <h2 [id]="'pending-title-' + section.kind">{{ section.title }}</h2>
             </div>
-            <span>{{ section.items.length }}</span>
+            <span>{{ section.countLabel }}</span>
           </header>
           <p class="hint">{{ section.hint }}</p>
-          @if (section.items.length >= pageLimit) {
-            <p class="hint">Se muestran los primeros {{ pageLimit }}.</p>
+          @if (section.capped) {
+            <p class="hint">{{ section.cappedText }}</p>
           }
           <div
             class="table-scroll"
@@ -82,7 +82,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (item of section.items; track item.ci_id) {
+                @for (item of section.items; track item.id) {
                   <tr>
                     @if (section.software) {
                       <td>
@@ -109,6 +109,11 @@
                       <td>{{ item.detail }}</td>
                       <td class="actions">
                         <a class="row-action" [routerLink]="['/activos', item.ci_id]">Ver activo</a>
+                        <app-itop-link
+                          kind="edit"
+                          [itopClass]="item.itop_class ?? ''"
+                          [itopId]="item.ci_id"
+                        />
                       </td>
                     }
                   </tr>
