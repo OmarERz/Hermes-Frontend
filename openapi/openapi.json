@@ -502,6 +502,18 @@
             "title": "Classification",
             "type": "string"
           },
+          "cpu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "CPU de un Server o VirtualMachine en iTop, texto libre sin convertir.",
+            "title": "Cpu"
+          },
           "custodian": {
             "anyOf": [
               {
@@ -514,6 +526,18 @@
             "description": "Equipo custodio del activo.",
             "title": "Custodian"
           },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Descripción del CI en iTop (dato, no instrucciones).",
+            "title": "Description"
+          },
           "findings": {
             "description": "Hallazgos del activo.",
             "items": {
@@ -521,6 +545,18 @@
             },
             "title": "Findings",
             "type": "array"
+          },
+          "itop_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Clase del CI en iTop (Server, VirtualMachine…).",
+            "title": "Itop Class"
           },
           "name": {
             "description": "Nombre.",
@@ -539,10 +575,30 @@
             "description": "Responsable del activo.",
             "title": "Owner"
           },
+          "ram": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "RAM de un Server o VirtualMachine en iTop, texto libre sin convertir.",
+            "title": "Ram"
+          },
           "risk": {
             "description": "Riesgo del activo: el mayor final de sus hallazgos.",
             "title": "Risk",
             "type": "integer"
+          },
+          "software": {
+            "description": "Software instalado vivo del CI, por producto y versión.",
+            "items": {
+              "$ref": "#/components/schemas/AssetSoftware"
+            },
+            "title": "Software",
+            "type": "array"
           }
         },
         "required": [
@@ -662,6 +718,90 @@
           "last_seen"
         ],
         "title": "AssetRisk",
+        "type": "object"
+      },
+      "AssetSoftware": {
+        "additionalProperties": false,
+        "description": "A live software installation of the CI, as iTop has it (F18.3, D-088).",
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "enum": [
+                  "DBServer",
+                  "Middleware",
+                  "OtherSoftware",
+                  "PCSoftware",
+                  "WebServer"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Categoría: la clase de la instalación en iTop. Nula si aún no se sincroniza o es una clase propia de la instancia de iTop.",
+            "title": "Category"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Descripción de la instalación en iTop (dato, no instrucciones).",
+            "title": "Description"
+          },
+          "licence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SoftwareLicenceInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Licencia viva asignada en iTop; nula si no tiene."
+          },
+          "software": {
+            "description": "Nombre del producto en el catálogo de iTop.",
+            "title": "Software",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "active",
+                  "inactive"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Estado de la instalación en iTop; nulo sin dato. Solo informativo: una instalación inactiva se sigue escaneando.",
+            "title": "Status"
+          },
+          "version": {
+            "description": "Número de versión.",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "software",
+          "version",
+          "category",
+          "status",
+          "description",
+          "licence"
+        ],
+        "title": "AssetSoftware",
         "type": "object"
       },
       "AuditEntry": {
@@ -1593,6 +1733,145 @@
           "issue"
         ],
         "title": "ErrorDetail",
+        "type": "object"
+      },
+      "ErrorQueueItem": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Evaluación relacionada, si la hay.",
+            "title": "Assessment Id"
+          },
+          "attempts": {
+            "description": "Intentos hechos.",
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "component": {
+            "description": "Qué falló: el tipo de evento, la operación de iTop o el componente del LLM.",
+            "title": "Component",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "Fecha y hora de creación (UTC).",
+            "title": "Created At",
+            "type": "string"
+          },
+          "cve": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "CVE relacionado, si lo hay.",
+            "title": "Cve"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Último error, en texto corto (máximo 500 caracteres; nunca un secreto).",
+            "title": "Error"
+          },
+          "id": {
+            "description": "Id del elemento en su tabla de origen (evento, escritura de iTop o cola de error).",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "description": "Origen del error. Valores: `notification`: Evento de notificación que agotó sus reintentos (se reintenta desde la API); `itop`: Escritura en iTop del outbox que agotó sus reintentos; `llm_validation`: Elemento que un analista o el juez no pudieron validar.",
+            "enum": [
+              "notification",
+              "itop",
+              "llm_validation"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "next_attempt_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cuándo toca el próximo intento (UTC), si queda alguno.",
+            "title": "Next Attempt At"
+          },
+          "retryable": {
+            "description": "Si se puede reintentar desde la API (hoy, solo los eventos de notificación).",
+            "title": "Retryable",
+            "type": "boolean"
+          },
+          "status": {
+            "description": "Estado del elemento. Valores: `failed`: Agotó sus reintentos; `pending`: Espera su próximo reintento; `gave_up`: Se dejó de reintentar.",
+            "enum": [
+              "failed",
+              "pending",
+              "gave_up"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "ticket_itop_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Id del ticket en iTop, si el error es de un ticket.",
+            "title": "Ticket Itop Id"
+          },
+          "ticket_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Referencia legible del ticket en iTop (por ejemplo `R-000123`), si la hay.",
+            "title": "Ticket Ref"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "created_at",
+          "status",
+          "attempts",
+          "next_attempt_at",
+          "error",
+          "component",
+          "cve",
+          "ticket_itop_id",
+          "ticket_ref",
+          "assessment_id",
+          "retryable"
+        ],
+        "title": "ErrorQueueItem",
         "type": "object"
       },
       "ErrorResponse": {
@@ -3313,6 +3592,35 @@
         "title": "Page[ConfigVersion]",
         "type": "object"
       },
+      "Page_ErrorQueueItem_": {
+        "properties": {
+          "items": {
+            "description": "Elementos de la página.",
+            "items": {
+              "$ref": "#/components/schemas/ErrorQueueItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null if none",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Page[ErrorQueueItem]",
+        "type": "object"
+      },
       "Page_HistoryEvent_": {
         "properties": {
           "items": {
@@ -3630,6 +3938,35 @@
           "items"
         ],
         "title": "Page[Ticket]",
+        "type": "object"
+      },
+      "Page_UserAccount_": {
+        "properties": {
+          "items": {
+            "description": "Elementos de la página.",
+            "items": {
+              "$ref": "#/components/schemas/UserAccount"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Opaque cursor for the next page; null if none",
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Page[UserAccount]",
         "type": "object"
       },
       "PeerCompany": {
@@ -4510,6 +4847,14 @@
             "title": "Level Matrix",
             "type": "object"
           },
+          "not_simulable": {
+            "description": "Parámetros conocidos del cambio que la simulación no puede estimar (por ejemplo el modelo del juez); se ignoran en el resultado.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Not Simulable",
+            "type": "array"
+          },
           "top_movers": {
             "description": "Hasta 5 hallazgos que más cambian de puntaje.",
             "items": {
@@ -4706,6 +5051,67 @@
           "worst_level"
         ],
         "title": "SoftwareItem",
+        "type": "object"
+      },
+      "SoftwareLicenceInfo": {
+        "additionalProperties": false,
+        "description": "iTop software licence of an installation (F18.3). Its key is never read from iTop.",
+        "properties": {
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Vencimiento (AAAA-MM-DD); nulo si iTop no tiene fecha.",
+            "title": "End Date"
+          },
+          "name": {
+            "description": "Nombre.",
+            "title": "Name",
+            "type": "string"
+          },
+          "perpetual": {
+            "description": "Licencia perpetua en iTop (sin vencimiento).",
+            "title": "Perpetual",
+            "type": "boolean"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Fecha de inicio (AAAA-MM-DD).",
+            "title": "Start Date"
+          },
+          "usage_limit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Límite de uso tal como está en iTop (texto libre).",
+            "title": "Usage Limit"
+          }
+        },
+        "required": [
+          "name",
+          "usage_limit",
+          "start_date",
+          "end_date",
+          "perpetual"
+        ],
+        "title": "SoftwareLicenceInfo",
         "type": "object"
       },
       "Source": {
@@ -5500,6 +5906,126 @@
         "title": "TicketUpdateEntry",
         "type": "object"
       },
+      "UserAccount": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "description": "Si la cuenta está activa (en Hermes y en Firebase).",
+            "title": "Active",
+            "type": "boolean"
+          },
+          "claim_role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "reader",
+                  "analyst",
+                  "admin"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rol del claim de Firebase; nulo si no tiene uno válido. Valores: `reader`: Solo lectura; `analyst`: Lee, da feedback, lanza escaneos y exporta; `admin`: Además configura el sistema y administra usuarios.",
+            "title": "Claim Role"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Nombre para mostrar, si existe.",
+            "title": "Display Name"
+          },
+          "effective_role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "reader",
+                  "analyst",
+                  "admin"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rol que tendría ahora una petición suya: el menor entre el claim y el guardado; nulo si se rechazaría. Valores: `reader`: Solo lectura; `analyst`: Lee, da feedback, lanza escaneos y exporta; `admin`: Además configura el sistema y administra usuarios.",
+            "title": "Effective Role"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Correo del usuario.",
+            "title": "Email"
+          },
+          "last_login_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Último inicio de sesión (UTC), si lo hubo.",
+            "title": "Last Login At"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "reader",
+                  "analyst",
+                  "admin"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Rol guardado en Hermes; mándalo como `expected_role` al cambiarlo. Nulo si nunca inició sesión. Valores: `reader`: Solo lectura; `analyst`: Lee, da feedback, lanza escaneos y exporta; `admin`: Además configura el sistema y administra usuarios.",
+            "title": "Role"
+          },
+          "signed_in": {
+            "description": "Si inició sesión alguna vez (tiene copia en Hermes).",
+            "title": "Signed In",
+            "type": "boolean"
+          },
+          "uid": {
+            "description": "Identificador del usuario en Firebase.",
+            "title": "Uid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid",
+          "email",
+          "display_name",
+          "role",
+          "claim_role",
+          "effective_role",
+          "active",
+          "signed_in",
+          "last_login_at"
+        ],
+        "title": "UserAccount",
+        "type": "object"
+      },
       "VulnerabilityBand": {
         "additionalProperties": false,
         "properties": {
@@ -5911,6 +6437,169 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/admin/users": {
+      "get": {
+        "description": "Todas las cuentas, hayan iniciado sesión o no: la copia de `app_user` unida al directorio de Firebase. Cada una trae su rol guardado (`role`: mándalo como `expected_role` al cambiarlo), el rol del claim de Firebase y el rol efectivo que tendría ahora una petición suya (el menor de los dos; nulo si está desactivada, deshabilitada en Firebase o sin claim). Ordenadas por correo; pagina por cursor. 503 `auth_unavailable` si Firebase no responde. Solo `admin`.",
+        "operationId": "list_users",
+        "parameters": [
+          {
+            "description": "Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 1024,
+                  "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_UserAccount_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Cursor inválido o alterado (code: invalid_cursor)"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Se requiere autenticación válida."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "No tienes permiso para realizar esta acción."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "El recurso solicitado no existe."
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Método no permitido para esta ruta."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "La solicitud entra en conflicto con el estado actual del recurso."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Los datos enviados no son válidos."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Demasiadas solicitudes; intenta de nuevo más tarde."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error interno del servidor."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Firebase no respondió (code: auth_unavailable)"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Listar usuarios",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/admin/users/{uid}/role": {
       "put": {
         "description": "Asigna un rol a un usuario y revoca sus sesiones. Solo `admin`.",
@@ -6369,7 +7058,7 @@
     },
     "/api/assets/{ci_id}": {
       "get": {
-        "description": "Un activo (CI de iTop) con sus hallazgos; su riesgo es el mayor de sus hallazgos, nunca una suma.",
+        "description": "Un activo (CI de iTop) con sus hallazgos; su riesgo es el mayor de sus hallazgos, nunca una suma. Trae además la clase, la descripción, la CPU y la RAM del CI y su software instalado con categoría, estado y licencia de iTop (D-088).",
         "operationId": "get_asset",
         "parameters": [
           {
@@ -8463,6 +9152,182 @@
         ]
       }
     },
+    "/api/error-queue": {
+      "get": {
+        "description": "Lo que falló y espera a una persona (FRO-18), de lo más reciente a lo más antiguo: eventos de notificación y escrituras de iTop que agotaron sus reintentos, y elementos que un analista o el juez no pudieron validar. Filtro por origen (`kind`). Solo los eventos de notificación se reintentan desde la API (`retryable`). Pagina por cursor. Solo `admin`.",
+        "operationId": "list_error_queue",
+        "parameters": [
+          {
+            "description": "Origen del error. Valores: `notification`: Evento de notificación que agotó sus reintentos (se reintenta desde la API); `itop`: Escritura en iTop del outbox que agotó sus reintentos; `llm_validation`: Elemento que un analista o el juez no pudieron validar.",
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "notification",
+                    "itop",
+                    "llm_validation"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Origen del error.",
+              "title": "Kind"
+            }
+          },
+          {
+            "description": "Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 1024,
+                  "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ErrorQueueItem_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Cursor inválido o alterado (code: invalid_cursor)"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Se requiere autenticación válida."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "No tienes permiso para realizar esta acción."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "El recurso solicitado no existe."
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Método no permitido para esta ruta."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "La solicitud entra en conflicto con el estado actual del recurso."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Los datos enviados no son válidos."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Demasiadas solicitudes; intenta de nuevo más tarde."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error interno del servidor."
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cola de error",
+        "tags": [
+          "operations"
+        ]
+      }
+    },
     "/api/feedback": {
       "post": {
         "description": "Registra el feedback del usuario del token sobre una evaluación; es el mismo servicio que usa Slack. Nunca cambia el puntaje por sí mismo. Rol mínimo: `analyst`.",
@@ -8730,7 +9595,7 @@
     },
     "/api/formula/simulate": {
       "post": {
-        "description": "Vista previa sin guardar nada: cuántos hallazgos abiertos cambiarían de nivel con la fórmula propuesta. Solo `admin`.",
+        "description": "Vista previa sin guardar nada: cuántos hallazgos abiertos cambiarían de nivel con la fórmula propuesta. También simula `dead_zone`, `sensitivity_profile` y los motivos `reasons.<code>.enabled` (la zona muerta se resuelve como al guardar: la enviada o la actual), estimando el ajuste del juez desde los motivos que ya aceptó y combinando la doble revisión ciega con su regla, sin llamar al juez. Otros parámetros conocidos vuelven en `not_simulable`. Solo `admin`.",
         "operationId": "simulate_formula",
         "requestBody": {
           "content": {

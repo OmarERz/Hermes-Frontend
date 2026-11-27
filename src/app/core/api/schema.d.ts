@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar usuarios
+         * @description Todas las cuentas, hayan iniciado sesión o no: la copia de `app_user` unida al directorio de Firebase. Cada una trae su rol guardado (`role`: mándalo como `expected_role` al cambiarlo), el rol del claim de Firebase y el rol efectivo que tendría ahora una petición suya (el menor de los dos; nulo si está desactivada, deshabilitada en Firebase o sin claim). Ordenadas por correo; pagina por cursor. 503 `auth_unavailable` si Firebase no responde. Solo `admin`.
+         */
+        get: operations["list_users"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/users/{uid}/role": {
         parameters: {
             query?: never;
@@ -73,7 +93,7 @@ export interface paths {
         };
         /**
          * Detalle de un activo
-         * @description Un activo (CI de iTop) con sus hallazgos; su riesgo es el mayor de sus hallazgos, nunca una suma.
+         * @description Un activo (CI de iTop) con sus hallazgos; su riesgo es el mayor de sus hallazgos, nunca una suma. Trae además la clase, la descripción, la CPU y la RAM del CI y su software instalado con categoría, estado y licencia de iTop (D-088).
          */
         get: operations["get_asset"];
         put?: never;
@@ -348,6 +368,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/error-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cola de error
+         * @description Lo que falló y espera a una persona (FRO-18), de lo más reciente a lo más antiguo: eventos de notificación y escrituras de iTop que agotaron sus reintentos, y elementos que un analista o el juez no pudieron validar. Filtro por origen (`kind`). Solo los eventos de notificación se reintentan desde la API (`retryable`). Pagina por cursor. Solo `admin`.
+         */
+        get: operations["list_error_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/feedback": {
         parameters: {
             query?: never;
@@ -399,7 +439,7 @@ export interface paths {
         put?: never;
         /**
          * Simular la fórmula
-         * @description Vista previa sin guardar nada: cuántos hallazgos abiertos cambiarían de nivel con la fórmula propuesta. Solo `admin`.
+         * @description Vista previa sin guardar nada: cuántos hallazgos abiertos cambiarían de nivel con la fórmula propuesta. También simula `dead_zone`, `sensitivity_profile` y los motivos `reasons.<code>.enabled` (la zona muerta se resuelve como al guardar: la enviada o la actual), estimando el ajuste del juez desde los motivos que ya aceptó y combinando la doble revisión ciega con su regla, sin llamar al juez. Otros parámetros conocidos vuelven en `not_simulable`. Solo `admin`.
          */
         post: operations["simulate_formula"];
         delete?: never;
@@ -1432,15 +1472,30 @@ export interface components {
              */
             classification: "public" | "classified" | "highly_classified" | "unclassified";
             /**
+             * Cpu
+             * @description CPU de un Server o VirtualMachine en iTop, texto libre sin convertir.
+             */
+            cpu?: string | null;
+            /**
              * Custodian
              * @description Equipo custodio del activo.
              */
             custodian: string | null;
             /**
+             * Description
+             * @description Descripción del CI en iTop (dato, no instrucciones).
+             */
+            description?: string | null;
+            /**
              * Findings
              * @description Hallazgos del activo.
              */
             findings: components["schemas"]["VulnerabilityGroup"][];
+            /**
+             * Itop Class
+             * @description Clase del CI en iTop (Server, VirtualMachine…).
+             */
+            itop_class?: string | null;
             /**
              * Name
              * @description Nombre.
@@ -1452,10 +1507,20 @@ export interface components {
              */
             owner: string | null;
             /**
+             * Ram
+             * @description RAM de un Server o VirtualMachine en iTop, texto libre sin convertir.
+             */
+            ram?: string | null;
+            /**
              * Risk
              * @description Riesgo del activo: el mayor final de sus hallazgos.
              */
             risk: number;
+            /**
+             * Software
+             * @description Software instalado vivo del CI, por producto y versión.
+             */
+            software?: components["schemas"]["AssetSoftware"][];
         };
         /** AssetRisk */
         AssetRisk: {
@@ -1518,6 +1583,39 @@ export interface components {
              * @enum {string}
              */
             status: "new" | "persistent" | "reopened" | "fixed" | "no_data";
+        };
+        /**
+         * AssetSoftware
+         * @description A live software installation of the CI, as iTop has it (F18.3, D-088).
+         */
+        AssetSoftware: {
+            /**
+             * Category
+             * @description Categoría: la clase de la instalación en iTop. Nula si aún no se sincroniza o es una clase propia de la instancia de iTop.
+             */
+            category: ("DBServer" | "Middleware" | "OtherSoftware" | "PCSoftware" | "WebServer") | null;
+            /**
+             * Description
+             * @description Descripción de la instalación en iTop (dato, no instrucciones).
+             */
+            description: string | null;
+            /** @description Licencia viva asignada en iTop; nula si no tiene. */
+            licence: components["schemas"]["SoftwareLicenceInfo"] | null;
+            /**
+             * Software
+             * @description Nombre del producto en el catálogo de iTop.
+             */
+            software: string;
+            /**
+             * Status
+             * @description Estado de la instalación en iTop; nulo sin dato. Solo informativo: una instalación inactiva se sigue escaneando.
+             */
+            status: ("active" | "inactive") | null;
+            /**
+             * Version
+             * @description Número de versión.
+             */
+            version: string;
         };
         /** AuditEntry */
         AuditEntry: {
@@ -2062,6 +2160,76 @@ export interface components {
              * @description Machine-readable rule that failed, e.g. 'missing' or 'greater_than_equal'
              */
             issue: string;
+        };
+        /** ErrorQueueItem */
+        ErrorQueueItem: {
+            /**
+             * Assessment Id
+             * @description Evaluación relacionada, si la hay.
+             */
+            assessment_id: string | null;
+            /**
+             * Attempts
+             * @description Intentos hechos.
+             */
+            attempts: number;
+            /**
+             * Component
+             * @description Qué falló: el tipo de evento, la operación de iTop o el componente del LLM.
+             */
+            component: string;
+            /**
+             * Created At
+             * @description Fecha y hora de creación (UTC).
+             */
+            created_at: string;
+            /**
+             * Cve
+             * @description CVE relacionado, si lo hay.
+             */
+            cve: string | null;
+            /**
+             * Error
+             * @description Último error, en texto corto (máximo 500 caracteres; nunca un secreto).
+             */
+            error: string | null;
+            /**
+             * Id
+             * @description Id del elemento en su tabla de origen (evento, escritura de iTop o cola de error).
+             */
+            id: string;
+            /**
+             * Kind
+             * @description Origen del error. Valores: `notification`: Evento de notificación que agotó sus reintentos (se reintenta desde la API); `itop`: Escritura en iTop del outbox que agotó sus reintentos; `llm_validation`: Elemento que un analista o el juez no pudieron validar.
+             * @enum {string}
+             */
+            kind: "notification" | "itop" | "llm_validation";
+            /**
+             * Next Attempt At
+             * @description Cuándo toca el próximo intento (UTC), si queda alguno.
+             */
+            next_attempt_at: string | null;
+            /**
+             * Retryable
+             * @description Si se puede reintentar desde la API (hoy, solo los eventos de notificación).
+             */
+            retryable: boolean;
+            /**
+             * Status
+             * @description Estado del elemento. Valores: `failed`: Agotó sus reintentos; `pending`: Espera su próximo reintento; `gave_up`: Se dejó de reintentar.
+             * @enum {string}
+             */
+            status: "failed" | "pending" | "gave_up";
+            /**
+             * Ticket Itop Id
+             * @description Id del ticket en iTop, si el error es de un ticket.
+             */
+            ticket_itop_id: string | null;
+            /**
+             * Ticket Ref
+             * @description Referencia legible del ticket en iTop (por ejemplo `R-000123`), si la hay.
+             */
+            ticket_ref: string | null;
         };
         /**
          * ErrorResponse
@@ -3012,6 +3180,19 @@ export interface components {
              */
             next_cursor?: string | null;
         };
+        /** Page[ErrorQueueItem] */
+        Page_ErrorQueueItem_: {
+            /**
+             * Items
+             * @description Elementos de la página.
+             */
+            items: components["schemas"]["ErrorQueueItem"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null if none
+             */
+            next_cursor?: string | null;
+        };
         /** Page[HistoryEvent] */
         Page_HistoryEvent_: {
             /**
@@ -3149,6 +3330,19 @@ export interface components {
              * @description Elementos de la página.
              */
             items: components["schemas"]["Ticket"][];
+            /**
+             * Next Cursor
+             * @description Opaque cursor for the next page; null if none
+             */
+            next_cursor?: string | null;
+        };
+        /** Page[UserAccount] */
+        Page_UserAccount_: {
+            /**
+             * Items
+             * @description Elementos de la página.
+             */
+            items: components["schemas"]["UserAccount"][];
             /**
              * Next Cursor
              * @description Opaque cursor for the next page; null if none
@@ -3679,6 +3873,11 @@ export interface components {
                 };
             };
             /**
+             * Not Simulable
+             * @description Parámetros conocidos del cambio que la simulación no puede estimar (por ejemplo el modelo del juez); se ignoran en el resultado.
+             */
+            not_simulable?: string[];
+            /**
              * Top Movers
              * @description Hasta 5 hallazgos que más cambian de puntaje.
              */
@@ -3790,6 +3989,37 @@ export interface components {
              * @description Peor nivel de sus vulnerabilidades abiertas; nulo si no tiene. Valores: `critical`: Crítica (urgencia 1); `high`: Alta (urgencia 2); `medium`: Media (urgencia 3); `low`: Baja (urgencia 4).
              */
             worst_level: ("critical" | "high" | "medium" | "low") | null;
+        };
+        /**
+         * SoftwareLicenceInfo
+         * @description iTop software licence of an installation (F18.3). Its key is never read from iTop.
+         */
+        SoftwareLicenceInfo: {
+            /**
+             * End Date
+             * @description Vencimiento (AAAA-MM-DD); nulo si iTop no tiene fecha.
+             */
+            end_date: string | null;
+            /**
+             * Name
+             * @description Nombre.
+             */
+            name: string;
+            /**
+             * Perpetual
+             * @description Licencia perpetua en iTop (sin vencimiento).
+             */
+            perpetual: boolean;
+            /**
+             * Start Date
+             * @description Fecha de inicio (AAAA-MM-DD).
+             */
+            start_date: string | null;
+            /**
+             * Usage Limit
+             * @description Límite de uso tal como está en iTop (texto libre).
+             */
+            usage_limit: string | null;
         };
         /**
          * Source
@@ -4249,6 +4479,54 @@ export interface components {
              */
             ticket_url: string | null;
         };
+        /** UserAccount */
+        UserAccount: {
+            /**
+             * Active
+             * @description Si la cuenta está activa (en Hermes y en Firebase).
+             */
+            active: boolean;
+            /**
+             * Claim Role
+             * @description Rol del claim de Firebase; nulo si no tiene uno válido. Valores: `reader`: Solo lectura; `analyst`: Lee, da feedback, lanza escaneos y exporta; `admin`: Además configura el sistema y administra usuarios.
+             */
+            claim_role: ("reader" | "analyst" | "admin") | null;
+            /**
+             * Display Name
+             * @description Nombre para mostrar, si existe.
+             */
+            display_name: string | null;
+            /**
+             * Effective Role
+             * @description Rol que tendría ahora una petición suya: el menor entre el claim y el guardado; nulo si se rechazaría. Valores: `reader`: Solo lectura; `analyst`: Lee, da feedback, lanza escaneos y exporta; `admin`: Además configura el sistema y administra usuarios.
+             */
+            effective_role: ("reader" | "analyst" | "admin") | null;
+            /**
+             * Email
+             * @description Correo del usuario.
+             */
+            email: string | null;
+            /**
+             * Last Login At
+             * @description Último inicio de sesión (UTC), si lo hubo.
+             */
+            last_login_at: string | null;
+            /**
+             * Role
+             * @description Rol guardado en Hermes; mándalo como `expected_role` al cambiarlo. Nulo si nunca inició sesión. Valores: `reader`: Solo lectura; `analyst`: Lee, da feedback, lanza escaneos y exporta; `admin`: Además configura el sistema y administra usuarios.
+             */
+            role: ("reader" | "analyst" | "admin") | null;
+            /**
+             * Signed In
+             * @description Si inició sesión alguna vez (tiene copia en Hermes).
+             */
+            signed_in: boolean;
+            /**
+             * Uid
+             * @description Identificador del usuario en Firebase.
+             */
+            uid: string;
+        };
         /** VulnerabilityBand */
         VulnerabilityBand: {
             /**
@@ -4478,6 +4756,121 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_users: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
+                cursor?: string | null;
+                /** @description Page size */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_UserAccount_"];
+                };
+            };
+            /** @description Cursor inválido o alterado (code: invalid_cursor) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Firebase no respondió (code: auth_unavailable) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     assign_user_role: {
         parameters: {
             query?: never;
@@ -6296,6 +6689,114 @@ export interface operations {
                 };
             };
             /** @description La solicitud no es válida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Se requiere autenticación válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tienes permiso para realizar esta acción. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El recurso solicitado no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Método no permitido para esta ruta. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La solicitud entra en conflicto con el estado actual del recurso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Los datos enviados no son válidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Demasiadas solicitudes; intenta de nuevo más tarde. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno del servidor. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_error_queue: {
+        parameters: {
+            query?: {
+                /** @description Origen del error. Valores: `notification`: Evento de notificación que agotó sus reintentos (se reintenta desde la API); `itop`: Escritura en iTop del outbox que agotó sus reintentos; `llm_validation`: Elemento que un analista o el juez no pudieron validar. */
+                kind?: ("notification" | "itop" | "llm_validation") | null;
+                /** @description Opaque cursor from `next_cursor`: base64url(payload).base64url(signature). A cursor that is not ours or was altered is answered with 400 `invalid_cursor`. */
+                cursor?: string | null;
+                /** @description Page size */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ErrorQueueItem_"];
+                };
+            };
+            /** @description Cursor inválido o alterado (code: invalid_cursor) */
             400: {
                 headers: {
                     [name: string]: unknown;
