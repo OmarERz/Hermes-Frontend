@@ -1,0 +1,339 @@
+<div class="agent-view agents-dashboard">
+  <app-banner-pagina
+    titulo="Panel de agentes"
+    descripcion="Supervisa la actividad de los agentes de IA, las corridas y los tickets de Hermes."
+    [icono]="bannerIcon"
+  />
+  @if (current(); as summary) {
+    <p class="source-badge real-source">
+      Datos reales · calculado {{ formatDateTime(summary.generated_at) }}
+    </p>
+  }
+
+  <section class="panel performance" aria-labelledby="performance-title">
+    <div class="performance-heading">
+      <svg lucideChartColumn class="heading-icon small" aria-hidden="true"></svg>
+      <div>
+        <h2 id="performance-title">Funcionamiento de los agentes</h2>
+        <p>Corridas de Hermes y revisiones de los agentes de IA · {{ windowLabels[window()] }}.</p>
+      </div>
+      <select
+        [ngModel]="window()"
+        (ngModelChange)="setWindow($event)"
+        aria-label="Ventana de tiempo"
+      >
+        @for (option of windows; track option) {
+          <option [ngValue]="option">{{ windowLabels[option] }}</option>
+        }
+      </select>
+    </div>
+
+    @if (summaryState(); as state) {
+      <app-async-state
+        [state]="state"
+        loadingText="Cargando la telemetría…"
+        [error]="summary.error()"
+        (retry)="loadSummary()"
+      />
+    } @else if (current(); as summary) {
+      <div class="metric-grid">
+        <article class="metric">
+          <span class="metric-label"
+            ><svg lucideCircleCheck class="green" aria-hidden="true"></svg> Tasa de éxito de
+            ejecución
+            <app-ayuda-tooltip
+              texto="Corridas que terminaron bien sobre las que terminaron en la ventana."
+          /></span>
+          <div>
+            <strong>{{ runSuccess() }}</strong>
+          </div>
+        </article>
+        <article class="metric">
+          <span class="metric-label"
+            ><svg lucideLayers aria-hidden="true"></svg> Corridas completadas
+            <app-ayuda-tooltip
+              texto="Corridas que terminaron bien en la ventana: escaneos, ingestas, recálculos, sincronizaciones y calibraciones."
+          /></span>
+          <div>
+            <strong>{{ formatCount(summary.runs_succeeded) }}</strong>
+          </div>
+        </article>
+        <article class="metric">
+          <span class="metric-label"
+            ><svg lucideZap aria-hidden="true"></svg> Respuesta promedio del juez
+            <app-ayuda-tooltip
+              texto="Latencia promedio de una llamada del juez al modelo en la ventana; a la derecha, el percentil 95."
+          /></span>
+          <div>
+            <strong>{{ judgeLatency() }}</strong
+            ><em>p95 {{ judgeLatencyP95() }}</em>
+          </div>
+        </article>
+        <article class="metric">
+          <span class="metric-label"
+            ><svg lucideScale aria-hidden="true"></svg> Escalera del juez
+            <app-ayuda-tooltip
+              texto="Confianza en el juez: Normal, Vigilado, Cauteloso o Apagado. Sube de nivel cuando sus ajustes reciben feedback negativo."
+          /></span>
+          <div>
+            <strong>{{ summary.ladder_label }}</strong
+            ><em [class.warn]="ladderPaused()">Nivel {{ summary.ladder_level }}</em>
+          </div>
+        </article>
+        <article class="metric">
+          <span class="metric-label"
+            ><svg lucideTriangleAlert aria-hidden="true"></svg> Corridas con error
+            <app-ayuda-tooltip
+              texto="Corridas que terminaron con error o se cancelaron en la ventana. La cola de error junta las escrituras y validaciones que fallaron."
+          /></span>
+          <div>
+            <strong>{{ formatCount(summary.runs_failed) }}</strong>
+            @if (errorQueue(); as queue) {
+              <em [class.warn]="queue.value !== '0'">Cola de error: {{ queue.value }}</em>
+            }
+          </div>
+        </article>
+      </div>
+
+      <div class="charts-grid">
+        <article class="chart-card trend-chart">
+          <h3>
+            <svg lucideChartNoAxesCombined aria-hidden="true"></svg> Corridas por día (últimos
+            {{ days() }} días)
+          </h3>
+          @if (trendChart(); as option) {
+            <app-grafico-dashboard
+              class="echart"
+              [option]="option"
+              [label]="
+                'Corridas terminadas bien y con error por día en los últimos ' + days() + ' días'
+              "
+            />
+          } @else {
+            <app-async-state
+              [state]="dailyState() ?? 'empty'"
+              loadingText="Cargando las series diarias…"
+              emptyText="No hay datos diarios."
+              [error]="daily.error()"
+              (retry)="loadDaily()"
+            />
+          }
+        </article>
+        <article class="chart-card agent-chart">
+          <h3>
+            <svg lucideActivity aria-hidden="true"></svg> Desempeño del agente
+            <select
+              class="chart-select"
+              [ngModel]="chartAgent()"
+              (ngModelChange)="chartAgent.set($event)"
+              aria-label="Agente de la gráfica de desempeño"
+            >
+              @for (option of agentOptions; track option) {
+                <option [ngValue]="option">{{ agentLabels[option] }}</option>
+              }
+            </select>
+          </h3>
+          @if (performanceChart(); as option) {
+            <app-grafico-dashboard
+              class="echart"
+              [option]="option"
+              [label]="
+                'Porcentaje de revisiones válidas y respuesta promedio por día de ' +
+                agentLabels[chartAgent()]
+              "
+            />
+          } @else {
+            <app-async-state
+              [state]="dailyState() ?? 'empty'"
+              loadingText="Cargando las series diarias…"
+              emptyText="No hay datos diarios."
+              [error]="daily.error()"
+              (retry)="loadDaily()"
+            />
+          }
+        </article>
+        <article class="chart-card success-chart">
+          <h3><svg lucideLayers aria-hidden="true"></svg> Tasa de éxito de ejecución</h3>
+          @if (successChart(); as option) {
+            <app-grafico-dashboard
+              class="echart"
+              [option]="option"
+              [label]="
+                'Tasa de éxito de ejecución: ' +
+                runSuccess() +
+                '; ' +
+                summary.runs_succeeded +
+                ' exitosas y ' +
+                summary.runs_failed +
+                ' con error'
+              "
+            />
+          } @else {
+            <app-async-state
+              state="empty"
+              emptyText="No hay corridas terminadas en esta ventana."
+            />
+          }
+        </article>
+        <article class="chart-card usage-chart">
+          <h3>
+            <svg lucideChartColumn aria-hidden="true"></svg> Motivos del juez más usados
+            <app-ayuda-tooltip
+              texto="Veces que el juez propuso cada motivo en la ventana, separadas en aceptadas y rechazadas por la validación."
+            />
+          </h3>
+          @if (reasonChart(); as option) {
+            <app-grafico-dashboard
+              class="echart"
+              [option]="option"
+              label="Motivos del juez más usados, con las veces que se aceptaron y se rechazaron"
+            />
+          } @else {
+            <app-async-state
+              state="empty"
+              emptyText="El juez no propuso motivos en esta ventana."
+            />
+          }
+        </article>
+        <article class="chart-card queue-chart">
+          <h3>
+            <svg lucideLayers aria-hidden="true"></svg> Procesos
+            <app-ayuda-tooltip
+              texto="Un proceso es una corrida de Hermes: escaneo, ingesta, recálculo, sincronización o calibración."
+            />
+          </h3>
+          <div class="queue-number">
+            <strong>{{ formatCount(summary.runs_running) }}</strong> en ejecución
+          </div>
+          <div class="queue-stats">
+            <span
+              ><b>{{ formatCount(summary.runs_running) }}</b
+              >En ejecución</span
+            >
+            <span
+              ><b>{{ completedToday() }}</b
+              >Completadas hoy (UTC)</span
+            >
+            <span
+              ><b>{{ formatCount(summary.runs_queued) }}</b
+              >En cola</span
+            >
+          </div>
+          <p class="last-run">
+            <svg lucideClock aria-hidden="true"></svg>
+            <span
+              >Última corrida:
+              {{
+                latestRun.status() === 'error' ? 'No disponible' : (lastRun() ?? 'Cargando…')
+              }}</span
+            >
+          </p>
+        </article>
+      </div>
+    }
+  </section>
+
+  <div class="top-grid">
+    <article class="panel agent-status" aria-labelledby="agents-title">
+      <div class="panel-title">
+        <h2 id="agents-title">
+          <svg lucideLayers class="pink" aria-hidden="true"></svg> Estado de los agentes
+        </h2>
+        @if (current(); as summary) {
+          <span class="pill" [class.paused]="ladderPaused()"
+            ><i></i>Juez: {{ summary.ladder_label }}</span
+          >
+        }
+      </div>
+      @if (summaryState(); as state) {
+        <app-async-state
+          [state]="state"
+          loadingText="Cargando los agentes…"
+          [error]="summary.error()"
+          (retry)="loadSummary()"
+        />
+      } @else {
+        <p class="budget">
+          Gasto de IA de hoy (UTC): <strong>{{ budget() }}</strong>
+          <app-ayuda-tooltip
+            texto="Gasto de los tres agentes contra el presupuesto diario; al agotarse, los agentes se detienen hasta el día siguiente."
+          />
+        </p>
+        @for (card of agents(); track card.agent) {
+          <div class="agent-block">
+            <div class="agent-summary">
+              <div class="robot"><svg lucideBot aria-hidden="true"></svg></div>
+              <div>
+                <h3>
+                  {{ card.name }}
+                  <span class="pill" [class.paused]="!card.active"
+                    ><i></i>{{ card.active ? 'Activo' : 'Detenido' }}</span
+                  >
+                </h3>
+                <p>{{ card.description }}</p>
+              </div>
+            </div>
+            <div class="agent-facts">
+              <div>
+                <svg lucideCpu aria-hidden="true"></svg><small>Modelo / Motor</small
+                ><strong>{{ card.engine }}</strong>
+              </div>
+              <div>
+                <svg lucideLayers aria-hidden="true"></svg><small>Revisiones</small
+                ><strong>{{ card.reviews }}</strong
+                ><span class="fact-note">{{ card.successNote }}</span>
+              </div>
+              <div>
+                <svg lucideClock aria-hidden="true"></svg><small>Respuesta promedio</small
+                ><strong>{{ card.latency }}</strong
+                ><span class="fact-note">{{ card.latencyNote }}</span>
+              </div>
+              <div>
+                <svg lucideActivity aria-hidden="true"></svg><small>Costo en la ventana</small
+                ><strong>{{ card.cost }}</strong
+                ><span class="fact-note">{{ card.costNote }}</span>
+              </div>
+            </div>
+            <p class="agent-tokens">Tokens: {{ card.tokens }}</p>
+          </div>
+        } @empty {
+          <app-async-state state="empty" emptyText="El backend no reportó agentes." />
+        }
+      }
+    </article>
+
+    <article class="panel ticket-overview" aria-labelledby="tickets-title">
+      <h2 id="tickets-title">
+        Tickets
+        <app-ayuda-tooltip
+          texto="Tickets que Hermes creó en iTop, contados una sola vez por ticket; su ciclo vive en iTop."
+        />
+      </h2>
+      @if (ticketState(); as state) {
+        <app-async-state
+          [state]="state"
+          loadingText="Cargando los tickets…"
+          [error]="tickets.error()"
+          (retry)="loadTickets()"
+        />
+      } @else {
+        <div class="ticket-kpis">
+          @for (kpi of ticketKpis(); track kpi.label) {
+            <div>
+              <small
+                >{{ kpi.label }}
+                @if (kpi.help) {
+                  <app-ayuda-tooltip [texto]="kpi.help" />
+                }
+              </small>
+              <strong>{{ kpi.value }}</strong>
+            </div>
+          }
+        </div>
+        <a class="ticket-link" routerLink="/tickets">Ver tickets y alertas</a>
+      }
+    </article>
+  </div>
+
+  <app-reviews-log />
+</div>

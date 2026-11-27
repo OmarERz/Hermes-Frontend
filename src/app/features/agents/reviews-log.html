@@ -1,0 +1,129 @@
+<section class="agent-history-view reviews-log" aria-labelledby="reviews-title">
+  <div class="history-panel table-panel">
+    <header>
+      <h2 id="reviews-title"><svg lucideFileClock aria-hidden="true"></svg> Revisiones de IA</h2>
+      <span class="page-label">Página {{ pager.pageIndex() + 1 }}</span>
+    </header>
+    <p class="log-note">
+      Cada llamada de los agentes al modelo, de la más reciente a la más antigua. Solo metadatos:
+      nunca el prompt ni la respuesta.
+    </p>
+    <div class="filters" role="group" aria-label="Filtros de las revisiones">
+      <label
+        >Agente<select [ngModel]="agent()" (ngModelChange)="setAgent($event)">
+          <option value="">Todos</option>
+          @for (item of agents; track item) {
+            <option [value]="item">{{ agentLabels[item] }}</option>
+          }
+        </select></label
+      >
+      <label
+        >Estado<select [ngModel]="status()" (ngModelChange)="setStatus($event)">
+          <option value="">Todos</option>
+          @for (item of statuses; track item) {
+            <option [value]="item">{{ statusLabels[item] }}</option>
+          }
+        </select></label
+      >
+      <label>Desde<input type="date" [ngModel]="from()" (ngModelChange)="setFrom($event)" /></label>
+      <label>Hasta<input type="date" [ngModel]="to()" (ngModelChange)="setTo($event)" /></label>
+      <div class="filter-actions">
+        <button type="button" class="clear" [disabled]="!filtered()" (click)="clear()">
+          <svg lucideListFilter aria-hidden="true"></svg> Limpiar filtros
+        </button>
+      </div>
+    </div>
+
+    @if (state(); as current) {
+      <app-async-state
+        [state]="current"
+        loadingText="Cargando revisiones…"
+        [emptyText]="
+          filtered()
+            ? 'No hay revisiones con estos filtros.'
+            : 'Los agentes aún no han hecho revisiones.'
+        "
+        [error]="pager.state.error()"
+        (retry)="pager.reload()"
+      />
+    } @else {
+      <div
+        class="table-scroll"
+        role="region"
+        aria-label="Revisiones de IA; desplazamiento horizontal"
+        tabindex="0"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Fecha y hora</th>
+              <th scope="col">Agente</th>
+              <th scope="col">Modo</th>
+              <th scope="col">Modelo</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Intentos</th>
+              <th scope="col">Latencia</th>
+              <th scope="col">Tokens (entrada / salida)</th>
+              <th scope="col">Costo</th>
+              <th scope="col">Motivos del juez</th>
+              <th scope="col">Evaluación</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>{{ row.at }}</td>
+                <td>
+                  {{ row.agent }}
+                  @if (row.secondReview) {
+                    <span class="tag">Segunda revisión</span>
+                  }
+                </td>
+                <td>{{ row.mode }}</td>
+                <td>{{ row.model }}</td>
+                <td>
+                  <span [class]="'status status-' + row.statusKey">{{ row.status }}</span>
+                </td>
+                <td class="numeric">{{ row.attempts }}</td>
+                <td class="numeric">{{ row.latency }}</td>
+                <td class="numeric" [attr.title]="row.tokensDetail">{{ row.tokens }}</td>
+                <td class="numeric">{{ row.cost }}</td>
+                <td>{{ row.reasons }}</td>
+                <td>
+                  @if (row.assessmentId) {
+                    <a
+                      class="row-link"
+                      routerLink="/recomendaciones-agente"
+                      [queryParams]="{ id: row.assessmentId }"
+                      >Ver recomendación</a
+                    >
+                  } @else {
+                    —
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <nav class="pager" aria-label="Páginas de revisiones">
+      <button
+        type="button"
+        [disabled]="!pager.hasPrevious()"
+        (click)="pager.previous()"
+        aria-label="Página anterior de revisiones"
+      >
+        <svg lucideArrowLeft aria-hidden="true"></svg>
+      </button>
+      <button
+        type="button"
+        [disabled]="!pager.hasNext()"
+        (click)="pager.next()"
+        aria-label="Página siguiente de revisiones"
+      >
+        <svg lucideArrowRight aria-hidden="true"></svg>
+      </button>
+    </nav>
+  </div>
+</section>
