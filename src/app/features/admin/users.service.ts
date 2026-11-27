@@ -6,8 +6,15 @@ import type { CursorPage } from '../../shared/cursor-pager';
 
 export type UserAccount = ApiSchema<'UserAccount'>;
 export type RoleAssigned = ApiSchema<'RoleAssigned'>;
+export type UserCreated = ApiSchema<'UserCreated'>;
+export type PasswordEmailSent = ApiSchema<'PasswordEmailSent'>;
+export type StatusChanged = ApiSchema<'StatusChanged'>;
 
-/** Users and roles (admin): the Firebase accounts with their roles and the role assignment (D-030). */
+/**
+ * Users and roles (admin): the Firebase accounts with their roles, the role assignment (D-030), and the accounts an
+ * admin creates and switches off or on from the app (D-105). Hermes never sees a password: Firebase e-mails the person
+ * a link to choose one.
+ */
 @Injectable({ providedIn: 'root' })
 export class UsersService {
   private readonly api = inject(ApiClient);
@@ -28,5 +35,23 @@ export class UsersService {
       path: { uid },
       body: { role, expected_role: expectedRole },
     });
+  }
+
+  /**
+   * Creates an account without a password; Firebase e-mails the person a link to choose one. `password_email_sent`
+   * false means the account exists but the e-mail did not go out (send it again with `sendPasswordEmail`).
+   */
+  create(email: string, role: Role): Observable<UserCreated> {
+    return this.api.post('/api/admin/users', { body: { email, role } });
+  }
+
+  /** Has Firebase send the e-mail to choose a password again (its link lasts one hour). */
+  sendPasswordEmail(uid: string): Observable<PasswordEmailSent> {
+    return this.api.post('/api/admin/users/{uid}/password-email', { path: { uid } });
+  }
+
+  /** Switches an account off (its sessions are revoked) or back on, in Firebase and in Hermes. */
+  setStatus(uid: string, disabled: boolean): Observable<StatusChanged> {
+    return this.api.put('/api/admin/users/{uid}/status', { path: { uid }, body: { disabled } });
   }
 }

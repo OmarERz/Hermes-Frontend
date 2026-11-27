@@ -24,6 +24,18 @@ export const AUDIT_ACTION_LABELS: Readonly<Record<string, string>> = {
   role_assignment_requested: 'Pidió asignar un rol',
   role_assigned: 'Asignó un rol',
   role_assignment_failed: 'Falló la asignación de un rol',
+  'user.create_requested': 'Pidió crear una cuenta',
+  'user.create': 'Creó una cuenta',
+  'user.create_failed': 'Falló la creación de una cuenta',
+  'user.password_email_requested': 'Pidió el correo para crear la contraseña',
+  'user.password_email_sent': 'Se envió el correo para crear la contraseña',
+  'user.password_email_failed': 'Falló el envío del correo para crear la contraseña',
+  'user.disable_requested': 'Pidió desactivar una cuenta',
+  'user.disable': 'Desactivó una cuenta',
+  'user.disable_failed': 'Falló la desactivación de una cuenta',
+  'user.enable_requested': 'Pidió reactivar una cuenta',
+  'user.enable': 'Reactivó una cuenta',
+  'user.enable_failed': 'Falló la reactivación de una cuenta',
 };
 
 export const KNOWN_AUDIT_ACTIONS = Object.keys(AUDIT_ACTION_LABELS);
