@@ -4,11 +4,12 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 /**
- * Extra Vitest settings for `ng test` (angular.json `runnerConfig`): the coverage thresholds, which the builder's
- * own options cannot set per folder. What is measured comes from angular.json (`coverageInclude`: every `.ts` file
- * under src/app, also the ones no test imports, at 0 %; `coverageExclude`: specs, test doubles and the prototype's
- * legacy folders `rutas/`, `servicios/` and `componentes/` until they are removed). They apply when coverage is on
- * (`npm run test:coverage`, part of `npm run verify`); each threshold is the aggregate of the files its glob matches.
+ * Extra Vitest settings for `ng test` (angular.json `runnerConfig`): the per-test timeout and the coverage
+ * thresholds, which the builder's own options cannot set (the thresholds go per folder). What is measured comes
+ * from angular.json (`coverageInclude`: every `.ts` file under src/app, also the ones no test imports, at 0 %;
+ * `coverageExclude`: specs, test doubles and the prototype's legacy folders `rutas/`, `servicios/` and
+ * `componentes/` until they are removed). They apply when coverage is on (`npm run test:coverage`, part of
+ * `npm run verify`); each threshold is the aggregate of the files its glob matches.
  */
 const root = fileURLToPath(new URL('.', import.meta.url));
 const featuresDir = join(root, 'src/app/features');
@@ -46,6 +47,11 @@ const areas = readdirSync(featuresDir, { withFileTypes: true })
 
 export default defineConfig({
   test: {
+    // 15 s per test instead of Vitest's 5 s default: on a busy machine (load average around 50, with the stack, e2e
+    // and other lanes' gates running at once) several component tests went past 5 s and passed on a rerun. The
+    // tests themselves are fast; the limit only guards against a hang. The e2e timeouts (e2e/playwright.config.ts)
+    // stay as they are.
+    testTimeout: 15_000,
     coverage: {
       provider: 'v8',
       exclude: placeholders,
