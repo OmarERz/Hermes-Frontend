@@ -3,17 +3,17 @@ import { TestBed } from '@angular/core/testing';
 import { GraficoDashboard } from './grafico-dashboard';
 
 /**
- * The chart loads ECharts lazily and only then watches its host size. These tests drive that second half directly
- * (no change detection, so the lazy load runs once and is awaited) with and without ResizeObserver support.
+ * The chart loads ECharts lazily and only then watches its host size. These tests build the component in an injection
+ * context, with no template, fixture or change detection, so nothing else can start the lazy load: each test runs it
+ * exactly once and awaits it, with and without ResizeObserver support.
  */
 function createChartComponent() {
-  const fixture = TestBed.createComponent(GraficoDashboard);
-  fixture.componentRef.setInput('option', { series: [] });
+  const component = TestBed.runInInjectionContext(() => new GraficoDashboard());
+  component.option = { series: [] };
   const host = document.createElement('div');
   document.body.appendChild(host);
-  const component = fixture.componentInstance;
   component['chartHost'] = new ElementRef(host);
-  return { fixture, component, host };
+  return { component, host };
 }
 
 describe('GraficoDashboard', () => {
@@ -24,13 +24,13 @@ describe('GraficoDashboard', () => {
 
   it('draws the chart without ResizeObserver support instead of throwing', async () => {
     vi.stubGlobal('ResizeObserver', undefined);
-    const { component, fixture } = createChartComponent();
+    const { component } = createChartComponent();
 
     await expect(component['createChart']()).resolves.toBeUndefined();
 
     expect(component['chart']).toBeDefined();
     expect(component['resizeObserver']).toBeUndefined();
-    fixture.destroy();
+    component.ngOnDestroy();
   });
 
   it('watches the host size when ResizeObserver exists and stops on destroy', async () => {
@@ -43,12 +43,13 @@ describe('GraficoDashboard', () => {
         disconnect = disconnect;
       },
     );
-    const { component, fixture, host } = createChartComponent();
+    const { component, host } = createChartComponent();
 
     await component['createChart']();
 
+    expect(observe).toHaveBeenCalledOnce();
     expect(observe).toHaveBeenCalledWith(host);
-    fixture.destroy();
-    expect(disconnect).toHaveBeenCalledTimes(1);
+    component.ngOnDestroy();
+    expect(disconnect).toHaveBeenCalledOnce();
   });
 });
