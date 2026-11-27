@@ -4,6 +4,8 @@ import type { Role } from '../support/roles';
 /** An extra view of a screen reached by an interaction (a dialog, a detail panel, a chart tab). */
 export interface Variant {
   name: string;
+  /** A modal dialog: captured at the viewport size, as the person sees it (a full-page capture misplaces it). */
+  dialog?: boolean;
   /** Brings the opened screen to this view. Never saves anything: dialogs are only opened. */
   act(page: Page): Promise<void>;
 }
@@ -82,6 +84,7 @@ export const SCREENS: readonly Screen[] = [
       { name: 'detail', act: selectFirstRecommendation },
       {
         name: 'feedback-dialog',
+        dialog: true,
         act: async (page) => {
           await selectFirstRecommendation(page);
           await page.getByRole('button', { name: 'Dar feedback' }).click();
@@ -169,6 +172,7 @@ export const SCREENS: readonly Screen[] = [
       {
         // Opens the confirmation only: saving a role revokes that user's sessions, which other tests use.
         name: 'role-dialog',
+        dialog: true,
         act: async (page) => {
           await page
             .getByRole('region', { name: 'Cuentas; desplazamiento horizontal' })

@@ -64,6 +64,7 @@ for (const role of settings.roles) {
             await page.waitForTimeout(500);
             await capture(page, recorder, variant.name, combos(pair, settings.themes), {
               axe: true,
+              fullPage: !variant.dialog,
             });
           } catch (error) {
             recorder.problems.push(`variant ${variant.name} not captured: ${message(error)}`);

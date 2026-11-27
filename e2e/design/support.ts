@@ -271,7 +271,9 @@ async function resize(page: Page, width: number): Promise<void> {
 
 /**
  * How far the page scrolls sideways, and the outermost elements past the right edge that no horizontal scroller
- * holds: «cut off» when an ancestor clips them (the content is lost), otherwise they widen the page.
+ * holds: «cut off» when an ancestor clips them (the content is lost), otherwise they widen the page; «hidden» when
+ * they are not visible (they still widen it). An absolutely positioned element escapes the scrollers between it and
+ * its containing block (a tooltip inside a scrolling table widens the page), a fixed one escapes all of them.
  */
 async function measureOverflow(page: Page): Promise<{ overflowPx: number; offenders: string[] }> {
   return page.evaluate(() => {
@@ -281,29 +283,57 @@ async function measureOverflow(page: Page): Promise<{ overflowPx: number; offend
       const classes = [...element.classList].slice(0, 2).join('.');
       return `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ''}${classes ? `.${classes}` : ''}`;
     };
+    const containingBlock = (element: Element): Element | null => {
+      const position = getComputedStyle(element).position;
+      if (position === 'fixed') return null;
+      if (position !== 'absolute') return element.parentElement;
+      for (let up = element.parentElement; up; up = up.parentElement) {
+        const style = getComputedStyle(up);
+        if (style.position !== 'static' || style.transform !== 'none') return up;
+      }
+      return root;
+    };
+    /** The overflow of `up` applies to `element` (it clips or scrolls it). */
+    const governs = (up: Element, block: Element | null): boolean => !!block && up.contains(block);
+    const memo = new Map<Element, boolean>();
+    const escapes = (element: Element): boolean => {
+      const known = memo.get(element);
+      if (known !== undefined) return known;
+      const box = element.getBoundingClientRect();
+      let result = box.width > 0 && box.right > edge;
+      if (result) {
+        const block = containingBlock(element);
+        for (let up = element.parentElement; up && up !== document.body; up = up.parentElement) {
+          const overflow = getComputedStyle(up).overflowX;
+          if ((overflow === 'auto' || overflow === 'scroll') && governs(up, block)) {
+            result = false;
+            break;
+          }
+        }
+      }
+      memo.set(element, result);
+      return result;
+    };
     const offenders: string[] = [];
     for (const element of document.body.querySelectorAll('*')) {
-      const box = element.getBoundingClientRect();
-      if (box.width === 0 || box.right <= edge) continue;
-      if (getComputedStyle(element).visibility === 'hidden') continue;
-      let held = false;
+      if (!escapes(element)) continue;
+      let outermost = true;
       let clipped = false;
+      const block = containingBlock(element);
       for (let up = element.parentElement; up && up !== document.body; up = up.parentElement) {
-        const overflow = getComputedStyle(up).overflowX;
-        // Inside a horizontal scroller (reachable), or not the outermost element past the edge.
-        if (
-          overflow === 'auto' ||
-          overflow === 'scroll' ||
-          up.getBoundingClientRect().right > edge
-        ) {
-          held = true;
+        if (escapes(up)) {
+          outermost = false;
           break;
         }
-        if (overflow === 'hidden' || overflow === 'clip') clipped = true;
+        const overflow = getComputedStyle(up).overflowX;
+        if ((overflow === 'hidden' || overflow === 'clip') && governs(up, block)) clipped = true;
       }
-      if (held) continue;
-      const past = Math.round(box.right - root.clientWidth);
-      offenders.push(`${name(element)} +${past}px${clipped ? ' (cut off)' : ''}`);
+      if (!outermost) continue;
+      const style = getComputedStyle(element);
+      const hidden = style.visibility === 'hidden' || style.opacity === '0';
+      const past = Math.round(element.getBoundingClientRect().right - root.clientWidth);
+      const marks = [clipped ? 'cut off' : '', hidden ? 'hidden' : ''].filter(Boolean).join(', ');
+      offenders.push(`${name(element)} +${past}px${marks ? ` (${marks})` : ''}`);
       if (offenders.length >= 8) break;
     }
     return { overflowPx: Math.max(0, root.scrollWidth - root.clientWidth), offenders };
@@ -311,14 +341,25 @@ async function measureOverflow(page: Page): Promise<{ overflowPx: number; offend
 }
 
 /**
- * Applied only while taking a full-page screenshot: on phones the bottom navigation is fixed to the viewport, so a
- * full-page capture would draw it in the middle of the page; it is drawn at the end of the page instead, in the
- * space the shell reserves for it (padding-bottom of .app-shell).
+ * On phones the bottom navigation is fixed to the viewport, so a full-page capture would draw it in the middle of the
+ * page: while the screenshot is taken it is moved to the end of the page, into the space the shell reserves for it
+ * (padding-bottom of .app-shell). Inline styles through the CSSOM, because the app's CSP blocks injected stylesheets
+ * (also the `style` option of page.screenshot).
  */
-const SCREENSHOT_STYLE = `@media (max-width: 560px) {
-  .app-shell { position: relative; }
-  .app-shell .sidebar { position: absolute !important; }
-}`;
+async function pinFixedBar(page: Page, pin: boolean): Promise<void> {
+  await page.evaluate((pinned) => {
+    const shell = document.querySelector<HTMLElement>('.app-shell');
+    const bar = shell?.querySelector<HTMLElement>('.sidebar');
+    if (!shell || !bar) return;
+    if (!pinned) {
+      shell.style.removeProperty('position');
+      bar.style.removeProperty('position');
+    } else if (getComputedStyle(bar).position === 'fixed') {
+      shell.style.setProperty('position', 'relative');
+      bar.style.setProperty('position', 'absolute', 'important');
+    }
+  }, pin);
+}
 
 export interface Combo {
   width: number;
@@ -330,7 +371,8 @@ export function combos(widths: number[], themes: Theme[]): Combo[] {
 }
 
 /**
- * Captures the current view at each width and theme (full page, animations stopped) and, if asked, runs axe once
+ * Captures the current view at each width and theme (full page unless `fullPage: false`, animations stopped) and,
+ * if asked, runs axe once
  * per theme at the desktop width. Screens without the app shell are captured once per width with theme "none".
  */
 export async function capture(
@@ -338,7 +380,7 @@ export async function capture(
   recorder: Recorder,
   view: string,
   wanted: Combo[],
-  options: { axe?: boolean; notes?: (page: Page) => Promise<string[]> } = {},
+  options: { axe?: boolean; fullPage?: boolean; notes?: (page: Page) => Promise<string[]> } = {},
 ): Promise<void> {
   const themes = [...new Set(wanted.map((combo) => combo.theme))];
   for (const theme of themes) {
@@ -353,12 +395,10 @@ export async function capture(
         recorder.screen,
         `${view}-${width}-${shotTheme}.png`,
       );
-      await page.screenshot({
-        path: join(designRoot(), file),
-        fullPage: true,
-        animations: 'disabled',
-        style: SCREENSHOT_STYLE,
-      });
+      const fullPage = options.fullPage ?? true;
+      if (fullPage) await pinFixedBar(page, true);
+      await page.screenshot({ path: join(designRoot(), file), fullPage, animations: 'disabled' });
+      if (fullPage) await pinFixedBar(page, false);
       recorder.shots.push({
         file,
         who: recorder.who,
@@ -418,7 +458,9 @@ async function runAxe(
  * so its :focus-visible style shows; notes whether it draws a visible indicator.
  */
 export async function focusFirstControl(page: Page): Promise<string[]> {
-  const controls = page.locator('main :is(button, input, select, textarea, a[href])');
+  const controls = page.locator(
+    'main :is(button, input, select, textarea, a[href]):not(:disabled, [tabindex="-1"])',
+  );
   const index = await controls.evaluateAll((elements) =>
     elements.findIndex((element) => !element.closest('nav') && element.getClientRects().length > 0),
   );

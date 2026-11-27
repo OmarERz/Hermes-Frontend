@@ -120,7 +120,10 @@ function summary(records: TestRecord[], shots: ShotRecord[], runs: AxeRecord[]):
       ...(record.error ? [`test ${record.status}: ${record.error}`] : []),
       ...record.problems,
     ];
-    if (problems.length) lines.push(`- **${record.title}**: ${problems.map(cell).join(' · ')}`);
+    if (problems.length)
+      lines.push(
+        `- **${record.title}**: ${problems.map((item) => cell(item.slice(0, 240))).join(' · ')}`,
+      );
   }
   return `${lines.join('\n')}\n`;
 }
