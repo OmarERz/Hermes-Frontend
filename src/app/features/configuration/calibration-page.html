@@ -1,0 +1,166 @@
+<div class="agent-config-view calibration-view">
+  <app-banner-pagina
+    titulo="Calibración"
+    descripcion="Propuestas semanales de ajuste de los pesos de la fórmula y del nivel de las fuentes, con su evidencia. Ninguna se aplica sin la aprobación de un administrador."
+    [icono]="bannerIcon"
+  />
+
+  @if (store.document()) {
+    <section class="config-summary" aria-label="Modo de calibración">
+      <article>
+        <span class="summary-icon"><svg lucideShieldCheck aria-hidden="true"></svg></span>
+        <span class="summary-copy"
+          ><small>Modo de calibración</small><strong>{{ mode() }}</strong></span
+        >
+      </article>
+      <article>
+        <span class="summary-icon"><svg lucideGauge aria-hidden="true"></svg></span>
+        <span class="summary-copy"
+          ><small>Cambio máximo de un peso por semana</small
+          ><strong>{{ weeklyLimit() }}</strong></span
+        >
+      </article>
+      <article>
+        <span class="summary-icon"><svg lucideTimer aria-hidden="true"></svg></span>
+        <span class="summary-copy"
+          ><small>Enfriamiento</small><strong>{{ cooldownWeeks() }} semanas</strong></span
+        >
+      </article>
+    </section>
+    <p class="mode-note">
+      Aun en modo autónomo, cada propuesta espera la decisión de un administrador. El modo y sus
+      límites se cambian en <a routerLink="/parametros" class="secondary-link">Parámetros</a>.
+    </p>
+  } @else if (store.state.status() === 'error') {
+    <section class="config-card">
+      <app-async-state state="error" [error]="store.state.error()" (retry)="store.load()" />
+    </section>
+  }
+
+  <section class="config-card proposals-card" aria-labelledby="proposals-title">
+    <header>
+      <h2 id="proposals-title">
+        <svg lucideClipboardCheck aria-hidden="true"></svg> Propuestas de calibración
+      </h2>
+      <p>Las más recientes primero. Aprobar aplica el cambio igual que una edición manual.</p>
+    </header>
+    @if (notice()) {
+      <p class="proposals-notice" role="status">{{ notice() }}</p>
+    }
+    @if (problem()) {
+      <p class="proposals-problem" role="alert">{{ problem() }}</p>
+    }
+    @if (state(); as view) {
+      <app-async-state
+        [state]="view"
+        loadingText="Cargando propuestas…"
+        emptyText="Todavía no hay propuestas de calibración."
+        [error]="pager.state.error()"
+        (retry)="pager.reload()"
+      />
+    } @else {
+      <ul class="proposal-list">
+        @for (row of rows(); track row.proposal.id) {
+          <li class="proposal" [attr.data-status]="row.proposal.status">
+            <div class="proposal-meta">
+              <span class="kind-chip">{{ row.kind }}</span>
+              <span class="status-chip" [attr.data-status]="row.proposal.status">{{
+                row.status
+              }}</span>
+              <time [attr.datetime]="row.proposal.created_at">{{ row.when }}</time>
+            </div>
+            <h3>{{ row.proposal.summary }}</h3>
+            @if (row.proposal.evidence) {
+              <p class="evidence">{{ row.proposal.evidence }}</p>
+            }
+            @if (row.changes.length) {
+              <div class="table-scroll">
+                <table class="changes-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Parámetro</th>
+                      <th scope="col">Antes</th>
+                      <th scope="col">Propuesto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (change of row.changes; track change.name) {
+                      <tr>
+                        <td>{{ change.name }}</td>
+                        <td class="numeric">{{ change.before }}</td>
+                        <td class="numeric">{{ change.after }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+            @if (row.backtest) {
+              <p class="backtest">{{ row.backtest }}</p>
+            }
+            <div class="proposal-actions">
+              @if (row.proposal.status === 'pending') {
+                @if (canDecide()) {
+                  <button
+                    type="button"
+                    class="save-button"
+                    [attr.aria-label]="'Aprobar: ' + row.proposal.summary"
+                    (click)="ask(row.proposal, 'approve')"
+                  >
+                    Aprobar
+                  </button>
+                  <button
+                    type="button"
+                    class="cancel-button"
+                    [attr.aria-label]="'Rechazar: ' + row.proposal.summary"
+                    (click)="ask(row.proposal, 'reject')"
+                  >
+                    Rechazar
+                  </button>
+                } @else {
+                  <small>Espera la decisión de un administrador.</small>
+                }
+              } @else if (row.decidedWhen) {
+                <small>Decidida el {{ row.decidedWhen }}.</small>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+    @if (pager.hasPrevious() || pager.hasNext()) {
+      <nav class="proposals-pager" aria-label="Páginas de propuestas">
+        <button
+          type="button"
+          class="cancel-button"
+          aria-label="Página anterior"
+          [disabled]="!pager.hasPrevious() || pager.state.loading()"
+          (click)="pager.previous()"
+        >
+          <svg lucideArrowLeft aria-hidden="true"></svg>
+        </button>
+        <span>Página {{ pager.pageIndex() + 1 }}</span>
+        <button
+          type="button"
+          class="cancel-button"
+          aria-label="Página siguiente"
+          [disabled]="!pager.hasNext()"
+          (click)="pager.next()"
+        >
+          <svg lucideArrowRight aria-hidden="true"></svg>
+        </button>
+      </nav>
+    }
+  </section>
+
+  @if (target()) {
+    <app-confirm-changes-dialog
+      [title]="dialogTitle()"
+      [changes]="decisionRows()"
+      [saving]="deciding()"
+      [error]="decideError()"
+      (confirmed)="confirm()"
+      (cancelled)="cancel()"
+    />
+  }
+</div>

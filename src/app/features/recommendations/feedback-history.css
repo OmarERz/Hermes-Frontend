@@ -1,0 +1,54 @@
+.feedback-history {
+  margin-top: 8px;
+}
+ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+li {
+  padding: 9px 10px;
+  border: 1px solid var(--border, #e4e3ee);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  color: var(--text-secondary, #574b62);
+  font-size: calc(12px + var(--font-size-increase, 0px));
+  line-height: 1.45;
+}
+li.current {
+  border-color: var(--accent, #ed079b);
+}
+li p {
+  margin: 0;
+}
+li p + p {
+  margin-top: 4px;
+}
+.entry-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.entry-heading strong {
+  color: var(--text-primary, #321044);
+}
+.entry-badge {
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: var(--success-bg, #dcfce7);
+  color: var(--success-text, #166534);
+  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-weight: 700;
+}
+.entry-badge.muted {
+  background: var(--warning-bg, #fff0d3);
+  color: var(--warning-text, #8b5700);
+}
+.entry-comment {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  font-style: italic;
+}

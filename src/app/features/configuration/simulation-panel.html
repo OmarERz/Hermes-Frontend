@@ -1,0 +1,92 @@
+<section class="config-card simulation-card" aria-labelledby="simulation-title">
+  <header>
+    <h2 id="simulation-title">
+      <svg lucideFlaskConical aria-hidden="true"></svg> Simulación previa
+    </h2>
+    <p>
+      Compara cada hallazgo abierto con su última evaluación usando los valores propuestos. No llama
+      al juez ni guarda nada.
+    </p>
+  </header>
+  @switch (editor().simulation.status()) {
+    @case ('idle') {
+      <p class="sim-empty">
+        Cambia uno o más valores y pulsa «Simular» para ver su efecto antes de guardar.
+      </p>
+    }
+    @case ('loading') {
+      <p class="sim-empty" role="status">Simulando…</p>
+    }
+    @case ('error') {
+      <p class="sim-error" role="alert">
+        {{ editor().simulation.error()?.message ?? 'No se pudo simular.' }}
+      </p>
+    }
+    @case ('ready') {
+      @if (editor().simulationStale()) {
+        <p class="sim-stale" role="status">
+          Cambiaste valores después de simular: vuelve a simular antes de guardar.
+        </p>
+      }
+      @if (result(); as preview) {
+        <p class="sim-headline">
+          <strong>{{ preview.changed_findings }}</strong>
+          {{
+            preview.changed_findings === 1
+              ? 'hallazgo abierto cambiaría'
+              : 'hallazgos abiertos cambiarían'
+          }}
+          de nivel.
+        </p>
+        <p class="sim-effect">{{ preview.last_30_days_effect }}</p>
+        <div class="table-scroll">
+          <table class="level-matrix">
+            <caption>
+              Matriz de niveles: nivel actual (filas) contra nivel con la propuesta (columnas)
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Antes \ Después</th>
+                @for (after of levels(); track after) {
+                  <th scope="col">{{ levelLabel(after) }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (before of levels(); track before) {
+                <tr>
+                  <th scope="row">{{ levelLabel(before) }}</th>
+                  @for (after of levels(); track after) {
+                    <td
+                      [class.same]="before === after"
+                      [class.moved]="before !== after && count(before, after) > 0"
+                    >
+                      {{ count(before, after) }}
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <h3>Hallazgos que más se mueven</h3>
+        @if (preview.top_movers.length) {
+          <ol class="movers">
+            @for (mover of preview.top_movers; track $index) {
+              <li>{{ mover }}</li>
+            }
+          </ol>
+        } @else {
+          <p class="sim-empty">Ningún hallazgo cambia de puntaje.</p>
+        }
+      }
+      @if (notSimulable().length) {
+        <div class="sim-note" role="note">
+          <strong>Sin vista previa:</strong>
+          {{ notSimulable().join(', ') }}. El servidor no puede simular estos parámetros; su efecto
+          se verá después de guardar.
+        </div>
+      }
+    }
+  }
+</section>

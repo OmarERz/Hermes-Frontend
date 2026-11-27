@@ -1,0 +1,195 @@
+<div class="agent-config-view formula-view">
+  <app-banner-pagina
+    titulo="Fórmula del motor"
+    descripcion="Pesos, niveles, bandas y decaimiento de la puntuación base. Simula antes de guardar; guardar recalcula sin llamar al juez."
+    [icono]="bannerIcon"
+  />
+
+  @if (pageState(); as view) {
+    <section class="config-card">
+      <app-async-state
+        [state]="view"
+        loadingText="Cargando la fórmula…"
+        emptyText="El servidor no publica parámetros de la fórmula."
+        [error]="store.state.error()"
+        (retry)="store.load()"
+      />
+    </section>
+  } @else {
+    <section class="config-summary" aria-label="Resumen de la fórmula">
+      <article>
+        <span class="summary-icon"><svg lucideLayers aria-hidden="true"></svg></span>
+        <span class="summary-copy"
+          ><small>Versión de configuración</small><strong>v{{ store.version() }}</strong></span
+        >
+      </article>
+      <article>
+        <span class="summary-icon" [class.pending]="!weightsOk()"
+          ><svg lucideScale aria-hidden="true"></svg
+        ></span>
+        <span class="summary-copy"
+          ><small>Suma de los pesos</small><strong>{{ weightsText() }}</strong></span
+        >
+      </article>
+      <article>
+        <span class="summary-icon"><svg lucideSlidersHorizontal aria-hidden="true"></svg></span>
+        <span class="summary-copy"
+          ><small>Cambios sin guardar</small><strong>{{ editor.changeCount() }}</strong></span
+        >
+      </article>
+    </section>
+
+    <div class="formula-grid">
+      @if (layout().weights.length) {
+        <section class="config-card" aria-labelledby="weights-title">
+          <header>
+            <h2 id="weights-title"><svg lucideScale aria-hidden="true"></svg> Pesos</h2>
+            <p>Peso de cada factor en la puntuación base. Deben sumar exactamente 1.0.</p>
+          </header>
+          <div class="field-list">
+            @for (param of layout().weights; track param.key) {
+              <app-config-field
+                [param]="param"
+                [label]="label(param)"
+                [value]="editor.value(param.key)"
+                [editable]="editor.canEdit(param)"
+                [changed]="editor.isChanged(param.key)"
+                [error]="editor.fieldErrors()[param.key]"
+                (valueChange)="editor.set(param.key, $event)"
+              />
+            }
+          </div>
+          <p class="weights-total" [class.invalid]="!weightsOk()" aria-live="polite">
+            Suma de los pesos: <strong>{{ weightsText() }}</strong>
+            @if (!weightsOk()) {
+              — debe ser 1.00
+            }
+          </p>
+        </section>
+      }
+
+      @if (layout().bands.length) {
+        <section class="config-card" aria-labelledby="bands-title">
+          <header>
+            <h2 id="bands-title">
+              <svg lucideTriangleAlert aria-hidden="true"></svg> Bandas de urgencia
+            </h2>
+            <p>
+              Puntuación final mínima de cada urgencia, ordenadas (Crítica &gt; Alta &gt; Media); la
+              banda Baja empieza en 0.
+            </p>
+          </header>
+          <div class="field-list">
+            @for (param of layout().bands; track param.key) {
+              <app-config-field
+                [param]="param"
+                [label]="label(param)"
+                [value]="editor.value(param.key)"
+                [editable]="editor.canEdit(param)"
+                [changed]="editor.isChanged(param.key)"
+                [error]="editor.fieldErrors()[param.key]"
+                (valueChange)="editor.set(param.key, $event)"
+              />
+            }
+          </div>
+        </section>
+      }
+
+      @for (group of layout().levels; track group.factor) {
+        <section class="config-card" [attr.aria-label]="'Niveles de ' + group.name">
+          <header>
+            <h2><svg lucideSigma aria-hidden="true"></svg> Niveles de {{ group.name }}</h2>
+            <p>Valores de 0 a 1, del nivel más fuerte al más débil (orden monótono).</p>
+          </header>
+          <div class="field-list">
+            @for (param of group.parameters; track param.key) {
+              <app-config-field
+                [param]="param"
+                [label]="label(param)"
+                [value]="editor.value(param.key)"
+                [editable]="editor.canEdit(param)"
+                [changed]="editor.isChanged(param.key)"
+                [error]="editor.fieldErrors()[param.key]"
+                (valueChange)="editor.set(param.key, $event)"
+              />
+            }
+          </div>
+        </section>
+      }
+
+      @if (layout().decay.length) {
+        <section class="config-card" aria-labelledby="decay-title">
+          <header>
+            <h2 id="decay-title">
+              <svg lucideHourglass aria-hidden="true"></svg> Decaimiento de la amenaza
+            </h2>
+            <p>
+              Multiplica T según la antigüedad de su evidencia: plazos crecientes y multiplicadores
+              decrecientes entre 0 y 1. KEV y la explotación confirmada no decaen.
+            </p>
+          </header>
+          @for (step of layout().decay; track step.step) {
+            <h3 class="step-title">
+              Paso {{ step.step }}
+              @if (step.open) {
+                <small>(último, sin límite de días)</small>
+              }
+            </h3>
+            <div class="field-list">
+              @for (param of step.parameters; track param.key) {
+                <app-config-field
+                  [param]="param"
+                  [label]="label(param)"
+                  [value]="editor.value(param.key)"
+                  [editable]="editor.canEdit(param)"
+                  [changed]="editor.isChanged(param.key)"
+                  [error]="editor.fieldErrors()[param.key]"
+                  (valueChange)="editor.set(param.key, $event)"
+                />
+              }
+            </div>
+          }
+        </section>
+      }
+
+      @if (layout().others.length) {
+        <section class="config-card" aria-labelledby="others-title">
+          <header>
+            <h2 id="others-title">
+              <svg lucideSlidersHorizontal aria-hidden="true"></svg> Otros parámetros
+            </h2>
+            <p>S sin CVSS (0.5–1.0) y el piso KEV + expuesto (80–100), entre otros.</p>
+          </header>
+          <div class="field-list">
+            @for (param of layout().others; track param.key) {
+              <app-config-field
+                [param]="param"
+                [label]="label(param)"
+                [value]="editor.value(param.key)"
+                [editable]="editor.canEdit(param)"
+                [changed]="editor.isChanged(param.key)"
+                [error]="editor.fieldErrors()[param.key]"
+                (valueChange)="editor.set(param.key, $event)"
+              />
+            }
+          </div>
+        </section>
+      }
+    </div>
+
+    @if (editor.ruleErrors().length) {
+      <div class="rule-errors" role="alert">
+        <ul>
+          @for (message of editor.ruleErrors(); track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <app-simulation-panel class="block" [editor]="editor" />
+    <app-config-save-bar title="Confirmar cambios de la fórmula" [editor]="editor" />
+    <app-config-versions class="block" (restored)="editor.discard()" />
+    <app-locked-protections class="block" [parameters]="editor.parameters()" />
+  }
+</div>

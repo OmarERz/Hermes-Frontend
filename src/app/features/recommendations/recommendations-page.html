@@ -1,0 +1,154 @@
+<div class="recommendations-view">
+  <app-banner-pagina
+    titulo="Recomendaciones"
+    descripcion="Evaluaciones de Hermes por vulnerabilidad: puntaje base, ajuste del juez y final, justificación, mitigación y feedback."
+    [icono]="bannerIcon"
+  />
+
+  @if (savedMessage()) {
+    <p class="review-saved-message" role="status">{{ savedMessage() }}</p>
+  }
+
+  <p class="score-note">
+    Puntajes de Hermes de 0 a 100 (no CVSS). El feedback ayuda a calibrar el sistema; nunca cambia
+    la puntuación por sí solo ni toca el ticket.
+  </p>
+
+  @if (scopeLabel(); as label) {
+    <p class="scope-note" role="status">
+      {{ label }} ·
+      <a routerLink="/recomendaciones-agente">Ver todas las recomendaciones</a>
+    </p>
+  }
+
+  <div class="recommendation-workspace">
+    <aside class="ticket-list" aria-label="Vulnerabilidades con recomendaciones">
+      <header>
+        <h2>Casos</h2>
+        <span>{{ groups().length }}</span>
+      </header>
+      <label class="ticket-filter"
+        >Nivel
+        <select [ngModel]="level()" (ngModelChange)="level.set($event)">
+          <option value="">Todos los niveles</option>
+          @for (item of levels; track item) {
+            <option [value]="item">{{ levelLabels[item] }}</option>
+          }
+        </select></label
+      >
+      <label class="feedback-filter"
+        ><input
+          type="checkbox"
+          [ngModel]="withoutFeedback()"
+          (ngModelChange)="withoutFeedback.set($event)"
+        />
+        Solo sin feedback</label
+      >
+      <p class="filter-note">
+        Los filtros se aplican a las {{ pager.items().length }} evaluaciones de esta página.
+        @if (hasFilters()) {
+          <button type="button" class="link-button" (click)="clearFilters()">Quitar filtros</button>
+        }
+      </p>
+
+      @if (listState(); as state) {
+        <app-async-state
+          class="list-state"
+          [state]="state"
+          [error]="pager.state.error()"
+          loadingText="Cargando recomendaciones…"
+          [emptyText]="emptyText()"
+          (retry)="pager.reload()"
+        />
+      } @else {
+        @for (group of groups(); track group.key) {
+          @let latest = latestOf(group);
+          <button
+            type="button"
+            class="ticket-option"
+            [class.active]="isActive(group)"
+            [attr.aria-pressed]="isActive(group)"
+            (click)="selectGroup(group)"
+          >
+            <span
+              ><strong>{{ group.title }}</strong
+              ><small>{{ group.subtitle }}</small
+              ><small
+                >{{ levelLabels[latest.level] }} · final {{ latest.final }} ·
+                {{ group.items.length }} evaluación(es)</small
+              ></span
+            >
+            @if (group.withoutFeedback) {
+              <span class="conflict-chip">Sin feedback</span>
+            }
+          </button>
+        }
+      }
+
+      <nav class="list-pager" aria-label="Páginas de recomendaciones">
+        <button
+          type="button"
+          aria-label="Página anterior"
+          [disabled]="!pager.hasPrevious() || pager.state.loading()"
+          (click)="pager.previous()"
+        >
+          <svg lucideArrowLeft aria-hidden="true"></svg>
+        </button>
+        <span>Página {{ pager.pageIndex() + 1 }}</span>
+        <button
+          type="button"
+          aria-label="Página siguiente"
+          [disabled]="!pager.hasNext()"
+          (click)="pager.next()"
+        >
+          <svg lucideArrowRight aria-hidden="true"></svg>
+        </button>
+      </nav>
+    </aside>
+
+    <section class="recommendation-detail" aria-live="polite">
+      @if (linkedState(); as state) {
+        <app-async-state
+          [state]="state"
+          [error]="linked.error()"
+          loadingText="Cargando la recomendación…"
+          (retry)="loadLinked()"
+        />
+      } @else if (activeGroup(); as group) {
+        <header class="detail-heading">
+          <div>
+            <small>{{
+              showLinked() ? 'Recomendación solicitada' : 'Vulnerabilidad seleccionada'
+            }}</small>
+            <h2>{{ group.title }} · {{ group.subtitle }}</h2>
+          </div>
+        </header>
+        <div class="proposal-list">
+          @for (item of group.items; track item.assessment_id) {
+            <app-recommendation-card
+              [recommendation]="item"
+              [historyRevision]="feedbackSaves()"
+              (giveFeedback)="openFeedback(item)"
+            />
+          }
+        </div>
+      } @else {
+        <div class="detail-empty">
+          <svg lucideGitCompareArrows aria-hidden="true"></svg>
+          <h2>Detalle de recomendaciones</h2>
+          <p>Selecciona un caso para ver sus evaluaciones, su justificación y su feedback.</p>
+        </div>
+      }
+    </section>
+  </div>
+
+  @if (feedbackTarget(); as target) {
+    @if (session.hasRole(feedbackRole)) {
+      <app-feedback-dialog
+        [recommendation]="target"
+        (saved)="onFeedbackSaved($event)"
+        (closed)="feedbackTarget.set(null)"
+      />
+    }
+  }
+</div>
