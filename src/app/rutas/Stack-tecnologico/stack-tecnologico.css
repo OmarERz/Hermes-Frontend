@@ -487,7 +487,7 @@
     width: 30%;
   }
   th {
-    padding: 9px 8px;
+    padding: var(--cell-pad-y) var(--cell-pad-x);
     background: #f4eef9;
     color: #351044;
     font-size: calc((10px) + var(--font-size-increase));
@@ -511,7 +511,7 @@
     border-bottom: 0;
   }
   td {
-    padding: 9px 8px;
+    padding: var(--cell-pad-y) var(--cell-pad-x);
     border: 0;
     vertical-align: middle;
     white-space: normal;

@@ -18,7 +18,7 @@
   .source-badge,
   .connection-notice {
     margin: 0 0 13px;
-    padding: 10px 13px;
+    padding: var(--notice-pad-y) var(--notice-pad-x);
     border: 1px solid #e9a8d2;
     border-radius: 10px;
     background: #fff0f8;
@@ -286,7 +286,7 @@
     align-items: center;
     gap: 10px;
     margin-top: 8px;
-    padding: 14px;
+    padding: var(--sub-card-pad);
     border: 1px solid var(--line, #e4e3ee);
     border-radius: 9px;
     background: var(--surface-raised, #fff);
@@ -676,7 +676,7 @@
 .app-shell[data-theme] .page-content .recommendations-view .proposal-card {
   display: grid;
   gap: var(--space-3);
-  padding: var(--card-pad-compact);
+  padding: var(--sub-card-pad);
   border: 0;
   border-radius: var(--radius-md);
   background: var(--surface-soft);

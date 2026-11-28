@@ -12,7 +12,7 @@
 }
 .versions-table th,
 .versions-table td {
-  padding: 8px 10px;
+  padding: var(--cell-pad-y) var(--cell-pad-x);
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: middle;

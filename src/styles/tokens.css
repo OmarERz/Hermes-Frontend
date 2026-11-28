@@ -3,9 +3,11 @@
  * G12 focus). Spacing, type, radii, shadows, focus and stacking come from here; colours stay in styles.css by theme
  * (dark on :root, light on .app-shell[data-theme='light']).
  *
- * Mapping old px values: the nearest step; a tie goes up for the padding of a container (more air) and down for the
- * gap between an icon and its text. Font sizes drop the prototype's +2.67 px (--font-size-increase) and snap to the
- * type scale; weights 650, 750 and 800 become 700 (Inter is loaded at 400–700, so that is how they render).
+ * Mapping old px values (F19.10 moved every sheet onto these tokens): spacing to the nearest step, a tie going up
+ * (more air) except for a gap of 6 px or less (an icon and its text), which goes down; above 64 px, the nearest
+ * multiple of 8. Font sizes: calc(N px + --font-size-increase) to the type step nearest to N + 2.67 px, a plain px to
+ * the nearest step (a tie goes up). Radii to the nearest --radius-* (a tie goes up), 100 px or more to
+ * --radius-full. Weights 650, 750 and 800 become 700 (Inter is loaded at 400–700, so that is how they render).
  *
  * Breakpoints (media queries cannot read custom properties): 560 px (phone), 850 px (tablet), 1100 and 1440 px.
  */
@@ -30,8 +32,32 @@
   --page-pad-bottom: var(--space-8);
   --section-gap: var(--space-6); /* banner → tabs → content, and between major blocks */
   --grid-gap: var(--space-4); /* between the cards of a grid */
-  --card-pad: var(--space-5); /* cards and panels */
-  --card-pad-compact: var(--space-4); /* indicators and sub-cards */
+
+  /*
+   * Padding by piece type (F19.10, D-108: «que todos los paddings sean uniformes»). Every piece of a type uses its
+   * token on every screen; the design capture (e2e/support/layout-checks.ts) records the computed padding of each
+   * typed piece and counts the types with more than one value per width band (phones, 560 px or less, and wider).
+   */
+  --panel-pad: var(--space-5); /* a panel: a box about as wide as the page (16 px on phones) */
+  --card-pad: var(--space-5); /* a card: a box in a grid or a column (16 px on phones) */
+  --sub-card-pad: var(
+    --space-4
+  ); /* a box inside a panel or card; a table row shown as a card on phones */
+  --indicator-pad: var(--space-4); /* the indicator card (app-kpi-card) */
+  --indicator-pad-nested: var(
+    --space-3
+  ); /* an indicator inside a panel (.kpi-nested), on purpose */
+  --notice-pad-y: var(--space-3); /* a page notice: one status line in a box */
+  --notice-pad-x: var(--card-pad);
+  --dialog-pad: var(
+    --space-5
+  ); /* the inline inset of a dialog's header, body and actions (16 px on phones) */
+  --banner-pad: 0; /* the page banner has no box of its own */
+  --form-group-pad: 0; /* a fieldset or group of fields or options: no box of its own */
+  --form-group-gap: var(--space-2); /* between the fields or options of a group */
+  --field-gap: var(--space-1); /* label → control inside a field */
+  /* Table cells: --cell-pad-y × --cell-pad-x (below). Sections of a page: --section-gap (above). */
+
   --stack-xs: var(--space-1); /* label → control; title → subtitle */
   --stack-sm: var(--space-2); /* control → help or error */
   --stack-md: var(--space-4); /* field → field */
@@ -131,5 +157,8 @@
     --page-pad-x: var(--space-4);
     --page-pad-top: var(--space-4);
     --control-h: 44px;
+    --panel-pad: var(--space-4);
+    --card-pad: var(--space-4);
+    --dialog-pad: var(--space-4);
   }
 }

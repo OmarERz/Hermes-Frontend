@@ -82,7 +82,7 @@ export function kpiState(status: LoadStatus): KpiState {
       row-gap: var(--stack-xs);
       min-width: 0;
       box-sizing: border-box;
-      padding: var(--card-pad-compact);
+      padding: var(--indicator-pad);
       border: 1px solid transparent;
       border-radius: var(--radius-lg);
       background: var(--surface);
@@ -93,7 +93,7 @@ export function kpiState(status: LoadStatus): KpiState {
       grid-template-columns: auto minmax(0, 1fr);
     }
     :host(.kpi-nested) {
-      padding: var(--space-3);
+      padding: var(--indicator-pad-nested);
       border-radius: var(--radius-md);
       background: var(--surface-soft);
       box-shadow: none;

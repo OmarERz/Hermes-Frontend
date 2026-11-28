@@ -151,13 +151,14 @@ export type ViewState = 'loading' | 'empty' | 'error';
     }
     :host(.page-notice) {
       margin: 0 0 var(--section-gap);
+      padding: var(--notice-pad-y) var(--notice-pad-x);
       border: 1px solid color-mix(in srgb, var(--danger-text) 45%, var(--border));
       border-radius: var(--radius-lg);
       background: var(--danger-bg);
     }
     :host(.page-notice) .state-error {
       justify-content: flex-start;
-      padding: var(--space-3) var(--card-pad);
+      padding: 0;
       text-align: left;
     }
     @keyframes skeleton-shimmer {

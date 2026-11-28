@@ -175,7 +175,7 @@
     cursor: pointer;
   }
   .panel {
-    padding: 19px;
+    padding: var(--panel-pad);
   }
   .inventory > header {
     display: flex;
@@ -239,7 +239,7 @@
     font-size: calc((11px) + var(--font-size-increase));
   }
   th {
-    padding: 9px 7px;
+    padding: var(--cell-pad-y) var(--cell-pad-x);
     background: #f4eef9;
     color: #351044;
     font-size: calc((10px) + var(--font-size-increase));
@@ -252,7 +252,7 @@
     border-radius: 0 7px 7px 0;
   }
   td {
-    padding: 10px 7px;
+    padding: var(--cell-pad-y) var(--cell-pad-x);
     border-bottom: 1px solid #eeecf3;
     vertical-align: middle;
     line-height: 1.35;

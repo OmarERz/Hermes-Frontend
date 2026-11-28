@@ -16,7 +16,7 @@
   .source-badge,
   .connection-notice {
     margin: 0 0 13px;
-    padding: 10px 13px;
+    padding: var(--notice-pad-y) var(--notice-pad-x);
     border: 1px solid #e9a8d2;
     border-radius: 10px;
     background: #fff0f8;
@@ -31,7 +31,7 @@
   }
   .history-panel {
     margin-bottom: 16px;
-    padding: 20px;
+    padding: var(--panel-pad);
     border: 1px solid var(--line);
     border-radius: 13px;
     background: var(--surface, #fff);
@@ -101,13 +101,13 @@
     font-size: calc((11px) + var(--font-size-increase));
   }
   th {
-    padding: 9px 8px;
+    padding: var(--cell-pad-y) var(--cell-pad-x);
     background: #f4eef9;
     color: #351044;
     white-space: nowrap;
   }
   td {
-    padding: 9px 8px;
+    padding: var(--cell-pad-y) var(--cell-pad-x);
     border-bottom: 1px solid #eeeaf2;
     color: #51465d;
     vertical-align: top;

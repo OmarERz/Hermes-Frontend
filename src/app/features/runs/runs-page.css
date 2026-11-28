@@ -18,7 +18,7 @@
 }
 .runs-notice {
   margin: 12px 0 0;
-  padding: 9px 13px;
+  padding: var(--notice-pad-y) var(--notice-pad-x);
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface-soft);

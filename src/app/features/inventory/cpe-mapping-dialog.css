@@ -15,7 +15,7 @@
 .mapping-body {
   display: grid;
   gap: 12px;
-  padding: 20px;
+  padding: var(--dialog-pad);
 }
 h2 {
   margin: 0;

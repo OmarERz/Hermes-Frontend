@@ -12,7 +12,7 @@
 }
 .notice {
   margin: 0 0 14px;
-  padding: 10px 13px;
+  padding: var(--notice-pad-y) var(--notice-pad-x);
   border-radius: 10px;
   background: var(--success-bg, #defbe8);
   color: var(--success-text, #07823e);

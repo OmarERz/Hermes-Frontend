@@ -136,7 +136,7 @@ table {
   font-size: calc(12px + var(--font-size-increase));
 }
 th {
-  padding: 9px 8px;
+  padding: var(--cell-pad-y) var(--cell-pad-x);
   background: var(--surface-soft);
   color: var(--text-primary);
   font-size: calc(11px + var(--font-size-increase));
@@ -149,7 +149,7 @@ th:last-child {
   border-radius: 0 7px 7px 0;
 }
 td {
-  padding: 10px 8px;
+  padding: var(--cell-pad-y) var(--cell-pad-x);
   border-bottom: 1px solid var(--border);
   color: var(--text-secondary);
   vertical-align: middle;

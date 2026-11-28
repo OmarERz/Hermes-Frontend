@@ -16,7 +16,7 @@ import { ConfigParameter, LOCKED_PROTECTIONS } from './config-model';
   imports: [LucideLock, LucideShieldCheck, RouterLink],
   template: `
     @if (summary()) {
-      <p class="locked-summary">
+      <p class="locked-summary notice">
         <svg lucideShieldCheck aria-hidden="true"></svg>
         <span
           >Tu rol: <strong>{{ roleLabel() }}</strong
@@ -74,7 +74,7 @@ import { ConfigParameter, LOCKED_PROTECTIONS } from './config-model';
       align-items: flex-start;
       gap: var(--space-2);
       margin: 0;
-      padding: var(--space-3) var(--card-pad);
+      padding: var(--notice-pad-y) var(--notice-pad-x);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       background: var(--surface);

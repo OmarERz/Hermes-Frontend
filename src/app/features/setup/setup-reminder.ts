@@ -36,10 +36,10 @@ import { SetupService } from './setup.service';
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 10px 14px;
-      padding: 12px 16px;
+      gap: var(--space-3) var(--space-4);
+      padding: var(--card-pad);
       border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-      border-radius: 14px;
+      border-radius: var(--radius-lg);
       background: var(--accent-wash);
       color: var(--text-primary);
     }

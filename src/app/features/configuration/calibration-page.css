@@ -85,7 +85,7 @@
 }
 .changes-table th,
 .changes-table td {
-  padding: 6px 8px;
+  padding: var(--cell-pad-y) var(--cell-pad-x);
   border-bottom: 1px solid var(--border);
   text-align: left;
 }

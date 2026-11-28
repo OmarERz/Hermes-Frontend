@@ -393,7 +393,7 @@
   }
   .performance {
     margin-top: 0;
-    padding: 20px;
+    padding: var(--panel-pad);
   }
   .performance-heading {
     display: flex;
@@ -621,7 +621,7 @@
     padding: 7px 11px;
   }
   .panel {
-    padding: 20px;
+    padding: var(--panel-pad);
   }
   .panel-title,
   .panel h2,
@@ -644,7 +644,7 @@
     font-size: calc((25px) + var(--font-size-increase));
   }
   .chart-card {
-    padding: 19px;
+    padding: var(--sub-card-pad);
   }
   .chart-card h3 {
     font-size: calc((16px) + var(--font-size-increase));

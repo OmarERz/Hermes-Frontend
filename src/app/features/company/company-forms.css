@@ -121,14 +121,16 @@ select:focus-visible {
   border-color: var(--danger-text) !important;
 }
 fieldset {
+  display: grid;
+  gap: var(--form-group-gap);
   min-width: 0;
   margin: 0;
-  padding: 10px 12px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  padding: var(--form-group-pad);
+  border: 0;
 }
 legend {
-  padding: 0 5px;
+  margin-bottom: var(--form-group-gap);
+  padding: 0;
   color: var(--text-primary);
   font-size: calc(12px + var(--font-size-increase));
   font-weight: 700;

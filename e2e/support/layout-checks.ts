@@ -11,8 +11,21 @@ import type { Page } from '@playwright/test';
  *   edge stops inside the band of the card stacked next to it.
  * - `siblings`: cards in the same row of a flex or grid container with different top edges or heights.
  * - `scale`: a computed padding or gap that is not a step of the spacing scale (src/styles/tokens.css).
- * Besides the findings, every piece with a type (panel, card, sub-card, indicator, table cell, dialog, form group,
- * banner) records its computed padding, so the report can tell the paddings each type uses across the screens.
+ * Besides the findings, every piece with a type records its computed padding, so the report can tell the paddings
+ * each type uses across the screens (F19.10: one per type and width band, the tokens of src/styles/tokens.css):
+ * - panel, card and sub-card: a painted box (fill, radius of 12 px or more, at least 160 × 64 px) in the page; a panel
+ *   is about as wide as the content (70 % or more), a card narrower, a sub-card inside another typed box. A table row
+ *   shown as a card on phones (.cards-mobile) is a sub-card. Form controls are never boxes;
+ * - indicator and indicator-nested: the indicator card (app-kpi-card), plain or .kpi-nested;
+ * - table-cell: a cell laid out as a table cell (the header and the first body row);
+ * - dialog: an open dialog, as the inline inset of its content (its own padding, or its first padded child's);
+ * - form-group (a fieldset or .form-group) and field (.field, .form-field): their padding plus their gap;
+ * - notice: a status or alert line in a box of its own ([role=status], [role=alert], .page-notice, .notice) with no
+ *   heading (a box with a heading, like «Sin permiso», is a panel or card). An inline-level box (a chip or badge,
+ *   even when it wraps on a phone) is never a panel or card;
+ * - banner: the page banner (header.page-heading).
+ * A box with no padding whose children all carry the same padding (columns or rows divided by edge-to-edge rules)
+ * records that padding: it is where its content starts.
  *
  * What a check skips: elements that are not rendered or are invisible, SVG and chart internals, fixed elements (the
  * phone bar, dialogs, tooltips: they belong to the viewport, not to the page) and, for the edge and sibling checks,
@@ -33,7 +46,17 @@ export interface LayoutFinding {
 }
 
 export type PieceType =
-  'panel' | 'card' | 'sub-card' | 'indicator' | 'table-cell' | 'dialog' | 'form-group' | 'banner';
+  | 'panel'
+  | 'card'
+  | 'sub-card'
+  | 'indicator'
+  | 'indicator-nested'
+  | 'table-cell'
+  | 'dialog'
+  | 'form-group'
+  | 'field'
+  | 'notice'
+  | 'banner';
 
 export interface PieceRecord {
   type: PieceType;
@@ -565,9 +588,12 @@ function inPage(options: InPageOptions): LayoutResult {
         SIDES.map((side) =>
           Math.round(px(style(element).getPropertyValue(`padding-${side.toLowerCase()}`))),
         ).join(' ');
+      const CONTROL = /^(INPUT|SELECT|TEXTAREA|BUTTON)$/;
       const cardLike = (element: Element): boolean => {
         const own = box(element);
         return (
+          !CONTROL.test(element.tagName) &&
+          blockLevel(element) &&
           paints(element) &&
           fill(element) &&
           px(style(element).borderTopLeftRadius) >= 12 &&
@@ -575,30 +601,60 @@ function inPage(options: InPageOptions): LayoutResult {
           own.height >= 64
         );
       };
+      /** Its padding or, with none, the one padding all its shown children carry (edge-to-edge columns). */
+      const inset = (element: Element): string => {
+        const own = padding(element);
+        if (own !== '0 0 0 0') return own;
+        const kids = [...element.children].filter((kid) => !isIgnored(kid) && visible(kid));
+        const pads = new Set(kids.map(padding));
+        return kids.length && pads.size === 1 && !pads.has('0 0 0 0') ? [...pads][0] : own;
+      };
       const typed = new Set<Element>();
-      const record = (type: PieceType, element: Element, extra = ''): void => {
+      const record = (
+        type: PieceType,
+        element: Element,
+        extra = '',
+        pad = padding(element),
+      ): void => {
         typed.add(element);
-        pieces.push({ type, element: signature(element), padding: `${padding(element)}${extra}` });
+        pieces.push({ type, element: signature(element), padding: `${pad}${extra}` });
+      };
+      const gapOf = (element: Element): string => {
+        const gap = style(element).rowGap;
+        return gap && gap !== 'normal' ? ` · gap ${Math.round(px(gap))}` : '';
       };
       for (const element of all) {
         const tag = element.tagName;
-        if (element.matches('[role="dialog"], dialog, [aria-modal="true"]')) {
-          record('dialog', element);
-        } else if (element.matches('header.page-heading')) {
+        if (element.matches('header.page-heading')) {
           record('banner', element);
-        } else if (element.matches('[role="alert"], [role="status"]') && cardLike(element)) {
-          record('banner', element);
+        } else if (
+          element.matches('[role="status"], [role="alert"], .page-notice, .notice') &&
+          blockLevel(element) &&
+          paints(element) &&
+          fill(element) &&
+          !element.querySelector('h1, h2, h3, h4')
+        ) {
+          record('notice', element);
+        } else if (
+          tag === 'TR' &&
+          element.closest('table') &&
+          style(element).display !== 'table-row'
+        ) {
+          // A row shown as a card (phones): a sub-card; its cells are fields of that card, not table cells.
+          if (cardLike(element)) record('sub-card', element);
         } else if ((tag === 'TD' || tag === 'TH') && element.closest('table')) {
-          if (!element.closest('tbody tr:not(:first-child)')) record('table-cell', element);
-        } else if (element.matches('fieldset, .field, .form-group, .form-field')) {
-          const gap = style(element).rowGap;
-          record(
-            'form-group',
-            element,
-            gap && gap !== 'normal' ? ` · gap ${Math.round(px(gap))}` : '',
-          );
+          if (
+            style(element).display === 'table-cell' &&
+            !element.closest('tbody tr:not(:first-child)')
+          )
+            record('table-cell', element);
+        } else if (element.matches('fieldset, .form-group')) {
+          record('form-group', element, gapOf(element));
+        } else if (element.matches('.field, .form-field')) {
+          record('field', element, gapOf(element));
         } else if (element.matches('app-kpi-card > *, .kpi-card')) {
-          if (cardLike(element)) record('indicator', element);
+          if (cardLike(element))
+            record(element.matches('.kpi-nested') ? 'indicator-nested' : 'indicator', element);
         } else if (
           cardLike(element) &&
           element.closest('.page-content') &&
@@ -612,8 +668,25 @@ function inPage(options: InPageOptions): LayoutResult {
             }
           }
           const own = box(element);
-          record(nested ? 'sub-card' : own.width >= 0.7 * contentWidth ? 'panel' : 'card', element);
+          const type = nested ? 'sub-card' : own.width >= 0.7 * contentWidth ? 'panel' : 'card';
+          record(type, element, '', inset(element));
         }
+      }
+      // Dialogs live in the top layer (fixed), outside the page's layout: typed on their own, by the inline inset of
+      // their content (a dialog whose header, body and actions carry the padding has none of its own).
+      for (const dialog of document.querySelectorAll(
+        'dialog[open], [role="dialog"], [aria-modal="true"]',
+      )) {
+        if (!visible(dialog) || style(dialog).display === 'none') continue;
+        let inset = Math.round(px(style(dialog).paddingLeft));
+        if (!inset) {
+          const padded = [...dialog.querySelectorAll('*')].find(
+            (part) =>
+              visible(part) && px(style(part).paddingLeft) > 0 && !CONTROL.test(part.tagName),
+          );
+          inset = padded ? Math.round(px(style(padded).paddingLeft)) : 0;
+        }
+        record('dialog', dialog, '', `inline ${inset}`);
       }
     }
 
