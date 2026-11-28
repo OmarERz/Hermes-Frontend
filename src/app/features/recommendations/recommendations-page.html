@@ -23,87 +23,91 @@
 
   <div class="recommendation-workspace">
     <aside class="ticket-list" aria-label="Vulnerabilidades con recomendaciones">
-      <header>
-        <h2>Casos</h2>
-        <span>{{ groups().length }}</span>
-      </header>
-      <label class="ticket-filter"
-        >Nivel
-        <select [ngModel]="level()" (ngModelChange)="level.set($event)">
-          <option value="">Todos los niveles</option>
-          @for (item of levels; track item) {
-            <option [value]="item">{{ levelLabels[item] }}</option>
+      <div class="ticket-list-body">
+        <header>
+          <h2>Casos</h2>
+          <span>{{ groups().length }}</span>
+        </header>
+        <label class="ticket-filter"
+          >Nivel
+          <select [ngModel]="level()" (ngModelChange)="level.set($event)">
+            <option value="">Todos los niveles</option>
+            @for (item of levels; track item) {
+              <option [value]="item">{{ levelLabels[item] }}</option>
+            }
+          </select></label
+        >
+        <label class="feedback-filter"
+          ><input
+            type="checkbox"
+            [ngModel]="withoutFeedback()"
+            (ngModelChange)="withoutFeedback.set($event)"
+          />
+          Solo sin feedback</label
+        >
+        <p class="filter-note">
+          Los filtros se aplican a las {{ pager.items().length }} evaluaciones de esta página.
+          @if (hasFilters()) {
+            <button type="button" class="link-button" (click)="clearFilters()">
+              Quitar filtros
+            </button>
           }
-        </select></label
-      >
-      <label class="feedback-filter"
-        ><input
-          type="checkbox"
-          [ngModel]="withoutFeedback()"
-          (ngModelChange)="withoutFeedback.set($event)"
-        />
-        Solo sin feedback</label
-      >
-      <p class="filter-note">
-        Los filtros se aplican a las {{ pager.items().length }} evaluaciones de esta página.
-        @if (hasFilters()) {
-          <button type="button" class="link-button" (click)="clearFilters()">Quitar filtros</button>
-        }
-      </p>
+        </p>
 
-      @if (listState(); as state) {
-        <app-async-state
-          class="list-state"
-          [state]="state"
-          [error]="pager.state.error()"
-          loadingText="Cargando recomendaciones…"
-          [emptyText]="emptyText()"
-          (retry)="pager.reload()"
-        />
-      } @else {
-        @for (group of groups(); track group.key) {
-          @let latest = latestOf(group);
+        @if (listState(); as state) {
+          <app-async-state
+            class="list-state"
+            [state]="state"
+            [error]="pager.state.error()"
+            loadingText="Cargando recomendaciones…"
+            [emptyText]="emptyText()"
+            (retry)="pager.reload()"
+          />
+        } @else {
+          @for (group of groups(); track group.key) {
+            @let latest = latestOf(group);
+            <button
+              type="button"
+              class="ticket-option"
+              [class.active]="isActive(group)"
+              [attr.aria-pressed]="isActive(group)"
+              (click)="selectGroup(group)"
+            >
+              <span class="case-copy"
+                ><strong class="case-title">{{ group.title }}</strong>
+                @if (group.withoutFeedback) {
+                  <app-chip class="conflict-chip" tone="warning">Sin feedback</app-chip>
+                }
+                <small>{{ group.subtitle }}</small
+                ><small
+                  >{{ levelLabels[latest.level] }} · final {{ latest.final }} ·
+                  {{ evaluationCount(group.items.length) }}</small
+                ></span
+              >
+            </button>
+          }
+        }
+
+        <nav class="list-pager" aria-label="Páginas de recomendaciones">
           <button
             type="button"
-            class="ticket-option"
-            [class.active]="isActive(group)"
-            [attr.aria-pressed]="isActive(group)"
-            (click)="selectGroup(group)"
+            aria-label="Página anterior"
+            [disabled]="!pager.hasPrevious() || pager.state.loading()"
+            (click)="pager.previous()"
           >
-            <span class="case-copy"
-              ><strong class="case-title">{{ group.title }}</strong>
-              @if (group.withoutFeedback) {
-                <app-chip class="conflict-chip" tone="warning">Sin feedback</app-chip>
-              }
-              <small>{{ group.subtitle }}</small
-              ><small
-                >{{ levelLabels[latest.level] }} · final {{ latest.final }} ·
-                {{ evaluationCount(group.items.length) }}</small
-              ></span
-            >
+            <svg lucideArrowLeft aria-hidden="true"></svg>
           </button>
-        }
-      }
-
-      <nav class="list-pager" aria-label="Páginas de recomendaciones">
-        <button
-          type="button"
-          aria-label="Página anterior"
-          [disabled]="!pager.hasPrevious() || pager.state.loading()"
-          (click)="pager.previous()"
-        >
-          <svg lucideArrowLeft aria-hidden="true"></svg>
-        </button>
-        <span>Página {{ pager.pageIndex() + 1 }}</span>
-        <button
-          type="button"
-          aria-label="Página siguiente"
-          [disabled]="!pager.hasNext()"
-          (click)="pager.next()"
-        >
-          <svg lucideArrowRight aria-hidden="true"></svg>
-        </button>
-      </nav>
+          <span>Página {{ pager.pageIndex() + 1 }}</span>
+          <button
+            type="button"
+            aria-label="Página siguiente"
+            [disabled]="!pager.hasNext()"
+            (click)="pager.next()"
+          >
+            <svg lucideArrowRight aria-hidden="true"></svg>
+          </button>
+        </nav>
+      </div>
     </aside>
 
     <section class="recommendation-detail" aria-live="polite">

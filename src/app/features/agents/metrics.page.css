@@ -3,11 +3,12 @@
  * wide screens (MET-1: a section with one or two indicators no longer leaves two thirds of its row empty); the cost
  * chart takes the whole width below them.
  */
+/* D-108 (F19.8): the sections of a row are as tall as each other. */
 .metric-sections {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
   gap: var(--grid-gap);
-  align-items: start;
+  align-items: stretch;
 }
 .cost-section {
   margin-top: var(--grid-gap);

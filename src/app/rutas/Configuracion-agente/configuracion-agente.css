@@ -560,30 +560,33 @@
 }
 
 @scope (.agent-config-view) {
+  /*
+   * D-108 (F19.8): the card has no padding of its own; each column has the card padding, so the rule between them runs
+   * from the card's top edge to its bottom edge and the content lines up with the cards above and below.
+   */
   .config-panel {
     display: grid;
     grid-template-columns: minmax(0, 1.22fr) minmax(320px, 1fr);
-    gap: 24px;
-    padding: 24px 28px;
+    gap: 0;
+    padding: 0;
     border: 1px solid var(--accent-violet);
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
     background: var(--surface);
     box-shadow: var(--shadow-card);
   }
   .config-left-column,
   .config-right-column {
     min-width: 0;
+    padding: var(--card-pad);
   }
   .config-left-column {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: var(--space-3);
   }
   .config-right-column {
     display: grid;
     align-content: start;
-    min-width: 0;
-    padding-left: 24px;
     border-left: 1px solid var(--border);
   }
   .config-panel .config-card {
@@ -600,23 +603,6 @@
   }
   .config-panel .profile-card > header h2 {
     font-size: calc((22px) + var(--font-size-increase));
-  }
-  .config-panel .profile-section-heading {
-    display: grid;
-    gap: 5px;
-    margin: 3px 0 10px;
-  }
-  .config-panel .profile-section-heading h3 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-primary);
-    font-size: calc((20px) + var(--font-size-increase));
-  }
-  .config-panel .profile-section-heading p {
-    color: var(--text-secondary);
-    font-size: calc((15px) + var(--font-size-increase));
-    line-height: 1.45;
   }
   .config-panel .profile-options {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -675,11 +661,6 @@
 @media (max-width: 1150px) {
   .agent-config-view .config-panel {
     grid-template-columns: minmax(0, 1.2fr) minmax(285px, 1fr);
-    gap: 20px;
-    padding: 22px;
-  }
-  .agent-config-view .config-right-column {
-    padding-left: 18px;
   }
   .agent-config-view .profile-options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -691,10 +672,9 @@
 @media (max-width: 760px) {
   .agent-config-view .config-panel {
     grid-template-columns: 1fr;
-    gap: 16px;
   }
+  /* One column: the rule is horizontal and runs from edge to edge. */
   .agent-config-view .config-right-column {
-    padding: 12px 0 0;
     border-top: 1px solid var(--border);
     border-left: 0;
   }
@@ -705,10 +685,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@media (max-width: 420px) {
-  .agent-config-view .config-panel {
-    padding: 16px;
+@media (max-width: 560px) {
+  .agent-config-view :is(.config-left-column, .config-right-column) {
+    padding: var(--card-pad-compact);
   }
+}
+@media (max-width: 420px) {
   .agent-config-view .config-panel .profile-options {
     grid-template-columns: 1fr;
   }
