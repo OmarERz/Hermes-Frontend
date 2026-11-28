@@ -28,6 +28,11 @@
   font-size: var(--text-2xs);
   overflow-wrap: break-word;
 }
+/* F15.9: the CVE.org names under a CPE wrap within the width of the CPE, so they never widen its column. */
+.data-table .cna-names {
+  max-width: min(26ch, 100%);
+  overflow-wrap: anywhere;
+}
 @media (max-width: 560px) {
   .data-table.cards-mobile .cpe {
     min-width: 0;

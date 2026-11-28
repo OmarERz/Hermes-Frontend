@@ -126,6 +126,20 @@ export function percent(part: number, total: number): number {
   return total > 0 ? Math.round((part / total) * 100) : 0;
 }
 
+/** The part of a CPE 2.3 name (F15.9: the mapping keeps it; the kernel is an operating system). */
+export type CpePart = 'a' | 'o' | 'h';
+export const CPE_PART_LABELS: Record<CpePart, string> = {
+  a: 'Aplicación',
+  o: 'Sistema operativo',
+  h: 'Hardware',
+};
+
+/** The readable part of a CPE («Aplicación», «Sistema operativo», «Hardware»), or null without a known part. */
+export function cpePartLabel(cpe: string | null | undefined): string | null {
+  const part = /^cpe:2\.3:([aoh]):/.exec(cpe ?? '')?.[1] as CpePart | undefined;
+  return part ? CPE_PART_LABELS[part] : null;
+}
+
 /** The CNA names of a mapping as one line, vendor first like the CPE: «Linux · Linux», «n/a · CPython». */
 export function cnaLabel(cna: { vendor: string; product: string }): string {
   return `${cna.vendor} · ${cna.product}`;

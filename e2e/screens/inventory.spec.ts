@@ -62,6 +62,10 @@ test.describe('inventory as reader', () => {
     await expect(openssl).toContainText('Activa');
     await expect(openssl).toContainText('Soporte OpenSSL');
     await expect(openssl).toContainText('cpe:2.3:a:openssl:openssl');
+    // F15.9: the part of the CPE as a readable label.
+    await expect(openssl.getByRole('cell').filter({ hasText: 'cpe:2.3:a:openssl' })).toContainText(
+      'Aplicación',
+    );
 
     const findings = page.getByRole('region', {
       name: 'Vulnerabilidades del activo; desplazamiento horizontal',
@@ -91,6 +95,10 @@ test.describe('inventory as reader', () => {
     await expect(openssl).toContainText('Inactiva: 1');
     await expect(openssl).toContainText('Soporte OpenSSL');
     await expect(openssl).toContainText('cpe:2.3:a:openssl:openssl');
+    // F15.9: the part of the CPE and the CVE.org names of the mapping (none in the demo data).
+    const opensslCpe = openssl.getByRole('cell').filter({ hasText: 'cpe:2.3:a:openssl' });
+    await expect(opensslCpe).toContainText('Aplicación');
+    await expect(opensslCpe).toContainText('Sin nombres de CVE.org');
     await expect(table.getByRole('row').filter({ hasText: 'nginx' })).toContainText('Baja');
     await expect(page.getByRole('article', { name: 'Instalaciones por estado' })).toContainText(
       /Inactiva\s*1/,
@@ -186,6 +194,11 @@ test.describe('inventory as analyst', () => {
     await expect(
       page.getByRole('status').filter({ hasText: 'y los nombres de CVE.org Redis · Redis' }),
     ).toBeVisible();
+    const redis = page
+      .getByRole('region', { name: 'Catálogo de software; desplazamiento horizontal' })
+      .getByRole('row')
+      .filter({ hasText: 'Redis' });
+    await expect(redis).toContainText('CVE.org: Redis · Redis');
 
     // The mapping keeps them: the dialog starts from them; emptying both removes them.
     dialog = await open();
@@ -198,6 +211,7 @@ test.describe('inventory as analyst', () => {
     const notice = page.getByRole('status').filter({ hasText: 'CPE guardado para Redis' });
     await expect(notice).toBeVisible();
     await expect(notice).not.toContainText('CVE.org');
+    await expect(redis).toContainText('Sin nombres de CVE.org');
 
     dialog = await open();
     await expect(vendorOf(dialog)).toHaveValue('');

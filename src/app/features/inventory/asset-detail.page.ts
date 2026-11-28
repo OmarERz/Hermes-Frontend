@@ -27,6 +27,7 @@ import {
 } from '../../shared/labels';
 import {
   CATEGORY_LABELS,
+  cpePartLabel,
   cpeParts,
   CRITICALITY_LABELS,
   exposureLabel,
@@ -165,6 +166,7 @@ export class AssetDetailPage {
       statusLabel: INSTALL_STATUS_LABELS[item.status ?? 'unknown'],
       validity: item.licence ? licenceValidity(item.licence) : null,
       cpeParts: cpeParts(item.cpe),
+      cpePart: cpePartLabel(item.cpe),
     })),
   );
   readonly installationsLabel = computed(() =>

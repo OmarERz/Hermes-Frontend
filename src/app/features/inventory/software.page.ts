@@ -32,6 +32,8 @@ import { CpeMappingDialog, MappingTarget, mappingNotice } from './cpe-mapping-di
 import {
   CATEGORIES,
   CATEGORY_LABELS,
+  cnaLabel,
+  cpePartLabel,
   cpeParts,
   INSTALL_STATUS_LABELS,
   INSTALL_STATUS_TONES,
@@ -68,8 +70,8 @@ function yesNo(value: YesNoFilter): boolean | null {
 
 /**
  * Software (ST-1, ST-4, ST-6, D-088): the catalogue of the software installed on live CIs
- * (`GET /api/inventory/software`), with its iTop categories, versions, installations by status, licences, CPE and
- * open vulnerabilities; filters (category included) and cursor pagination. The cards come from the inventory
+ * (`GET /api/inventory/software`), with its iTop categories, versions, installations by status, licences, CPE (with
+ * its part and the CVE.org names of its mapping, F15.9) and open vulnerabilities; filters (category included) and cursor pagination. The cards come from the inventory
  * summary and the panels add up every product of the catalogue. Analysts and admins map a product to a CPE
  * (`ACTION_ROLES.mapCpe`). Keeps the prototype's «Stack tecnológico» design (`stack-view`); the software itself is
  * registered in iTop.
@@ -169,6 +171,8 @@ export class SoftwarePage {
       assets: plural(item.ci_count, 'activo', 'activos'),
       openLabel: plural(item.open_vulnerabilities, 'abierta', 'abiertas'),
       cpeParts: cpeParts(item.cpe),
+      cpePart: cpePartLabel(item.cpe),
+      cnaNames: item.cna ? cnaLabel(item.cna) : null,
     })),
   );
   readonly tableState = computed(() => viewState(this.pager.state, this.rows().length === 0));
@@ -318,6 +322,9 @@ export class SoftwarePage {
       (item.licences ?? []).map((licence) => licence.name).join('; '),
       item.licensed_instances,
       item.cpe ?? '',
+      cpePartLabel(item.cpe) ?? '',
+      item.cna?.vendor ?? '',
+      item.cna?.product ?? '',
       item.open_vulnerabilities,
       item.worst_level ? LEVEL_LABELS[item.worst_level] : '',
     ]);
@@ -333,6 +340,9 @@ export class SoftwarePage {
       'Licencias',
       'Instalaciones con licencia',
       'CPE',
+      'Parte del CPE',
+      'Fabricante en CVE.org (CNA)',
+      'Producto en CVE.org (CNA)',
       'Vulnerabilidades abiertas',
       'Peor nivel',
     ];
