@@ -55,3 +55,17 @@
     columns: 1;
   }
 }
+
+/* N-19: on phones each «Niveles de …» group folds behind its button; wider, the button is hidden. */
+.fold-toggle {
+  display: none;
+}
+@media (max-width: 560px) {
+  .fold-toggle {
+    display: inline-flex;
+    margin-top: var(--space-2);
+  }
+  .field-list.is-folded {
+    display: none;
+  }
+}

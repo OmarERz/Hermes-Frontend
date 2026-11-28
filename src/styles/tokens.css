@@ -38,22 +38,22 @@
    * token on every screen; the design capture (e2e/support/layout-checks.ts) records the computed padding of each
    * typed piece and counts the types with more than one value per width band (phones, 560 px or less, and wider).
    */
-  --panel-pad: var(--space-5); /* a panel: a box about as wide as the page (16 px on phones) */
-  --card-pad: var(--space-5); /* a card: a box in a grid or a column (16 px on phones) */
-  --sub-card-pad: var(
-    --space-4
-  ); /* a box inside a panel or card; a table row shown as a card on phones */
-  --indicator-pad: var(--space-4); /* the indicator card (app-kpi-card) */
-  --indicator-pad-nested: var(
-    --space-3
-  ); /* an indicator inside a panel (.kpi-nested), on purpose */
-  --notice-pad-y: var(--space-3); /* a page notice: one status line in a box */
+  /* A panel, a box about as wide as the page, and a card, a box in a grid or a column: 16 px on phones. */
+  --panel-pad: var(--space-5);
+  --card-pad: var(--space-5);
+  /* A box inside a panel or card, and a table row shown as a card on phones. */
+  --sub-card-pad: var(--space-4);
+  /* The indicator card (app-kpi-card) and, on purpose, its nested variant inside a panel (.kpi-nested). */
+  --indicator-pad: var(--space-4);
+  --indicator-pad-nested: var(--space-3);
+  /* A page notice: one status line in a box, its text in line with the cards around it. */
+  --notice-pad-y: var(--space-3);
   --notice-pad-x: var(--card-pad);
-  --dialog-pad: var(
-    --space-5
-  ); /* the inline inset of a dialog's header, body and actions (16 px on phones) */
-  --banner-pad: 0; /* the page banner has no box of its own */
-  --form-group-pad: 0; /* a fieldset or group of fields or options: no box of its own */
+  /* The inline inset of a dialog's header, body and actions (16 px on phones). */
+  --dialog-pad: var(--space-5);
+  /* No box of their own: the page banner, and a fieldset or group of fields or options. */
+  --banner-pad: 0;
+  --form-group-pad: 0;
   --form-group-gap: var(--space-2); /* between the fields or options of a group */
   --field-gap: var(--space-1); /* label → control inside a field */
   /* Table cells: --cell-pad-y × --cell-pad-x (below). Sections of a page: --section-gap (above). */

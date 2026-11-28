@@ -105,6 +105,23 @@ describe('FormulaPage', () => {
     expect(element.querySelector('.weights-total')?.textContent).toContain('1.00');
   });
 
+  it('folds each group of levels behind its button on phones (N-19)', async () => {
+    const { fixture, element } = await render('admin');
+    const toggle = element.querySelector('.fold-toggle') as HTMLButtonElement;
+    const list = element.querySelector(`#${toggle.getAttribute('aria-controls')}`) as HTMLElement;
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(list.classList).toContain('is-folded');
+    expect(toggle.textContent?.trim()).toMatch(/^Ver los \d+ niveles$/);
+    toggle.click();
+    await fixture.whenStable();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(list.classList).not.toContain('is-folded');
+    expect(toggle.textContent?.trim()).toBe('Ocultar los niveles');
+    toggle.click();
+    await fixture.whenStable();
+    expect(list.classList).toContain('is-folded');
+  });
+
   it('warns while the weights do not sum 1.0 and blocks the simulation', async () => {
     const { element, button, type } = await render('admin');
     await type('weights.S', '0.30');
