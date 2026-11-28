@@ -165,3 +165,17 @@
 .queue-chart .queue-stats span {
   padding: 0 var(--space-2);
 }
+
+/* N-19: the charts fold on phones; wider, the button is hidden and the charts always show. */
+.charts-toggle {
+  display: none;
+}
+@media (max-width: 560px) {
+  .charts-toggle {
+    display: inline-flex;
+    margin-top: var(--section-gap);
+  }
+  .charts-grid.is-folded {
+    display: none;
+  }
+}

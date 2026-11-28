@@ -1,6 +1,12 @@
-/* Usuarios y roles: the role control and the actions of each row, the header actions and the table width. */
-table.users-table {
-  min-width: 1120px;
+/*
+ * Usuarios y roles: the role control and the actions of each row and the header actions. The table is a .data-table
+ * (src/styles/tables.css): as wide as its columns, and cards on phones (USU-2).
+ */
+.user-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
 }
 .users-actions {
   display: flex;
@@ -16,9 +22,6 @@ table.users-table {
   margin: calc(-1 * var(--space-2)) 0 0;
   color: var(--danger-text);
   font-size: var(--text-xs);
-}
-.own-chip {
-  margin-left: var(--space-2);
 }
 .own-note {
   color: var(--text-muted);

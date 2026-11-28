@@ -152,6 +152,8 @@ export class AgentsDashboardPage {
     failed: LucideTriangleAlert,
   };
   readonly windows = WINDOWS;
+  /** N-19: on phones the five charts fold behind «Ver las gráficas» (the page was ≈ 8.5 screens long). */
+  readonly chartsOpen = signal(false);
   readonly windowLabels = WINDOW_LABELS;
   readonly agentOptions = AGENTS;
   readonly agentLabels = AGENT_LABELS;
@@ -337,6 +339,10 @@ export class AgentsDashboardPage {
   setWindow(window: TelemetryWindow): void {
     this.window.set(window);
     this.loadTelemetry();
+  }
+
+  toggleCharts(): void {
+    this.chartsOpen.update((open) => !open);
   }
 
   loadSummary(): void {

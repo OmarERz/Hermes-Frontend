@@ -272,8 +272,9 @@
     max-width: 520px;
     padding: var(--space-8);
   }
+  /* LOG-1: the brand panel sits right above the form, so the form's own brand would repeat it. */
   .form-brand {
-    margin-bottom: var(--space-6);
+    display: none;
   }
 }
 

@@ -57,7 +57,7 @@
       aria-label="Bitácora de tickets; desplazamiento horizontal"
       tabindex="0"
     >
-      <table>
+      <table class="data-table">
         <thead>
           <tr>
             <th scope="col">Fecha y hora</th>
@@ -72,7 +72,7 @@
         <tbody>
           @for (row of rows(); track row.id) {
             <tr>
-              <td>{{ row.at }}</td>
+              <td class="cell-date" [title]="row.at">{{ row.atShort }}</td>
               <td>
                 @if (row.url; as url) {
                   <a class="row-link" [href]="url" target="_blank" rel="noopener noreferrer"
@@ -90,9 +90,11 @@
               <td>{{ row.custodian }}</td>
               <td>{{ row.action }}</td>
               <td>
-                <span [class]="'status write-' + row.writeKey" [attr.title]="row.writeTitle">{{
-                  row.write
-                }}</span>
+                <span
+                  [class]="'cell-nowrap status write-' + row.writeKey"
+                  [attr.title]="row.writeTitle"
+                  >{{ row.write }}</span
+                >
               </td>
               <td>
                 @if (row.assessmentId) {

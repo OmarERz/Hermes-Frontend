@@ -77,7 +77,7 @@
                   <th scope="col">Descripción</th>
                   <th scope="col" class="col-from-md">Agente</th>
                   <th scope="col">Estado final</th>
-                  <th scope="col" class="col-from-md">Quién</th>
+                  <th scope="col" class="col-from-lg">Quién</th>
                   <th scope="col" class="col-from-lg">Motivo</th>
                   <th scope="col" class="col-from-lg">Duración</th>
                   <th scope="col"><span class="visually-hidden">Detalle</span></th>
@@ -87,17 +87,17 @@
                 @for (row of rows(); track row.id) {
                   <tr [class.is-selected]="isSelected(row.event)">
                     <td class="cell-date" [title]="row.at">{{ row.atShort }}</td>
-                    <td class="col-from-md">{{ row.type }}</td>
+                    <td class="col-from-md cell-nowrap">{{ row.type }}</td>
                     <td>
                       <span class="cell-text cell-text-sm cell-clamp-2" [title]="row.title">{{
                         row.title
                       }}</span>
                     </td>
-                    <td class="col-from-md">{{ row.agent }}</td>
+                    <td class="col-from-md cell-nowrap">{{ row.agent }}</td>
                     <td>
                       <span [class]="'status status-' + row.statusKey">{{ row.status }}</span>
                     </td>
-                    <td class="col-from-md">
+                    <td class="col-from-lg">
                       <span class="cell-truncate" [title]="row.actor">{{ row.actor }}</span>
                     </td>
                     <td class="col-from-lg">{{ row.trigger }}</td>

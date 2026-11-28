@@ -209,3 +209,28 @@
   font-size: var(--text-2xs);
   overflow-wrap: anywhere;
 }
+
+/*
+ * N-14: the filters fold behind «Filtros» on phones (four stacked filters took ≈ 350 px before the data). Wider, the
+ * toggle is hidden and the fields sit in the bar's grid as before (display: contents).
+ */
+.filters-toggle {
+  display: none;
+}
+.more-count {
+  color: var(--text-secondary);
+  font-weight: var(--weight-semibold);
+}
+.filter-fields {
+  display: contents;
+}
+@media (max-width: 560px) {
+  .filters-toggle {
+    display: inline-flex;
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+  .filter-fields:not(.is-open) {
+    display: none;
+  }
+}

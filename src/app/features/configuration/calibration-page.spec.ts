@@ -245,6 +245,9 @@ describe('CalibrationPage', () => {
     pending.next({ items: [], nextCursor: null });
     await fixture.whenStable();
     expect(element.textContent).toContain('Todavía no hay propuestas de calibración.');
+    // CAL-2: what makes a proposal and when the next one can come.
+    expect(element.textContent).toContain('Una vez por semana Hermes revisa el feedback');
+    expect(element.textContent).toContain('la siguiente revisión llega con la corrida semanal');
 
     api.proposals.mockReturnValue(
       throwError(() => new ApiError(500, 'internal_error', 'Ocurrió un error en el servidor.')),

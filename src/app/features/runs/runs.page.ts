@@ -24,6 +24,7 @@ import {
   LucidePlay,
   LucideRadar,
   LucideRefreshCw,
+  LucideSlidersHorizontal,
   LucideX,
 } from '@lucide/angular';
 import { finalize, Subscription } from 'rxjs';
@@ -94,6 +95,7 @@ type CountKey = 'runs_queued' | 'runs_running' | 'runs_succeeded' | 'runs_failed
     LucidePlay,
     LucideRadar,
     LucideRefreshCw,
+    LucideSlidersHorizontal,
     LucideX,
   ],
   templateUrl: './runs-page.html',
@@ -127,6 +129,11 @@ export class RunsPage {
   readonly dateTo = signal('');
   readonly hasFilters = computed(
     () => !!(this.kind() || this.status() || this.dateFrom() || this.dateTo()),
+  );
+  /** N-14: on phones the filters fold behind «Filtros»; the count says how many are on while folded. */
+  readonly filtersOpen = signal(false);
+  readonly activeFilters = computed(
+    () => [this.kind(), this.status(), this.dateFrom(), this.dateTo()].filter(Boolean).length,
   );
   private readonly filters = computed<RunFilters>(() => ({
     kind: this.kind() || null,
@@ -209,6 +216,10 @@ export class RunsPage {
   setDateTo(value: string): void {
     this.dateTo.set(value);
     this.pager.first();
+  }
+
+  toggleFilters(): void {
+    this.filtersOpen.update((open) => !open);
   }
 
   clearFilters(): void {

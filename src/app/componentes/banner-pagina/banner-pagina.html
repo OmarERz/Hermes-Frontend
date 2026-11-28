@@ -1,13 +1,13 @@
 <header class="page-heading">
   <svg [lucideIcon]="icono" class="heading-icon" aria-hidden="true"></svg>
   <div class="heading-copy">
-    @if (tituloResto === null) {
-      <h1>{{ titulo }}</h1>
-    } @else {
+    @if (tituloPartes; as partes) {
       <h1>
-        <span class="title-code">{{ codigo }}</span
-        >{{ tituloResto }}
+        <span class="title-code">{{ partes.code }}</span
+        >{{ partes.rest }}
       </h1>
+    } @else {
+      <h1>{{ titulo }}</h1>
     }
     <p #description [id]="descriptionId" [class.folded]="!expanded()">{{ descripcion }}</p>
     @if (clipped() || expanded()) {

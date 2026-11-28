@@ -172,6 +172,25 @@ describe('RunsPage', () => {
     );
   });
 
+  it('folds the filters behind «Filtros» on phones, with the count of the active ones (N-14)', async () => {
+    const { element, settle } = await render();
+    const toggle = element.querySelector('.filters-toggle') as HTMLButtonElement;
+    const fields = element.querySelector('#runs-filter-fields') as HTMLElement;
+    expect(toggle.getAttribute('aria-controls')).toBe('runs-filter-fields');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(fields.classList).not.toContain('is-open');
+    const kind = element.querySelector('.filter-bar select') as HTMLSelectElement;
+    kind.value = 'ingestion';
+    kind.dispatchEvent(new Event('change'));
+    await settle();
+    expect(text(toggle)).toBe('Filtros (1 activo)');
+    toggle.click();
+    await settle();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(fields.classList).toContain('is-open');
+    expect(text(toggle)).toBe('Ocultar filtros');
+  });
+
   it('pages forward with the cursor as received', async () => {
     const { element, runs, settle } = await render();
     (

@@ -113,7 +113,17 @@
         </app-kpi-card>
       </div>
 
-      <div class="charts-grid">
+      <button
+        type="button"
+        class="btn btn-secondary charts-toggle"
+        aria-controls="agent-charts"
+        [attr.aria-expanded]="chartsOpen()"
+        (click)="toggleCharts()"
+      >
+        <svg lucideChartColumn aria-hidden="true"></svg>
+        {{ chartsOpen() ? 'Ocultar las gráficas' : 'Ver las gráficas' }}
+      </button>
+      <div class="charts-grid" id="agent-charts" [class.is-folded]="!chartsOpen()">
         <article class="chart-card trend-chart">
           <h3>
             <svg lucideChartNoAxesCombined aria-hidden="true"></svg> Corridas por día (últimos

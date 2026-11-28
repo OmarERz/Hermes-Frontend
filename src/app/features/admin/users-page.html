@@ -57,7 +57,7 @@
         aria-label="Cuentas; desplazamiento horizontal"
         tabindex="0"
       >
-        <table class="users-table">
+        <table class="users-table data-table sticky-first cards-mobile">
           <thead>
             <tr>
               <th scope="col">Usuario</th>
@@ -73,27 +73,29 @@
           <tbody>
             @for (row of rows(); track row.uid) {
               <tr>
-                <td>
-                  <strong>{{ row.name }}</strong>
-                  @if (row.own) {
-                    <app-chip tone="accent" class="own-chip">Tú</app-chip>
-                  }
+                <td class="card-title">
+                  <span class="user-line"
+                    ><strong>{{ row.name }}</strong>
+                    @if (row.own) {
+                      <app-chip tone="accent" class="own-chip">Tú</app-chip>
+                    }
+                  </span>
                   @if (row.email) {
-                    <small>{{ row.email }}</small>
+                    <small class="user-email">{{ row.email }}</small>
                   }
                 </td>
-                <td>
+                <td data-label="Rol efectivo">
                   <app-chip [tone]="row.effectiveTone">{{ row.effectiveRole }}</app-chip>
                 </td>
-                <td>{{ row.storedRole }}</td>
-                <td>{{ row.claimRole }}</td>
-                <td>
+                <td data-label="Rol guardado">{{ row.storedRole }}</td>
+                <td data-label="Rol del claim">{{ row.claimRole }}</td>
+                <td data-label="Cuenta">
                   <app-chip [tone]="row.active ? 'success' : 'danger'">{{
                     row.active ? 'Activa' : 'Desactivada'
                   }}</app-chip>
                 </td>
-                <td>{{ row.lastLogin }}</td>
-                <td *appIfRole="manageRole">
+                <td class="cell-date" data-label="Último acceso">{{ row.lastLogin }}</td>
+                <td class="card-full" data-label="Cambiar rol" *appIfRole="manageRole">
                   @if (row.own) {
                     <span class="own-note">Tu propio rol no se puede cambiar.</span>
                   } @else {
@@ -113,7 +115,7 @@
                     </label>
                   }
                 </td>
-                <td *appIfRole="manageRole">
+                <td class="card-full" data-label="Acciones" *appIfRole="manageRole">
                   @if (row.own) {
                     <span class="own-note">Es tu cuenta.</span>
                   } @else {
