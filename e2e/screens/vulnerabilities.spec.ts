@@ -88,7 +88,8 @@ test.describe('vulnerabilities as reader', () => {
       // A backend before F18.9 leaves the source out: the row then shows none.
       const chip = row.locator('app-chip[title]');
       if (asset.match_source) {
-        await expect(chip).toHaveText(`${labels[asset.match_source]} (certeza ${asset.certainty})`);
+        await expect(chip).toHaveText(labels[asset.match_source]);
+        await expect(row).toContainText(`Certeza ${asset.certainty}`);
       } else {
         await expect(chip).toHaveCount(0);
       }
@@ -125,15 +126,19 @@ test.describe('vulnerabilities as reader', () => {
     const table = page.getByRole('region', {
       name: 'Activos afectados; desplazamiento horizontal',
     });
-    const chip = table.getByRole('row').nth(1).locator('app-chip[title]');
-    await expect(chip).toHaveText('CVE.org (certeza 0.9)');
+    const first = table.getByRole('row').nth(1);
+    const chip = first.locator('app-chip[title]');
+    await expect(chip).toHaveText('CVE.org');
+    // The certainty is visible next to the chip, and the legend says what each source means (keyboard and touch).
+    await expect(first.getByText('Certeza 0.9', { exact: true })).toBeVisible();
+    await expect(page.locator('.sources-hint')).toContainText(
+      'CVE.org: solo los rangos del fabricante (CNA) en CVE.org',
+    );
     await expect(chip).toHaveAttribute(
       'title',
       'Detectado por solo los rangos del fabricante (CNA) en CVE.org; certeza 0.9',
     );
     await expect(chip).toHaveAttribute('data-tone', 'warning');
-    // Only the short name is visible; the certainty is for screen readers and the title.
-    await expect(chip.locator('.visually-hidden')).toHaveCSS('position', 'absolute');
     await expect(page.locator('.facts > div').filter({ hasText: 'Fuentes' })).toContainText(
       'NVD, CVE.org',
     );
