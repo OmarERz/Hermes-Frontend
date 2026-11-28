@@ -154,7 +154,9 @@ td {
   color: var(--text-secondary);
   vertical-align: middle;
 }
-td:first-child {
+/* The name, the health and the last capture keep one line (with the 8 × 12 px cell they folded at 1280 px). */
+td:first-child,
+td.cell-nowrap {
   white-space: nowrap;
 }
 .numeric {

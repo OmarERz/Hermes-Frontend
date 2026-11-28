@@ -12,7 +12,7 @@
  * Usage: node scripts/check-tokens.mjs [--self-test] [files…]   (no files: all of src/)
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -21,8 +21,8 @@ const SKIP = new Set([join(ROOT, 'src/styles/tokens.css')]);
 const SPACING =
   /^(padding|margin)(-(top|right|bottom|left|inline|block|inline-start|inline-end|block-start|block-end))?$|^(row-|column-)?gap$/;
 const RADIUS = /^border(-(top|bottom|start|end)-(left|right|start|end))?-radius$/;
-/** A length with a unit other than %: px, em, rem, vw, vh… */
-const LENGTH = /(^|[^\w.-])(-?\d*\.?\d+)(px|em|rem|vw|vh|vmin|vmax|ch|ex|cqw|cqh|pt)\b/g;
+/** A number with a unit (px, em, rem, any viewport or container unit…): only % is not a length here. */
+const LENGTH = /(^|[^\w.-])(-?\d*\.?\d+)([a-z]+)\b/gi;
 
 function files(dir) {
   const found = [];
@@ -55,39 +55,63 @@ export function offending(property, value) {
   return bad;
 }
 
-/** Declarations of a stylesheet (or of a component's inline styles): [line index, property, value]. */
-function declarations(lines, isTs) {
+/**
+ * The CSS a file holds, as [offset, text] chunks: a stylesheet whole, or the inline `styles` of a component (each
+ * template literal after `styles:`, also `styles: [\`…\`, \`…\`]`).
+ */
+function sources(text, isTs) {
+  if (!isTs) return [[0, text]];
+  const chunks = [];
+  const start = /styles\s*:\s*\[?/g;
+  for (let match = start.exec(text); match; match = start.exec(text)) {
+    let at = match.index + match[0].length;
+    // One or more template literals separated by commas, up to the closing bracket.
+    for (;;) {
+      while (/[\s,]/.test(text[at] ?? '')) at += 1;
+      if (text[at] !== '`') break;
+      const close = text.indexOf('`', at + 1);
+      if (close < 0) break;
+      chunks.push([at + 1, text.slice(at + 1, close)]);
+      at = close + 1;
+    }
+  }
+  return chunks;
+}
+
+/**
+ * Declarations of the CSS (a value may span lines; comments do not count): [offset, property, value]. Custom
+ * properties (--name) define tokens and are skipped.
+ */
+function declarations(css) {
+  const blanked = css.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
   const found = [];
-  let inStyles = !isTs;
-  lines.forEach((line, index) => {
-    if (isTs) {
-      if (/styles:\s*\[?\s*`/.test(line)) {
-        inStyles = true;
-        return;
-      }
-      if (inStyles && /^\s*`/.test(line)) inStyles = false;
-      if (!inStyles) return;
-    }
-    // Every «property: value» of the line, also inside a one-line rule (comments dropped).
-    for (const part of line.replace(/\/\*.*?\*\//g, '').split(/[{};]/)) {
-      const match = /^\s*([a-z-]+)\s*:\s*(.+?)\s*$/i.exec(part);
-      if (match && !match[1].startsWith('--')) found.push([index, match[1], match[2]]);
-    }
-  });
+  const declaration = /(^|[{;\s])([a-zA-Z-]+)\s*:\s*([^;{}]+?)\s*(?=;|}|$)/g;
+  for (let match = declaration.exec(blanked); match; match = declaration.exec(blanked)) {
+    const property = match[2];
+    // A selector with a pseudo-class («a:hover {») is followed by a brace, not a declaration end.
+    const after = blanked.slice(match.index + match[0].length).trimStart()[0];
+    if (property.startsWith('--') || after === '{') continue;
+    found.push([match.index + match[1].length, property, match[3]]);
+  }
   return found;
 }
 
 /** Problems of one file's text, as «line: property: value (raw …)». */
 export function checkText(text, isTs) {
   const lines = text.split('\n');
+  const lineOf = (offset) => text.slice(0, offset).split('\n').length - 1;
   const problems = [];
-  if (isTs && !/styles:\s*\[?\s*`/.test(text)) return problems;
-  for (const [index, property, value] of declarations(lines, isTs)) {
-    const bad = offending(property, value);
-    if (!bad.length) continue;
-    const near = `${lines[index]}\n${index > 0 ? lines[index - 1] : ''}`;
-    if (/tokens-exception:\s*\S/.test(near)) continue;
-    problems.push(`${index + 1}: ${property}: ${value.trim()} (raw ${bad.join(', ')})`);
+  for (const [base, css] of sources(text, isTs)) {
+    for (const [offset, property, value] of declarations(css)) {
+      const bad = offending(property, value);
+      if (!bad.length) continue;
+      const index = lineOf(base + offset);
+      const near = `${lines[index]}\n${index > 0 ? lines[index - 1] : ''}`;
+      if (/tokens-exception:\s*\S/.test(near)) continue;
+      problems.push(
+        `${index + 1}: ${property}: ${value.replace(/\s+/g, ' ').trim()} (raw ${bad.join(', ')})`,
+      );
+    }
   }
   return problems;
 }
@@ -107,6 +131,12 @@ function selfTest() {
     ['a {\n  --peek: 28px;\n  width: 28px;\n  top: 14px;\n}', false, 0],
     ['@Component({\n  styles: `\n    a {\n      padding: 6px;\n    }\n  `,\n})', true, 1],
     ['const css = "padding: 6px;";', true, 0],
+    ['a {\n  padding:\n    10px\n    var(--space-2);\n}', false, 1],
+    ['@Component({ styles: `a { padding: 6px; }` })', true, 1],
+    ['@Component({\n  styles: [`a { gap: 0; }`, `b { margin: 3dvh; }`],\n})', true, 1],
+    ['a {\n  height: 100dvh;\n  padding-block: 2svh;\n}', false, 1],
+    ['a:hover,\nb:focus-visible {\n  margin: 0;\n}', false, 0],
+    ['a { padding: var(--space-0-5) var(--text-2xs); }', false, 0],
   ];
   const failed = cases.filter(([text, isTs, count]) => checkText(text, isTs).length !== count);
   if (failed.length) {
@@ -121,7 +151,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   if (args.includes('--self-test')) selfTest();
   const named = args.filter((arg) => !arg.startsWith('--'));
   const paths = named.length
-    ? named.map((arg) => join(process.cwd(), arg))
+    ? named.map((arg) => resolve(process.cwd(), arg))
     : files(join(ROOT, 'src'));
   const problems = [];
   for (const path of paths) {
