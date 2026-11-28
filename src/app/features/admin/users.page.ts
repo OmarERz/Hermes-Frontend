@@ -105,6 +105,10 @@ const STALE_CODES = new Set(['role_changed', 'user_not_found']);
 /** The same for a switch-off or switch-on: the account is gone, or it became the own or the last admin's. */
 const STATUS_STALE_CODES = new Set(['user_not_found', 'own_status', 'last_admin']);
 
+/** Added to a failed switch-off: Hermes may already refuse the account although Firebase did not answer. */
+const PARTIAL_OFF =
+  'Puede que Hermes ya haya desactivado la cuenta: la lista se volvió a leer; inténtalo de nuevo para terminar.';
+
 /**
  * Usuarios y roles (FRONTEND.md §2 and §5, D-030): every Firebase account of `GET /api/admin/users`, signed in or
  * not, with its stored role (the copy in Hermes), the role of its Firebase claim and its effective role (the lower of
@@ -197,23 +201,43 @@ export class UsersPage {
   readonly statusTitle = computed(() =>
     this.statusChange()?.active ? 'Desactivar cuenta' : 'Reactivar cuenta',
   );
-  readonly statusRows = computed<ChangeRow[]>(() => {
+  /** What the confirmation says: the account, its state before and after, and the effect on its sessions. */
+  readonly statusSummary = computed(() => {
     const account = this.statusChange();
-    if (!account) return [];
-    return [
-      {
-        name: `Cuenta de ${userName(account)}`,
-        before: account.active ? 'Activa' : 'Desactivada',
-        after: account.active ? 'Desactivada' : 'Activa',
-        impact: account.active
-          ? 'Hermes cierra sus sesiones y no podrá iniciar sesión hasta que la reactives.'
-          : 'Podrá iniciar sesión de nuevo; sus sesiones de antes siguen cerradas.',
-      },
-    ];
+    if (!account) return null;
+    return {
+      name: userName(account),
+      before: account.active ? 'Activa' : 'Desactivada',
+      after: account.active ? 'Desactivada' : 'Activa',
+      action: account.active ? 'Desactivar' : 'Reactivar',
+      saving: account.active ? 'Desactivando…' : 'Reactivando…',
+      impact: account.active
+        ? 'Hermes cierra sus sesiones y no podrá iniciar sesión hasta que la reactives.'
+        : 'Podrá iniciar sesión de nuevo; sus sesiones de antes siguen cerradas.',
+    };
   });
 
   /** The uid whose password e-mail is being sent. */
   readonly resending = signal<string | null>(null);
+
+  /**
+   * One account operation at a time (a role, a status, a creation or an e-mail): each one ends with its own notice,
+   * so a late answer of one never overwrites the outcome of another.
+   */
+  readonly busy = computed(
+    () => this.saving() || this.statusSaving() || this.creating() || this.resending() !== null,
+  );
+
+  /** The backend's reason when Firebase refused the address (422 `invalid_email`, `details[].field` `body.email`). */
+  readonly emailServerError = computed(() => {
+    const failure = this.createError();
+    return failure?.details.some((detail) => detail.field === 'body.email')
+      ? failure.message
+      : null;
+  });
+  readonly emailInvalid = computed(
+    () => (this.emailTouched() && !this.newEmailValid()) || this.emailServerError() !== null,
+  );
 
   constructor() {
     this.pager.first();
@@ -274,6 +298,7 @@ export class UsersPage {
   }
 
   openCreate(): void {
+    if (this.busy()) return;
     this.createError.set(null);
     this.emailTouched.set(false);
     this.newUser.set({ email: '', role: 'reader' });
@@ -282,6 +307,7 @@ export class UsersPage {
   setNewEmail(event: Event): void {
     const email = (event.target as HTMLInputElement).value;
     this.newUser.update((draft) => (draft ? { ...draft, email } : draft));
+    if (this.emailServerError()) this.createError.set(null); // the address changed: the refusal no longer applies
   }
 
   setNewRole(event: Event): void {
@@ -320,7 +346,7 @@ export class UsersPage {
   }
 
   askStatus(row: UserRow): void {
-    if (row.own) return;
+    if (row.own || this.busy()) return;
     this.statusError.set(null);
     this.statusChange.set(row.account);
   }
@@ -346,7 +372,14 @@ export class UsersPage {
         error: (error: unknown) => {
           const failure = toApiError(error);
           if (!STATUS_STALE_CODES.has(failure.code)) {
-            this.statusError.set(failure);
+            // A switch-off turns the account off in Hermes before Firebase answers: it may have stayed off, so the
+            // list is read again and the dialog says so.
+            this.statusError.set(
+              account.active
+                ? new ApiError(failure.status, failure.code, `${failure.message} ${PARTIAL_OFF}`)
+                : failure,
+            );
+            this.pager.reload();
             return;
           }
           this.statusChange.set(null);
@@ -364,7 +397,7 @@ export class UsersPage {
 
   /** Sends the password e-mail again to an account that never signed in. */
   resend(row: UserRow): void {
-    if (this.resending() || !row.canResend) return;
+    if (this.busy() || !row.canResend) return;
     this.resending.set(row.uid);
     this.notice.set(null);
     this.service

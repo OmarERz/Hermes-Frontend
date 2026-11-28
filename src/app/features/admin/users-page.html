@@ -34,6 +34,7 @@
           *appIfRole="manageRole"
           type="button"
           class="btn btn-primary btn-sm"
+          [disabled]="busy()"
           (click)="openCreate()"
         >
           <svg lucideUserPlus aria-hidden="true"></svg> Agregar usuario
@@ -122,7 +123,7 @@
                         class="btn btn-sm"
                         [class.btn-danger]="row.active"
                         [class.btn-secondary]="!row.active"
-                        [disabled]="statusSaving()"
+                        [disabled]="busy()"
                         (click)="askStatus(row)"
                         [attr.aria-label]="
                           (row.active ? 'Desactivar' : 'Reactivar') + ' la cuenta de ' + row.name
@@ -134,7 +135,7 @@
                         <button
                           type="button"
                           class="btn btn-secondary btn-sm"
-                          [disabled]="resending() !== null"
+                          [disabled]="busy()"
                           [attr.aria-busy]="resending() === row.uid"
                           (click)="resend(row)"
                           [attr.aria-label]="
@@ -196,16 +197,24 @@
     />
   }
 
-  @if (statusChange()) {
-    <app-confirm-changes-dialog
+  @if (statusSummary(); as status) {
+    <app-form-dialog
       [title]="statusTitle()"
-      [changes]="statusRows()"
+      [description]="status.impact"
+      [submitLabel]="status.action"
+      [savingLabel]="status.saving"
+      [danger]="status.action === 'Desactivar'"
       [saving]="statusSaving()"
       [error]="statusError()"
-      (confirmed)="confirmStatus()"
+      (submitted)="confirmStatus()"
       (cancelled)="cancelStatus()"
-      (reloadRequested)="cancelStatus()"
-    />
+    >
+      <p class="status-change">
+        Cuenta de <strong>{{ status.name }}</strong
+        >: {{ status.before }} →
+        <strong>{{ status.after }}</strong>
+      </p>
+    </app-form-dialog>
   }
 
   @if (newUser(); as draft) {
@@ -231,17 +240,15 @@
             required
             [attr.maxlength]="emailMaxLength"
             [value]="draft.email"
-            [attr.aria-invalid]="emailTouched() && !newEmailValid()"
-            [attr.aria-describedby]="
-              emailTouched() && !newEmailValid() ? 'new-user-email-hint' : null
-            "
+            [attr.aria-invalid]="emailInvalid()"
+            [attr.aria-describedby]="emailInvalid() ? 'new-user-email-hint' : null"
             (input)="setNewEmail($event)"
             (blur)="emailTouched.set(true)"
             placeholder="persona@empresa.com" /></span
       ></label>
-      @if (emailTouched() && !newEmailValid()) {
+      @if (emailInvalid()) {
         <p id="new-user-email-hint" class="field-hint">
-          Escribe un correo válido, por ejemplo persona@empresa.com.
+          {{ emailServerError() ?? 'Escribe un correo válido, por ejemplo persona@empresa.com.' }}
         </p>
       }
       <label class="field"

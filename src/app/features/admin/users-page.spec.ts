@@ -353,7 +353,7 @@ describe('UsersPage', () => {
   // --- accounts from the app (D-105) -----------------------------------------------------------------------------
 
   function dialog(element: HTMLElement): HTMLElement | null {
-    return element.querySelector('[role="dialog"]');
+    return element.querySelector('dialog, [role="dialog"]');
   }
 
   function button(root: Element | null, label: string): HTMLButtonElement | undefined {
@@ -488,9 +488,12 @@ describe('UsersPage', () => {
     await settle();
     const confirm = dialog(element)!;
     expect(text(confirm.querySelector('h2'))).toBe('Desactivar cuenta');
-    expect(text(confirm)).toContain('Cuenta de luis@hermes.test');
-    expect(text(confirm)).toContain('Anterior Activa');
-    expect(text(confirm)).toContain('Nuevo Desactivada');
+    expect(text(confirm.querySelector('.status-change'))).toBe(
+      'Cuenta de luis@hermes.test : Activa → Desactivada',
+    );
+    expect(text(confirm)).toContain('Hermes cierra sus sesiones');
+    expect(confirm.querySelector('.save-button')?.classList).toContain('btn-danger');
+    expect(text(confirm.querySelector('.save-button'))).toBe('Desactivar');
     expect(users.setStatus).not.toHaveBeenCalled();
     const listed = users.list.mock.calls.length;
     (confirm.querySelector('.save-button') as HTMLButtonElement).click();
@@ -501,6 +504,68 @@ describe('UsersPage', () => {
       'La cuenta de luis@hermes.test quedó desactivada y se cerraron sus sesiones.',
     );
     expect(users.list.mock.calls.length).toBe(listed + 1);
+  });
+
+  it('keeps the message of a failed switch-on as it comes', async () => {
+    const users = new FakeUsers();
+    users.setStatus.mockReturnValue(
+      throwError(() => new ApiError(503, 'auth_unavailable', 'No se pudo cambiar el estado.')),
+    );
+    const { element, settle } = await render(users);
+    button(rows(element)[2], 'Reactivar')!.click();
+    await settle();
+    (dialog(element)!.querySelector('.save-button') as HTMLButtonElement).click();
+    await settle();
+    expect(text(dialog(element)?.querySelector('[role="alert"]'))).toBe(
+      'No se pudo cambiar el estado.',
+    );
+  });
+
+  it('runs one account operation at a time', async () => {
+    const users = new FakeUsers();
+    users.list.mockReturnValue(of({ items: [ADMIN, READER, INVITED], nextCursor: null }));
+    const pending = new Subject<{ uid: string; email: string }>();
+    users.sendPasswordEmail.mockReturnValue(pending.asObservable());
+    const { element, settle, page } = await render(users);
+    button(rows(element)[2], 'Reenviar correo')!.click();
+    await settle();
+    expect(button(element.querySelector('.inventory > header'), 'Agregar usuario')!.disabled).toBe(
+      true,
+    );
+    expect(button(rows(element)[1], 'Desactivar')!.disabled).toBe(true);
+    page.openCreate();
+    page.askStatus(page.rows()[1]);
+    expect(page.newUser()).toBeNull();
+    expect(page.statusChange()).toBeNull();
+    pending.next({ uid: INVITED.uid, email: 'zoe@hermes.test' });
+    pending.complete();
+    await settle();
+    expect(button(element.querySelector('.inventory > header'), 'Agregar usuario')!.disabled).toBe(
+      false,
+    );
+  });
+
+  it('marks the e-mail field with the reason Firebase refused it', async () => {
+    const users = new FakeUsers();
+    users.create.mockReturnValue(
+      throwError(
+        () =>
+          new ApiError(422, 'invalid_email', 'Firebase no aceptó ese correo.', [
+            { field: 'body.email', issue: 'invalid_email' },
+          ]),
+      ),
+    );
+    const { element, settle } = await render(users);
+    const { form, email, type } = await openCreate(element, settle);
+    await type('raro@hermes.test');
+    button(form, 'Crear usuario')!.click();
+    await settle();
+    expect(email.getAttribute('aria-invalid')).toBe('true');
+    const hint = form.querySelector(`#${email.getAttribute('aria-describedby')}`);
+    expect(text(hint)).toBe('Firebase no aceptó ese correo.');
+    await type('otro@hermes.test'); // another address: the refusal no longer applies
+    expect(email.getAttribute('aria-invalid')).toBe('false');
+    expect(form.querySelector('[role="alert"]')).toBeNull();
   });
 
   it('switches an account back on', async () => {
@@ -540,12 +605,15 @@ describe('UsersPage', () => {
     const { element, settle, page } = await render(users);
     button(rows(element)[1], 'Desactivar')!.click();
     await settle();
+    let listed = users.list.mock.calls.length;
     (dialog(element)!.querySelector('.save-button') as HTMLButtonElement).click();
     await settle();
+    // Hermes switches the account off before Firebase answers: the list is read again and the dialog says so.
     expect(text(dialog(element)?.querySelector('[role="alert"]'))).toBe(
-      'No se pudo cambiar el estado.',
+      'No se pudo cambiar el estado. Puede que Hermes ya haya desactivado la cuenta: la lista se volvió a leer; inténtalo de nuevo para terminar.',
     );
-    const listed = users.list.mock.calls.length;
+    expect(users.list.mock.calls.length).toBe(listed + 1);
+    listed = users.list.mock.calls.length;
     (dialog(element)!.querySelector('.save-button') as HTMLButtonElement).click();
     await settle();
     expect(dialog(element)).toBeNull();

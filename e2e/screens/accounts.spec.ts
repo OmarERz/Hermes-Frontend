@@ -52,8 +52,8 @@ test.describe('accounts from the app as admin', () => {
 
     await row.getByRole('button', { name: `Desactivar la cuenta de ${address}` }).click();
     const off = page.getByRole('dialog', { name: 'Desactivar cuenta' });
-    await expect(off).toContainText('Anterior Activa');
-    await off.getByRole('button', { name: 'Confirmar cambios' }).click();
+    await expect(off).toContainText('Activa → Desactivada');
+    await off.getByRole('button', { name: 'Desactivar', exact: true }).click();
     await expect(notice).toHaveText(
       `La cuenta de ${address} quedó desactivada y se cerraron sus sesiones.`,
     );
@@ -63,7 +63,7 @@ test.describe('accounts from the app as admin', () => {
     await row.getByRole('button', { name: `Reactivar la cuenta de ${address}` }).click();
     await page
       .getByRole('dialog', { name: 'Reactivar cuenta' })
-      .getByRole('button', { name: 'Confirmar cambios' })
+      .getByRole('button', { name: 'Reactivar', exact: true })
       .click();
     await expect(notice).toHaveText(
       `La cuenta de ${address} está activa de nuevo: tendrá que iniciar sesión.`,

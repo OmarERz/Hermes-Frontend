@@ -61,3 +61,7 @@ table.users-table {
   color: var(--text-muted);
   font-size: calc(11px + var(--font-size-increase));
 }
+.status-change {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
