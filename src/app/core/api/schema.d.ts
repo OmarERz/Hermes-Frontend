@@ -1877,6 +1877,22 @@ export interface components {
             usage_limit: string | null;
         };
         /**
+         * CnaNames
+         * @description CNA vendor and product of a software product, as CVE.org writes them in `affected[]` (ESC-05, F15.9).
+         */
+        CnaNames: {
+            /**
+             * Product
+             * @description Producto como lo escribe el CNA en CVE.org (por ejemplo `Linux` o `CPython`).
+             */
+            product: string;
+            /**
+             * Vendor
+             * @description Fabricante como lo escribe el CNA en CVE.org (por ejemplo `Linux` o `n/a`).
+             */
+            vendor: string;
+        };
+        /**
          * CompanyProfile
          * @example {
          *       "countries": [
@@ -3247,6 +3263,8 @@ export interface components {
         };
         /** Mapping */
         Mapping: {
+            /** @description Nombres del CNA (CVE.org) que quedaron en el mapeo. */
+            cna?: components["schemas"]["CnaNames"] | null;
             /**
              * Cpe
              * @description CPE 2.3 guardado para el producto, tal como se mandó.
@@ -3260,6 +3278,8 @@ export interface components {
         };
         /** MappingInput */
         MappingInput: {
+            /** @description Nombres del CNA (CVE.org) del producto, para comparar sus rangos con certeza 0.9. Si se omite, se conservan los que ya tenía el mapeo; `null` los quita. */
+            cna?: components["schemas"]["CnaNames"] | null;
             /**
              * Cpe
              * @description Identificador CPE 2.3 del software.
@@ -4230,6 +4250,8 @@ export interface components {
              * @description CIs vigentes con el software.
              */
             ci_count: number;
+            /** @description Nombres del CNA (CVE.org) del mapeo; nulo si el mapeo no tiene (F15.9). */
+            cna?: components["schemas"]["CnaNames"] | null;
             /**
              * Cpe
              * @description CPE 2.3 del producto (versión comodín); nulo si no tiene.

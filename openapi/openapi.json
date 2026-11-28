@@ -1178,6 +1178,34 @@
         "title": "CatalogueLicence",
         "type": "object"
       },
+      "CnaNames": {
+        "additionalProperties": false,
+        "description": "CNA vendor and product of a software product, as CVE.org writes them in `affected[]` (ESC-05, F15.9).",
+        "properties": {
+          "product": {
+            "description": "Producto como lo escribe el CNA en CVE.org (por ejemplo `Linux` o `CPython`).",
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]*[^\\s\\x00-\\x1f\\x7f-\\x9f\\ufeff][^\\x00-\\x1f\\x7f-\\x9f]*$",
+            "title": "Product",
+            "type": "string"
+          },
+          "vendor": {
+            "description": "Fabricante como lo escribe el CNA en CVE.org (por ejemplo `Linux` o `n/a`).",
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]*[^\\s\\x00-\\x1f\\x7f-\\x9f\\ufeff][^\\x00-\\x1f\\x7f-\\x9f]*$",
+            "title": "Vendor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "vendor",
+          "product"
+        ],
+        "title": "CnaNames",
+        "type": "object"
+      },
       "CompanyProfile": {
         "additionalProperties": false,
         "examples": [
@@ -3632,6 +3660,17 @@
       "Mapping": {
         "additionalProperties": false,
         "properties": {
+          "cna": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CnaNames"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Nombres del CNA (CVE.org) que quedaron en el mapeo."
+          },
           "cpe": {
             "description": "CPE 2.3 guardado para el producto, tal como se mandó.",
             "title": "Cpe",
@@ -3653,10 +3692,21 @@
       "MappingInput": {
         "additionalProperties": false,
         "properties": {
+          "cna": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CnaNames"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Nombres del CNA (CVE.org) del producto, para comparar sus rangos con certeza 0.9. Si se omite, se conservan los que ya tenía el mapeo; `null` los quita."
+          },
           "cpe": {
             "description": "Identificador CPE 2.3 del software.",
             "maxLength": 512,
-            "pattern": "^cpe:2\\.3:[ao]:[A-Za-z0-9](?:[A-Za-z0-9._~+\\-]|\\\\[:._~+\\-]){0,199}:[A-Za-z0-9](?:[A-Za-z0-9._~+\\-]|\\\\[:._~+\\-]){0,199}(?::(?:[^:\\\\]|\\\\.)*)+$",
+            "pattern": "^cpe:2\\.3:[aoh]:[A-Za-z0-9](?:[A-Za-z0-9._~+\\-]|\\\\[:._~+\\-]){0,199}:[A-Za-z0-9](?:[A-Za-z0-9._~+\\-]|\\\\[:._~+\\-]){0,199}(?::(?:[^:\\\\]|\\\\.)*)+$",
             "title": "Cpe",
             "type": "string"
           }
@@ -5409,6 +5459,17 @@
             "description": "CIs vigentes con el software.",
             "title": "Ci Count",
             "type": "integer"
+          },
+          "cna": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CnaNames"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Nombres del CNA (CVE.org) del mapeo; nulo si el mapeo no tiene (F15.9)."
           },
           "cpe": {
             "anyOf": [
