@@ -264,6 +264,22 @@ function inPage(options: InPageOptions): LayoutResult {
         const own = box(element);
         return painted.has(element) && own.width >= 120 && own.height >= 48;
       };
+      /** Where what an element shows ends: its own box if it paints, else its lowest painted or text-bearing part. */
+      const shownBottom = (element: Element): number => {
+        if (paints(element)) return box(element).bottom;
+        let bottom = -Infinity;
+        for (const part of element.querySelectorAll('*')) {
+          if (isIgnored(part) || !visible(part)) continue;
+          const shows =
+            paints(part) ||
+            /^(IMG|SVG|CANVAS|INPUT|SELECT|TEXTAREA|BUTTON)$/i.test(part.tagName) ||
+            [...part.childNodes].some(
+              (node) => node.nodeType === Node.TEXT_NODE && !!node.textContent?.trim(),
+            );
+          if (shows) bottom = Math.max(bottom, box(part).bottom);
+        }
+        return bottom;
+      };
       /** The box a child draws: itself, or the only child of an unpainted wrapper that fills it (a component host). */
       const visual = (element: Element): Element => {
         let current = element;
@@ -415,7 +431,7 @@ function inPage(options: InPageOptions): LayoutResult {
               own.top - (outer.top + px(style(column).paddingTop)) <= tol &&
               lowest <= own.bottom + tol &&
               contentBottom - own.bottom > tol &&
-              partners.some((other) => box(other).bottom > own.bottom + tol)
+              partners.some((other) => shownBottom(other) > own.bottom + tol)
             ) {
               add({
                 kind: 'edge',

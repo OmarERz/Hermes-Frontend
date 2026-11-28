@@ -117,7 +117,7 @@ test.describe('layout checks', () => {
   test('stacked cards whose content starts at different insets', async ({ page }) => {
     const findings = await render(
       page,
-      'app-host { display: block; } .roomy { padding: 28px; margin-top: 16px; }',
+      'app-host { display: block; } .roomy { padding: 32px; margin-top: 16px; }',
       `<div class="app-shell"><aside></aside><main class="page-content">
        <div class="card" style="height:100px">first</div>
        <app-host><div class="card roomy" style="height:100px">second</div></app-host>
