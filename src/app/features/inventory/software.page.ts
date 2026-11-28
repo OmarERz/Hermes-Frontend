@@ -98,7 +98,6 @@ function yesNo(value: YesNoFilter): boolean | null {
     LucideLayers,
     LucideRefreshCw,
     LucideSearch,
-    LucideTriangleAlert,
   ],
   templateUrl: './software.page.html',
   styleUrls: ['./inventory-chips.css', './software.page.css'],
