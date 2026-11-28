@@ -157,7 +157,7 @@ export type ViewState = 'loading' | 'empty' | 'error';
     }
     :host(.page-notice) .state-error {
       justify-content: flex-start;
-      padding: var(--space-3) var(--space-4);
+      padding: var(--space-3) var(--card-pad);
       text-align: left;
     }
     @keyframes skeleton-shimmer {

@@ -10,7 +10,7 @@
   align-items: stretch;
 }
 .setup-stepper {
-  padding: var(--space-3);
+  padding: var(--card-pad);
 }
 .setup-stepper ol {
   position: sticky;

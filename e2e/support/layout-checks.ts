@@ -321,7 +321,10 @@ function inPage(options: InPageOptions): LayoutResult {
             sideBySide(box(element), box(visual(other))),
         );
       };
-      /** Where a card's content starts, from its left edge: its first text, image or control. */
+      /**
+       * Where a card's content starts, from its left edge: its first text, image or control, or the first box drawn
+       * inside it (an icon tile, a sub-card). Null for content that is centred (an empty or error state).
+       */
       const contentInset = (element: Element): number | null => {
         const own = box(element);
         let left = Infinity;
@@ -331,7 +334,16 @@ function inPage(options: InPageOptions): LayoutResult {
         );
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
           if (node instanceof Element) {
-            if (!/^(IMG|INPUT|SELECT|TEXTAREA|BUTTON|svg)$/i.test(node.tagName) || !visible(node))
+            const drawn =
+              !(node instanceof SVGElement) &&
+              !isIgnored(node) &&
+              paints(node) &&
+              box(node).width >= 16 &&
+              box(node).height >= 16;
+            if (
+              (!drawn && !/^(IMG|INPUT|SELECT|TEXTAREA|BUTTON|svg)$/i.test(node.tagName)) ||
+              !visible(node)
+            )
               continue;
             left = Math.min(left, box(node).left);
           } else if (node.textContent?.trim()) {
@@ -341,7 +353,8 @@ function inPage(options: InPageOptions): LayoutResult {
               if (rect.width > 0) left = Math.min(left, rect.left + scrollX);
           }
         }
-        return Number.isFinite(left) ? left - own.left : null;
+        if (!Number.isFinite(left) || left - own.left > 0.25 * own.width) return null;
+        return left - own.left;
       };
 
       if (kinds.has('edge')) {

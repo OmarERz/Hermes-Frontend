@@ -189,7 +189,7 @@
     align-items: center;
     gap: 12px;
     min-width: 0;
-    padding: 15px 20px;
+    padding: var(--space-4) var(--card-pad);
   }
   .config-summary article + article {
     border-left: 1px solid var(--border);
@@ -422,7 +422,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .agent-config-view .config-summary article {
-    padding: 13px;
+    padding: var(--space-3) var(--card-pad);
   }
 }
 @media (max-width: 760px) {
@@ -434,7 +434,7 @@
     border-left: 0;
   }
   .agent-config-view .config-summary article {
-    padding: 12px 15px;
+    padding: var(--space-3) var(--card-pad);
   }
 }
 @media (max-width: 420px) {
@@ -683,11 +683,6 @@
   }
   .agent-config-view .config-panel .profile-options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 560px) {
-  .agent-config-view :is(.config-left-column, .config-right-column) {
-    padding: var(--card-pad-compact);
   }
 }
 @media (max-width: 420px) {

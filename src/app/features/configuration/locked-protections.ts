@@ -74,7 +74,7 @@ import { ConfigParameter, LOCKED_PROTECTIONS } from './config-model';
       align-items: flex-start;
       gap: var(--space-2);
       margin: 0;
-      padding: var(--space-3) var(--space-4);
+      padding: var(--space-3) var(--card-pad);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       background: var(--surface);
