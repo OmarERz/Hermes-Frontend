@@ -41,7 +41,7 @@
 }
 .welcome-copy h2 {
   margin-top: var(--space-1);
-  font-size: clamp(var(--text-4xl), 3.15vw, 44px);
+  font-size: var(--text-display-sub);
 }
 .welcome-description {
   max-width: 620px;
@@ -141,7 +141,8 @@
   align-items: center;
   gap: var(--space-3);
   min-width: 0;
-  padding: var(--card-pad) var(--space-6);
+  /* The box has no padding: each indicator carries the panel's, so the rules between them run edge to edge. */
+  padding: var(--panel-pad);
 }
 .home-metric + .home-metric {
   border-left: 1px solid var(--border);
@@ -186,11 +187,6 @@
 :host-context(.app-shell[data-theme='light']) .welcome-view {
   --robot-image: url('/assets/hermes-welcome-robot-light.png');
 }
-@media (max-width: 1440px) {
-  .home-metric {
-    padding: var(--card-pad) var(--space-4);
-  }
-}
 @media (max-width: 1100px) {
   .welcome-view {
     grid-template-columns: minmax(0, 1fr);
@@ -219,7 +215,6 @@
   }
   .home-link-card {
     gap: var(--space-3);
-    padding: var(--card-pad-compact);
   }
   .home-card-icon {
     width: 40px;
@@ -237,7 +232,6 @@
   }
   .home-metric {
     gap: var(--space-2);
-    padding: var(--card-pad-compact);
   }
   .metric-icon,
   .metric-icon svg {

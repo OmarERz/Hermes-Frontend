@@ -134,7 +134,14 @@
                     <span class="code">{{ row.action }}</span>
                   }
                 </td>
-                <td class="code target">{{ row.target }}</td>
+                <td class="target">
+                  @if (row.targetParts; as target) {
+                    <strong>{{ target.label }}</strong>
+                    <small class="code">{{ target.id }}</small>
+                  } @else {
+                    <span class="code">{{ row.target }}</span>
+                  }
+                </td>
               </tr>
             }
           </tbody>

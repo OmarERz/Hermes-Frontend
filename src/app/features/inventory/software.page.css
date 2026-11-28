@@ -3,22 +3,22 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px 16px;
-  margin: 0 0 14px;
-  padding: 11px 14px;
+  gap: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-4);
+  padding: var(--notice-pad-y) var(--notice-pad-x);
   border: 1px dashed var(--border, #e4e3ee);
-  border-radius: 11px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary, #514662);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
 }
 .itop-note p {
   flex: 1 1 260px;
   margin: 0;
 }
 .notice {
-  margin: 0 0 14px;
-  padding: 10px 13px;
-  border-radius: 10px;
+  margin: 0 0 var(--space-4);
+  padding: var(--notice-pad-y) var(--notice-pad-x);
+  border-radius: var(--radius-md);
   background: var(--success-bg, #defbe8);
   color: var(--success-text, #07823e);
   font-weight: 600;
@@ -30,9 +30,9 @@
 .search-filter {
   flex: 1 1 200px;
   min-height: 32px;
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   border: 1px solid #e1deea;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
 }
 .search-filter svg {
@@ -43,6 +43,7 @@
 .search-filter input {
   width: 100%;
   min-height: 30px;
+  padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
@@ -68,13 +69,13 @@ td small {
 }
 .license-panel li > span {
   display: grid;
-  gap: 2px;
+  gap: var(--space-0-5);
 }
 .license-panel li small {
   color: var(--text-muted, #70677a);
 }
 .hint {
-  margin: 8px 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--text-muted, #6b6175);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
 }

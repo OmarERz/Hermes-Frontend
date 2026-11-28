@@ -38,7 +38,7 @@ import { SessionService } from '../../core/auth/session.service';
       max-width: 640px;
       box-sizing: border-box;
       margin: 0 auto;
-      padding: var(--space-8) var(--card-pad);
+      padding: var(--card-pad);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       background: var(--surface);

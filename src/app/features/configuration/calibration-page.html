@@ -54,7 +54,7 @@
       <app-async-state
         [state]="view"
         loadingText="Cargando propuestas…"
-        emptyText="Todavía no hay propuestas de calibración."
+        emptyText="Todavía no hay propuestas de calibración. Una vez por semana Hermes propone un cambio de pesos si mejora las evaluaciones de los últimos 30 días según el feedback de los analistas, y un cambio de nivel de una fuente cuando sus afirmaciones confirmadas o refutadas pasan el umbral configurado. La siguiente revisión llega con la corrida semanal."
         [error]="pager.state.error()"
         (retry)="pager.reload()"
       />

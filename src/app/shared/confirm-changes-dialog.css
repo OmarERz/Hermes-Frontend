@@ -13,7 +13,7 @@
   width: min(100%, 560px);
   max-height: min(88vh, 760px);
   overflow: auto;
-  padding: var(--card-pad);
+  padding: var(--dialog-pad);
   border: 1px solid var(--border, #d8b0ea);
   border-radius: var(--radius-lg);
   background: var(--surface, #fff);

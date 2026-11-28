@@ -30,13 +30,13 @@
   height: 240px;
 }
 .calculation-note {
-  margin: 0 0 12px 4px;
-  padding: 10px 13px;
+  margin: 0 0 var(--space-3) var(--space-1);
+  padding: var(--notice-pad-y) var(--notice-pad-x);
   border: 1px solid #decce9;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: #f8f4fb;
   color: #654d72;
-  font-size: calc((12px) + var(--font-size-increase));
+  font-size: var(--text-sm);
   line-height: 1.45;
 }
 :host-context(.app-shell[data-theme='dark']) .calculation-note {

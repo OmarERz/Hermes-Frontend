@@ -41,6 +41,32 @@ export const AUDIT_ACTION_LABELS: Readonly<Record<string, string>> = {
 export const KNOWN_AUDIT_ACTIONS = Object.keys(AUDIT_ACTION_LABELS);
 
 /** The Spanish name of an action, or null when the front does not know it yet. */
+/**
+ * Spanish names of the audited object kinds (AuditLog `entity_type` in the backend). The table shows «kind:id» as the
+ * kind's name with the id under it; a kind not listed here is shown as it comes (AUD-2).
+ */
+export const AUDIT_TARGET_LABELS: Readonly<Record<string, string>> = {
+  app_user: 'Cuenta',
+  calibration_proposal: 'Propuesta de calibración',
+  company_profile: 'Perfil de la empresa',
+  config: 'Configuración',
+  cpe_mapping: 'Mapeo de CPE',
+  peer_company: 'Empresa par',
+  setup_step: 'Paso del asistente',
+  source: 'Fuente',
+  stix_bundle: 'Paquete STIX',
+};
+
+/** «kind:id» as the kind's Spanish name and the id; null when the kind is not known. */
+export function auditTarget(target: string): { label: string; id: string } | null {
+  const at = target.indexOf(':');
+  if (at <= 0) return null;
+  const kind = target.slice(0, at);
+  return Object.hasOwn(AUDIT_TARGET_LABELS, kind)
+    ? { label: AUDIT_TARGET_LABELS[kind], id: target.slice(at + 1) }
+    : null;
+}
+
 export function auditActionLabel(action: string): string | null {
   return Object.hasOwn(AUDIT_ACTION_LABELS, action) ? AUDIT_ACTION_LABELS[action] : null;
 }

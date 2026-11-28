@@ -4,7 +4,7 @@
  */
 app-ticket-log {
   display: block;
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 .filters {
   grid-template-columns: repeat(4, minmax(110px, 1fr));
@@ -30,9 +30,9 @@ app-ticket-log {
   border: 0;
 }
 .detail-note {
-  margin-top: 14px;
+  margin-top: var(--space-4);
   color: var(--text-secondary, #62576c);
-  font-size: calc((12px) + var(--font-size-increase));
+  font-size: var(--text-sm);
   line-height: 1.45;
 }
 @media (max-width: 1439px) {

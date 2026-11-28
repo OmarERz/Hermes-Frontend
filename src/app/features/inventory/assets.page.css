@@ -5,9 +5,9 @@
 .sync-note {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
   color: var(--text-muted, #6b6175);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
 }
 .sync-note svg {
   width: 15px;
@@ -18,13 +18,13 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px 16px;
-  margin: 0 0 16px;
-  padding: 11px 14px;
+  gap: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
   border: 1px dashed var(--border, #e4e3ee);
-  border-radius: 11px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary, #514662);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
 }
 .itop-note p {
   flex: 1 1 260px;
@@ -33,18 +33,18 @@
 .itop-create {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
 .itop-create label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
   font-weight: 600;
 }
 .itop-create select {
   min-height: 32px;
   border: 1px solid var(--border, #e4e3ee);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
   color: inherit;
   font: inherit;

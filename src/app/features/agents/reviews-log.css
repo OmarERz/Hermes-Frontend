@@ -1,7 +1,7 @@
 /* The log's own layout; the table look is shared (agents-tables.css). */
 :host {
   display: block;
-  margin-top: 18px;
+  margin-top: var(--space-5);
 }
 .reviews-log .history-panel {
   margin-bottom: 0;

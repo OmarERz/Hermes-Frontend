@@ -4,7 +4,7 @@
   overflow: auto;
   padding: 0;
   border: 1px solid var(--border, #d8b0ea);
-  border-radius: 15px;
+  border-radius: var(--radius-lg);
   background: var(--surface, #fff);
   color: var(--text-primary, #321044);
   box-shadow: 0 20px 70px #0005;
@@ -14,31 +14,31 @@
 }
 .mapping-body {
   display: grid;
-  gap: 12px;
-  padding: 20px;
+  gap: var(--space-3);
+  padding: var(--dialog-pad);
 }
 h2 {
   margin: 0;
-  font-size: calc(18px + var(--font-size-increase, 0px));
+  font-size: var(--text-xl);
   overflow-wrap: anywhere;
 }
 p {
   margin: 0;
   color: var(--text-muted, #655a6e);
-  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-size: var(--text-sm);
 }
 .search-row {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .search-field {
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 8px;
-  padding: 0 10px;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
   border: 1px solid var(--border, #e4e3ee);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
 }
 .search-field svg {
@@ -55,9 +55,9 @@ input {
   font: inherit;
 }
 .cpe-form input {
-  padding: 0 10px;
+  padding: 0 var(--space-3);
   border: 1px solid var(--border, #e4e3ee);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
 }
 input[aria-invalid='true'] {
@@ -65,16 +65,16 @@ input[aria-invalid='true'] {
 }
 .cpe-form {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .cpe-form label {
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
   font-weight: 650;
 }
 .candidate-list {
   display: grid;
-  gap: 6px;
+  gap: var(--space-1);
   max-height: 260px;
   margin: 0;
   padding: 0;
@@ -83,11 +83,11 @@ input[aria-invalid='true'] {
 }
 .candidate-list button {
   display: grid;
-  gap: 2px;
+  gap: var(--space-0-5);
   width: 100%;
-  padding: 9px 11px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border, #e4e3ee);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--surface-soft, #faf8fc);
   color: inherit;
   font: inherit;
@@ -100,7 +100,7 @@ input[aria-invalid='true'] {
 }
 .cpe {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: calc(10px + var(--font-size-increase, 0px));
+  font-size: var(--text-2xs);
   overflow-wrap: anywhere;
 }
 small {
@@ -112,6 +112,6 @@ small {
 footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-2);
 }
 /* The actions are the shared .btn (src/styles/buttons.css). */

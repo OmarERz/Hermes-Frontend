@@ -85,13 +85,13 @@ describe('AuditPage', () => {
         formatDateTime(BY_PERSON.created_at),
         'ana@hermes.test',
         'Activó una fuente source.enable',
-        'source:cisa_kev',
+        'Fuente cisa_kev',
       ],
       [
         formatDateTime(BY_SYSTEM.created_at),
         'Sistema',
         'Una fuente dejó de responder source.down',
-        'source:nvd',
+        'Fuente nvd',
       ],
       [formatDateTime(UNKNOWN.created_at), 'Luis', 'brand.new_action', 'thing:1'],
     ]);

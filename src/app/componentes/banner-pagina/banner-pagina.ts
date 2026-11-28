@@ -40,6 +40,17 @@ export class BannerPagina {
       : null;
   }
 
+  /**
+   * The code plus the separator right after it (« ·», « —», «:»), kept on the code's line, and the rest of the title
+   * (F19.10: at 375 px the «·» started the second line). Null when the title does not start with the code.
+   */
+  get tituloPartes(): { code: string; rest: string } | null {
+    const rest = this.tituloResto;
+    if (rest === null) return null;
+    const separator = /^\s*[·•—–:|]/.exec(rest)?.[0] ?? '';
+    return { code: this.codigo + separator, rest: rest.slice(separator.length) };
+  }
+
   readonly descriptionId = `page-description-${nextId++}`;
   /** The person unfolded the description. */
   readonly expanded = signal(false);

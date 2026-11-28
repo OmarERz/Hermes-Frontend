@@ -17,9 +17,6 @@
 @import './app/rutas/Feeds-inteligencia/feeds-inteligencia.css';
 
 :root {
-  /* Legacy +2.67 px of the prototype: only the per-screen sheets still add it, until F19.3–F19.6 move them to the
-     type scale of tokens.css. */
-  --font-size-increase: 2.67px;
   --background-dark-neon:
     radial-gradient(ellipse at 8% 18%, rgba(116, 23, 121, 0.32), transparent 38%),
     radial-gradient(ellipse at 86% 82%, rgba(198, 27, 167, 0.18), transparent 34%),

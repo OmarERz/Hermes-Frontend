@@ -10,10 +10,10 @@
 .level-list {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .band-row th {
-  padding: 12px 7px 8px;
+  padding: var(--cell-pad-y) var(--cell-pad-x);
   background: transparent;
   text-align: left;
   font-weight: 650;

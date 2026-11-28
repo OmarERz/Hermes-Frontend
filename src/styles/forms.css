@@ -41,7 +41,7 @@
 .app-shell .page-content .field {
   display: grid;
   align-content: end;
-  gap: var(--stack-xs);
+  gap: var(--field-gap);
   min-width: 0;
   margin: 0;
 }
@@ -89,28 +89,28 @@
   position: absolute;
   top: 50%;
   left: var(--control-pad-x);
-  width: 17px;
-  height: 17px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
   color: var(--accent-violet);
   stroke-width: 1.9;
   pointer-events: none;
   transform: translateY(-50%);
 }
-/* Room for the leading icon (17 px and a gap of 8). */
+/* Room for the leading icon and a gap of 12 (40 px in all, a step of the scale). */
 .app-shell .page-content .control > svg:not(.control-chevron) ~ :is(select, input) {
-  padding-left: calc(var(--control-pad-x) + 17px + var(--space-2));
+  padding-left: calc(var(--control-pad-x) + var(--icon-sm) + var(--space-3));
 }
 .app-shell .page-content .control > svg.control-chevron {
   right: var(--control-pad-x);
   left: auto;
-  width: 16px;
-  height: 16px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
   color: var(--text-muted);
 }
 /* One chevron: the native arrow is off and the select leaves room for the drawn one. */
 .app-shell .page-content .control > select {
   appearance: none;
-  padding-right: calc(var(--control-pad-x) + 16px + var(--space-2));
+  padding-right: calc(var(--control-pad-x) + var(--icon-sm) + var(--space-3));
   text-overflow: ellipsis;
   cursor: pointer;
 }
@@ -217,7 +217,7 @@
   min-height: 32px;
   box-sizing: border-box;
   margin: 0;
-  padding: 0 calc(var(--space-2) + 16px + var(--space-1)) 0 var(--space-3);
+  padding: 0 calc(var(--space-2) + var(--icon-sm) + var(--space-2)) 0 var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background-color: var(--surface);

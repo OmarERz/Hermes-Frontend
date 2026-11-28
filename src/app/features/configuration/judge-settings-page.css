@@ -59,27 +59,27 @@
   border-top: 1px solid var(--border);
 }
 .field-error {
-  margin: 6px 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--danger-text, #b91c1c);
-  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-size: var(--text-sm);
 }
 .rule-errors {
-  margin: 14px 0 0;
-  padding: 10px 14px;
+  margin: var(--space-4) 0 0;
+  padding: var(--notice-pad-y) var(--notice-pad-x);
   border: 1px solid var(--danger-text, #b91c1c);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--danger-bg);
   color: var(--text-primary);
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
 }
 .rule-errors ul {
   margin: 0;
-  padding-left: 18px;
+  padding-left: var(--space-5);
 }
 .judge-simulation,
 .judge-locked {
   display: block;
-  margin-top: 14px;
+  margin-top: var(--space-4);
 }
 @media (max-width: 560px) {
   .config-robot {

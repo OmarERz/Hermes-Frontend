@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import {
   LucideHourglass,
   LucideLayers,
@@ -15,7 +15,7 @@ import { ConfigParameter, formatWeightsTotal, weightsSumToOne } from './config-m
 import { ConfigSaveBar } from './config-save-bar';
 import { ConfigStore } from './config-store';
 import { ConfigVersions } from './config-versions';
-import { formulaLabel, formulaLayout, shortFormulaLabel } from './formula-layout';
+import { FactorLevels, formulaLabel, formulaLayout, shortFormulaLabel } from './formula-layout';
 import { LockedProtections } from './locked-protections';
 import { SimulationPanel } from './simulation-panel';
 
@@ -59,6 +59,8 @@ export class FormulaPage {
   readonly layout = computed(() => formulaLayout(this.editor.parameters()));
   readonly weightsText = computed(() => formatWeightsTotal(this.editor.weightsTotal()));
   readonly weightsOk = computed(() => weightsSumToOne(this.editor.weightsTotal()));
+  /** N-19: on phones each «Niveles de …» group folds behind its button (the page was ≈ 8.5 screens long). */
+  readonly openLevels = signal<ReadonlySet<string>>(new Set());
 
   readonly pageState = computed<ViewState | null>(() => {
     const status = this.store.state.status();
@@ -69,6 +71,22 @@ export class FormulaPage {
 
   constructor() {
     this.store.load();
+  }
+
+  /** A group shows its levels when the person opened it or one of them has an error to read. */
+  levelsShown(group: FactorLevels): boolean {
+    const errors = this.editor.fieldErrors();
+    return (
+      this.openLevels().has(group.factor) || group.parameters.some((param) => !!errors[param.key])
+    );
+  }
+
+  toggleLevels(factor: string): void {
+    this.openLevels.update((open) => {
+      const next = new Set(open);
+      if (!next.delete(factor)) next.add(factor);
+      return next;
+    });
   }
 
   label(param: ConfigParameter): string {

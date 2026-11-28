@@ -347,12 +347,12 @@
                     row.source.level
                   }}</app-chip>
                 </td>
-                <td>
+                <td class="cell-nowrap">
                   <span class="health" [attr.data-health]="row.source.health">{{
                     row.healthLabel
                   }}</span>
                 </td>
-                <td>{{ row.lastCapture ?? 'Sin capturas todavía' }}</td>
+                <td class="cell-nowrap">{{ row.lastCapture ?? 'Sin capturas todavía' }}</td>
                 <td class="numeric">{{ row.source.items_per_run }}</td>
                 <td>{{ row.source.active ? 'Activa' : 'Inactiva' }}</td>
               </tr>

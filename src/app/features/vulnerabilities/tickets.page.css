@@ -1,10 +1,10 @@
 .panel {
-  margin-top: 15px;
+  margin-top: var(--space-4);
 }
 /* The urgency is the shared <app-chip> with the level colours (src/styles/chips.css). */
 .fixed-count {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
   text-align: start;
 }
 .progress {
@@ -12,7 +12,7 @@
   width: 110px;
   height: 7px;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   background: var(--surface-soft, #f4eef9);
 }
 .progress span {

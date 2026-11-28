@@ -99,6 +99,20 @@ describe('AgentsDashboardPage', SCREEN, () => {
     expect(reasons.label()).toContain('Motivos del juez');
   });
 
+  it('folds the charts behind a button that phones show (N-19)', async () => {
+    const { fixture, element } = await render(new FakeService());
+    const toggle = element.querySelector('.charts-toggle') as HTMLButtonElement;
+    const grid = element.querySelector('#agent-charts') as HTMLElement;
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(grid.classList).toContain('is-folded');
+    expect(text(toggle)).toBe('Ver las gráficas');
+    toggle.click();
+    await fixture.whenStable();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(grid.classList).not.toContain('is-folded');
+    expect(text(toggle)).toBe('Ocultar las gráficas');
+  });
+
   it('draws the performance of the agent picked in its chart', async () => {
     const { fixture, element } = await render(new FakeService());
     const select = element.querySelector('.chart-select') as HTMLSelectElement;

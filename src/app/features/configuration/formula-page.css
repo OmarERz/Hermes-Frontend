@@ -15,17 +15,17 @@
   gap: var(--space-1);
 }
 .step-title {
-  margin: 12px 0 8px;
-  font-size: calc(14px + var(--font-size-increase, 0px));
+  margin: var(--space-3) 0 var(--space-2);
+  font-size: var(--text-md);
 }
 .step-title small {
   color: var(--text-muted);
   font-weight: 500;
 }
 .weights-total {
-  margin: 10px 0 0;
+  margin: var(--space-3) 0 0;
   color: var(--text-secondary);
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
 }
 .weights-total strong {
   font-variant-numeric: tabular-nums;
@@ -34,24 +34,38 @@
   color: var(--danger-text, #b91c1c);
 }
 .rule-errors {
-  margin: 14px 0 0;
-  padding: 10px 14px;
+  margin: var(--space-4) 0 0;
+  padding: var(--notice-pad-y) var(--notice-pad-x);
   border: 1px solid var(--danger-text, #b91c1c);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--danger-bg);
   color: var(--text-primary);
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
 }
 .rule-errors ul {
   margin: 0;
-  padding-left: 18px;
+  padding-left: var(--space-5);
 }
 .block {
   display: block;
-  margin-top: 14px;
+  margin-top: var(--space-4);
 }
 @media (max-width: 900px) {
   .formula-grid {
     columns: 1;
+  }
+}
+
+/* N-19: on phones each «Niveles de …» group folds behind its button; wider, the button is hidden. */
+.fold-toggle {
+  display: none;
+}
+@media (max-width: 560px) {
+  .fold-toggle {
+    display: inline-flex;
+    margin-top: var(--space-2);
+  }
+  .field-list.is-folded {
+    display: none;
   }
 }

@@ -8,11 +8,11 @@
 .versions-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
 }
 .versions-table th,
 .versions-table td {
-  padding: 8px 10px;
+  padding: var(--cell-pad-y) var(--cell-pad-x);
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: middle;
@@ -29,24 +29,24 @@
   background: var(--accent-wash);
 }
 .current-chip {
-  margin-left: 6px;
-  padding: 2px 7px;
-  border-radius: 999px;
+  margin-left: var(--space-2);
+  padding: var(--space-0-5) var(--space-2);
+  border-radius: var(--radius-full);
   background: var(--accent-strong);
   color: var(--on-accent);
-  font-size: calc(10px + var(--font-size-increase, 0px));
+  font-size: var(--text-2xs);
   font-weight: 700;
 }
 .versions-notice {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-3);
   color: var(--success-text, #16804a);
 }
 .versions-pager {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 .versions-pager svg {
   width: 16px;

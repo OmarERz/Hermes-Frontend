@@ -4,24 +4,24 @@
 }
 .field-row {
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
   min-width: 0;
-  padding: 10px 12px;
+  padding: var(--sub-card-pad);
   border: 1px solid var(--border);
-  border-radius: 11px;
+  border-radius: var(--radius-md);
   background: var(--surface-soft);
 }
 .field-row label {
   color: var(--text-primary);
   font-weight: 650;
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
   line-height: 1.35;
 }
 .field-controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 96px;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
 .field-row.numeric .field-controls:has(> :only-child) {
   grid-template-columns: 140px;
@@ -31,13 +31,13 @@
 select {
   width: 100%;
   min-height: 36px;
-  padding: 6px 9px;
+  padding: var(--space-2) var(--space-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised);
   color: var(--text-primary);
   font: inherit;
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
   font-variant-numeric: tabular-nums;
 }
 .number-input:focus-visible,
@@ -52,14 +52,14 @@ select:focus-visible {
 }
 .field-hint {
   color: var(--text-muted);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
   line-height: 1.4;
 }
 .field-error {
   display: block;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   color: var(--danger-text, #b91c1c);
-  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-size: var(--text-sm);
   line-height: 1.4;
 }
 .lock {
@@ -80,9 +80,13 @@ select:focus-visible {
   border-color: var(--accent) !important;
   box-shadow: inset 3px 0 0 var(--accent);
 }
+/* The same inline inset as the number rows (a sub-card); with no icon, the text starts there too (F19.10). */
 .tool-setting {
-  padding: 8px 10px;
-  border-radius: 10px;
+  padding: var(--space-2) var(--sub-card-pad);
+  border-radius: var(--radius-md);
+}
+.tool-setting.no-icon {
+  grid-template-columns: minmax(0, 1fr) 42px;
 }
 
 /*

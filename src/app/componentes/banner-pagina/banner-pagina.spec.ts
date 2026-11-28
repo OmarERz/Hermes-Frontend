@@ -41,7 +41,8 @@ describe('BannerPagina', () => {
     fixture.componentRef.setInput('codigo', 'CVE-2026-10001');
     await fixture.whenStable();
     const title = element.querySelector('.heading-copy h1')!;
-    expect(title.querySelector('.title-code')?.textContent).toBe('CVE-2026-10001');
+    // The separator stays with the code, so it never starts the second line.
+    expect(title.querySelector('.title-code')?.textContent).toBe('CVE-2026-10001 ·');
     expect(title.textContent?.trim()).toBe('CVE-2026-10001 · OpenSSL 3.0.7');
     // A code the title does not start with changes nothing.
     fixture.componentRef.setInput('codigo', 'CVE-2026-99999');

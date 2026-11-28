@@ -13,7 +13,12 @@ import { AsyncStateComponent, ViewState } from '../../shared/async-state.compone
 import { CursorPager } from '../../shared/cursor-pager';
 import { dayBound } from '../runs/day-bound';
 import { formatDateTime } from '../../shared/labels';
-import { AUDIT_ACTION_LABELS, auditActionLabel, KNOWN_AUDIT_ACTIONS } from './audit-labels';
+import {
+  AUDIT_ACTION_LABELS,
+  auditActionLabel,
+  auditTarget,
+  KNOWN_AUDIT_ACTIONS,
+} from './audit-labels';
 import { AuditEntry, AuditFilters, AuditService } from './audit.service';
 
 const PAGE_SIZE = 50;
@@ -29,6 +34,8 @@ export interface AuditRow {
   action: string;
   actionLabel: string | null;
   target: string;
+  /** The object as its kind's Spanish name and id (AUD-2); null for a kind the front does not know. */
+  targetParts: { label: string; id: string } | null;
 }
 
 function toRow(entry: AuditEntry): AuditRow {
@@ -40,6 +47,7 @@ function toRow(entry: AuditEntry): AuditRow {
     action: entry.action,
     actionLabel: auditActionLabel(entry.action),
     target: entry.target,
+    targetParts: auditTarget(entry.target),
   };
 }
 

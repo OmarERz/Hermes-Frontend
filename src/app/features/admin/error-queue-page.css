@@ -6,9 +6,9 @@
   display: block;
 }
 .errors-table td.related > * + * {
-  margin-top: 3px;
+  margin-top: var(--space-1);
 }
 .footnote {
   color: var(--text-muted);
-  font-size: calc(11px + var(--font-size-increase));
+  font-size: var(--text-xs);
 }

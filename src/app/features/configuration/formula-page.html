@@ -100,8 +100,25 @@
           <header>
             <h2><svg lucideSigma aria-hidden="true"></svg> Niveles de {{ group.name }}</h2>
             <p>Valores de 0 a 1, del nivel más fuerte al más débil (orden monótono).</p>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm fold-toggle"
+              [attr.aria-controls]="'levels-' + group.factor"
+              [attr.aria-expanded]="levelsShown(group)"
+              (click)="toggleLevels(group.factor)"
+            >
+              {{
+                levelsShown(group)
+                  ? 'Ocultar los niveles'
+                  : 'Ver los ' + group.parameters.length + ' niveles'
+              }}
+            </button>
           </header>
-          <div class="field-list">
+          <div
+            class="field-list"
+            [id]="'levels-' + group.factor"
+            [class.is-folded]="!levelsShown(group)"
+          >
             @for (param of group.parameters; track param.key) {
               <app-config-field
                 [param]="param"

@@ -1,10 +1,10 @@
 .back-row {
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-3);
 }
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
   color: var(--accent-text);
   font-weight: 600;
   text-decoration: none;
@@ -17,49 +17,49 @@
   text-decoration: underline;
 }
 .panel {
-  margin-top: 15px;
+  margin-top: var(--space-4);
 }
 .panel-heading {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 .panel-heading h2 {
   margin: 0;
-  font-size: calc(17px + var(--font-size-increase, 0px));
+  font-size: var(--text-xl);
 }
 .itop-links {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: var(--space-4);
 }
 .description {
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-3);
   line-height: 1.5;
   white-space: pre-line;
 }
 .facts {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 10px 16px;
+  gap: var(--space-3) var(--space-4);
   margin: 0;
 }
 .facts dt {
   color: var(--text-muted, #6b6175);
-  font-size: calc(10px + var(--font-size-increase, 0px));
+  font-size: var(--text-2xs);
   font-weight: 700;
 }
 .facts dd {
-  margin: 2px 0 0;
+  margin: var(--space-0-5) 0 0;
   overflow-wrap: anywhere;
 }
 .hint {
-  margin: 10px 0 0;
+  margin: var(--space-3) 0 0;
   color: var(--text-muted, #6b6175);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
 }
 .link-button {
   padding: 0;

@@ -5,7 +5,7 @@ import { LucideArrowLeft, LucideArrowRight, LucideTicket } from '@lucide/angular
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { CursorPager } from '../../shared/cursor-pager';
 import { safeExternalUrl } from '../../shared/itop-links';
-import { formatDateTime } from '../../shared/labels';
+import { formatDateTime, formatShortDateTime } from '../../shared/labels';
 import {
   ITOP_WRITE_LABELS,
   labelOf,
@@ -34,6 +34,7 @@ export function ticketRow(update: TicketUpdate) {
   return {
     id: update.id,
     at: formatDateTime(update.created_at),
+    atShort: formatShortDateTime(update.created_at),
     ticket: update.ticket_ref ?? update.ticket_itop_id ?? 'Por crear en iTop',
     /** The id the filter takes, shown next to the reference when they differ. */
     itopId:

@@ -18,7 +18,7 @@
 }
 .review-modal-header {
   flex: none;
-  padding: var(--space-6) var(--space-6) var(--space-4);
+  padding: var(--dialog-pad) var(--dialog-pad) var(--space-4);
 }
 .review-modal-body {
   display: grid;
@@ -27,12 +27,12 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0 var(--space-6) var(--space-4);
+  padding: 0 var(--dialog-pad) var(--space-4);
 }
 .review-modal-actions {
   flex: none;
   flex-wrap: wrap;
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-4) var(--dialog-pad);
   border-top: 1px solid var(--border);
   background: var(--surface);
 }
@@ -45,36 +45,36 @@
 }
 @media (max-width: 560px) {
   .review-modal-header {
-    padding: var(--space-4) var(--space-4) var(--space-3);
+    padding: var(--dialog-pad) var(--dialog-pad) var(--space-3);
   }
   .review-modal-body {
-    padding: 0 var(--space-4) var(--space-3);
+    padding: 0 var(--dialog-pad) var(--space-3);
   }
   .review-modal-actions {
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-3) var(--dialog-pad);
   }
 }
 .option-copy {
   display: grid;
-  gap: 2px;
+  gap: var(--space-0-5);
   min-width: 0;
 }
 .option-copy strong {
   color: var(--text-primary, #321044);
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
 }
 .option-copy small {
   color: var(--text-secondary, #72647c);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
   line-height: 1.35;
 }
 .level-picker {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   color: var(--text-primary, #321044);
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
   font-weight: 650;
 }
 .level-picker strong {
@@ -91,7 +91,7 @@
   width: 36px;
   height: 36px;
   border: 1px solid var(--border, #e4e3ee);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
   color: var(--accent, #ed079b);
   cursor: pointer;

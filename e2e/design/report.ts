@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { designRoot, type AxeRecord, type ShotRecord, type TestRecord } from './support';
-import type { LayoutKind, PieceType } from '../support/layout-checks';
+import type { LayoutKind } from '../support/layout-checks';
 
 const IMPACTS = ['critical', 'serious', 'moderate', 'minor'] as const;
 
@@ -204,16 +204,25 @@ function distinct(rows: LayoutRow[]): Distinct[] {
   return [...map.values()].sort((a, b) => b.views - a.views || b.px - a.px);
 }
 
-/** Paddings each piece type uses: padding → the distinct screen · element pairs. */
-export function piecePaddings(shots: ShotRecord[]): Map<PieceType, Map<string, Set<string>>> {
-  const types = new Map<PieceType, Map<string, Set<string>>>();
+/** Widest phone width (px): the tokens of a piece type may change at or below it (src/styles/tokens.css). */
+export const PHONE_MAX = 560;
+
+/** A piece type in a width band: «panel» (wider than a phone) or «panel · phone». */
+export function pieceKey(type: string, width: number): string {
+  return width <= PHONE_MAX ? `${type} · phone` : type;
+}
+
+/** Paddings each piece type uses, per width band: padding → the distinct screen · element pairs. */
+export function piecePaddings(shots: ShotRecord[]): Map<string, Map<string, Set<string>>> {
+  const types = new Map<string, Map<string, Set<string>>>();
   for (const shot of shots) {
     for (const piece of shot.pieces ?? []) {
-      const paddings = types.get(piece.type) ?? new Map<string, Set<string>>();
+      const key = pieceKey(piece.type, shot.width);
+      const paddings = types.get(key) ?? new Map<string, Set<string>>();
       const users = paddings.get(piece.padding) ?? new Set<string>();
       users.add(`${shot.screen} · ${piece.element}`);
       paddings.set(piece.padding, users);
-      types.set(piece.type, paddings);
+      types.set(key, paddings);
     }
   }
   return types;
@@ -262,7 +271,7 @@ function layoutSection(shots: ShotRecord[]): string[] {
     );
   }
   lines.push(
-    `| Piece types with more than one padding | ${counts['pieces.mixedTypes']} | — | — |`,
+    `| Piece types (per width band) with more than one padding | ${counts['pieces.mixedTypes']} | — | — |`,
     `| Pieces (screen · element) off their type's most used padding | ${counts['pieces.offDominant']} | — | — |`,
   );
   for (const kind of Object.keys(KIND_TITLES) as LayoutKind[]) {
@@ -288,6 +297,7 @@ function layoutSection(shots: ShotRecord[]): string[] {
     '### Paddings per piece type',
     '',
     'Computed padding (top right bottom left, px) of each typed piece, with the screen · element pairs that use it.',
+    `A type is counted per width band: «· phone» is ${PHONE_MAX} px or less, where panels, cards and dialogs use 16 px.`,
     '',
     '| Type | Padding | Uses | Examples |',
     '| --- | --- | --- | --- |',
