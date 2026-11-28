@@ -22,13 +22,16 @@ import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { Chip } from '../../shared/chip';
 import { toCsv } from '../../shared/csv';
+import { ColumnsToggle } from '../../shared/columns-toggle';
 import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink, safeExternalUrl } from '../../shared/itop-links';
 import { LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import { CpeMappingDialog, MappingTarget } from './cpe-mapping-dialog';
 import {
   CATEGORIES,
   CATEGORY_LABELS,
+  cpeParts,
   INSTALL_STATUS_LABELS,
   INSTALL_STATUS_TONES,
   INSTALL_STATUSES,
@@ -78,6 +81,8 @@ function yesNo(value: YesNoFilter): boolean | null {
     GraficoDashboard,
     AsyncStateComponent,
     Chip,
+    ColumnsToggle,
+    ScrollFade,
     IfRoleDirective,
     ItopLink,
     CpeMappingDialog,
@@ -120,6 +125,8 @@ export class SoftwarePage {
   readonly withVulnerabilities = signal<YesNoFilter>('');
   readonly pageSize = signal(25);
   readonly chart = signal<SoftwareChart>('category');
+  /** «Todas las columnas»: categories, states and licences wait for a wide table (src/styles/tables.css). */
+  readonly allColumns = signal(false);
 
   readonly filters = computed<SoftwareFilters>(() => ({
     q: this.q() || null,
@@ -150,7 +157,10 @@ export class SoftwarePage {
         count: item.by_status?.[key] ?? 0,
       })).filter((status) => status.count > 0),
       licenceNames: (item.licences ?? []).map((licence) => licence.name),
-      licensed: `${item.licensed_instances} de ${plural(item.instances, 'instalación', 'instalaciones')} con licencia`,
+      licensedShort: `${item.licensed_instances} de ${item.instances}`,
+      assets: plural(item.ci_count, 'activo', 'activos'),
+      openLabel: plural(item.open_vulnerabilities, 'abierta', 'abiertas'),
+      cpeParts: cpeParts(item.cpe),
     })),
   );
   readonly tableState = computed(() => viewState(this.pager.state, this.rows().length === 0));

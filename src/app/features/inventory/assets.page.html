@@ -240,33 +240,34 @@
             role="region"
             aria-label="Inventario de activos; desplazamiento horizontal"
             tabindex="0"
+            appScrollFade
+            [appScrollFadeReveal]="false"
           >
-            <table>
+            <table class="data-table sticky-first cards-mobile">
               <thead>
                 <tr>
-                  <th scope="col">ID del activo</th>
                   <th scope="col">Nombre</th>
                   <th scope="col">Clase</th>
-                  <th scope="col">CPU</th>
-                  <th scope="col">RAM</th>
-                  <th scope="col">Sistema operativo</th>
-                  <th scope="col">Responsable</th>
-                  <th scope="col">Custodio</th>
                   <th scope="col">Criticidad</th>
-                  <th scope="col">Exposición</th>
-                  <th scope="col">Clasificación</th>
                   <th scope="col">Vulnerabilidades</th>
-                  <th scope="col">Software</th>
+                  <th scope="col" class="numeric col-from-md">Software</th>
+                  <th scope="col" class="col-from-lg">Responsable</th>
+                  <th scope="col" class="col-from-lg">Exposición</th>
+                  <th scope="col" class="col-from-lg">CPU</th>
+                  <th scope="col" class="col-from-lg">RAM</th>
+                  <th scope="col" class="col-from-lg">Sistema operativo</th>
+                  <th scope="col" class="col-from-lg">Custodio</th>
+                  <th scope="col" class="col-from-lg">Clasificación</th>
+                  <th scope="col" class="col-from-lg">ID del activo</th>
                   <th scope="col">iTop</th>
                 </tr>
               </thead>
               <tbody>
                 @for (row of rows(); track row.ci_id) {
                   <tr>
-                    <td>{{ row.ci_id }}</td>
-                    <td class="name-cell">
+                    <td class="name-cell card-title">
                       <a class="row-link" [routerLink]="['/activos', row.ci_id]"
-                        ><strong>{{ row.name }}</strong></a
+                        ><strong class="cell-nowrap">{{ row.name }}</strong></a
                       >
                       @if (row.service) {
                         <small>{{ row.service }}</small>
@@ -275,30 +276,21 @@
                         <small class="clamped">{{ row.description }}</small>
                       }
                     </td>
-                    <td>
+                    <td data-label="Clase">
                       <span class="type-chip">{{ row.classLabel }}</span>
                     </td>
-                    <td>{{ text(row.cpu) }}</td>
-                    <td>{{ text(row.ram) }}</td>
-                    <td>{{ text(row.os) }}</td>
-                    <td>{{ row.owner ?? 'Sin responsable' }}</td>
-                    <td>{{ row.custodian ?? 'Sin custodio' }}</td>
-                    <td>
+                    <td data-label="Criticidad">
                       <app-chip [tone]="criticalityTone(row.criticality)">{{
                         row.criticalityLabel
                       }}</app-chip>
                     </td>
-                    <td>{{ row.exposure }}</td>
-                    <td>
-                      <span class="type-chip">{{ row.classificationLabel }}</span>
-                    </td>
-                    <td>
+                    <td data-label="Vulnerabilidades">
                       @if (row.level) {
                         <app-chip [tone]="row.level"
                           >{{ levelLabels[row.level] }} · {{ row.risk }}</app-chip
                         >
                         <small
-                          >{{ row.open_findings }} abiertas
+                          >{{ row.openLabel }}
                           @if (row.kev_findings) {
                             · {{ row.kev_findings }} en KEV
                           }
@@ -307,8 +299,26 @@
                         <span class="muted">Sin vulnerabilidades</span>
                       }
                     </td>
-                    <td class="numeric">{{ row.software_count }}</td>
-                    <td><app-itop-link kind="view" [href]="row.itop_url" /></td>
+                    <td class="numeric col-from-md" data-label="Software">
+                      {{ row.software_count }}
+                    </td>
+                    <td class="col-from-lg" data-label="Responsable">
+                      {{ row.owner ?? 'Sin responsable' }}
+                    </td>
+                    <td class="col-from-lg" data-label="Exposición">{{ row.exposure }}</td>
+                    <td class="cell-nowrap col-from-lg" data-label="CPU">{{ text(row.cpu) }}</td>
+                    <td class="cell-nowrap col-from-lg" data-label="RAM">{{ text(row.ram) }}</td>
+                    <td class="col-from-lg" data-label="Sistema operativo">{{ text(row.os) }}</td>
+                    <td class="col-from-lg" data-label="Custodio">
+                      {{ row.custodian ?? 'Sin custodio' }}
+                    </td>
+                    <td class="col-from-lg" data-label="Clasificación">
+                      <span class="type-chip">{{ row.classificationLabel }}</span>
+                    </td>
+                    <td class="cell-nowrap col-from-lg" data-label="ID del activo">
+                      {{ row.ci_id }}
+                    </td>
+                    <td data-label="iTop"><app-itop-link kind="view" [href]="row.itop_url" /></td>
                   </tr>
                 }
               </tbody>

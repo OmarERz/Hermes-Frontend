@@ -59,36 +59,41 @@ describe('AssetsPage', () => {
     const rows = element.querySelectorAll('tbody tr');
     expect(rows).toHaveLength(2);
     const payments = cells(rows[0]!);
-    expect(payments.slice(0, 11)).toEqual([
-      'CI-1',
+    // N-2 (F19.8): the shared data table, name first; the columns the detail page also has wait for a wide table.
+    expect(payments).toEqual([
       'srv-pagos-01PagosServidor de cobros con tarjeta',
       'Servidor',
+      'Alta',
+      'Crítica · 922 abiertas · 1 en KEV',
+      '1',
+      'Dueña de Pagos',
+      'Expuesto',
       '16 vCPU',
       '64 GB',
       'Ubuntu 22.04',
-      'Dueña de Pagos',
       'Infraestructura Linux',
-      'Alta',
-      'Expuesto',
       'Altamente clasificada',
+      'CI-1',
+      expect.any(String),
     ]);
-    expect(payments[11]).toBe('Crítica · 922 abiertas · 1 en KEV');
-    expect(payments[12]).toBe('1');
+    expect(element.querySelector('table')?.classList).toContain('data-table');
+    expect(rows[0]!.querySelector('td.cell-nowrap[data-label="CPU"]')).not.toBeNull();
     expect(rows[0]!.querySelector('a.itop-link')?.getAttribute('href')).toBe(PAYMENTS.itop_url);
     expect(rows[0]!.querySelector('a.row-link')?.getAttribute('href')).toBe('/activos/CI-1');
 
     const web = cells(rows[1]!);
-    expect(web.slice(2, 10)).toEqual([
+    expect(web.slice(1, 11)).toEqual([
       'Servidor',
-      '—',
-      '—',
-      '—',
-      'Sin responsable',
-      'Sin custodio',
       'Media',
+      'Sin vulnerabilidades',
+      expect.any(String),
+      'Sin responsable',
       'Sin dato',
+      '—',
+      '—',
+      '—',
+      'Sin custodio',
     ]);
-    expect(web[11]).toBe('Sin vulnerabilidades');
     // No iTop URL from the API (iTop not configured): no link.
     expect(rows[1]!.querySelector('a.itop-link')).toBeNull();
     expect(service.listAssets).toHaveBeenCalledWith(NO_FILTERS, null, 25);

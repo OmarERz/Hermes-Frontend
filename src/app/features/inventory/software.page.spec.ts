@@ -81,7 +81,7 @@ describe('SoftwarePage', () => {
       '3.0.7',
       '3 3 activos',
       'Activa: 1Inactiva: 1Sin dato: 1',
-      'Soporte OpenSSL1 de 3 instalaciones con licencia',
+      '1 de 3Soporte OpenSSL',
       'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*',
       'Crítica2 abiertas',
       '',
@@ -90,14 +90,38 @@ describe('SoftwarePage', () => {
       'Amazon Linux 2023 kernel',
       'Sin categoría',
       'Versión desconocida',
-      '1 1 activos',
+      '1 1 activo',
       'Sin dato: 1',
-      'Sin licencias0 de 1 instalación con licencia',
+      '0 de 1Sin licencias',
       'Sin CPE',
       'Sin vulnerabilidades',
       '',
     ]);
     expect(service.listSoftware).toHaveBeenCalledWith(NO_FILTERS, null, 25);
+    // N-3: the shared data table; the CPE only breaks after its colons, never inside a part.
+    expect(element.querySelector('table')?.classList).toContain('data-table');
+    expect(
+      Array.from(element.querySelectorAll('tbody tr:first-child .cpe span')).map(
+        (part) => part.textContent,
+      ),
+    ).toEqual([
+      'cpe:',
+      '2.3:',
+      'a:',
+      'openssl:',
+      'openssl:',
+      '*:',
+      '*:',
+      '*:',
+      '*:',
+      '*:',
+      '*:',
+      '*:',
+      '*',
+    ]);
+    expect(element.querySelectorAll('tbody tr:first-child .cpe wbr')).toHaveLength(13);
+    // N-8: the numbered pager of the other lists.
+    expect(element.querySelector('.pagination button.selected')?.textContent?.trim()).toBe('1');
     // Readers never get the mapping action.
     expect(element.querySelector('.row-action')).toBeNull();
   });

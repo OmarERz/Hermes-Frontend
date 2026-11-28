@@ -111,6 +111,11 @@ export function licenceValidity(
   return 'Sin fechas en iTop';
 }
 
+/** A CPE cut after each colon, so a table can break it only there (N-3): «cpe:», «2.3:», «a:»… */
+export function cpeParts(cpe: string | null | undefined): string[] {
+  return cpe ? cpe.split(/(?<=:)/) : [];
+}
+
 /** «1 instalación», «3 instalaciones»… */
 export function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;

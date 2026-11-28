@@ -48,38 +48,30 @@
   color: inherit;
   font: inherit;
 }
-table {
-  table-layout: auto;
-}
-td {
-  vertical-align: top;
-}
+/*
+ * N-3 (F19.8): the catalogue is the shared .data-table (src/styles/tables.css). Names keep one line; the CPE breaks
+ * only after its colons (<wbr>), in a column at least 18 characters wide, instead of character by character;
+ * categories, states and licences wait for a wide table or «Todas las columnas»; on phones each product is a card.
+ */
 td strong,
 td small {
   display: block;
 }
 td small {
-  margin-top: 2px;
-  color: var(--text-muted, #70677a);
+  margin-top: var(--space-0-5);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+.data-table .cpe {
+  display: inline-block;
+  min-width: 18ch;
+  max-width: 26ch;
+  font-size: var(--text-2xs);
+  overflow-wrap: normal;
 }
 .actions {
   text-align: right;
   white-space: nowrap;
-}
-.row-action {
-  min-height: 32px;
-  padding: 5px 10px;
-  border: 1px solid var(--border, #dedbe7);
-  border-radius: 8px;
-  background: var(--surface-raised, #fff);
-  color: var(--text-primary, #38294a);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.row-action:focus-visible {
-  outline: 2px solid #ed079b;
-  outline-offset: 2px;
 }
 .license-panel li > span {
   display: grid;

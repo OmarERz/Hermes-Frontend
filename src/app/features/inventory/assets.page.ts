@@ -27,6 +27,7 @@ import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink, safeExternalUrl } from '../../shared/itop-links';
 import { Chip } from '../../shared/chip';
 import { KpiCard, KpiState } from '../../shared/kpi-card';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   Classification,
   CLASSIFICATION_LABELS,
@@ -44,6 +45,7 @@ import {
   exposureLabel,
   HOST_CLASSES,
   itopClassLabel,
+  plural,
   text,
 } from './inventory-labels';
 import {
@@ -78,6 +80,7 @@ const CLASSIFICATIONS = Object.keys(CLASSIFICATION_LABELS) as Classification[];
     Chip,
     ItopLink,
     KpiCard,
+    ScrollFade,
     LucideActivity,
     LucideArrowLeft,
     LucideArrowRight,
@@ -160,6 +163,7 @@ export class AssetsPage {
       criticalityLabel: CRITICALITY_LABELS[asset.criticality],
       classificationLabel: CLASSIFICATION_LABELS[asset.classification],
       exposure: exposureLabel(asset.exposed),
+      openLabel: plural(asset.open_findings, 'abierta', 'abiertas'),
     })),
   );
   readonly tableState = computed(() => viewState(this.pager.state, this.rows().length === 0));

@@ -82,3 +82,28 @@ app-chip {
   gap: 8px;
   margin-top: 8px;
 }
+
+/*
+ * N-1 (F19.8): on phones the previous and the current final are two columns, each with its label above its value,
+ * without the comparison icon; side by side with the icon, «Sin evaluación anterior» ran over «Final actual».
+ */
+@media (max-width: 560px) {
+  .before-after {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+  .before-after > svg {
+    display: none;
+  }
+  .before-after > div {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: var(--space-1);
+  }
+  .before-after strong,
+  .trend {
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+}
