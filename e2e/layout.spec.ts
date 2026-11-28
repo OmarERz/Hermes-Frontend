@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { canOpen, SCREENS } from './design/catalogue';
-import { checkLayout } from './support/layout-checks';
+import { checkLayout, scaleException } from './support/layout-checks';
 import { asRole, expect, test } from './support/fixtures';
 
 /**
@@ -10,7 +10,12 @@ import { asRole, expect, test } from './support/fixtures';
  * - at 375 and 1280 px, no edge that ends inside another box (F19.8, D-108: a panel shorter than its column, a column
  *   divider shorter than its card, a card narrower than the one stacked on it; e2e/support/layout-checks.ts), and the
  *   navigation in place: the sidebar fills the viewport's height at any scroll and its column is painted to the end of
- *   the page; on phones the bottom bar sits on the viewport's bottom edge, full width.
+ *   the page; on phones the bottom bar sits on the viewport's bottom edge, full width;
+ * - at 375 and 1280 px, the spacing (F19.10, D-108: «que todos los paddings sean uniformes»): every typed piece (panel,
+ *   card, sub-card, indicator, table cell, field, form group, notice, banner) has the padding of its type's token in
+ *   src/styles/tokens.css at that width, and no padding or gap is off the spacing scale outside the documented
+ *   exceptions (SCALE_EXCEPTIONS). Together with scripts/check-tokens.mjs (npm run lint), which rejects a raw length
+ *   in the sheets, a new loose padding or a piece type with a second padding fails the gate.
  */
 const WIDTHS = [375, 768, 1280] as const;
 const GUARDED: readonly number[] = [375, 1280];
@@ -125,10 +130,29 @@ test.describe('layout as admin', () => {
         await page.setViewportSize({ width, height: HEIGHT });
         expect(await sideways(page), `${screen.id} at ${width} px`).toBe(0);
         if (!GUARDED.includes(width)) continue;
-        const { findings } = await checkLayout(page, { kinds: ['edge'], pieces: false });
+        const { findings, pieces, expected } = await checkLayout(page, {
+          kinds: ['edge', 'scale'],
+        });
+        const shown = (kind: string): string[] =>
+          findings
+            .filter((finding) => finding.kind === kind && !scaleException(finding))
+            .map((finding) => `${finding.rule} · ${finding.element} · ${finding.detail}`);
         expect(
-          findings.map((finding) => `${finding.rule} · ${finding.element} · ${finding.detail}`),
+          shown('edge'),
           `${screen.id} at ${width} px: edges that end inside another box`,
+        ).toEqual([]);
+        expect(
+          shown('scale'),
+          `${screen.id} at ${width} px: paddings and gaps off the spacing scale`,
+        ).toEqual([]);
+        expect(
+          pieces
+            .filter((piece) => piece.padding !== expected[piece.type])
+            .map(
+              (piece) =>
+                `${piece.type} · ${piece.element} · ${piece.padding} (token: ${expected[piece.type]})`,
+            ),
+          `${screen.id} at ${width} px: pieces off their type's padding`,
         ).toEqual([]);
         await expectNavigationInPlace(page, screen.id, width);
       }

@@ -68,10 +68,32 @@ export interface PieceRecord {
 export interface LayoutResult {
   findings: LayoutFinding[];
   pieces: PieceRecord[];
+  /**
+   * The padding each piece type takes at the current width, read from the tokens of src/styles/tokens.css (--panel-pad,
+   * --cell-pad-y…), in the same format as PieceRecord.padding: the e2e guard compares every piece with it.
+   */
+  expected: Record<PieceType, string>;
 }
 
 /** The spacing scale of src/styles/tokens.css (--space-*), in px. Above 64 px any multiple of 8 is accepted. */
 export const SPACING_SCALE = [0, 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64];
+
+/**
+ * Off-scale paddings and gaps that are not a design choice of a sheet, each with its reason (F19.10). The e2e guard
+ * (e2e/layout.spec.ts) fails on any other `scale` finding; the design capture still lists them all.
+ */
+export const SCALE_EXCEPTIONS: readonly { element: RegExp; detail: RegExp; why: string }[] = [];
+
+/** A scale finding that is a documented exception. */
+export function scaleException(finding: LayoutFinding): boolean {
+  return (
+    finding.kind === 'scale' &&
+    SCALE_EXCEPTIONS.some(
+      (exception) =>
+        exception.element.test(finding.element) && exception.detail.test(finding.detail),
+    )
+  );
+}
 
 /** Two edges closer than this (px) count as the same line: rounding and 1 px borders. */
 export const TOLERANCE = 2;
@@ -115,6 +137,23 @@ function inPage(options: InPageOptions): LayoutResult {
     const kinds = new Set(options.kinds);
     const findings: LayoutFinding[] = [];
     const pieces: PieceRecord[] = [];
+    const tokens = getComputedStyle(document.documentElement);
+    const token = (name: string): number =>
+      Math.round(parseFloat(tokens.getPropertyValue(name)) || 0);
+    const sides = (y: number, x = y): string => `${y} ${x} ${y} ${x}`;
+    const expected: Record<PieceType, string> = {
+      panel: sides(token('--panel-pad')),
+      card: sides(token('--card-pad')),
+      'sub-card': sides(token('--sub-card-pad')),
+      indicator: sides(token('--indicator-pad')),
+      'indicator-nested': sides(token('--indicator-pad-nested')),
+      'table-cell': sides(token('--cell-pad-y'), token('--cell-pad-x')),
+      dialog: `inline ${token('--dialog-pad')}`,
+      'form-group': `${sides(token('--form-group-pad'))} · gap ${token('--form-group-gap')}`,
+      field: `${sides(0)} · gap ${token('--field-gap')}`,
+      notice: sides(token('--notice-pad-y'), token('--notice-pad-x')),
+      banner: sides(token('--banner-pad')),
+    };
     const root = document.querySelector('.app-shell') ?? document.body;
     const page = document.querySelector('.page-content');
 
@@ -690,6 +729,6 @@ function inPage(options: InPageOptions): LayoutResult {
       }
     }
 
-    return { findings, pieces };
+    return { findings, pieces, expected };
   }
 }

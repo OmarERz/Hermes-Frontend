@@ -41,7 +41,7 @@
 .app-shell .page-content .field {
   display: grid;
   align-content: end;
-  gap: var(--stack-xs);
+  gap: var(--field-gap);
   min-width: 0;
   margin: 0;
 }
