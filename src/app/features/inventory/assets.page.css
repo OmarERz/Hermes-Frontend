@@ -52,27 +52,40 @@
 .name-cell {
   min-width: 170px;
 }
-.criticality-row-high .state-icon {
-  border-color: var(--danger-text);
+/*
+ * N-7 (F19.8): the three distribution panels have the same rows (icon, label and count, bar, share), the bar in the
+ * colour of the level for the criticality, and sit side by side in one row of equal panels while the page is a
+ * single column at least 900 px wide (each panel keeps room for its rows and share); side by side with the inventory
+ * (wide windows) they stack.
+ */
+.criticality-row-high > svg {
   background: var(--danger-bg);
   color: var(--danger-text);
 }
-.criticality-row-high .state-progress > span {
+.criticality-row-high > i em {
   background: var(--danger-text);
 }
-.criticality-row-medium .state-icon {
-  border-color: var(--warning-text);
+.criticality-row-medium > svg {
   background: var(--warning-bg);
   color: var(--warning-text);
 }
-.criticality-row-medium .state-progress > span {
+.criticality-row-medium > i em {
   background: var(--warning-text);
 }
-.criticality-row-low .state-icon {
-  border-color: var(--success-text);
+.criticality-row-low > svg {
   background: var(--success-bg);
   color: var(--success-text);
 }
-.criticality-row-low .state-progress > span {
+.criticality-row-low > i em {
   background: var(--success-text);
+}
+.state-footnote {
+  margin: var(--space-2) 0 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+@container workspace (min-width: 900px) and (max-width: 1080px) {
+  .right-column {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }

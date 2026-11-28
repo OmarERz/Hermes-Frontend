@@ -82,7 +82,13 @@
           <svg lucideLayers aria-hidden="true"></svg>
           <h2 id="software-title">Software instalado</h2>
         </div>
-        <span>{{ softwareRows().length }} instalaciones</span>
+        <app-columns-toggle
+          [all]="allSoftwareColumns()"
+          (allChange)="allSoftwareColumns.set($event)"
+          controls="installed-software-table"
+          phoneCards
+        />
+        <span>{{ installationsLabel() }}</span>
       </header>
       @if (softwareState(); as state) {
         <app-async-state
@@ -98,39 +104,67 @@
           role="region"
           aria-label="Software instalado; desplazamiento horizontal"
           tabindex="0"
+          appScrollFade
+          [appScrollFadeReveal]="false"
         >
-          <table>
+          <table
+            id="installed-software-table"
+            class="data-table sticky-first cards-mobile"
+            [class.all-columns]="allSoftwareColumns()"
+          >
             <thead>
               <tr>
                 <th scope="col">Software</th>
                 <th scope="col">Versión</th>
-                <th scope="col">Categoría</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Licencia</th>
-                <th scope="col">CPE</th>
                 <th scope="col">Vulnerabilidades</th>
-                <th scope="col">Descripción</th>
+                <th scope="col">CPE</th>
+                <th scope="col" class="col-from-md">Estado</th>
+                <th scope="col" class="col-from-lg">Categoría</th>
+                <th scope="col" class="col-from-lg">Licencia</th>
+                <th scope="col" class="col-from-lg">Descripción</th>
               </tr>
             </thead>
             <tbody>
               @for (item of softwareRows(); track item.key) {
                 <tr>
-                  <td>
-                    <strong>{{ item.name }}</strong>
+                  <td class="card-title">
+                    <strong class="cell-nowrap">{{ item.name }}</strong>
                   </td>
-                  <td>
-                    {{ item.version || '—' }}
+                  <td data-label="Versión">
+                    <span class="cell-nowrap">{{ item.version || '—' }}</span>
                     @if (!item.version_known) {
                       <small>Versión desconocida</small>
                     }
                   </td>
-                  <td>
-                    <app-chip tone="violet">{{ item.categoryLabel }}</app-chip>
+                  <td data-label="Vulnerabilidades">
+                    @if (item.worst_level; as level) {
+                      <app-chip [tone]="level"
+                        >{{ levelLabels[level] }} · {{ item.open_vulnerabilities }}</app-chip
+                      >
+                    } @else {
+                      <span class="muted">Sin vulnerabilidades</span>
+                    }
                   </td>
-                  <td>
+                  <td data-label="CPE">
+                    @if (item.cpe) {
+                      <code class="cpe">
+                        @for (part of item.cpeParts; track $index) {
+                          <span>{{ part }}</span>
+                          <wbr />
+                        }
+                      </code>
+                    } @else {
+                      <span class="muted">Sin CPE</span>
+                      <small><a routerLink="/pendientes-inventario">Ver pendientes</a></small>
+                    }
+                  </td>
+                  <td class="col-from-md" data-label="Estado">
                     <app-chip [tone]="stateTones[item.statusKey]">{{ item.statusLabel }}</app-chip>
                   </td>
-                  <td>
+                  <td class="col-from-lg" data-label="Categoría">
+                    <app-chip tone="violet">{{ item.categoryLabel }}</app-chip>
+                  </td>
+                  <td class="col-from-lg" data-label="Licencia">
                     @if (item.licence; as licence) {
                       <strong>{{ licence.name }}</strong>
                       @if (licence.usage_limit) {
@@ -141,25 +175,8 @@
                       <span class="muted">Sin licencia</span>
                     }
                   </td>
-                  <td>
-                    @if (item.cpe) {
-                      <span class="cpe">{{ item.cpe }}</span>
-                    } @else {
-                      <span class="muted">Sin CPE</span>
-                      <small><a routerLink="/pendientes-inventario">Ver pendientes</a></small>
-                    }
-                  </td>
-                  <td>
-                    @if (item.worst_level; as level) {
-                      <app-chip [tone]="level"
-                        >{{ levelLabels[level] }} · {{ item.open_vulnerabilities }}</app-chip
-                      >
-                    } @else {
-                      <span class="muted">Sin vulnerabilidades</span>
-                    }
-                  </td>
-                  <td>
-                    <span class="clamped">{{ item.description || '—' }}</span>
+                  <td class="col-from-lg" data-label="Descripción">
+                    <span class="cell-text cell-text-sm">{{ item.description || '—' }}</span>
                   </td>
                 </tr>
               }
@@ -178,7 +195,13 @@
           <svg lucideShieldAlert aria-hidden="true"></svg>
           <h2 id="findings-title">Vulnerabilidades del activo</h2>
         </div>
-        <span>{{ findings().length }} grupos</span>
+        <app-columns-toggle
+          [all]="allFindingColumns()"
+          (allChange)="allFindingColumns.set($event)"
+          controls="asset-findings-table"
+          phoneCards
+        />
+        <span>{{ groupsLabel() }}</span>
       </header>
       @if (findings().length) {
         <div
@@ -186,41 +209,57 @@
           role="region"
           aria-label="Vulnerabilidades del activo; desplazamiento horizontal"
           tabindex="0"
+          appScrollFade
+          [appScrollFadeReveal]="false"
         >
-          <table>
+          <table
+            id="asset-findings-table"
+            class="data-table sticky-first cards-mobile"
+            [class.all-columns]="allFindingColumns()"
+          >
             <thead>
               <tr>
                 <th scope="col">CVE</th>
                 <th scope="col">Producto</th>
                 <th scope="col">Nivel</th>
-                <th scope="col">Puntaje final</th>
-                <th scope="col">Estado</th>
-                <th scope="col">KEV</th>
-                <th scope="col">Tickets</th>
-                <th scope="col">Última vez vista</th>
+                <th scope="col" class="numeric">Puntaje final</th>
+                <th scope="col" class="col-from-md">Estado</th>
+                <th scope="col" class="col-from-md">Última vez vista</th>
+                <th scope="col" class="col-from-lg">KEV</th>
+                <th scope="col" class="col-from-lg">Tickets</th>
               </tr>
             </thead>
             <tbody>
               @for (finding of findings(); track finding.group_id) {
                 <tr>
-                  <td>
+                  <td class="card-title">
                     <a class="row-link" [routerLink]="['/vulnerabilidades', finding.group_id]"
-                      ><strong>{{ finding.cve }}</strong></a
+                      ><strong class="cell-nowrap">{{ finding.cve }}</strong></a
                     >
                   </td>
-                  <td>{{ finding.product }}</td>
-                  <td>
+                  <td data-label="Producto">
+                    <span class="cell-text cell-text-sm">{{ finding.product }}</span>
+                  </td>
+                  <td data-label="Nivel">
                     <app-chip [tone]="finding.level">{{ levelLabels[finding.level] }}</app-chip>
                   </td>
-                  <td class="numeric">{{ finding.final }}</td>
-                  <td>
+                  <td class="numeric" data-label="Puntaje final">{{ finding.final }}</td>
+                  <td class="col-from-md" data-label="Estado">
                     <app-chip [tone]="statusTones[finding.status]">{{
                       statusLabels[finding.status]
                     }}</app-chip>
                   </td>
-                  <td>{{ finding.in_kev ? 'Sí' : 'No' }}</td>
-                  <td>{{ finding.tickets.join(', ') || 'Sin tickets' }}</td>
-                  <td>{{ formatDateTime(finding.last_seen) }}</td>
+                  <td
+                    class="cell-date col-from-md"
+                    data-label="Última vez vista"
+                    [title]="formatDateTime(finding.last_seen)"
+                  >
+                    {{ formatShortDateTime(finding.last_seen) }}
+                  </td>
+                  <td class="col-from-lg" data-label="KEV">{{ finding.in_kev ? 'Sí' : 'No' }}</td>
+                  <td class="col-from-lg" data-label="Tickets">
+                    {{ finding.tickets.join(', ') || 'Sin tickets' }}
+                  </td>
                 </tr>
               }
             </tbody>

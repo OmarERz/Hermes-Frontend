@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   LucideCircleAlert,
   LucideCircleCheck,
+  LucideCircleX,
   LucideClock,
   LucideDatabase,
   LucidePlug,
@@ -108,6 +109,8 @@ export function mergeStatuses(
     ColumnsToggle,
     KpiCard,
     ScrollFade,
+    LucideCircleCheck,
+    LucideCircleX,
     LucideDatabase,
     LucideRefreshCw,
     LucideServer,

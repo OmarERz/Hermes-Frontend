@@ -77,3 +77,9 @@
 td a {
   color: var(--accent-text);
 }
+td small {
+  display: block;
+  margin-top: var(--space-0-5);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}

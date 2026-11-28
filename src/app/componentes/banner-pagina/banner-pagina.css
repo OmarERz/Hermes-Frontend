@@ -37,6 +37,9 @@
   line-height: var(--leading-tight);
   letter-spacing: -0.8px;
 }
+:host .page-heading h1 .title-code {
+  white-space: nowrap;
+}
 :host .page-heading p {
   max-width: 72ch;
   margin: var(--stack-xs) 0 0;

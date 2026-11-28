@@ -22,13 +22,17 @@ import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { Chip } from '../../shared/chip';
 import { toCsv } from '../../shared/csv';
+import { ColumnsToggle } from '../../shared/columns-toggle';
+import { KpiCard, kpiState } from '../../shared/kpi-card';
 import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink, safeExternalUrl } from '../../shared/itop-links';
 import { LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import { CpeMappingDialog, MappingTarget } from './cpe-mapping-dialog';
 import {
   CATEGORIES,
   CATEGORY_LABELS,
+  cpeParts,
   INSTALL_STATUS_LABELS,
   INSTALL_STATUS_TONES,
   INSTALL_STATUSES,
@@ -78,6 +82,9 @@ function yesNo(value: YesNoFilter): boolean | null {
     GraficoDashboard,
     AsyncStateComponent,
     Chip,
+    ColumnsToggle,
+    KpiCard,
+    ScrollFade,
     IfRoleDirective,
     ItopLink,
     CpeMappingDialog,
@@ -91,7 +98,6 @@ function yesNo(value: YesNoFilter): boolean | null {
     LucideLayers,
     LucideRefreshCw,
     LucideSearch,
-    LucideTriangleAlert,
   ],
   templateUrl: './software.page.html',
   styleUrls: ['./inventory-chips.css', './software.page.css'],
@@ -100,6 +106,13 @@ export class SoftwarePage {
   private readonly service = inject(InventoryService);
 
   readonly bannerIcon = LucideLayers;
+  /** N-5 (F19.8): the summary is the shared indicator card, like Activos. */
+  readonly kpiIcons = {
+    total: LucideLayers,
+    critical: LucideTriangleAlert,
+    cpe: LucideFileCheck,
+    version: LucideActivity,
+  };
   readonly categories = CATEGORIES;
   readonly categoryLabels = CATEGORY_LABELS;
   readonly statuses = INSTALL_STATUSES;
@@ -120,6 +133,8 @@ export class SoftwarePage {
   readonly withVulnerabilities = signal<YesNoFilter>('');
   readonly pageSize = signal(25);
   readonly chart = signal<SoftwareChart>('category');
+  /** «Todas las columnas»: categories, states and licences wait for a wide table (src/styles/tables.css). */
+  readonly allColumns = signal(false);
 
   readonly filters = computed<SoftwareFilters>(() => ({
     q: this.q() || null,
@@ -150,7 +165,10 @@ export class SoftwarePage {
         count: item.by_status?.[key] ?? 0,
       })).filter((status) => status.count > 0),
       licenceNames: (item.licences ?? []).map((licence) => licence.name),
-      licensed: `${item.licensed_instances} de ${plural(item.instances, 'instalación', 'instalaciones')} con licencia`,
+      licensedShort: `${item.licensed_instances} de ${item.instances}`,
+      assets: plural(item.ci_count, 'activo', 'activos'),
+      openLabel: plural(item.open_vulnerabilities, 'abierta', 'abiertas'),
+      cpeParts: cpeParts(item.cpe),
     })),
   );
   readonly tableState = computed(() => viewState(this.pager.state, this.rows().length === 0));
@@ -160,7 +178,9 @@ export class SoftwarePage {
       : 'Aún no hay software instalado en el inventario de iTop.',
   );
 
-  readonly summaryState = computed(() => viewState(this.summary));
+  readonly summaryKpiState = computed(() =>
+    this.software() ? 'ready' : kpiState(this.summary.status()),
+  );
   readonly software = computed(() => this.summary.value()?.software ?? null);
   readonly withCritical = computed(() => {
     const health = this.software();
@@ -175,8 +195,10 @@ export class SoftwarePage {
   readonly chartState = computed(() =>
     this.chart() === 'priority' ? viewState(this.priority) : this.catalogueState(),
   );
+  /** Phone width (560 px or less): the bar charts lie down (N-9). */
+  readonly phone = signal(false);
   readonly chartOption = computed(() =>
-    softwareChart(this.chart(), this.totals(), this.priority.value()),
+    softwareChart(this.chart(), this.totals(), this.priority.value(), this.phone()),
   );
   readonly chartLabel = computed(() =>
     this.chart() === 'priority'
@@ -197,7 +219,15 @@ export class SoftwarePage {
 
   constructor() {
     this.refresh();
+    const phone =
+      typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+        ? window.matchMedia('(max-width: 560px)')
+        : null;
+    const follow = (): void => this.phone.set(!!phone?.matches);
+    follow();
+    phone?.addEventListener('change', follow);
     inject(DestroyRef).onDestroy(() => {
+      phone?.removeEventListener('change', follow);
       this.pager.state.cancel();
       this.summary.cancel();
       this.catalogue.cancel();

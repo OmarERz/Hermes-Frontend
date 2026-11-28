@@ -5,65 +5,40 @@
     [icono]="bannerIcon"
   />
 
-  <section class="summary-grid" aria-label="Resumen del software">
-    <article>
-      <span class="summary-icon"><svg lucideLayers aria-hidden="true"></svg></span>
-      <div>
-        <small>Software en inventario</small>
-        @if (software(); as health) {
-          <strong>{{ health.total }}</strong>
-        } @else {
-          <strong class="unevaluated">{{
-            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
-          }}</strong>
-        }
-      </div>
-    </article>
-    <article>
-      <span class="summary-icon warning"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
-      <div>
-        <small>Con vulnerabilidades críticas</small>
-        @if (software()) {
-          <strong>{{ withCritical() }}</strong>
-        } @else {
-          <strong class="unevaluated">{{
-            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
-          }}</strong>
-        }
-      </div>
-    </article>
-    <article>
-      <span class="summary-icon"><svg lucideFileCheck aria-hidden="true"></svg></span>
-      <div>
-        <small>Con CPE</small>
-        @if (software(); as health) {
-          <strong>{{ health.with_cpe }}</strong>
-        } @else {
-          <strong class="unevaluated">{{
-            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
-          }}</strong>
-        }
-      </div>
+  <section class="kpi-grid" aria-label="Resumen del software">
+    <app-kpi-card
+      label="Software en inventario"
+      [icon]="kpiIcons.total"
+      [state]="summaryKpiState()"
+      [value]="software()?.total"
+    />
+    <app-kpi-card
+      label="Con vulnerabilidades críticas"
+      [icon]="kpiIcons.critical"
+      tone="warning"
+      [state]="summaryKpiState()"
+      [value]="software() ? withCritical() : null"
+    />
+    <app-kpi-card
+      label="Con CPE"
+      [icon]="kpiIcons.cpe"
+      [state]="summaryKpiState()"
+      [value]="software()?.with_cpe"
+    >
       @if (software()?.cpe_percent; as share) {
-        <em>{{ share }} %</em>
+        <em class="kpi-detail">{{ share }} %</em>
       }
-    </article>
-    <article>
-      <span class="summary-icon"><svg lucideActivity aria-hidden="true"></svg></span>
-      <div>
-        <small>Con versión conocida</small>
-        @if (software(); as health) {
-          <strong>{{ health.with_known_version }}</strong>
-        } @else {
-          <strong class="unevaluated">{{
-            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
-          }}</strong>
-        }
-      </div>
+    </app-kpi-card>
+    <app-kpi-card
+      label="Con versión conocida"
+      [icon]="kpiIcons.version"
+      [state]="summaryKpiState()"
+      [value]="software()?.with_known_version"
+    >
       @if (software()?.known_version_percent; as share) {
-        <em>{{ share }} %</em>
+        <em class="kpi-detail">{{ share }} %</em>
       }
-    </article>
+    </app-kpi-card>
   </section>
 
   <section class="itop-note" aria-label="Registrar software">
@@ -91,6 +66,12 @@
           </div>
         </div>
         <div class="catalog-actions">
+          <app-columns-toggle
+            [all]="allColumns()"
+            (allChange)="allColumns.set($event)"
+            controls="software-table"
+            phoneCards
+          />
           <button type="button" class="btn btn-secondary btn-sm" (click)="refresh()">
             <svg lucideRefreshCw aria-hidden="true"></svg>Actualizar
           </button>
@@ -183,16 +164,22 @@
           role="region"
           aria-label="Catálogo de software; desplazamiento horizontal"
           tabindex="0"
+          appScrollFade
+          [appScrollFadeReveal]="false"
         >
-          <table>
+          <table
+            id="software-table"
+            class="data-table sticky-first cards-mobile"
+            [class.all-columns]="allColumns()"
+          >
             <thead>
               <tr>
                 <th scope="col">Software</th>
-                <th scope="col">Categorías</th>
+                <th scope="col" class="col-from-lg">Categorías</th>
                 <th scope="col">Versiones</th>
-                <th scope="col">Instalaciones</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Licencias</th>
+                <th scope="col" class="numeric">Instalaciones</th>
+                <th scope="col" class="col-from-md">Estado</th>
+                <th scope="col" class="col-from-lg">Licencias</th>
                 <th scope="col">CPE</th>
                 <th scope="col">Vulnerabilidades</th>
                 <th scope="col"><span class="visually-hidden">Acciones</span></th>
@@ -201,10 +188,10 @@
             <tbody>
               @for (row of rows(); track row.id) {
                 <tr>
-                  <td>
-                    <strong>{{ row.name }}</strong>
+                  <td class="card-title">
+                    <strong class="cell-nowrap">{{ row.name }}</strong>
                   </td>
-                  <td>
+                  <td class="col-from-lg" data-label="Categorías">
                     <span class="chip-list">
                       @for (label of row.categoryLabels; track label) {
                         <app-chip tone="violet">{{ label }}</app-chip>
@@ -213,18 +200,18 @@
                       }
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Versiones">
                     @if (row.versions.length) {
-                      {{ row.versions.join(', ') }}
+                      <span class="cell-text cell-text-sm">{{ row.versions.join(', ') }}</span>
                     } @else {
                       <span class="muted">Versión desconocida</span>
                     }
                   </td>
-                  <td>
+                  <td class="numeric" data-label="Instalaciones">
                     {{ row.instances }}
-                    <small>{{ row.ci_count }} activos</small>
+                    <small>{{ row.assets }}</small>
                   </td>
-                  <td>
+                  <td class="col-from-md" data-label="Estado">
                     <span class="chip-list">
                       @for (status of row.statusCounts; track status.key) {
                         <app-chip [tone]="stateTones[status.key]"
@@ -233,34 +220,41 @@
                       }
                     </span>
                   </td>
-                  <td>
-                    @for (name of row.licenceNames; track $index) {
-                      <strong>{{ name }}</strong>
-                    } @empty {
-                      <span class="muted">Sin licencias</span>
+                  <td class="col-from-lg" data-label="Licencias">
+                    <span class="cell-nowrap">{{ row.licensedShort }}</span>
+                    @if (row.licenceNames.length) {
+                      <small class="cell-text cell-text-sm">{{
+                        row.licenceNames.join(', ')
+                      }}</small>
+                    } @else {
+                      <small>Sin licencias</small>
                     }
-                    <small>{{ row.licensed }}</small>
                   </td>
-                  <td>
+                  <td data-label="CPE">
                     @if (row.cpe) {
-                      <span class="cpe">{{ row.cpe }}</span>
+                      <code class="cpe">
+                        @for (part of row.cpeParts; track $index) {
+                          <span>{{ part }}</span>
+                          <wbr />
+                        }
+                      </code>
                     } @else {
                       <span class="muted">Sin CPE</span>
                     }
                   </td>
-                  <td>
+                  <td data-label="Vulnerabilidades">
                     @if (row.worst_level; as level) {
                       <app-chip [tone]="level">{{ levelLabels[level] }}</app-chip>
-                      <small>{{ row.open_vulnerabilities }} abiertas</small>
+                      <small>{{ row.openLabel }}</small>
                     } @else {
                       <span class="muted">Sin vulnerabilidades</span>
                     }
                   </td>
-                  <td class="actions">
+                  <td class="actions card-full">
                     <button
                       *appIfRole="mapRole"
                       type="button"
-                      class="row-action"
+                      class="btn btn-secondary btn-sm row-action"
                       [attr.aria-label]="
                         (row.cpe ? 'Cambiar CPE de ' : 'Mapear CPE de ') + row.name
                       "
@@ -292,9 +286,12 @@
             (click)="pager.previous()"
             aria-label="Página anterior"
           >
-            <svg lucideArrowLeft aria-hidden="true"></svg></button
-          ><span>Página {{ pager.pageIndex() + 1 }}</span
-          ><button
+            <svg lucideArrowLeft aria-hidden="true"></svg>
+          </button>
+          <button type="button" class="selected" aria-current="page">
+            {{ pager.pageIndex() + 1 }}
+          </button>
+          <button
             type="button"
             [disabled]="!pager.hasNext()"
             (click)="pager.next()"

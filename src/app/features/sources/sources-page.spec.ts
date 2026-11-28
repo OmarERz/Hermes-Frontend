@@ -122,8 +122,14 @@ describe('SourcesPage', () => {
     expect(center.querySelector('input[role="switch"]')).toBeNull();
     expect(text(center.querySelector('.feed-toggle'))).toBe('Siempre activa');
     expect(center.querySelector('.feed-toggle svg')).not.toBeNull();
-    expect(text(all(element, 'tbody tr')[0])).toContain('🔒');
-    expect(text(all(element, 'tbody tr')[2])).not.toContain('🔒');
+    // G10 (F19.8): the table too, with the Lucide lock and the level as the shared chip.
+    const [structural, , optional] = all(element, 'tbody tr');
+    expect(text(structural)).not.toContain('🔒');
+    expect(structural.querySelector('.lock-chip svg')).not.toBeNull();
+    expect(text(structural.querySelector('.lock-chip'))).toBe('Estructural');
+    expect(optional.querySelector('.lock-chip')).toBeNull();
+    expect(structural.querySelector('td app-chip')?.getAttribute('data-tone')).toBe('violet');
+    expect(element.querySelector('.level-pill')).toBeNull();
   });
 
   it('filters by class and by level, with the count of each option', async () => {

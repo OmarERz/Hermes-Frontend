@@ -28,6 +28,17 @@ export class BannerPagina {
   @Input({ required: true }) titulo = '';
   @Input({ required: true }) descripcion = '';
   @Input({ required: true }) icono!: LucideIconInput;
+  /**
+   * VDE-5 (F19.8): an identifier the title starts with (a CVE) that never breaks across lines; the rest of the title
+   * wraps as usual. The title's text stays the same.
+   */
+  @Input() codigo = '';
+
+  get tituloResto(): string | null {
+    return this.codigo && this.titulo.startsWith(this.codigo)
+      ? this.titulo.slice(this.codigo.length)
+      : null;
+  }
 
   readonly descriptionId = `page-description-${nextId++}`;
   /** The person unfolded the description. */

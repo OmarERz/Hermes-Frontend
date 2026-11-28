@@ -39,7 +39,7 @@
           {{ createdAt() }}</span
         >
       </div>
-      <span class="review-status-badge">{{ levelLabels[rec.level] }}</span>
+      <app-chip class="dialog-level" [tone]="rec.level">{{ levelLabels[rec.level] }}</app-chip>
     </section>
 
     <section class="score-stages" aria-label="Puntaje por etapa">

@@ -4,6 +4,12 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { canOpen, SCREENS, type Screen } from './catalogue';
 import { outputRoot, ROLES, type Role } from '../support/roles';
+import {
+  checkLayout,
+  type LayoutFinding,
+  type LayoutResult,
+  type PieceRecord,
+} from '../support/layout-checks';
 
 export type Theme = 'dark' | 'light';
 /** Screens without the app shell (the login) have no theme switch. */
@@ -106,6 +112,10 @@ export interface ShotRecord {
   /** Outermost elements of <main> past the right edge that no scroll container holds (cut off or scrolling). */
   offenders: string[];
   notes: string[];
+  /** Alignment and spacing findings of this view (e2e/support/layout-checks.ts). */
+  layout: LayoutFinding[];
+  /** Typed pieces of this view and their paddings (each piece and padding once). */
+  pieces: PieceRecord[];
 }
 
 export interface AxeViolation {
@@ -420,6 +430,7 @@ export async function capture(
         theme: shotTheme,
         ...(await measureOverflow(page)),
         notes,
+        ...(await measureLayout(page, recorder)),
       });
     }
     if (options.axe) {
@@ -428,6 +439,24 @@ export async function capture(
     }
     if (!themed) break;
   }
+}
+
+/** The alignment checks of the view, with each typed piece and padding once; a failure is a problem, not a crash. */
+async function measureLayout(
+  page: Page,
+  recorder: Recorder,
+): Promise<Pick<ShotRecord, 'layout' | 'pieces'>> {
+  let result: LayoutResult;
+  try {
+    result = await checkLayout(page);
+  } catch (error) {
+    recorder.problems.push(`layout checks failed: ${message(error)}`);
+    return { layout: [], pieces: [] };
+  }
+  const pieces = new Map(
+    result.pieces.map((piece) => [`${piece.type}|${piece.element}|${piece.padding}`, piece]),
+  );
+  return { layout: result.findings, pieces: [...pieces.values()] };
 }
 
 async function runAxe(

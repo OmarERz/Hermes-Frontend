@@ -87,7 +87,16 @@
   color: var(--text-muted);
 }
 .item-mark {
+  display: inline-flex;
   flex: none;
+  color: var(--danger-text);
+}
+.item-mark[data-state='ok'] {
+  color: var(--success-text);
+}
+.item-mark svg {
+  width: 18px;
+  height: 18px;
 }
 .item-copy {
   min-width: 0;

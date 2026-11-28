@@ -94,13 +94,17 @@ describe('ConnectionsPage', () => {
 
     expect(row(element, 'itop')).toEqual([
       'iTopCMDB y tickets de iTop',
-      '✅ Funciona',
+      'Funciona',
       'Conexión correcta',
       '85 ms',
       formatShortDateTime(CHECKED),
       formatShortDateTime(CHECKED),
       'Probar de nuevo',
     ]);
+    // CON-3 (F19.8): the state carries a Lucide check or cross, not an emoji.
+    expect(element.querySelector('tr[data-name="itop"] .connection-state svg')).not.toBeNull();
+    expect(element.querySelector('tr[data-name="nvd"] .connection-state svg')).not.toBeNull();
+    expect(element.textContent).not.toMatch(/[✅❌]/u);
     // The table cells drop the current year; their title keeps the full date.
     const itopCells = element.querySelectorAll('tr[data-name="itop"] td');
     expect(itopCells[4].getAttribute('title')).toBe(formatDateTime(CHECKED));
@@ -111,13 +115,13 @@ describe('ConnectionsPage', () => {
     const deepseekCells = element.querySelectorAll('tr[data-name="deepseek"] td');
     expect(deepseekCells[5].classList).not.toContain('cell-date');
     expect(row(element, 'deepseek').slice(1, 6)).toEqual([
-      '❌ Sin configurar',
+      'Sin configurar',
       'Variable faltante: DEEPSEEK_API_KEY',
       '—',
       formatShortDateTime(CHECKED),
       'Sin éxito desde que arrancó la API',
     ]);
-    expect(row(element, 'nvd').slice(1, 3)).toEqual(['❌ Con falla', 'Sin conexión']);
+    expect(row(element, 'nvd').slice(1, 3)).toEqual(['Con falla', 'Sin conexión']);
 
     expect(Array.from(element.querySelectorAll('.kpi-value')).map(text)).toEqual([
       '6',
@@ -158,11 +162,11 @@ describe('ConnectionsPage', () => {
     await click('[aria-label="Probar de nuevo DeepSeek"]');
     expect(service.test).toHaveBeenCalledWith(['deepseek']);
     expect(row(element, 'deepseek').slice(1, 4)).toEqual([
-      '✅ Funciona',
+      'Funciona',
       'Conexión correcta',
       '40 ms',
     ]);
-    expect(row(element, 'nvd')[1]).toBe('❌ Con falla');
+    expect(row(element, 'nvd')[1]).toBe('Con falla');
     expect(text(element.querySelector('[role="status"]'))).toBe('Se comprobó DeepSeek de nuevo.');
   });
 
@@ -233,7 +237,7 @@ describe('ConnectionsPage', () => {
     const slack = { ...status({ name: 'itop' }), name: 'slack' } as unknown as ConnectionStatus;
     service.status.mockReturnValueOnce(of([...STATUSES, slack]));
     const { element, click } = await render('admin', service);
-    expect(row(element, 'slack').slice(0, 2)).toEqual(['slack', '✅ Funciona']);
+    expect(row(element, 'slack').slice(0, 2)).toEqual(['slack', 'Funciona']);
     expect(
       element.querySelectorAll('.connections-panel')[0].querySelectorAll('tbody tr'),
     ).toHaveLength(4);

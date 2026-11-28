@@ -35,6 +35,20 @@ describe('BannerPagina', () => {
     expect(element.querySelector('app-section-tabs')).not.toBeNull();
   });
 
+  it('keeps a leading code of the title on one line, with the same text (VDE-5)', async () => {
+    const { fixture, element } = await render({ scrollHeight: 52, clientHeight: 52 });
+    fixture.componentRef.setInput('titulo', 'CVE-2026-10001 · OpenSSL 3.0.7');
+    fixture.componentRef.setInput('codigo', 'CVE-2026-10001');
+    await fixture.whenStable();
+    const title = element.querySelector('.heading-copy h1')!;
+    expect(title.querySelector('.title-code')?.textContent).toBe('CVE-2026-10001');
+    expect(title.textContent?.trim()).toBe('CVE-2026-10001 · OpenSSL 3.0.7');
+    // A code the title does not start with changes nothing.
+    fixture.componentRef.setInput('codigo', 'CVE-2026-99999');
+    await fixture.whenStable();
+    expect(element.querySelector('.heading-copy h1 .title-code')).toBeNull();
+  });
+
   it('folds the description and offers no toggle when nothing is cut', async () => {
     const { description, toggle } = await render({ scrollHeight: 52, clientHeight: 52 });
     expect(description.classList).toContain('folded');

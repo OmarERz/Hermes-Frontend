@@ -156,6 +156,7 @@ export function kpiState(status: LoadStatus): KpiState {
       font-weight: var(--weight-semibold);
       line-height: var(--leading-snug);
       text-wrap: pretty;
+      overflow-wrap: anywhere;
     }
     .kpi-label app-ayuda-tooltip {
       margin-left: var(--space-0-5);
@@ -167,12 +168,15 @@ export function kpiState(status: LoadStatus): KpiState {
       line-height: var(--leading-snug);
       text-wrap: pretty;
     }
-    /* Always the last row, which takes the spare height: the values of a row of cards line up (COR-2). */
+    /*
+     * Always the last row, which takes the spare height: the values of a row of cards line up (COR-2). A chip that
+     * does not fit beside the value wraps above it (N-10, F19.8), so the value stays on the card's last line.
+     */
     .kpi-value-row {
       grid-row: 3;
       align-self: end;
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: wrap-reverse;
       align-items: baseline;
       gap: var(--space-1) var(--space-2);
       min-width: 0;
@@ -235,8 +239,19 @@ export function kpiState(status: LoadStatus): KpiState {
         width: 18px;
         height: 18px;
       }
+      /*
+       * N-5 (F19.8): the label goes under the tile, across the card; beside it, a long word («Vulnerabilidades»)
+       * ran past the card's edge. The value stays last, after the row that takes the spare height.
+       */
       .kpi-label {
-        align-self: center;
+        grid-column: 1 / -1;
+        grid-row: 2;
+      }
+      .kpi-note {
+        grid-row: 3;
+      }
+      .kpi-value-row {
+        grid-row: 4;
       }
       .kpi-note,
       .kpi-value-row {

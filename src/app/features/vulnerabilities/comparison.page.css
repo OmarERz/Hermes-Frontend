@@ -42,11 +42,16 @@
   color: var(--text-muted, #6b6175);
   font-size: calc(11px + var(--font-size-increase, 0px));
 }
+/*
+ * COM-2 (F19.8): the samples of the legend carry the border of the matrix cells, so their faint fills (the same as
+ * the cells) still read as squares in the dark theme.
+ */
 .swatch {
   display: inline-block;
   width: 12px;
   height: 12px;
-  border-radius: 3px;
+  border: 1px solid var(--text-muted);
+  border-radius: var(--radius-xs);
 }
 .funnel {
   display: grid;
@@ -55,11 +60,13 @@
   padding: 0;
   list-style: none;
 }
+/* COM-3 (F19.8): the funnel reads at the size of the rest of the panel (it inherited the 18 px of the body). */
 .funnel li {
   display: grid;
   grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 3rem;
   align-items: center;
   gap: 10px;
+  font-size: var(--text-sm);
 }
 .funnel-bar {
   height: 10px;

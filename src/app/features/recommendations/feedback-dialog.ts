@@ -23,6 +23,7 @@ import {
 } from '@lucide/angular';
 import { toApiError } from '../../core/api/api-error';
 import { AsyncState } from '../../shared/async-state';
+import { Chip } from '../../shared/chip';
 import { formatDateTime, LEVEL_LABELS, type Level } from '../../shared/labels';
 import {
   ACCEPT_ORIGINAL,
@@ -67,6 +68,7 @@ const OPTIONS: readonly { value: FeedbackChoice; label: string; hint: string }[]
   selector: 'app-feedback-dialog',
   imports: [
     FormsModule,
+    Chip,
     LucideArrowDown,
     LucideArrowUp,
     LucideBot,

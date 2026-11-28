@@ -206,3 +206,56 @@
     transition: none;
   }
 }
+
+/*
+ * G8 / N-6 (F19.8): every other select of the pages (an inline filter of a table, the picker of a chart, «Filas por
+ * página», a select in a row) is the small shared control: the same border, fill and radius as .control, 32 px high,
+ * and one drawn chevron (the native arrow is off). Its width stays the screen's.
+ */
+.app-shell .page-content select:not(.control > select, [multiple], [size], :has(+ svg)) {
+  appearance: none;
+  min-height: 32px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 calc(var(--space-2) + 16px + var(--space-1)) 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b7a5c8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right var(--space-2) center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  box-shadow: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.app-shell[data-theme='light']
+  .page-content
+  select:not(.control > select, [multiple], [size], :has(+ svg)) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236c6179' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+.app-shell
+  .page-content
+  select:not(.control > select, [multiple], [size], :has(+ svg)):hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent-violet) 55%, var(--border));
+}
+.app-shell .page-content select:not(.control > select, [multiple], [size], :has(+ svg)):disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.app-shell .page-content select:not(.control > select, [multiple], [size], :has(+ svg)) option {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+/* In a form (an edit form, the configuration fields) the select is as tall as the form's other controls. */
+.app-shell
+  .page-content
+  :is(form, app-config-field)
+  select:not(.control > select, [multiple], [size], :has(+ svg)) {
+  min-height: var(--control-h);
+  border-radius: var(--radius-md);
+}

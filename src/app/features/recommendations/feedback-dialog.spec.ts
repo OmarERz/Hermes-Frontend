@@ -64,7 +64,7 @@ describe('FeedbackDialog', () => {
     const { element } = await render(service);
     expect(service.levelBands).toHaveBeenCalledTimes(1);
     expect(element.querySelector('.review-case-context')?.textContent).toContain('CVE-2026-10001');
-    expect(element.querySelector('.review-status-badge')?.textContent).toBe('Alta');
+    expect(element.querySelector('app-chip.dialog-level')?.textContent).toBe('Alta');
     expect(
       Array.from(element.querySelectorAll('.score-stages strong')).map((n) => n.textContent),
     ).toEqual(['74', '+12', '86']);

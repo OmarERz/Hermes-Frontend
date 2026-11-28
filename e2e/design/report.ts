@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { designRoot, type AxeRecord, type ShotRecord, type TestRecord } from './support';
+import type { LayoutKind, PieceType } from '../support/layout-checks';
 
 const IMPACTS = ['critical', 'serious', 'moderate', 'minor'] as const;
 
@@ -110,6 +111,8 @@ function summary(records: TestRecord[], shots: ShotRecord[], runs: AxeRecord[]):
     );
   }
 
+  lines.push(...layoutSection(shots));
+
   lines.push('', '## Notes (keyboard focus)', '');
   for (const shot of shots.filter((item) => item.notes.length))
     lines.push(`- ${shot.screen} · ${shot.theme}: ${shot.notes.join('; ')}`);
@@ -126,6 +129,180 @@ function summary(records: TestRecord[], shots: ShotRecord[], runs: AxeRecord[]):
       );
   }
   return `${lines.join('\n')}\n`;
+}
+
+/** One finding in one view: the rows of layout.json. */
+export interface LayoutRow {
+  screen: string;
+  who: string;
+  view: string;
+  width: number;
+  theme: string;
+  kind: LayoutKind;
+  rule: string;
+  element: string;
+  detail: string;
+  px: number;
+  file: string;
+}
+
+export function layoutRows(shots: ShotRecord[]): LayoutRow[] {
+  return shots.flatMap((shot) =>
+    (shot.layout ?? []).map((finding) => ({
+      screen: shot.screen,
+      who: shot.who,
+      view: shot.view,
+      width: shot.width,
+      theme: shot.theme,
+      ...finding,
+      file: shot.file,
+    })),
+  );
+}
+
+const KIND_TITLES: Record<LayoutKind, string> = {
+  edge: 'Edges ending inside another box',
+  siblings: 'Siblings out of line',
+  scale: 'Paddings and gaps off the spacing scale',
+};
+
+/** A finding without the view: what a fix removes everywhere at once. */
+function findingKey(row: LayoutRow): string {
+  return row.kind === 'scale'
+    ? `${row.rule}|${row.element}|${row.detail}`
+    : `${row.rule}|${row.element}`;
+}
+
+interface Distinct {
+  rule: string;
+  element: string;
+  detail: string;
+  px: number;
+  views: number;
+  where: Set<string>;
+  file: string;
+}
+
+function distinct(rows: LayoutRow[]): Distinct[] {
+  const map = new Map<string, Distinct>();
+  for (const row of rows) {
+    const key = findingKey(row);
+    const entry = map.get(key) ?? {
+      rule: row.rule,
+      element: row.element,
+      detail: row.detail,
+      px: row.px,
+      views: 0,
+      where: new Set<string>(),
+      file: row.file,
+    };
+    entry.views += 1;
+    entry.px = Math.max(entry.px, row.px);
+    entry.where.add(`${row.screen} ${row.width}`);
+    map.set(key, entry);
+  }
+  return [...map.values()].sort((a, b) => b.views - a.views || b.px - a.px);
+}
+
+/** Paddings each piece type uses: padding → the distinct screen · element pairs. */
+export function piecePaddings(shots: ShotRecord[]): Map<PieceType, Map<string, Set<string>>> {
+  const types = new Map<PieceType, Map<string, Set<string>>>();
+  for (const shot of shots) {
+    for (const piece of shot.pieces ?? []) {
+      const paddings = types.get(piece.type) ?? new Map<string, Set<string>>();
+      const users = paddings.get(piece.padding) ?? new Set<string>();
+      users.add(`${shot.screen} · ${piece.element}`);
+      paddings.set(piece.padding, users);
+      types.set(piece.type, paddings);
+    }
+  }
+  return types;
+}
+
+/** The counts the PR compares before and after: per check, distinct findings, instances and views. */
+export function layoutCounts(shots: ShotRecord[]): Record<string, number> {
+  const rows = layoutRows(shots);
+  const counts: Record<string, number> = {};
+  for (const kind of Object.keys(KIND_TITLES) as LayoutKind[]) {
+    const ofKind = rows.filter((row) => row.kind === kind);
+    counts[`${kind}.distinct`] = distinct(ofKind).length;
+    counts[`${kind}.instances`] = ofKind.length;
+    counts[`${kind}.views`] = new Set(ofKind.map((row) => row.file)).size;
+  }
+  let offDominant = 0;
+  let mixedTypes = 0;
+  for (const paddings of piecePaddings(shots).values()) {
+    const sorted = [...paddings.values()].sort((a, b) => b.size - a.size);
+    if (sorted.length > 1) mixedTypes += 1;
+    offDominant += sorted.slice(1).reduce((sum, users) => sum + users.size, 0);
+  }
+  counts['pieces.mixedTypes'] = mixedTypes;
+  counts['pieces.offDominant'] = offDominant;
+  return counts;
+}
+
+const LIST_LIMIT = 120;
+
+function layoutSection(shots: ShotRecord[]): string[] {
+  const rows = layoutRows(shots);
+  const counts = layoutCounts(shots);
+  const lines = [
+    '',
+    '## Alignment and spacing (F19.8)',
+    '',
+    'Machine-readable list: `layout.json` (one row per finding and view). «Distinct» counts a finding once however',
+    'many views show it (a scale finding is element · property · value).',
+    '',
+    '| Check | Distinct | Instances (finding × view) | Views |',
+    '| --- | --- | --- | --- |',
+  ];
+  for (const kind of Object.keys(KIND_TITLES) as LayoutKind[]) {
+    lines.push(
+      `| ${KIND_TITLES[kind]} (\`${kind}\`) | ${counts[`${kind}.distinct`]} | ${counts[`${kind}.instances`]} | ${counts[`${kind}.views`]} |`,
+    );
+  }
+  lines.push(
+    `| Piece types with more than one padding | ${counts['pieces.mixedTypes']} | — | — |`,
+    `| Pieces (screen · element) off their type's most used padding | ${counts['pieces.offDominant']} | — | — |`,
+  );
+  for (const kind of Object.keys(KIND_TITLES) as LayoutKind[]) {
+    const list = distinct(rows.filter((row) => row.kind === kind));
+    lines.push(
+      '',
+      `### ${KIND_TITLES[kind]}`,
+      '',
+      '| Rule | Element | Detail (largest) | Views | Where (screen width) | Example |',
+      '| --- | --- | --- | --- | --- | --- |',
+    );
+    for (const item of list.slice(0, LIST_LIMIT)) {
+      const where = [...item.where].sort();
+      lines.push(
+        `| ${item.rule} | ${cell(item.element)} | ${cell(item.detail)} | ${item.views} | ${cell(where.slice(0, 6).join(', '))}${where.length > 6 ? ` +${where.length - 6}` : ''} | ${item.file} |`,
+      );
+    }
+    if (list.length > LIST_LIMIT)
+      lines.push('', `… ${list.length - LIST_LIMIT} more in layout.json.`);
+  }
+  lines.push(
+    '',
+    '### Paddings per piece type',
+    '',
+    'Computed padding (top right bottom left, px) of each typed piece, with the screen · element pairs that use it.',
+    '',
+    '| Type | Padding | Uses | Examples |',
+    '| --- | --- | --- | --- |',
+  );
+  for (const [type, paddings] of [...piecePaddings(shots)].sort((a, b) =>
+    a[0].localeCompare(b[0]),
+  )) {
+    for (const [padding, users] of [...paddings].sort((a, b) => b[1].size - a[1].size)) {
+      const examples = [...users].sort();
+      lines.push(
+        `| ${type} | ${padding} | ${users.size} | ${cell(examples.slice(0, 4).join('; '))}${examples.length > 4 ? ` +${examples.length - 4}` : ''} |`,
+      );
+    }
+  }
+  return lines;
 }
 
 function gallery(shots: ShotRecord[]): string {
@@ -181,6 +358,25 @@ export default async function designReport(): Promise<void> {
   const runs = records.flatMap((record) => record.axe);
   writeFileSync(join(root, 'index.json'), JSON.stringify({ records }, null, 2));
   writeFileSync(join(root, 'summary.md'), summary(records, shots, runs));
+  writeFileSync(
+    join(root, 'layout.json'),
+    JSON.stringify(
+      {
+        counts: layoutCounts(shots),
+        findings: layoutRows(shots),
+        pieces: Object.fromEntries(
+          [...piecePaddings(shots)].map(([type, paddings]) => [
+            type,
+            Object.fromEntries(
+              [...paddings].map(([padding, users]) => [padding, [...users].sort()]),
+            ),
+          ]),
+        ),
+      },
+      null,
+      2,
+    ),
+  );
   writeFileSync(join(root, 'index.html'), gallery(shots));
   console.log(`design capture: ${shots.length} screenshots, ${runs.length} axe runs in ${root}`);
 }

@@ -19,6 +19,11 @@ export class SimulationPanel {
   readonly editor = input.required<ConfigEditor>();
 
   readonly outcome = computed(() => this.editor().simulation.value());
+  /** N-18 (F19.8): a role that cannot change any value of the screen is not told to change one. */
+  readonly canChange = computed(() => {
+    const editor = this.editor();
+    return editor.parameters().some((param) => editor.canEdit(param));
+  });
   readonly result = computed(() => this.outcome()?.result ?? null);
 
   /** Levels of the matrix: the four urgency levels, plus any other level the API answers. */

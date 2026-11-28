@@ -3,9 +3,17 @@ app-layout-principal {
   min-height: 100vh;
   color: #251139;
 }
+/*
+ * D-108: the sidebar's column is painted from the top to the end of the page (its rule included), in the colour the
+ * art of the sticky panel ends with, so no rendering of a long page (a full-page capture, a print, an overscroll)
+ * shows the panel ending at the viewport's height while the content goes on. The panel itself stays sticky and as
+ * tall as the viewport.
+ */
 app-sidebar-principal {
   display: block;
   min-width: 0;
+  border-right: 1px solid rgba(217, 168, 255, 0.2);
+  background: #1a0437;
 }
 .app-shell {
   min-height: 100vh;
@@ -35,7 +43,6 @@ app-sidebar-principal {
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: cover;
-  border-right: 1px solid rgba(217, 168, 255, 0.2);
 }
 .brand {
   display: flex;
@@ -225,7 +232,12 @@ app-sidebar-principal {
 @media (max-width: 560px) {
   .app-shell {
     display: block;
-    padding-bottom: calc(var(--mobile-nav-h) + 1px);
+    padding-bottom: var(--mobile-nav-h);
+  }
+  /* The bottom bar is fixed to the viewport: its host has no column to paint. */
+  app-sidebar-principal {
+    border-right: 0;
+    background: none;
   }
   /* Bottom bar: one row with the sections and, last, the profile (its avatar). */
   .sidebar {

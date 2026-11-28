@@ -109,6 +109,21 @@ describe('chart options', () => {
     expect(visible.map((bar) => bar.value)).toEqual([5, 12, 7, 0]);
   });
 
+  it('never turns the step names, and lays the bars down on phones (VDE-6)', () => {
+    interface Axis {
+      type: string;
+      axisLabel: { rotate?: number; overflow?: string };
+    }
+    const steps = waterfallSteps({ assessment_id: 'a1', raw: 40, final: 50, waterfall: { A: 10 } });
+    const upright = waterfallChart(steps) as { xAxis: Axis; yAxis: Axis };
+    expect(upright.xAxis.type).toBe('category');
+    expect(upright.xAxis.axisLabel.rotate).toBeUndefined();
+    expect(upright.xAxis.axisLabel.overflow).toBe('break');
+    const lying = waterfallChart(steps, true) as { xAxis: Axis; yAxis: Axis };
+    expect(lying.yAxis.type).toBe('category');
+    expect(lying.xAxis.type).toBe('value');
+  });
+
   it('keeps the 0 to 100 axis when every step is inside it', () => {
     expect(
       waterfallRange(

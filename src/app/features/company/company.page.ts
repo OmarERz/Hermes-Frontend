@@ -27,11 +27,16 @@ import { ProfilePanel } from './profile-panel';
     </div>
   `,
   styles: `
+    /* D-108 (F19.8): the profile and the peers are as tall as each other; each panel fills its host. */
     .company-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
       gap: var(--grid-gap);
-      align-items: start;
+      align-items: stretch;
+    }
+    .company-grid > * {
+      display: grid;
+      min-width: 0;
     }
   `,
 })

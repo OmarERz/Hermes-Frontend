@@ -6,12 +6,17 @@
   position: relative;
   display: inline-flex;
 }
+/*
+ * AGE-4 / G5 (F19.8): the button is a 24 × 24 px target (WCAG 2.5.8) around its 16 px icon; with a coarse pointer an
+ * invisible margin of the button itself makes the target 44 × 44 px without moving the text around it.
+ */
 .tooltip-button {
+  position: relative;
   display: grid;
-  width: 21px;
-  height: 21px;
+  width: 24px;
+  height: 24px;
   place-items: center;
-  padding: var(--space-0-5);
+  padding: var(--space-1);
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -25,6 +30,14 @@
 .tooltip-button svg {
   width: 16px;
   height: 16px;
+}
+@media (pointer: coarse) {
+  .tooltip-button::before {
+    content: '';
+    position: absolute;
+    inset: calc((24px - 44px) / 2);
+    border-radius: 50%;
+  }
 }
 .tooltip-content {
   position: absolute;

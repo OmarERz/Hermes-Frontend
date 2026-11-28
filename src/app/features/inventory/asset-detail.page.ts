@@ -13,17 +13,21 @@ import { BannerPagina } from '../../componentes/banner-pagina/banner-pagina';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { Chip } from '../../shared/chip';
+import { ColumnsToggle } from '../../shared/columns-toggle';
 import { ItopLink } from '../../shared/itop-links';
 import { KpiCard, kpiState } from '../../shared/kpi-card';
+import { ScrollFade } from '../../shared/scroll-fade.directive';
 import {
   CLASSIFICATION_LABELS,
   formatDateTime,
+  formatShortDateTime,
   LEVEL_LABELS,
   STATUS_LABELS,
   STATUS_TONES,
 } from '../../shared/labels';
 import {
   CATEGORY_LABELS,
+  cpeParts,
   CRITICALITY_LABELS,
   exposureLabel,
   INSTALL_STATUS_LABELS,
@@ -31,6 +35,7 @@ import {
   InstallStatus,
   itopClassLabel,
   licenceValidity,
+  plural,
   text,
   yesNo,
 } from './inventory-labels';
@@ -58,8 +63,10 @@ interface Fact {
     BannerPagina,
     AsyncStateComponent,
     Chip,
+    ColumnsToggle,
     ItopLink,
     KpiCard,
+    ScrollFade,
     LucideArrowLeft,
     LucideLayers,
     LucideShieldAlert,
@@ -83,6 +90,14 @@ export class AssetDetailPage {
     software: LucideLayers,
   };
   readonly formatDateTime = formatDateTime;
+  readonly formatShortDateTime = formatShortDateTime;
+  /** «Todas las columnas» of the installed software: state, category, licence and description (N-4). */
+  readonly allSoftwareColumns = signal(false);
+  /**
+   * «Todas las columnas» of the findings: state, last seen, KEV and tickets of this CI (the CVE's page shows the
+   * group's figures, which may come from another CI).
+   */
+  readonly allFindingColumns = signal(false);
 
   readonly ciId = signal('');
   readonly detail = new AsyncState<AssetDetail>();
@@ -149,8 +164,13 @@ export class AssetDetailPage {
       statusKey: (item.status ?? 'unknown') as InstallStatus,
       statusLabel: INSTALL_STATUS_LABELS[item.status ?? 'unknown'],
       validity: item.licence ? licenceValidity(item.licence) : null,
+      cpeParts: cpeParts(item.cpe),
     })),
   );
+  readonly installationsLabel = computed(() =>
+    plural(this.softwareRows().length, 'instalación', 'instalaciones'),
+  );
+  readonly groupsLabel = computed(() => plural(this.findings().length, 'grupo', 'grupos'));
   readonly softwareState = computed(() =>
     viewState(this.software, this.softwareRows().length === 0),
   );

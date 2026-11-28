@@ -53,17 +53,13 @@
             </p>
           </header>
           @if (profileParam(); as param) {
-            <div class="profile-section-heading">
-              <h3>
-                Perfil
+            <fieldset class="profile-options judge-profiles" [disabled]="!editor.canEdit(param)">
+              <legend class="profile-legend">
+                Perfil de sensibilidad
                 <app-ayuda-tooltip
                   texto="Multiplica los rangos de los motivos del juez, fija si puede bajar la puntuación y trae su zona muerta, que se simula y se guarda junto con el perfil."
                 />
-              </h3>
-              <p>{{ param.description }}</p>
-            </div>
-            <fieldset class="profile-options judge-profiles" [disabled]="!editor.canEdit(param)">
-              <legend class="field-label">Perfil de sensibilidad</legend>
+              </legend>
               @for (profile of profiles(); track profile.value) {
                 <label
                   class="profile-option"

@@ -116,8 +116,13 @@
                       ><small>{{ row.purpose }}</small>
                     </td>
                     <td data-label="Estado">
-                      <span class="connection-state" [attr.data-state]="row.state"
-                        >{{ row.state === 'ok' ? '✅' : '❌' }} {{ row.stateLabel }}</span
+                      <span class="connection-state" [attr.data-state]="row.state">
+                        @if (row.state === 'ok') {
+                          <svg lucideCircleCheck aria-hidden="true"></svg>
+                        } @else {
+                          <svg lucideCircleX aria-hidden="true"></svg>
+                        }
+                        {{ row.stateLabel }}</span
                       >
                     </td>
                     <td class="card-full" data-label="Detalle">

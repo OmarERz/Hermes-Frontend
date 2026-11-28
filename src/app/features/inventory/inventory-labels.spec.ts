@@ -1,4 +1,5 @@
 import {
+  cpeParts,
   exposureLabel,
   formatDay,
   itopClassLabel,
@@ -58,6 +59,12 @@ describe('inventory labels', () => {
     expect(plural(3, 'instalación', 'instalaciones')).toBe('3 instalaciones');
     expect(percent(1, 3)).toBe(33);
     expect(percent(1, 0)).toBe(0);
+  });
+
+  it('cuts a CPE after each colon only', () => {
+    expect(cpeParts('cpe:2.3:a:f5:nginx:*')).toEqual(['cpe:', '2.3:', 'a:', 'f5:', 'nginx:', '*']);
+    expect(cpeParts(null)).toEqual([]);
+    expect(cpeParts('')).toEqual([]);
   });
 
   it('builds distribution rows in a fixed order or from the largest count', () => {

@@ -3,17 +3,28 @@
  * wide screens (MET-1: a section with one or two indicators no longer leaves two thirds of its row empty); the cost
  * chart takes the whole width below them.
  */
+/* D-108 (F19.8): the sections of a row are as tall as each other. */
 .metric-sections {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
   gap: var(--grid-gap);
-  align-items: start;
+  align-items: stretch;
 }
 .cost-section {
   margin-top: var(--grid-gap);
 }
 .metric-group .performance-heading {
   margin-bottom: var(--space-3);
+}
+/*
+ * MET-2 (F19.8): a section title is a section title (--text-xl), not a second page title: at ≈ 28 px next to the
+ * 32 px h1 «Calidad de las recomendaciones» broke in two lines.
+ */
+.metric-sections .performance-heading h2,
+.cost-section .performance-heading h2 {
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+  letter-spacing: 0;
 }
 .cost-chart {
   height: 240px;

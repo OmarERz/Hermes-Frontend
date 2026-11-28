@@ -122,8 +122,8 @@
 .clear:focus-visible,
 .pager button:focus-visible,
 .row-link:focus-visible {
-  outline: 3px solid #9e4be1;
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 .visually-hidden {
   position: absolute;

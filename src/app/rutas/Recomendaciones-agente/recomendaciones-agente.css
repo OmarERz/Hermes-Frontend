@@ -238,37 +238,41 @@
   color: var(--text-secondary);
 }
 @scope (.recommendations-view) {
+  /*
+   * D-108 (F19.8): the list of cases is as tall as the detail next to it (no card ends halfway down the other); its
+   * content stays in view while the detail scrolls.
+   */
   .recommendation-workspace {
     display: grid;
     grid-template-columns: minmax(230px, 0.65fr) minmax(0, 1.7fr);
-    align-items: start;
-    gap: 18px;
+    align-items: stretch;
+    gap: var(--grid-gap);
     min-width: 0;
   }
   .ticket-list,
   .recommendation-detail {
     min-width: 0;
-    padding: 18px;
+    padding: var(--card-pad);
     border: 1px solid var(--line, #e4e3ee);
-    border-radius: 13px;
+    border-radius: var(--radius-lg);
     background: var(--surface, #fff);
     box-shadow: 0 3px 12px #3510440a;
   }
-  .ticket-list {
+  .ticket-list-body {
     position: sticky;
-    top: 14px;
+    top: var(--space-4);
   }
-  .ticket-list > header {
+  .ticket-list-body > header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
     color: var(--text-primary, #321044);
   }
-  .ticket-list > header h2 {
+  .ticket-list-body > header h2 {
     font-size: calc((16px) + var(--font-size-increase));
   }
-  .ticket-list > header span {
+  .ticket-list-body > header span {
     padding: 3px 8px;
     border-radius: 12px;
     background: #f4e8fb;
@@ -387,15 +391,13 @@
   .recommendations-view .recommendation-workspace {
     grid-template-columns: minmax(0, 1fr);
   }
-  .recommendations-view .ticket-list {
+  .recommendations-view .ticket-list-body {
     position: static;
-  }
-  .recommendations-view .ticket-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 7px;
+    gap: var(--space-2);
   }
-  .recommendations-view .ticket-list > header {
+  .recommendations-view .ticket-list-body > header {
     grid-column: 1/-1;
   }
   .recommendations-view .ticket-option {
@@ -403,7 +405,7 @@
   }
 }
 @media (max-width: 560px) {
-  .recommendations-view .ticket-list {
+  .recommendations-view .ticket-list-body {
     grid-template-columns: 1fr;
   }
   .recommendations-view .detail-heading {
@@ -426,7 +428,7 @@
   border-color: #ed079b;
   background: #ed079b18;
 }
-.app-shell[data-theme='dark'] .recommendations-view .ticket-list > header,
+.app-shell[data-theme='dark'] .recommendations-view .ticket-list-body > header,
 .app-shell[data-theme='dark'] .recommendations-view .detail-heading h2,
 .app-shell[data-theme='dark'] .recommendations-view .detail-empty h2 {
   color: var(--text-primary);
