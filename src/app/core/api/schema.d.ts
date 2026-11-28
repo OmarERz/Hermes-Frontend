@@ -5021,7 +5021,7 @@ export interface components {
             level: "critical" | "high" | "medium" | "low";
             /**
              * Match Sources
-             * @description Cómo se detectaron sus hallazgos (F18.9), sin repetir y de la más a la menos segura: `nvd_cpe` (rango de NVD, certeza 1.0), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org, certeza 1.0) y `cna_affected` (solo los rangos del CNA en CVE.org, certeza 0.9). Cuenta los activos que hablan por el grupo (los vigentes, o todos si ya está corregido); en el detalle de un activo, solo la de ese activo.
+             * @description Cómo se detectaron sus hallazgos (F18.9), sin repetir y de la más a la menos segura: `nvd_cpe` (rango de NVD, certeza 1.0), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org, certeza 1.0) y `cna_affected` (solo los rangos del CNA en CVE.org, certeza 0.9). Cuenta todas las instalaciones vigentes de los activos que hablan por el grupo (los vigentes, o todos si ya está corregido); en el detalle de un activo, solo las de ese activo.
              */
             match_sources?: ("nvd_cpe" | "kev" | "cna_affected")[];
             /**
@@ -5102,7 +5102,7 @@ export interface components {
             level: "critical" | "high" | "medium" | "low";
             /**
              * Match Sources
-             * @description Cómo se detectaron sus hallazgos (F18.9), sin repetir y de la más a la menos segura: `nvd_cpe` (rango de NVD, certeza 1.0), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org, certeza 1.0) y `cna_affected` (solo los rangos del CNA en CVE.org, certeza 0.9). Cuenta los activos que hablan por el grupo (los vigentes, o todos si ya está corregido); en el detalle de un activo, solo la de ese activo.
+             * @description Cómo se detectaron sus hallazgos (F18.9), sin repetir y de la más a la menos segura: `nvd_cpe` (rango de NVD, certeza 1.0), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org, certeza 1.0) y `cna_affected` (solo los rangos del CNA en CVE.org, certeza 0.9). Cuenta todas las instalaciones vigentes de los activos que hablan por el grupo (los vigentes, o todos si ya está corregido); en el detalle de un activo, solo las de ese activo.
              */
             match_sources?: ("nvd_cpe" | "kev" | "cna_affected")[];
             /**
