@@ -72,6 +72,30 @@ input[aria-invalid='true'] {
   gap: var(--space-1);
   font-weight: 650;
 }
+/* F15.9: the optional CNA names, a group of two fields (side by side when they fit). */
+.cna-fields {
+  display: grid;
+  gap: var(--form-group-gap);
+  min-width: 0;
+  margin: 0;
+  padding: var(--form-group-pad);
+  border: 0;
+}
+.cna-fields legend {
+  margin-bottom: var(--form-group-gap);
+  padding: 0;
+  font-weight: 650;
+}
+.cna-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--form-group-gap);
+}
+.cna-field {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+}
 .candidate-list {
   display: grid;
   gap: var(--space-1);

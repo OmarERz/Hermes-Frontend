@@ -18,7 +18,7 @@ import { ACTION_ROLES } from '../../core/auth/roles';
 import { AsyncState } from '../../shared/async-state';
 import { AsyncStateComponent } from '../../shared/async-state.component';
 import { KpiCard } from '../../shared/kpi-card';
-import { CpeMappingDialog, MappingTarget } from './cpe-mapping-dialog';
+import { CpeMappingDialog, MappingTarget, mappingNotice } from './cpe-mapping-dialog';
 import { InventoryPending, InventoryService, Mapping, PendingItem } from './inventory.service';
 import { viewState } from './inventory-view';
 import { pendingCount, pendingItemId, PendingKind } from './pending-counts';
@@ -153,9 +153,7 @@ export class PendingInventoryPage {
   mapped(mapping: Mapping): void {
     const name = this.mapping()?.name ?? 'el software';
     this.mapping.set(null);
-    this.notice.set(
-      `CPE guardado para ${name} (${mapping.cpe}). Hermes buscará sus vulnerabilidades en el siguiente escaneo.`,
-    );
+    this.notice.set(mappingNotice(name, mapping));
     this.load();
   }
 }

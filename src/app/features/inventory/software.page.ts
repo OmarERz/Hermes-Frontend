@@ -28,7 +28,7 @@ import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink, safeExternalUrl } from '../../shared/itop-links';
 import { LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
 import { ScrollFade } from '../../shared/scroll-fade.directive';
-import { CpeMappingDialog, MappingTarget } from './cpe-mapping-dialog';
+import { CpeMappingDialog, MappingTarget, mappingNotice } from './cpe-mapping-dialog';
 import {
   CATEGORIES,
   CATEGORY_LABELS,
@@ -293,15 +293,13 @@ export class SoftwarePage {
 
   openMapping(item: SoftwareItem): void {
     this.notice.set('');
-    this.mapping.set({ id: item.id, name: item.name, cpe: item.cpe });
+    this.mapping.set({ id: item.id, name: item.name, cpe: item.cpe, cna: item.cna ?? null });
   }
 
   mapped(mapping: Mapping): void {
     const name = this.mapping()?.name ?? 'el software';
     this.mapping.set(null);
-    this.notice.set(
-      `CPE guardado para ${name} (${mapping.cpe}). Hermes buscará sus vulnerabilidades en el siguiente escaneo.`,
-    );
+    this.notice.set(mappingNotice(name, mapping));
     this.refresh();
   }
 

@@ -128,4 +128,20 @@ describe('InventoryService', () => {
     put.flush({ software: KERNEL.id, cpe: 'cpe:2.3:o:amazon:linux:*' });
     expect((await saved).software).toBe(KERNEL.id);
   });
+
+  it('sends the CNA names, or null to remove them, only when given (F15.9)', async () => {
+    const cpe = 'cpe:2.3:o:linux:linux_kernel:*';
+    const cna = { vendor: 'Linux', product: 'Linux' };
+    const named = firstValueFrom(service.setMapping(KERNEL.id, cpe, cna));
+    const withNames = backend.expectOne(`${API}/api/mappings/${KERNEL.id}`);
+    expect(withNames.request.body).toEqual({ cpe, cna });
+    withNames.flush({ software: KERNEL.id, cpe, cna });
+    expect((await named).cna).toEqual(cna);
+
+    const cleared = firstValueFrom(service.setMapping(KERNEL.id, cpe, null));
+    const withNull = backend.expectOne(`${API}/api/mappings/${KERNEL.id}`);
+    expect(withNull.request.body).toEqual({ cpe, cna: null });
+    withNull.flush({ software: KERNEL.id, cpe, cna: null });
+    expect((await cleared).cna).toBeNull();
+  });
 });

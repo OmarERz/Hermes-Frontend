@@ -125,3 +125,8 @@ export function plural(count: number, one: string, many: string): string {
 export function percent(part: number, total: number): number {
   return total > 0 ? Math.round((part / total) * 100) : 0;
 }
+
+/** The CNA names of a mapping as one line, vendor first like the CPE: «Linux · Linux», «n/a · CPython». */
+export function cnaLabel(cna: { vendor: string; product: string }): string {
+  return `${cna.vendor} · ${cna.product}`;
+}

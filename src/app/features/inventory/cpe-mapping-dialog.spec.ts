@@ -2,7 +2,13 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { NEVER, of, throwError } from 'rxjs';
 import { ApiError } from '../../core/api/api-error';
-import { CpeMappingDialog, cpeProblem, MappingTarget } from './cpe-mapping-dialog';
+import {
+  cnaProblems,
+  CpeMappingDialog,
+  cpeProblem,
+  MappingTarget,
+  mappingNotice,
+} from './cpe-mapping-dialog';
 import { KERNEL, OPENSSL } from './inventory.fixtures';
 import { InventoryService, Mapping } from './inventory.service';
 
@@ -59,6 +65,39 @@ describe('CpeMappingDialog', () => {
     expect(cpeProblem('cpe:2.3:a:*:openssl:*')).toContain('El CPE no es válido');
     expect(cpeProblem(KERNEL_CPE)).toBeNull();
     expect(cpeProblem('cpe:2.3:a:open\\:ssl:openssl:*')).toBeNull();
+    // F15.9: the API also keeps hardware CPEs.
+    expect(cpeProblem('cpe:2.3:h:cisco:asa_5505:*')).toBeNull();
+    expect(cpeProblem('cpe:2.3:x:cisco:asa_5505:*')).toContain('El CPE no es válido');
+  });
+
+  it('checks the CNA names like the API does: optional, but both, short and printable', () => {
+    expect(cnaProblems('', '')).toEqual({});
+    expect(cnaProblems('  ', '\ufeff')).toEqual({});
+    expect(cnaProblems(' Linux ', 'Linux')).toEqual({});
+    expect(cnaProblems('n/a', 'CPython')).toEqual({});
+    expect(cnaProblems('Linux', ' ')).toEqual({ product: expect.stringContaining('el producto') });
+    expect(cnaProblems('', 'Linux')).toEqual({ vendor: expect.stringContaining('el fabricante') });
+    expect(cnaProblems('a'.repeat(200), '😀'.repeat(200))).toEqual({});
+    expect(cnaProblems('a'.repeat(201), 'Linux')).toEqual({
+      vendor: expect.stringContaining('de 1 a 200 caracteres'),
+    });
+    expect(cnaProblems('Linux', 'Li\u0085nux')).toEqual({
+      product: expect.stringContaining('caracteres de control'),
+    });
+    expect(cnaProblems('Li\u0007nux', 'Linux').vendor).toContain('caracteres de control');
+  });
+
+  it('tells the saved mapping with its CNA names when it has them', () => {
+    expect(mappingNotice('nginx', { software: 'x', cpe: 'cpe:2.3:a:f5:nginx:*' })).toBe(
+      'CPE guardado para nginx (cpe:2.3:a:f5:nginx:*). Hermes buscará sus vulnerabilidades en el siguiente escaneo.',
+    );
+    expect(
+      mappingNotice('Kernel', {
+        software: 'x',
+        cpe: 'cpe:2.3:o:linux:linux_kernel:*',
+        cna: { vendor: 'Linux', product: 'Linux' },
+      }),
+    ).toContain('(cpe:2.3:o:linux:linux_kernel:*) y los nombres de CVE.org Linux · Linux.');
   });
 
   it('searches candidates with the software name as soon as it opens', async () => {
@@ -86,8 +125,100 @@ describe('CpeMappingDialog', () => {
     );
     (element.querySelector('.cpe-form button[type="submit"]') as HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(service.setMapping).toHaveBeenCalledWith(KERNEL.id, KERNEL_CPE);
+    // No CNA names typed and none in the mapping: the request leaves `cna` out (the API keeps what it has).
+    expect(service.setMapping).toHaveBeenCalledWith(KERNEL.id, KERNEL_CPE, undefined);
     expect(host.saved()).toEqual({ software: KERNEL.id, cpe: KERNEL_CPE });
+  });
+
+  it('starts from the CNA names of the mapping and sends the edited ones trimmed', async () => {
+    const service = new FakeService();
+    const { fixture, element } = await render(service, {
+      id: KERNEL.id,
+      name: KERNEL.name,
+      cpe: KERNEL_CPE,
+      cna: { vendor: 'Linux', product: 'Linux' },
+    });
+    const vendor = element.querySelector('input[name="cnaVendor"]') as HTMLInputElement;
+    const product = element.querySelector('input[name="cnaProduct"]') as HTMLInputElement;
+    expect(vendor.value).toBe('Linux');
+    expect(product.value).toBe('Linux');
+    expect(element.querySelector('fieldset legend')?.textContent).toContain(
+      'Nombres en CVE.org (CNA)',
+    );
+    expect(element.querySelector('#cna-mapping-help')?.textContent).toContain(
+      'Hermes no revisa esa fuente para este producto',
+    );
+    type(product, '  Linux kernel ');
+    (element.querySelector('.cpe-form button[type="submit"]') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(service.setMapping).toHaveBeenCalledWith(KERNEL.id, KERNEL_CPE, {
+      vendor: 'Linux',
+      product: 'Linux kernel',
+    });
+  });
+
+  it('removes the CNA names of the mapping when both fields are emptied', async () => {
+    const service = new FakeService();
+    const { fixture, element } = await render(service, {
+      id: KERNEL.id,
+      name: KERNEL.name,
+      cpe: KERNEL_CPE,
+      cna: { vendor: 'Linux', product: 'Linux' },
+    });
+    type(element.querySelector('input[name="cnaVendor"]') as HTMLInputElement, '');
+    type(element.querySelector('input[name="cnaProduct"]') as HTMLInputElement, ' ');
+    (element.querySelector('.cpe-form button[type="submit"]') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(service.setMapping).toHaveBeenCalledWith(KERNEL.id, KERNEL_CPE, null);
+  });
+
+  it('refuses one CNA name without the other before calling the API', async () => {
+    const service = new FakeService();
+    const { fixture, element } = await render(service, {
+      id: KERNEL.id,
+      name: KERNEL.name,
+      cpe: KERNEL_CPE,
+    });
+    const vendor = element.querySelector('input[name="cnaVendor"]') as HTMLInputElement;
+    const product = element.querySelector('input[name="cnaProduct"]') as HTMLInputElement;
+    type(vendor, 'Linux');
+    (element.querySelector('.cpe-form button[type="submit"]') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(service.setMapping).not.toHaveBeenCalled();
+    expect(element.querySelector('#cna-product-error')?.textContent).toContain(
+      'Escribe también el producto',
+    );
+    expect(product.getAttribute('aria-invalid')).toBe('true');
+    expect(product.getAttribute('aria-describedby')).toBe('cna-product-error');
+    expect(vendor.getAttribute('aria-invalid')).toBe('false');
+    expect(element.querySelector('#cna-vendor-error')).toBeNull();
+
+    type(product, 'Linux');
+    await fixture.whenStable();
+    expect(element.querySelector('#cna-product-error')).toBeNull();
+  });
+
+  it('shows its own text for a CNA name the API refuses', async () => {
+    const service = new FakeService();
+    service.setMapping.mockReturnValue(
+      throwError(
+        () =>
+          new ApiError(422, 'validation_error', 'Los datos enviados no son válidos.', [
+            { field: 'body.cna.vendor', issue: 'string_pattern_mismatch' },
+          ]),
+      ),
+    );
+    const { fixture, dialog, element } = await render(service);
+    dialog.cpe.set(KERNEL_CPE);
+    dialog.cnaVendor.set('Linux');
+    dialog.cnaProduct.set('Linux');
+    dialog.save();
+    await fixture.whenStable();
+    expect(element.querySelector('#cna-vendor-error')?.textContent).toContain(
+      'El nombre no es válido',
+    );
+    expect(element.querySelector('#cna-product-error')).toBeNull();
+    expect(element.querySelector('[role="alert"]')).toBeNull();
   });
 
   it('starts from the current CPE and refuses an invalid one before calling the API', async () => {

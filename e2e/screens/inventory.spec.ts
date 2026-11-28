@@ -3,7 +3,8 @@ import { asRole, expect, expectScreen, test } from '../support/fixtures';
 // src/app/features/inventory/ (lane B · Inventario), against the backend's demo data (`make demo`): srv-pagos-01
 // (CI-1, Server, 16 vCPU and 64 GB, OpenSSL 3.0.7 with the licence «Soporte OpenSSL»), vm-intranet-02 (CI-2,
 // VirtualMachine, OpenSSL inactive) and srv-web-03 (CI-3, Server without owner, nginx and Redis). Read only, except
-// the analyst's CPE mapping, which saves nginx with the CPE it already has (f5:nginx), so the data stay the same.
+// the analyst's CPE mapping, which saves nginx with the CPE it already has (f5:nginx), and the CVE.org names of Redis,
+// which the same test removes again, so the data stay the same.
 test.describe('inventory as reader', () => {
   asRole('reader');
 
@@ -152,5 +153,55 @@ test.describe('inventory as analyst', () => {
     await expect(
       page.getByRole('status').filter({ hasText: 'CPE guardado para nginx' }),
     ).toBeVisible();
+  });
+
+  // F15.9: the CNA names of a mapping, on Redis (no other test maps it). The test removes them at the end, so the
+  // demo data stay the same.
+  test('saves the CVE.org names of a mapping and removes them', async ({ page }) => {
+    await page.goto('/software');
+    const open = async () => {
+      await page.getByRole('button', { name: 'Cambiar CPE de Redis' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Mapear CPE · Redis' });
+      await expect(dialog).toBeVisible();
+      return dialog;
+    };
+    const vendorOf = (dialog: Awaited<ReturnType<typeof open>>) =>
+      dialog.getByRole('textbox', { name: 'Fabricante (CNA)' });
+    const productOf = (dialog: Awaited<ReturnType<typeof open>>) =>
+      dialog.getByRole('textbox', { name: 'Producto (CNA)' });
+
+    let dialog = await open();
+    await expect(dialog.getByRole('group', { name: /Nombres en CVE\.org \(CNA\)/ })).toContainText(
+      'Sin ellos, Hermes no revisa esa fuente para este producto.',
+    );
+    await expect(vendorOf(dialog)).toHaveValue('');
+    // One name alone is refused before any request.
+    await vendorOf(dialog).fill('Redis');
+    await dialog.getByRole('button', { name: 'Guardar CPE' }).click();
+    await expect(dialog.getByText('Escribe también el producto')).toBeVisible();
+    await expect(productOf(dialog)).toHaveAttribute('aria-invalid', 'true');
+    await productOf(dialog).fill('Redis');
+    await dialog.getByRole('button', { name: 'Guardar CPE' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(
+      page.getByRole('status').filter({ hasText: 'y los nombres de CVE.org Redis · Redis' }),
+    ).toBeVisible();
+
+    // The mapping keeps them: the dialog starts from them; emptying both removes them.
+    dialog = await open();
+    await expect(vendorOf(dialog)).toHaveValue('Redis');
+    await expect(productOf(dialog)).toHaveValue('Redis');
+    await vendorOf(dialog).fill('');
+    await productOf(dialog).fill('');
+    await dialog.getByRole('button', { name: 'Guardar CPE' }).click();
+    await expect(dialog).toHaveCount(0);
+    const notice = page.getByRole('status').filter({ hasText: 'CPE guardado para Redis' });
+    await expect(notice).toBeVisible();
+    await expect(notice).not.toContainText('CVE.org');
+
+    dialog = await open();
+    await expect(vendorOf(dialog)).toHaveValue('');
+    await dialog.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(dialog).toHaveCount(0);
   });
 });

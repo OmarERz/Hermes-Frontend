@@ -80,6 +80,53 @@
       @if (cpeError(); as problem) {
         <p class="field-error" id="cpe-mapping-error">{{ problem }}</p>
       }
+      <fieldset class="cna-fields" aria-describedby="cna-mapping-help">
+        <legend>Nombres en CVE.org (CNA) <small>· opcional</small></legend>
+        <p id="cna-mapping-help">
+          CVE.org publica cada vulnerabilidad con los nombres que usa el fabricante (el CNA), que
+          pueden no ser los del CPE. Sin ellos, Hermes no revisa esa fuente para este producto.
+        </p>
+        <div class="cna-pair">
+          <div class="cna-field">
+            <label
+              >Fabricante (CNA)
+              <input
+                name="cnaVendor"
+                maxlength="200"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Linux"
+                [ngModel]="cnaVendor()"
+                (ngModelChange)="cnaVendor.set($event)"
+                [attr.aria-invalid]="!!cnaErrors().vendor"
+                [attr.aria-describedby]="cnaErrors().vendor ? 'cna-vendor-error' : null"
+              />
+            </label>
+            @if (cnaErrors().vendor; as problem) {
+              <p class="field-error" id="cna-vendor-error">{{ problem }}</p>
+            }
+          </div>
+          <div class="cna-field">
+            <label
+              >Producto (CNA)
+              <input
+                name="cnaProduct"
+                maxlength="200"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Linux"
+                [ngModel]="cnaProduct()"
+                (ngModelChange)="cnaProduct.set($event)"
+                [attr.aria-invalid]="!!cnaErrors().product"
+                [attr.aria-describedby]="cnaErrors().product ? 'cna-product-error' : null"
+              />
+            </label>
+            @if (cnaErrors().product; as problem) {
+              <p class="field-error" id="cna-product-error">{{ problem }}</p>
+            }
+          </div>
+        </div>
+      </fieldset>
       @if (saveError(); as message) {
         <p class="field-error" role="alert">{{ message }}</p>
       }

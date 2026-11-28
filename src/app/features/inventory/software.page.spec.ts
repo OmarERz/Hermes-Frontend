@@ -289,7 +289,7 @@ describe('SoftwarePage', () => {
     expect(buttons).toEqual(['Cambiar CPE', 'Mapear CPE']);
     (element.querySelectorAll('.row-action')[1] as HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(page.mapping()).toEqual({ id: KERNEL.id, name: KERNEL.name, cpe: null });
+    expect(page.mapping()).toEqual({ id: KERNEL.id, name: KERNEL.name, cpe: null, cna: null });
     const dialog = fixture.debugElement.query(
       (node) => node.componentInstance instanceof CpeMappingDialog,
     );
@@ -307,12 +307,15 @@ describe('SoftwarePage', () => {
     expect(service.catalogue).toHaveBeenCalledTimes(2);
     expect(service.listSoftware).toHaveBeenLastCalledWith(NO_FILTERS, null, 25);
 
-    page.openMapping(OPENSSL);
+    // The dialog starts from the CNA names of the mapping (F15.9).
+    page.openMapping({ ...OPENSSL, cna: { vendor: 'OpenSSL', product: 'OpenSSL' } });
     await fixture.whenStable();
-    (
-      fixture.debugElement.query((node) => node.componentInstance instanceof CpeMappingDialog)
-        .componentInstance as CpeMappingDialog
-    ).cancelled.emit();
+    const opened = fixture.debugElement.query(
+      (node) => node.componentInstance instanceof CpeMappingDialog,
+    ).componentInstance as CpeMappingDialog;
+    expect(opened.software().cna).toEqual({ vendor: 'OpenSSL', product: 'OpenSSL' });
+    expect(opened.cnaVendor()).toBe('OpenSSL');
+    opened.cancelled.emit();
     await fixture.whenStable();
     expect(page.mapping()).toBeNull();
   });
