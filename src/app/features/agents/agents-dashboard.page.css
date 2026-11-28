@@ -23,8 +23,8 @@
 .performance-heading select:focus-visible,
 .chart-select:focus-visible,
 .ticket-link:focus-visible {
-  outline: 3px solid #9e4be1;
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 /* The chips next to the indicator values are the shared .kpi-detail (src/styles/kpi.css); the retry is one of them. */
@@ -85,8 +85,8 @@
 }
 .connections-link:focus-visible,
 .inline-retry:focus-visible {
-  outline: 3px solid #9e4be1;
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .agent-block + .agent-block {
@@ -152,4 +152,16 @@
   .agents-dashboard .top-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/*
+ * N-12 (F19.8): «Procesos» says «en ejecución» once (the headline repeated the first counter), and its three
+ * counters are equal columns with a rule between them.
+ */
+.queue-chart .queue-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.queue-chart .queue-stats span {
+  padding: 0 var(--space-2);
 }

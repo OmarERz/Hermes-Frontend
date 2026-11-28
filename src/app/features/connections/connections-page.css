@@ -55,6 +55,11 @@
   font-weight: 700;
   white-space: nowrap;
 }
+.connection-state svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
 .connection-state[data-state='ok'] {
   background: var(--success-bg);
   color: var(--success-text);

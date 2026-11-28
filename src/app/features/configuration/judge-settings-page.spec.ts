@@ -101,6 +101,9 @@ describe('JudgeSettingsPage', () => {
     ).toBe(true);
     expect(button('Guardar cambios')).toBeUndefined();
     expect(button('Simular')).toBeUndefined();
+    // N-18 (F19.8): a reader is not told to change values and simulate.
+    expect(element.querySelector('.sim-empty')?.textContent).toContain('no cambiarlos');
+    expect(element.querySelector('.sim-empty')?.textContent).not.toContain('pulsa «Simular»');
     await advanced();
     expect(
       Array.from(element.querySelectorAll<HTMLInputElement>('app-config-field input')).every(

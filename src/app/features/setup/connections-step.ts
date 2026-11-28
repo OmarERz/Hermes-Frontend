@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LucideRefreshCw } from '@lucide/angular';
+import { LucideCircleCheck, LucideCircleX, LucideRefreshCw } from '@lucide/angular';
 import { finalize, tap } from 'rxjs';
 import { toApiError } from '../../core/api/api-error';
 import { AsyncState } from '../../shared/async-state';
@@ -29,13 +29,13 @@ export function withFresh(
 }
 
 /**
- * Paso 1 · Conexiones (docs/13 §9): ✅/❌ per external service with its latency and the variable the server lacks,
+ * Paso 1 · Conexiones (docs/13 §9): a check or a cross (Lucide) per external service with its latency and the variable the server lacks,
  * from `GET /api/connections/status`, and «Probar de nuevo» (`POST /api/connections/test`). It never asks for a key:
  * the API only says which variable is missing, never a value (SEG-23).
  */
 @Component({
   selector: 'app-setup-connections-step',
-  imports: [AsyncStateComponent, LucideRefreshCw],
+  imports: [AsyncStateComponent, LucideCircleCheck, LucideCircleX, LucideRefreshCw],
   template: `
     <div class="step-toolbar">
       <span class="step-count">
@@ -65,9 +65,13 @@ export function withFresh(
         <ul class="step-list connection-list">
           @for (row of rows(); track row.name) {
             <li [attr.data-name]="row.name">
-              <span class="item-mark" [attr.data-state]="row.state" aria-hidden="true">{{
-                row.state === 'ok' ? '✅' : '❌'
-              }}</span>
+              <span class="item-mark" [attr.data-state]="row.state" aria-hidden="true">
+                @if (row.state === 'ok') {
+                  <svg lucideCircleCheck></svg>
+                } @else {
+                  <svg lucideCircleX></svg>
+                }
+              </span>
               <span class="item-copy">
                 <strong>{{ row.title }}</strong>
                 <small>{{ row.purpose }}</small>

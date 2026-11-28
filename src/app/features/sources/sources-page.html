@@ -336,13 +336,16 @@
                   </button>
                   @if (row.source.structural) {
                     <span class="lock-chip" title="Fuente estructural: no se puede desactivar"
-                      >🔒<span class="sr-only"> Estructural</span></span
+                      ><svg lucideLock aria-hidden="true"></svg
+                      ><span class="sr-only"> Estructural</span></span
                     >
                   }
                 </td>
                 <td>{{ row.typeLabel }}</td>
                 <td>
-                  <span class="level-pill" [title]="row.levelMeaning">{{ row.source.level }}</span>
+                  <app-chip tone="violet" [title]="row.levelMeaning">{{
+                    row.source.level
+                  }}</app-chip>
                 </td>
                 <td>
                   <span class="health" [attr.data-health]="row.source.health">{{

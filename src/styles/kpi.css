@@ -10,6 +10,14 @@
   gap: var(--grid-gap);
   min-width: 0;
 }
+/*
+ * N-11 (F19.8): four indicators never split 3 + 1: below the width where the four fit in one row they go two by two.
+ */
+@container workspace (max-width: 759.98px) {
+  .app-shell .page-content .kpi-grid:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 560px) {
   .app-shell .page-content .kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

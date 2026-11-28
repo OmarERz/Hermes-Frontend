@@ -70,7 +70,8 @@ export interface StepGuide {
 export const STEP_GUIDES: Readonly<Record<number, StepGuide>> = {
   1: {
     what: 'Comprueba que Hermes llega a iTop, DeepSeek, NVD, abuse.ch, ransomware.live y Firebase, con su latencia y la variable que falte. Aquí no se captura ninguna llave.',
-    ifSkipped: 'Lo marcado con ❌ no funciona hasta que se configure en el servidor.',
+    ifSkipped:
+      'Lo marcado «Sin configurar» o «Con falla» no funciona hasta que se configure en el servidor.',
     links: [{ path: '/conexiones', label: 'Ver el detalle en Conexiones' }],
     icon: LucidePlug,
   },

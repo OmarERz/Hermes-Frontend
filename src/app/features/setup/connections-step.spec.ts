@@ -55,7 +55,7 @@ const names = (element: HTMLElement) =>
   Array.from(element.querySelectorAll('li[data-name]')).map((li) => li.getAttribute('data-name'));
 
 describe('SetupConnectionsStep', () => {
-  it('shows ✅/❌ per service with its latency and the variable the server lacks, never a key', async () => {
+  it('shows a check or a cross per service with its latency and the variable the server lacks, never a key', async () => {
     const { element } = await render();
     expect(names(element)).toEqual(['itop', 'deepseek', 'nvd']);
     expect(text(element.querySelector('.step-count'))).toBe('1 de 3 conexiones funcionan');
@@ -65,10 +65,16 @@ describe('SetupConnectionsStep', () => {
       ['.item-mark', '.item-copy strong', '.item-copy small', '.item-state', '.item-detail'].map(
         (selector) => part('itop', selector),
       ),
-    ).toEqual(['✅', 'iTop', 'CMDB y tickets de iTop', 'Funciona', 'Conexión correcta']);
+    ).toEqual(['', 'iTop', 'CMDB y tickets de iTop', 'Funciona', 'Conexión correcta']);
+    // N-16 (F19.8): Lucide icons in the colour of the state, not emoji.
+    expect(element.querySelector('li[data-name="itop"] .item-mark svg')).not.toBeNull();
+    expect(
+      element.querySelector('li[data-name="itop"] .item-mark')?.getAttribute('data-state'),
+    ).toBe('ok');
+    expect(element.textContent).not.toMatch(/[✅❌]/u);
     expect(part('itop', '.item-number')).toBe('85 ms');
     const deepseek = element.querySelector('li[data-name="deepseek"]') as HTMLElement;
-    expect(part('deepseek', '.item-mark')).toBe('❌');
+    expect(element.querySelector('li[data-name="deepseek"] .item-mark svg')).not.toBeNull();
     expect(part('deepseek', '.item-state')).toBe('Sin configurar');
     expect(part('deepseek', '.item-number')).toBe('—');
     expect(text(deepseek.querySelector('.item-detail'))).toBe(

@@ -11,7 +11,12 @@
   @switch (editor().simulation.status()) {
     @case ('idle') {
       <p class="sim-empty">
-        Cambia uno o más valores y pulsa «Simular» para ver su efecto antes de guardar.
+        @if (canChange()) {
+          Cambia uno o más valores y pulsa «Simular» para ver su efecto antes de guardar.
+        } @else {
+          Tu rol puede consultar estos valores, pero no cambiarlos: quien puede cambiarlos simula
+          aquí su efecto antes de guardar.
+        }
       </p>
     }
     @case ('loading') {

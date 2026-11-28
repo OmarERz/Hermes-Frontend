@@ -280,7 +280,9 @@ describe('RecommendationsPage', () => {
     harness.detectChanges();
     await harness.fixture.whenStable();
     const dialog = element.querySelector('app-feedback-dialog') as HTMLElement;
-    expect(dialog.querySelector('.review-status-badge')?.textContent).toBe('Media');
+    // N-15 (F19.8): the level chip of the dialog has the tone of its level, as on the page.
+    expect(dialog.querySelector('app-chip.dialog-level')?.textContent).toBe('Media');
+    expect(dialog.querySelector('app-chip.dialog-level')?.getAttribute('data-tone')).toBe('medium');
 
     (dialog.querySelector('.decision-option input') as HTMLInputElement).click();
     harness.detectChanges();

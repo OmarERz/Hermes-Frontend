@@ -109,6 +109,10 @@
           <p class="hint">Se exportan días completos en hora UTC, incluido el último.</p>
         }
       }
+      <!-- STX-3 (F19.8): what the form still needs goes right under the field it is about. -->
+      @if (problem(); as message) {
+        <p id="stix-problem" class="hint" aria-live="polite">{{ message }}</p>
+      }
 
       <label class="check">
         <input
@@ -120,9 +124,6 @@
         Dejar fuera los activos altamente clasificados (y su TLP)
       </label>
 
-      @if (problem(); as message) {
-        <p class="hint" aria-live="polite">{{ message }}</p>
-      }
       @if (error(); as failure) {
         <p class="field-error" role="alert">{{ failure.message }}</p>
       }
@@ -135,6 +136,7 @@
         class="btn btn-primary export-submit"
         [disabled]="!!problem() || exporting()"
         [attr.aria-busy]="exporting()"
+        [attr.aria-describedby]="problem() ? 'stix-problem' : null"
       >
         <svg lucideDownload aria-hidden="true"></svg>
         {{ exporting() ? 'Exportando…' : 'Exportar y descargar' }}

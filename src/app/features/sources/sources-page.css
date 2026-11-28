@@ -52,9 +52,16 @@
 .feed-filters.segmented > button[aria-pressed='true'] span {
   color: #fff;
 }
+/* G10 / FUE-4 (F19.8): the table's lock is the Lucide icon too, in the colour of the other locks. */
 .lock-chip {
-  font-size: calc(13px + var(--font-size-increase));
-  line-height: 1;
+  display: inline-flex;
+  margin-left: var(--space-1);
+  color: var(--warning-text);
+  vertical-align: -2px;
+}
+.lock-chip svg {
+  width: 14px;
+  height: 14px;
 }
 /* FUE-4 (F19.6): the Lucide lock next to a structural source, in place of the 🔒 emoji (outside the table). */
 .lock-icon {
@@ -173,15 +180,6 @@ td:first-child {
 .row-link:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-.level-pill {
-  display: inline-block;
-  padding: 3px 8px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--violet-wash);
-  color: var(--text-primary);
-  font-weight: 700;
 }
 /* «Agregar fuente» is the shared .btn .btn-gradient (src/styles/buttons.css, D-097). */
 .add-source-button {
