@@ -98,8 +98,8 @@ describe('AssetDetailPage', () => {
       'OpenSSL',
       '3.0.7',
       'Crítica · 2',
-      // F15.9: the part of the CPE as a readable label under it.
-      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*Aplicación',
+      // F15.9: the part of the CPE as a readable label under it; F18.9: the CVE.org names of the mapping.
+      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*AplicaciónSin nombres de CVE.org',
       'Activa',
       'Otro software',
       expect.stringMatching(/^Soporte OpenSSLLímite: 10 servidoresDel .+ al .+$/),
@@ -269,6 +269,41 @@ describe('AssetDetailPage', () => {
     const { element } = await render(service);
     expect(element.querySelector('.kpi-value')?.textContent?.trim()).toBe(
       'Sin vulnerabilidades abiertas',
+    );
+  });
+
+  it('shows the CVE.org names of each mapping under its CPE (F18.9)', async () => {
+    const service = new FakeService();
+    service.assetSoftware.mockReturnValue(
+      of([
+        {
+          ...INSTALLED_OPENSSL,
+          name: 'Linux Kernel',
+          cpe: 'cpe:2.3:o:linux:linux_kernel:*:*:*:*:*:*:*:*',
+          cna: { vendor: 'Linux', product: 'Linux' },
+        },
+        INSTALLED_OPENSSL,
+      ]),
+    );
+    const { element } = await render(service);
+    const names = Array.from(element.querySelectorAll('#installed-software-table .cna-names')).map(
+      (item) => item.textContent?.trim(),
+    );
+    expect(names).toEqual(['CVE.org: Linux · Linux', 'Sin nombres de CVE.org']);
+    expect(rowsOf(element, 'Software instalado')[0][3]).toBe(
+      'cpe:2.3:o:linux:linux_kernel:*:*:*:*:*:*:*:*Sistema operativoCVE.org: Linux · Linux',
+    );
+  });
+
+  it('says nothing of the CVE.org names with a backend before F18.9', async () => {
+    const service = new FakeService();
+    const before = { ...INSTALLED_OPENSSL };
+    delete before.cna;
+    service.assetSoftware.mockReturnValue(of([before]));
+    const { element } = await render(service);
+    expect(element.querySelector('#installed-software-table .cna-names')).toBeNull();
+    expect(rowsOf(element, 'Software instalado')[0][3]).toBe(
+      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*Aplicación',
     );
   });
 

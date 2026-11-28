@@ -27,6 +27,7 @@ import {
 } from '../../shared/labels';
 import {
   CATEGORY_LABELS,
+  cnaLabel,
   cpePartLabel,
   cpeParts,
   CRITICALITY_LABELS,
@@ -167,6 +168,8 @@ export class AssetDetailPage {
       validity: item.licence ? licenceValidity(item.licence) : null,
       cpeParts: cpeParts(item.cpe),
       cpePart: cpePartLabel(item.cpe),
+      // F18.9: the CVE.org names of the product's mapping; undefined from a backend before F18.9 (nothing is said).
+      cnaNames: item.cna === undefined ? undefined : item.cna ? cnaLabel(item.cna) : null,
     })),
   );
   readonly installationsLabel = computed(() =>

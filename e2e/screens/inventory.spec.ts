@@ -163,8 +163,8 @@ test.describe('inventory as analyst', () => {
     ).toBeVisible();
   });
 
-  // F15.9: the CNA names of a mapping, on Redis (no other test maps it). The test removes them at the end, so the
-  // demo data stay the same.
+  // F15.9: the CNA names of a mapping, on Redis (no other test maps it), also in the software list of its CI (F18.9).
+  // The test removes them at the end, so the demo data stay the same.
   test('saves the CVE.org names of a mapping and removes them', async ({ page }) => {
     await page.goto('/software');
     const open = async () => {
@@ -199,6 +199,24 @@ test.describe('inventory as analyst', () => {
       .getByRole('row')
       .filter({ hasText: 'Redis' });
     await expect(redis).toContainText('CVE.org: Redis · Redis');
+
+    // F18.9: the software list of srv-web-03, which runs Redis, shows them too (from a backend that sends them).
+    const listed = page.waitForResponse(
+      (response) => new URL(response.url()).pathname === '/api/inventory/assets/CI-3/software',
+    );
+    await page.goto('/activos/CI-3');
+    const items = (await (await listed).json()) as { name: string; cna?: unknown }[];
+    const installed = page
+      .getByRole('region', { name: 'Software instalado; desplazamiento horizontal' })
+      .getByRole('row')
+      .filter({ hasText: 'Redis' });
+    if (items.some((item) => 'cna' in item)) {
+      await expect(installed).toContainText('CVE.org: Redis · Redis');
+    } else {
+      await expect(installed).toContainText('Redis');
+      await expect(installed).not.toContainText('CVE.org');
+    }
+    await page.goto('/software');
 
     // The mapping keeps them: the dialog starts from them; emptying both removes them.
     dialog = await open();
