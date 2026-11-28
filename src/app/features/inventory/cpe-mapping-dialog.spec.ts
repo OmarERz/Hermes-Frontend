@@ -157,6 +157,34 @@ describe('CpeMappingDialog', () => {
     });
   });
 
+  it('leaves the CNA names out when the person did not change them', async () => {
+    // Another session may have changed them since the dialog opened: resending the old pair would undo that.
+    const service = new FakeService();
+    const { fixture, element } = await render(service, {
+      id: KERNEL.id,
+      name: KERNEL.name,
+      cpe: 'cpe:2.3:a:linux:linux_kernel:*:*:*:*:*:*:*:*',
+      cna: { vendor: 'Linux', product: 'Linux' },
+    });
+    type(element.querySelector('input[name="cpe"]') as HTMLInputElement, KERNEL_CPE);
+    type(element.querySelector('input[name="cnaVendor"]') as HTMLInputElement, ' Linux ');
+    (element.querySelector('.cpe-form button[type="submit"]') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(service.setMapping).toHaveBeenCalledWith(KERNEL.id, KERNEL_CPE, undefined);
+  });
+
+  it('locks the CNA names while a save runs, so what closes the dialog is what was sent', async () => {
+    const service = new FakeService();
+    service.setMapping.mockReturnValue(NEVER);
+    const { fixture, dialog, element } = await render(service);
+    const group = element.querySelector('fieldset.cna-fields') as HTMLFieldSetElement;
+    expect(group.disabled).toBe(false);
+    dialog.cpe.set(KERNEL_CPE);
+    dialog.save();
+    await fixture.whenStable();
+    expect(group.disabled).toBe(true);
+  });
+
   it('removes the CNA names of the mapping when both fields are emptied', async () => {
     const service = new FakeService();
     const { fixture, element } = await render(service, {

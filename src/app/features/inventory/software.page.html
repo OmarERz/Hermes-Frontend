@@ -223,7 +223,9 @@
                   <td class="col-from-lg" data-label="Licencias">
                     <span class="cell-nowrap">{{ row.licensedShort }}</span>
                     @if (row.licenceNames.length) {
-                      <small class="cna-names">{{ row.licenceNames.join(', ') }}</small>
+                      <small class="cell-text cell-text-sm">{{
+                        row.licenceNames.join(', ')
+                      }}</small>
                     } @else {
                       <small>Sin licencias</small>
                     }

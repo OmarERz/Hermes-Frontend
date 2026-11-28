@@ -80,7 +80,7 @@
       @if (cpeError(); as problem) {
         <p class="field-error" id="cpe-mapping-error">{{ problem }}</p>
       }
-      <fieldset class="cna-fields" aria-describedby="cna-mapping-help">
+      <fieldset class="cna-fields" aria-describedby="cna-mapping-help" [disabled]="saving()">
         <legend>Nombres en CVE.org (CNA) <small>· opcional</small></legend>
         <p id="cna-mapping-help">
           CVE.org publica cada vulnerabilidad con los nombres que usa el fabricante (el CNA), que
@@ -92,7 +92,7 @@
               >Fabricante (CNA)
               <input
                 name="cnaVendor"
-                maxlength="200"
+                maxlength="400"
                 autocomplete="off"
                 spellcheck="false"
                 placeholder="Linux"
@@ -111,7 +111,7 @@
               >Producto (CNA)
               <input
                 name="cnaProduct"
-                maxlength="200"
+                maxlength="400"
                 autocomplete="off"
                 spellcheck="false"
                 placeholder="Linux"

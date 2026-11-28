@@ -107,8 +107,10 @@ export function mappingNotice(name: string, mapping: Mapping): string {
  * CPE dictionary and in what Hermes already holds (`GET /api/cpe/candidates`), lets the person pick one or type a
  * CPE, and saves it (`PUT /api/mappings/{software}`). Without a CPE a product never produces findings (ESC-07).
  * Optionally it also takes the vendor and product names the CNA uses in CVE.org (F15.9): without them the scan does not
- * check that source (certainty 0.9) for the product. Empty names are left out of the request (the API keeps what the
- * mapping has), unless the mapping had names, which the person then removes (`cna: null`).
+ * check that source (certainty 0.9) for the product. Only a change of the names reaches the request: names the person
+ * left as they were, or empty names on a mapping without them, are left out (the API keeps what it holds, also names
+ * another session saved meanwhile); emptying the names of a mapping that had them removes them (`cna: null`). The
+ * fields lock while a save runs, so what closes the dialog is what was sent.
  * A native modal `<dialog>` (as the feedback dialog): the page behind is inert, Tab stays inside and closing gives
  * the focus back to the button that opened it. Every way out (Cancelar, Escape, the browser closing it) waits for a
  * save in flight, so the page always learns whether the mapping was saved.
@@ -220,14 +222,17 @@ export class CpeMappingDialog implements OnInit {
   }
 
   /**
-   * The `cna` of the request: both names (trimmed) when given; with both empty, `null` to remove the names the mapping
-   * had, or nothing at all (the API keeps whatever it holds, which this screen may not know).
+   * The `cna` of the request, only when the person changed the names the dialog started from: both names (trimmed)
+   * when they differ from those, `null` when both were emptied on a mapping that had names, and otherwise nothing at
+   * all, so the API keeps what it holds (names this screen may not know, or another session saved since it opened).
    */
   private cnaToSend(): CnaNames | null | undefined {
     const vendor = this.cnaVendor().trim();
     const product = this.cnaProduct().trim();
-    if (vendor && product) return { vendor, product };
-    return this.software().cna ? null : undefined;
+    const before = this.software().cna;
+    if (!vendor && !product) return before ? null : undefined;
+    const unchanged = before?.vendor.trim() === vendor && before.product.trim() === product;
+    return unchanged ? undefined : { vendor, product };
   }
 
   /** Cancelar or Escape: never while a save runs. */
