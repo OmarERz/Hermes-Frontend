@@ -4,7 +4,9 @@ import {
   LucideArrowLeft,
   LucideArrowRight,
   LucideChevronDown,
+  LucideMail,
   LucideRefreshCw,
+  LucideUserPlus,
   LucideUsers,
 } from '@lucide/angular';
 import { finalize } from 'rxjs';
@@ -15,11 +17,19 @@ import { IfRoleDirective } from '../../core/auth/if-role.directive';
 import { ACTION_ROLES, ROLE_LABELS } from '../../core/auth/roles';
 import { SessionService } from '../../core/auth/session.service';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
+import { Chip, ChipTone } from '../../shared/chip';
 import { ConfirmChangesDialog } from '../../shared/confirm-changes-dialog';
 import { CursorPager } from '../../shared/cursor-pager';
+import { FormDialog } from '../../shared/form-dialog';
 import { formatDateTime } from '../../shared/labels';
 import type { ChangeRow } from '../../shared/versioned-save';
-import { RoleAssigned, UserAccount, UsersService } from './users.service';
+import {
+  RoleAssigned,
+  StatusChanged,
+  UserAccount,
+  UserCreated,
+  UsersService,
+} from './users.service';
 
 const PAGE_SIZE = 50;
 const ROLES: readonly Role[] = ['reader', 'analyst', 'admin'];
@@ -33,10 +43,24 @@ export interface UserRow {
   storedRole: string;
   claimRole: string;
   effectiveRole: string;
-  effectiveTone: 'ok' | 'bad' | 'accent';
+  effectiveTone: ChipTone;
   active: boolean;
   lastLogin: string;
   own: boolean;
+  /** Invited and not signed in yet (D-105): the password e-mail can be sent again. */
+  canResend: boolean;
+}
+
+/**
+ * A conservative e-mail address, the same rule as the backend's `UserCreation.email` (ASCII local part, a domain with
+ * a top-level label): the backend and Firebase check it again.
+ */
+const EMAIL_PATTERN =
+  /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
+export const EMAIL_MAX_LENGTH = 254;
+
+export function isEmail(value: string): boolean {
+  return value.length <= EMAIL_MAX_LENGTH && EMAIL_PATTERN.test(value);
 }
 
 /** The person's name for messages: the display name, the e-mail or, without both, the uid. */
@@ -55,24 +79,35 @@ function toRow(account: UserAccount, ownUid: string | null): UserRow {
     uid: account.uid,
     name,
     email: account.email && account.email !== name ? account.email : null,
-    storedRole: account.signed_in
-      ? roleLabel(account.role, 'Sin rol guardado')
-      : 'Nunca inició sesión',
+    // An account created from the app has a stored role before its first sign-in (D-105).
+    storedRole: account.role
+      ? ROLE_LABELS[account.role]
+      : account.signed_in
+        ? 'Sin rol guardado'
+        : 'Nunca inició sesión',
     claimRole: roleLabel(account.claim_role, 'Sin claim'),
     effectiveRole: roleLabel(account.effective_role, 'Sin acceso'),
     effectiveTone: !account.effective_role
-      ? 'bad'
+      ? 'danger'
       : account.effective_role === 'admin'
         ? 'accent'
-        : 'ok',
+        : 'success',
     active: account.active,
     lastLogin: account.last_login_at ? formatDateTime(account.last_login_at) : 'Nunca',
     own: ownUid !== null && account.uid === ownUid,
+    canResend: !account.signed_in && account.active && Boolean(account.email),
   };
 }
 
 /** Codes after which the row the admin read is stale: the dialog closes and the list is read again. */
 const STALE_CODES = new Set(['role_changed', 'user_not_found']);
+
+/** The same for a switch-off or switch-on: the account is gone, or it became the own or the last admin's. */
+const STATUS_STALE_CODES = new Set(['user_not_found', 'own_status', 'last_admin']);
+
+/** Added to a failed switch-off: Hermes may already refuse the account although Firebase did not answer. */
+const PARTIAL_OFF =
+  'Puede que Hermes ya haya desactivado la cuenta: la lista se volvió a leer; inténtalo de nuevo para terminar.';
 
 /**
  * Usuarios y roles (FRONTEND.md §2 and §5, D-030): every Firebase account of `GET /api/admin/users`, signed in or
@@ -80,18 +115,27 @@ const STALE_CODES = new Set(['role_changed', 'user_not_found']);
  * both: the one its requests get). An admin changes a role with `PUT /api/admin/users/{uid}/role`, sending the stored
  * role as `expected_role`; the backend revokes that person's sessions. Nobody changes their own role (409 `own_role`),
  * so the own row has no control.
+ *
+ * Accounts from the app (D-105): «Agregar usuario» creates one with an e-mail and a role (`POST /api/admin/users`);
+ * Firebase e-mails the person a link to choose a password, which Hermes never sees. «Desactivar» and «Reactivar»
+ * (`PUT /api/admin/users/{uid}/status`, after a confirmation) switch another account off or on; «Reenviar correo»
+ * (`POST /api/admin/users/{uid}/password-email`) sends the link again to an account that never signed in.
  */
 @Component({
   selector: 'app-users-page',
   imports: [
     BannerPagina,
     AsyncStateComponent,
+    Chip,
     ConfirmChangesDialog,
+    FormDialog,
     IfRoleDirective,
     LucideArrowLeft,
     LucideArrowRight,
     LucideChevronDown,
+    LucideMail,
     LucideRefreshCw,
+    LucideUserPlus,
     LucideUsers,
   ],
   templateUrl: './users-page.html',
@@ -141,6 +185,59 @@ export class UsersPage {
   });
 
   readonly notice = signal<{ kind: 'ok' | 'error'; text: string } | null>(null);
+
+  /** «Agregar usuario»: the dialog is open while `newUser` is set. */
+  readonly newUser = signal<{ email: string; role: Role } | null>(null);
+  readonly emailTouched = signal(false);
+  readonly creating = signal(false);
+  readonly createError = signal<ApiError | null>(null);
+  readonly emailMaxLength = EMAIL_MAX_LENGTH;
+  readonly newEmailValid = computed(() => isEmail(this.newUser()?.email.trim() ?? ''));
+
+  /** Switch-off or switch-on waiting for the admin's confirmation. */
+  readonly statusChange = signal<UserAccount | null>(null);
+  readonly statusSaving = signal(false);
+  readonly statusError = signal<ApiError | null>(null);
+  readonly statusTitle = computed(() =>
+    this.statusChange()?.active ? 'Desactivar cuenta' : 'Reactivar cuenta',
+  );
+  /** What the confirmation says: the account, its state before and after, and the effect on its sessions. */
+  readonly statusSummary = computed(() => {
+    const account = this.statusChange();
+    if (!account) return null;
+    return {
+      name: userName(account),
+      before: account.active ? 'Activa' : 'Desactivada',
+      after: account.active ? 'Desactivada' : 'Activa',
+      action: account.active ? 'Desactivar' : 'Reactivar',
+      saving: account.active ? 'Desactivando…' : 'Reactivando…',
+      impact: account.active
+        ? 'Hermes cierra sus sesiones y no podrá iniciar sesión hasta que la reactives.'
+        : 'Podrá iniciar sesión de nuevo; sus sesiones de antes siguen cerradas.',
+    };
+  });
+
+  /** The uid whose password e-mail is being sent. */
+  readonly resending = signal<string | null>(null);
+
+  /**
+   * One account operation at a time (a role, a status, a creation or an e-mail): each one ends with its own notice,
+   * so a late answer of one never overwrites the outcome of another.
+   */
+  readonly busy = computed(
+    () => this.saving() || this.statusSaving() || this.creating() || this.resending() !== null,
+  );
+
+  /** The backend's reason when Firebase refused the address (422 `invalid_email`, `details[].field` `body.email`). */
+  readonly emailServerError = computed(() => {
+    const failure = this.createError();
+    return failure?.details.some((detail) => detail.field === 'body.email')
+      ? failure.message
+      : null;
+  });
+  readonly emailInvalid = computed(
+    () => (this.emailTouched() && !this.newEmailValid()) || this.emailServerError() !== null,
+  );
 
   constructor() {
     this.pager.first();
@@ -199,6 +296,146 @@ export class UsersPage {
     this.change.set(null);
     this.changeError.set(null);
   }
+
+  openCreate(): void {
+    if (this.busy()) return;
+    this.createError.set(null);
+    this.emailTouched.set(false);
+    this.newUser.set({ email: '', role: 'reader' });
+  }
+
+  setNewEmail(event: Event): void {
+    const email = (event.target as HTMLInputElement).value;
+    this.newUser.update((draft) => (draft ? { ...draft, email } : draft));
+    if (this.emailServerError()) this.createError.set(null); // the address changed: the refusal no longer applies
+  }
+
+  setNewRole(event: Event): void {
+    const role = (event.target as HTMLSelectElement).value as Role;
+    if (!ROLES.includes(role)) return;
+    this.newUser.update((draft) => (draft ? { ...draft, role } : draft));
+  }
+
+  /** Creates the account; on success the dialog closes and the notice names the address of the e-mail. */
+  create(): void {
+    const draft = this.newUser();
+    if (!draft || this.creating() || !this.newEmailValid()) return;
+    this.creating.set(true);
+    this.createError.set(null);
+    this.notice.set(null);
+    this.service
+      .create(draft.email.trim(), draft.role)
+      .pipe(
+        finalize(() => this.creating.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (created) => {
+          this.newUser.set(null);
+          this.notice.set(createdNotice(created));
+          this.pager.reload();
+        },
+        error: (error: unknown) => this.createError.set(toApiError(error)),
+      });
+  }
+
+  closeCreate(): void {
+    if (this.creating()) return;
+    this.newUser.set(null);
+    this.createError.set(null);
+  }
+
+  askStatus(row: UserRow): void {
+    if (row.own || this.busy()) return;
+    this.statusError.set(null);
+    this.statusChange.set(row.account);
+  }
+
+  confirmStatus(): void {
+    const account = this.statusChange();
+    if (!account || this.statusSaving()) return;
+    this.statusSaving.set(true);
+    this.statusError.set(null);
+    this.notice.set(null);
+    this.service
+      .setStatus(account.uid, account.active)
+      .pipe(
+        finalize(() => this.statusSaving.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (result) => {
+          this.statusChange.set(null);
+          this.notice.set({ kind: 'ok', text: statusText(account, result) });
+          this.pager.reload();
+        },
+        error: (error: unknown) => {
+          const failure = toApiError(error);
+          if (!STATUS_STALE_CODES.has(failure.code)) {
+            // A switch-off turns the account off in Hermes before Firebase answers: it may have stayed off, so the
+            // list is read again and the dialog says so.
+            this.statusError.set(
+              account.active
+                ? new ApiError(failure.status, failure.code, `${failure.message} ${PARTIAL_OFF}`)
+                : failure,
+            );
+            this.pager.reload();
+            return;
+          }
+          this.statusChange.set(null);
+          this.notice.set({ kind: 'error', text: failure.message });
+          this.pager.reload();
+        },
+      });
+  }
+
+  cancelStatus(): void {
+    if (this.statusSaving()) return;
+    this.statusChange.set(null);
+    this.statusError.set(null);
+  }
+
+  /** Sends the password e-mail again to an account that never signed in. */
+  resend(row: UserRow): void {
+    if (this.busy() || !row.canResend) return;
+    this.resending.set(row.uid);
+    this.notice.set(null);
+    this.service
+      .sendPasswordEmail(row.uid)
+      .pipe(
+        finalize(() => this.resending.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (sent) =>
+          this.notice.set({
+            kind: 'ok',
+            text: `Se envió un correo a ${sent.email} para crear su contraseña.`,
+          }),
+        error: (error: unknown) =>
+          this.notice.set({ kind: 'error', text: toApiError(error).message }),
+      });
+  }
+}
+
+function createdNotice(created: UserCreated): { kind: 'ok' | 'error'; text: string } {
+  if (created.password_email_sent) {
+    return { kind: 'ok', text: `Se envió un correo a ${created.email} para crear su contraseña.` };
+  }
+  return {
+    kind: 'error',
+    text: `Se creó la cuenta de ${created.email}, pero no se pudo enviar el correo. Usa «Reenviar correo» en su fila.`,
+  };
+}
+
+function statusText(account: UserAccount, result: StatusChanged): string {
+  const name = userName(account);
+  if (!result.disabled) {
+    return `La cuenta de ${name} está activa de nuevo: tendrá que iniciar sesión.`;
+  }
+  return result.sessions_revoked
+    ? `La cuenta de ${name} quedó desactivada y se cerraron sus sesiones.`
+    : `La cuenta de ${name} quedó desactivada; Firebase ya rechaza su acceso, aunque no se pudieron cerrar sus sesiones.`;
 }
 
 function assignedText(account: UserAccount, result: RoleAssigned): string {

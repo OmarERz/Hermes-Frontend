@@ -21,14 +21,25 @@
         <svg lucideUsers aria-hidden="true"></svg>
         <h2 id="users-title">Cuentas</h2>
       </div>
-      <button
-        type="button"
-        class="btn btn-secondary btn-sm"
-        (click)="refresh()"
-        [disabled]="pager.state.loading()"
-      >
-        <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
-      </button>
+      <div class="users-actions">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="refresh()"
+          [disabled]="pager.state.loading()"
+        >
+          <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
+        </button>
+        <button
+          *appIfRole="manageRole"
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="busy()"
+          (click)="openCreate()"
+        >
+          <svg lucideUserPlus aria-hidden="true"></svg> Agregar usuario
+        </button>
+      </div>
     </header>
     @if (tableState(); as state) {
       <app-async-state
@@ -56,6 +67,7 @@
               <th scope="col">Cuenta</th>
               <th scope="col">Último acceso</th>
               <th scope="col" *appIfRole="manageRole">Cambiar rol</th>
+              <th scope="col" *appIfRole="manageRole">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -64,21 +76,21 @@
                 <td>
                   <strong>{{ row.name }}</strong>
                   @if (row.own) {
-                    <span class="chip accent own-chip">Tú</span>
+                    <app-chip tone="accent" class="own-chip">Tú</app-chip>
                   }
                   @if (row.email) {
                     <small>{{ row.email }}</small>
                   }
                 </td>
                 <td>
-                  <span [class]="'chip ' + row.effectiveTone">{{ row.effectiveRole }}</span>
+                  <app-chip [tone]="row.effectiveTone">{{ row.effectiveRole }}</app-chip>
                 </td>
                 <td>{{ row.storedRole }}</td>
                 <td>{{ row.claimRole }}</td>
                 <td>
-                  <span class="chip" [class.ok]="row.active" [class.bad]="!row.active">{{
+                  <app-chip [tone]="row.active ? 'success' : 'danger'">{{
                     row.active ? 'Activa' : 'Desactivada'
-                  }}</span>
+                  }}</app-chip>
                 </td>
                 <td>{{ row.lastLogin }}</td>
                 <td *appIfRole="manageRole">
@@ -101,6 +113,42 @@
                     </label>
                   }
                 </td>
+                <td *appIfRole="manageRole">
+                  @if (row.own) {
+                    <span class="own-note">Es tu cuenta.</span>
+                  } @else {
+                    <div class="row-actions">
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        [class.btn-danger]="row.active"
+                        [class.btn-secondary]="!row.active"
+                        [disabled]="busy()"
+                        (click)="askStatus(row)"
+                        [attr.aria-label]="
+                          (row.active ? 'Desactivar' : 'Reactivar') + ' la cuenta de ' + row.name
+                        "
+                      >
+                        {{ row.active ? 'Desactivar' : 'Reactivar' }}
+                      </button>
+                      @if (row.canResend) {
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm"
+                          [disabled]="busy()"
+                          [attr.aria-busy]="resending() === row.uid"
+                          (click)="resend(row)"
+                          [attr.aria-label]="
+                            'Reenviar correo a ' + row.name + ' para crear su contraseña'
+                          "
+                        >
+                          <svg lucideMail aria-hidden="true"></svg>
+                          {{ resending() === row.uid ? 'Enviando…' : 'Reenviar correo' }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </td>
               </tr>
             }
           </tbody>
@@ -109,8 +157,9 @@
     }
     <footer>
       <span class="footnote"
-        >Al cambiar un rol, Hermes cierra las sesiones de esa persona. El primer administrador se
-        asigna fuera del front.</span
+        >Al cambiar un rol o desactivar una cuenta, Hermes cierra las sesiones de esa persona. Las
+        cuentas nuevas reciben un correo de Firebase para crear su contraseña; Hermes nunca la ve.
+        El primer administrador se asigna fuera del front.</span
       >
       <div class="pagination">
         <button
@@ -146,5 +195,74 @@
       (cancelled)="cancelRole()"
       (reloadRequested)="cancelRole()"
     />
+  }
+
+  @if (statusSummary(); as status) {
+    <app-form-dialog
+      [title]="statusTitle()"
+      [description]="status.impact"
+      [submitLabel]="status.action"
+      [savingLabel]="status.saving"
+      [danger]="status.action === 'Desactivar'"
+      [saving]="statusSaving()"
+      [error]="statusError()"
+      (submitted)="confirmStatus()"
+      (cancelled)="cancelStatus()"
+    >
+      <p class="status-change">
+        Cuenta de <strong>{{ status.name }}</strong
+        >: {{ status.before }} →
+        <strong>{{ status.after }}</strong>
+      </p>
+    </app-form-dialog>
+  }
+
+  @if (newUser(); as draft) {
+    <app-form-dialog
+      title="Agregar usuario"
+      description="Firebase le enviará un correo para crear su contraseña. Hermes nunca la ve ni la guarda."
+      submitLabel="Crear usuario"
+      savingLabel="Creando…"
+      [saving]="creating()"
+      [canSubmit]="newEmailValid()"
+      [error]="createError()"
+      (submitted)="create()"
+      (cancelled)="closeCreate()"
+    >
+      <label class="field"
+        ><span class="field-label">Correo</span
+        ><span class="control"
+          ><input
+            type="email"
+            name="email"
+            autocomplete="off"
+            inputmode="email"
+            required
+            [attr.maxlength]="emailMaxLength"
+            [value]="draft.email"
+            [attr.aria-invalid]="emailInvalid()"
+            [attr.aria-describedby]="emailInvalid() ? 'new-user-email-hint' : null"
+            (input)="setNewEmail($event)"
+            (blur)="emailTouched.set(true)"
+            placeholder="persona@empresa.com" /></span
+      ></label>
+      @if (emailInvalid()) {
+        <p id="new-user-email-hint" class="field-hint">
+          {{ emailServerError() ?? 'Escribe un correo válido, por ejemplo persona@empresa.com.' }}
+        </p>
+      }
+      <label class="field"
+        ><span class="field-label">Rol</span
+        ><span class="control"
+          ><select name="role" (change)="setNewRole($event)">
+            @for (role of roles; track role) {
+              <option [value]="role" [selected]="draft.role === role">
+                {{ roleLabels[role] }}
+              </option>
+            }
+          </select>
+          <svg lucideChevronDown class="control-chevron" aria-hidden="true"></svg></span
+      ></label>
+    </app-form-dialog>
   }
 </div>

@@ -51,4 +51,39 @@ describe('UsersService', () => {
     request.flush({ uid: 'u2', role: 'reader', sessions_revoked: true, known_user: false });
     await result;
   });
+
+  it('creates an account with an e-mail and a role', async () => {
+    const result = firstValueFrom(service.create('eva@hermes.test', 'analyst'));
+    const request = backend.expectOne((req) => req.url === 'http://127.0.0.1:8000/api/admin/users');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ email: 'eva@hermes.test', role: 'analyst' });
+    const answer = {
+      uid: 'n1',
+      email: 'eva@hermes.test',
+      role: 'analyst',
+      password_email_sent: true,
+    };
+    request.flush(answer, { status: 201, statusText: 'Created' });
+    await expect(result).resolves.toEqual(answer);
+  });
+
+  it('sends the password e-mail again', async () => {
+    const result = firstValueFrom(service.sendPasswordEmail('n/1'));
+    const request = backend.expectOne(
+      (req) => req.url === 'http://127.0.0.1:8000/api/admin/users/n%2F1/password-email',
+    );
+    expect(request.request.method).toBe('POST');
+    request.flush({ uid: 'n/1', email: 'eva@hermes.test' });
+    await expect(result).resolves.toEqual({ uid: 'n/1', email: 'eva@hermes.test' });
+  });
+
+  it('switches an account off and on', async () => {
+    const result = firstValueFrom(service.setStatus('u2', true));
+    const request = backend.expectOne((req) => req.url.endsWith('/api/admin/users/u2/status'));
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({ disabled: true });
+    const answer = { uid: 'u2', disabled: true, sessions_revoked: true, known_user: true };
+    request.flush(answer);
+    await expect(result).resolves.toEqual(answer);
+  });
 });
