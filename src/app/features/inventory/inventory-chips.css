@@ -16,6 +16,17 @@
   font-size: calc(10px + var(--font-size-increase, 0px));
   overflow-wrap: anywhere;
 }
+/*
+ * N-3, N-4 (F19.8): in a data table the CPE breaks only after its colons (a <wbr> after each part, cpeParts), in a
+ * column at least 18 characters wide, never character by character.
+ */
+.data-table .cpe {
+  display: inline-block;
+  min-width: 18ch;
+  max-width: 26ch;
+  font-size: var(--text-2xs);
+  overflow-wrap: normal;
+}
 .row-link {
   color: inherit;
   text-decoration: none;

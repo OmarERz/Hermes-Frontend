@@ -5,65 +5,40 @@
     [icono]="bannerIcon"
   />
 
-  <section class="summary-grid" aria-label="Resumen del software">
-    <article>
-      <span class="summary-icon"><svg lucideLayers aria-hidden="true"></svg></span>
-      <div>
-        <small>Software en inventario</small>
-        @if (software(); as health) {
-          <strong>{{ health.total }}</strong>
-        } @else {
-          <strong class="unevaluated">{{
-            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
-          }}</strong>
-        }
-      </div>
-    </article>
-    <article>
-      <span class="summary-icon warning"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
-      <div>
-        <small>Con vulnerabilidades críticas</small>
-        @if (software()) {
-          <strong>{{ withCritical() }}</strong>
-        } @else {
-          <strong class="unevaluated">{{
-            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
-          }}</strong>
-        }
-      </div>
-    </article>
-    <article>
-      <span class="summary-icon"><svg lucideFileCheck aria-hidden="true"></svg></span>
-      <div>
-        <small>Con CPE</small>
-        @if (software(); as health) {
-          <strong>{{ health.with_cpe }}</strong>
-        } @else {
-          <strong class="unevaluated">{{
-            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
-          }}</strong>
-        }
-      </div>
+  <section class="kpi-grid" aria-label="Resumen del software">
+    <app-kpi-card
+      label="Software en inventario"
+      [icon]="kpiIcons.total"
+      [state]="summaryKpiState()"
+      [value]="software()?.total"
+    />
+    <app-kpi-card
+      label="Con vulnerabilidades críticas"
+      [icon]="kpiIcons.critical"
+      tone="warning"
+      [state]="summaryKpiState()"
+      [value]="software() ? withCritical() : null"
+    />
+    <app-kpi-card
+      label="Con CPE"
+      [icon]="kpiIcons.cpe"
+      [state]="summaryKpiState()"
+      [value]="software()?.with_cpe"
+    >
       @if (software()?.cpe_percent; as share) {
-        <em>{{ share }} %</em>
+        <em class="kpi-detail">{{ share }} %</em>
       }
-    </article>
-    <article>
-      <span class="summary-icon"><svg lucideActivity aria-hidden="true"></svg></span>
-      <div>
-        <small>Con versión conocida</small>
-        @if (software(); as health) {
-          <strong>{{ health.with_known_version }}</strong>
-        } @else {
-          <strong class="unevaluated">{{
-            summaryState() === 'error' ? 'Sin datos' : 'Cargando…'
-          }}</strong>
-        }
-      </div>
+    </app-kpi-card>
+    <app-kpi-card
+      label="Con versión conocida"
+      [icon]="kpiIcons.version"
+      [state]="summaryKpiState()"
+      [value]="software()?.with_known_version"
+    >
       @if (software()?.known_version_percent; as share) {
-        <em>{{ share }} %</em>
+        <em class="kpi-detail">{{ share }} %</em>
       }
-    </article>
+    </app-kpi-card>
   </section>
 
   <section class="itop-note" aria-label="Registrar software">

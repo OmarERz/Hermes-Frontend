@@ -386,26 +386,17 @@
         }
       </article>
 
-      <article class="panel distribution asset-state-panel">
+      <article class="panel distribution">
         <h2><svg lucideActivity aria-hidden="true"></svg> Activos por criticidad</h2>
         @if (summary.value()) {
           @for (item of criticalityRows(); track item.key) {
-            <div [class]="'state-row criticality-row-' + item.key">
-              <span class="state-icon"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
-              <div class="state-copy">
-                <strong>{{ item.label }}</strong
-                ><small>{{ item.percent }} % del total</small
-                ><span
-                  class="state-progress"
-                  role="progressbar"
-                  [attr.aria-label]="'Activos de criticidad ' + item.label"
-                  [attr.aria-valuenow]="item.percent"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                  ><span [style.width.%]="item.percent"></span
-                ></span>
-              </div>
-              <strong class="state-count">{{ item.total }}</strong>
+            <div [class]="'distribution-row criticality-row-' + item.key">
+              <svg lucideTriangleAlert class="distribution-icon" aria-hidden="true"></svg
+              ><span
+                ><strong>{{ item.label }}</strong
+                ><small class="criticality-count">{{ item.total }}</small></span
+              ><i><em [style.width.%]="item.percent"></em></i
+              ><strong class="percent">{{ item.percent }} %</strong>
             </div>
           }
           <p class="state-footnote">Criticidad del activo según iTop.</p>

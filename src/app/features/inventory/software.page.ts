@@ -23,6 +23,7 @@ import { AsyncStateComponent } from '../../shared/async-state.component';
 import { Chip } from '../../shared/chip';
 import { toCsv } from '../../shared/csv';
 import { ColumnsToggle } from '../../shared/columns-toggle';
+import { KpiCard, kpiState } from '../../shared/kpi-card';
 import { CursorPager } from '../../shared/cursor-pager';
 import { ItopLink, safeExternalUrl } from '../../shared/itop-links';
 import { LEVEL_LABELS, LEVELS, type Level } from '../../shared/labels';
@@ -82,6 +83,7 @@ function yesNo(value: YesNoFilter): boolean | null {
     AsyncStateComponent,
     Chip,
     ColumnsToggle,
+    KpiCard,
     ScrollFade,
     IfRoleDirective,
     ItopLink,
@@ -105,6 +107,13 @@ export class SoftwarePage {
   private readonly service = inject(InventoryService);
 
   readonly bannerIcon = LucideLayers;
+  /** N-5 (F19.8): the summary is the shared indicator card, like Activos. */
+  readonly kpiIcons = {
+    total: LucideLayers,
+    critical: LucideTriangleAlert,
+    cpe: LucideFileCheck,
+    version: LucideActivity,
+  };
   readonly categories = CATEGORIES;
   readonly categoryLabels = CATEGORY_LABELS;
   readonly statuses = INSTALL_STATUSES;
@@ -170,7 +179,9 @@ export class SoftwarePage {
       : 'Aún no hay software instalado en el inventario de iTop.',
   );
 
-  readonly summaryState = computed(() => viewState(this.summary));
+  readonly summaryKpiState = computed(() =>
+    this.software() ? 'ready' : kpiState(this.summary.status()),
+  );
   readonly software = computed(() => this.summary.value()?.software ?? null);
   readonly withCritical = computed(() => {
     const health = this.software();
@@ -185,8 +196,10 @@ export class SoftwarePage {
   readonly chartState = computed(() =>
     this.chart() === 'priority' ? viewState(this.priority) : this.catalogueState(),
   );
+  /** Phone width (560 px or less): the bar charts lie down (N-9). */
+  readonly phone = signal(false);
   readonly chartOption = computed(() =>
-    softwareChart(this.chart(), this.totals(), this.priority.value()),
+    softwareChart(this.chart(), this.totals(), this.priority.value(), this.phone()),
   );
   readonly chartLabel = computed(() =>
     this.chart() === 'priority'
@@ -207,7 +220,15 @@ export class SoftwarePage {
 
   constructor() {
     this.refresh();
+    const phone =
+      typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+        ? window.matchMedia('(max-width: 560px)')
+        : null;
+    const follow = (): void => this.phone.set(!!phone?.matches);
+    follow();
+    phone?.addEventListener('change', follow);
     inject(DestroyRef).onDestroy(() => {
+      phone?.removeEventListener('change', follow);
       this.pager.state.cancel();
       this.summary.cancel();
       this.catalogue.cancel();

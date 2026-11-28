@@ -67,6 +67,18 @@ describe('software charts', () => {
     expect(categorized.xAxis.data).not.toContain('Sin categoría');
   });
 
+  it('lays the bars down on phones, with the labels on one line each (N-9)', () => {
+    const option = softwareChart(
+      'category',
+      catalogueTotals([OPENSSL, KERNEL]),
+      null,
+      true,
+    ) as unknown as { xAxis: { type: string }; yAxis: { type: string; data: string[] } };
+    expect(option.xAxis.type).toBe('value');
+    expect(option.yAxis.type).toBe('category');
+    expect(option.yAxis.data[0]).toBe('Servidor de base de datos');
+  });
+
   it('draws products by worst level and with or without a CPE', () => {
     const totals = catalogueTotals([OPENSSL, KERNEL]);
     const levels = softwareChart('level', totals) as unknown as BarOption;

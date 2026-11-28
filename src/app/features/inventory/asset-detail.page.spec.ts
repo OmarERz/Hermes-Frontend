@@ -93,41 +93,36 @@ describe('AssetDetailPage', () => {
   it('lists the installed software with category, status, licence, CPE and findings', async () => {
     const { element } = await render();
     const [openssl, kernel] = rowsOf(element, 'Software instalado');
+    // N-4 (F19.8): the shared data table; state, category, licence and description wait for a wide table.
     expect(openssl).toEqual([
       'OpenSSL',
       '3.0.7',
-      'Otro software',
-      'Activa',
-      expect.stringMatching(/^Soporte OpenSSLLímite: 10 servidoresDel .+ al .+$/),
-      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*',
       'Crítica · 2',
+      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*',
+      'Activa',
+      'Otro software',
+      expect.stringMatching(/^Soporte OpenSSLLímite: 10 servidoresDel .+ al .+$/),
       'Biblioteca TLS del sistema',
     ]);
     expect(kernel).toEqual([
       'Amazon Linux 2023 kernel',
-      'N/A Versión desconocida',
+      'N/AVersión desconocida',
+      'Sin vulnerabilidades',
+      'Sin CPEVer pendientes',
       'Sin dato',
       'Sin dato',
       'Sin licencia',
-      'Sin CPEVer pendientes',
-      'Sin vulnerabilidades',
       '—',
     ]);
+    expect(element.querySelector('#installed-software-table')?.classList).toContain('data-table');
     expect(element.querySelector('a[href="/pendientes-inventario"]')).not.toBeNull();
   });
 
   it('lists the vulnerability groups of the CI with a link to each one', async () => {
     const { element } = await render();
     const [row] = rowsOf(element, 'Vulnerabilidades del activo');
-    expect(row?.slice(0, 7)).toEqual([
-      'CVE-2026-10001',
-      'OpenSSL 3.0.7',
-      'Crítica',
-      '92',
-      'Nuevo',
-      'Sí',
-      'DEMO-1',
-    ]);
+    expect(row?.slice(0, 5)).toEqual(['CVE-2026-10001', 'OpenSSL 3.0.7', 'Crítica', '92', 'Nuevo']);
+    expect(row?.slice(6)).toEqual(['Sí', 'DEMO-1']);
     expect(element.querySelector('a.row-link')?.getAttribute('href')).toBe(
       `/vulnerabilidades/${DETAIL.findings[0]!.group_id}`,
     );
@@ -276,7 +271,7 @@ describe('AssetDetailPage', () => {
     );
     const { element } = await render(service);
     const rows = rowsOf(element, 'Software instalado');
-    expect(rows.map((row) => row[3])).toEqual(['Activa', 'Inactiva']);
+    expect(rows.map((row) => row[4])).toEqual(['Activa', 'Inactiva']);
   });
 
   it('shows the API error of the detail and loads again on retry', async () => {

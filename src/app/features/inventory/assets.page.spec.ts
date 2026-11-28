@@ -117,8 +117,9 @@ describe('AssetsPage', () => {
       element.querySelectorAll('.distribution-row strong:first-child'),
     ).map((item) => item.textContent?.trim());
     expect(classes.slice(0, 2)).toEqual(['Servidor', 'Máquina virtual']);
-    const criticality = Array.from(element.querySelectorAll('.state-row .state-count')).map(
-      (item) => item.textContent?.trim(),
+    // N-7 (F19.8): the criticality panel has the same rows as the other two.
+    const criticality = Array.from(element.querySelectorAll('.criticality-count')).map((item) =>
+      item.textContent?.trim(),
     );
     expect(criticality).toEqual(['1', '2', '0', '0']);
     expect(element.querySelector('.sync-note')?.textContent).toContain('2026');

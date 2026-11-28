@@ -121,29 +121,43 @@ export const LEVEL_COLORS: Record<Level | 'none', string> = {
   none: '#a99bb8',
 };
 
-function barChart(labels: string[], values: number[], colors: string[]): EChartsCoreOption {
+/**
+ * A bar per label. On phones (`horizontal`, N-9 of F19.8) the bars lie down with the labels on their left in one line
+ * each: standing up, six category names under 300 px ran into each other.
+ */
+function barChart(
+  labels: string[],
+  values: number[],
+  colors: string[],
+  horizontal = false,
+): EChartsCoreOption {
+  const categories = {
+    type: 'category',
+    data: labels,
+    axisLabel: horizontal
+      ? { color: AXIS, interval: 0 }
+      : { color: AXIS, interval: 0, width: 90, overflow: 'break' },
+    axisLine: { lineStyle: { color: GRID } },
+    ...(horizontal ? { inverse: true } : {}),
+  };
+  const amounts = {
+    type: 'value',
+    minInterval: 1,
+    axisLabel: { color: AXIS },
+    splitLine: { lineStyle: { color: GRID } },
+  };
   return {
     animationDuration: 300,
     grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    xAxis: {
-      type: 'category',
-      data: labels,
-      axisLabel: { color: AXIS, interval: 0, width: 90, overflow: 'break' },
-      axisLine: { lineStyle: { color: GRID } },
-    },
-    yAxis: {
-      type: 'value',
-      minInterval: 1,
-      axisLabel: { color: AXIS },
-      splitLine: { lineStyle: { color: GRID } },
-    },
+    xAxis: horizontal ? amounts : categories,
+    yAxis: horizontal ? categories : amounts,
     series: [
       {
         type: 'bar',
-        barMaxWidth: 46,
+        barMaxWidth: horizontal ? 24 : 46,
         data: values.map((value, index) => ({ value, itemStyle: { color: colors[index] } })),
-        itemStyle: { borderRadius: [6, 6, 0, 0] },
+        itemStyle: { borderRadius: horizontal ? [0, 6, 6, 0] : [6, 6, 0, 0] },
       },
     ],
   };
@@ -157,12 +171,14 @@ export function softwareChart(
   kind: SoftwareChart,
   totals: CatalogueTotals,
   priority: LevelCounts | null = null,
+  horizontal = false,
 ): EChartsCoreOption {
   if (kind === 'priority') {
     return barChart(
       LEVELS.map((level) => PRIORITY_LABELS[level]),
       LEVELS.map((level) => priority?.[level] ?? 0),
       LEVELS.map((level) => LEVEL_COLORS[level]),
+      horizontal,
     );
   }
   if (kind === 'level') {
@@ -171,6 +187,7 @@ export function softwareChart(
       keys.map((key) => (key === 'none' ? 'Sin vulnerabilidades' : LEVEL_LABELS[key])),
       keys.map((key) => totals.byLevel[key]),
       keys.map((key) => LEVEL_COLORS[key]),
+      horizontal,
     );
   }
   if (kind === 'cpe') {
@@ -205,6 +222,7 @@ export function softwareChart(
     labels,
     values,
     labels.map((_label, index) => (index % 2 === 0 ? PINK : VIOLET)),
+    horizontal,
   );
 }
 

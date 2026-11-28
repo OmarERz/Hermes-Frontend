@@ -128,14 +128,15 @@ describe('SoftwarePage', () => {
 
   it('shows the summary cards and the catalogue totals', async () => {
     const { element } = await render();
-    const cards = Array.from(element.querySelectorAll('.summary-grid article')).map((card) =>
+    // N-5 (F19.8): the shared indicator cards.
+    const cards = Array.from(element.querySelectorAll('.kpi-grid app-kpi-card')).map((card) =>
       card.textContent?.replace(/\s+/g, ' ').trim(),
     );
     expect(cards).toEqual([
-      'Software en inventario3',
-      'Con vulnerabilidades críticas1',
-      'Con CPE3100.0 %',
-      'Con versión conocida3100.0 %',
+      'Software en inventario 3',
+      'Con vulnerabilidades críticas 1',
+      'Con CPE 3100.0 %',
+      'Con versión conocida 3100.0 %',
     ]);
     const statuses = Array.from(element.querySelectorAll('.status-panel li')).map((item) =>
       item.textContent?.replace(/\s+/g, ' ').trim(),
@@ -265,7 +266,7 @@ describe('SoftwarePage', () => {
     service.catalogue.mockReturnValue(failure());
     const { fixture, element } = await render(service);
     expect(element.querySelectorAll('[role="alert"]')).toHaveLength(2);
-    expect(element.querySelector('.summary-grid strong')?.textContent?.trim()).toBe('Sin datos');
+    expect(element.querySelector('.kpi-grid .kpi-value')?.textContent?.trim()).toBe('Sin datos');
 
     service.listSoftware.mockReturnValue(of({ items: [OPENSSL], nextCursor: null }));
     service.catalogue.mockReturnValue(of({ items: [OPENSSL], complete: true }));
