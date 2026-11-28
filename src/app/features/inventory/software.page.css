@@ -5,7 +5,7 @@
   justify-content: space-between;
   gap: var(--space-3) var(--space-4);
   margin: 0 0 var(--space-4);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--notice-pad-y) var(--notice-pad-x);
   border: 1px dashed var(--border, #e4e3ee);
   border-radius: var(--radius-md);
   color: var(--text-secondary, #514662);
@@ -43,6 +43,7 @@
 .search-filter input {
   width: 100%;
   min-height: 30px;
+  padding: 0;
   border: 0;
   background: transparent;
   color: inherit;

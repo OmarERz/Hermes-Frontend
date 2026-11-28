@@ -352,6 +352,7 @@
   .pagination button {
     width: 28px;
     height: 28px;
+    padding: 0;
     border: 1px solid #e4e1eb;
     border-radius: var(--radius-sm);
     background: #fff;

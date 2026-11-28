@@ -163,7 +163,7 @@
     color: var(--danger-text);
   }
   .panel {
-    padding: var(--space-3);
+    padding: var(--panel-pad);
   }
   .panel header {
     display: flex;
@@ -1070,6 +1070,6 @@
   .panel,
   .chart-panel,
   .table-panel {
-    padding: var(--space-5);
+    padding: var(--panel-pad);
   }
 }

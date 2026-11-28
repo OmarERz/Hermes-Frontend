@@ -31,7 +31,7 @@
 }
 .calculation-note {
   margin: 0 0 var(--space-3) var(--space-1);
-  padding: var(--space-3) var(--space-3);
+  padding: var(--notice-pad-y) var(--notice-pad-x);
   border: 1px solid #decce9;
   border-radius: var(--radius-md);
   background: #f8f4fb;

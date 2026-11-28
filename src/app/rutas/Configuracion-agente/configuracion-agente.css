@@ -680,7 +680,7 @@
     grid-template-columns: 1fr;
   }
 }
-.app-shell[data-theme='dark'] .agent-config-view .config-panel .config-card {
+.app-shell[data-theme] .agent-config-view .config-panel .config-card {
   background: transparent;
   border-color: transparent;
   box-shadow: none;

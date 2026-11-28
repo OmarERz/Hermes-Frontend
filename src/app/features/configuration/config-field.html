@@ -1,12 +1,15 @@
 @switch (param().type) {
   @case ('boolean') {
-    <label class="tool-setting" [class.changed]="changed()" [for]="id()">
+    <label
+      class="tool-setting"
+      [class.changed]="changed()"
+      [class.no-icon]="!blocked() && !icon()"
+      [for]="id()"
+    >
       @if (blocked()) {
         <svg lucideLock aria-hidden="true"></svg>
       } @else if (icon(); as glyph) {
         <svg [lucideIcon]="glyph" aria-hidden="true"></svg>
-      } @else {
-        <span aria-hidden="true"></span>
       }
       <span class="tool-copy">
         <strong>{{ label() }}</strong>

@@ -104,6 +104,7 @@
   display: grid;
   width: 36px;
   height: 36px;
+  padding: 0;
   place-items: center;
   border: 1px solid #e2d5e9;
   border-radius: var(--radius-sm);

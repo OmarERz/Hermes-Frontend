@@ -6,7 +6,7 @@
   display: grid;
   gap: var(--space-1);
   min-width: 0;
-  padding: var(--space-3) var(--space-3);
+  padding: var(--sub-card-pad);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-soft);
@@ -80,9 +80,13 @@ select:focus-visible {
   border-color: var(--accent) !important;
   box-shadow: inset 3px 0 0 var(--accent);
 }
+/* The same inline inset as the number rows (a sub-card); with no icon, the text starts there too (F19.10). */
 .tool-setting {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--sub-card-pad);
   border-radius: var(--radius-md);
+}
+.tool-setting.no-icon {
+  grid-template-columns: minmax(0, 1fr) 42px;
 }
 
 /*
