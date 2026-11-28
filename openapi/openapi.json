@@ -4321,6 +4321,26 @@
         "title": "Page[UserAccount]",
         "type": "object"
       },
+      "PasswordEmailSent": {
+        "properties": {
+          "email": {
+            "description": "Correo al que Firebase envió el enlace.",
+            "title": "Email",
+            "type": "string"
+          },
+          "uid": {
+            "description": "Cuenta a la que se envió el correo.",
+            "title": "Uid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid",
+          "email"
+        ],
+        "title": "PasswordEmailSent",
+        "type": "object"
+      },
       "PeerCompany": {
         "additionalProperties": false,
         "properties": {
@@ -5772,6 +5792,58 @@
         "title": "SourcePatch",
         "type": "object"
       },
+      "StatusChange": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "disabled": true
+          }
+        ],
+        "properties": {
+          "disabled": {
+            "description": "`true` desactiva la cuenta y revoca sus sesiones; `false` la reactiva.",
+            "title": "Disabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "disabled"
+        ],
+        "title": "StatusChange",
+        "type": "object"
+      },
+      "StatusChanged": {
+        "properties": {
+          "disabled": {
+            "description": "Estado en el que quedó la cuenta (`true`: desactivada).",
+            "title": "Disabled",
+            "type": "boolean"
+          },
+          "known_user": {
+            "description": "Si el usuario ya existía en Hermes.",
+            "title": "Known User",
+            "type": "boolean"
+          },
+          "sessions_revoked": {
+            "description": "Si se revocaron sus sesiones (al desactivar, y antes de reactivar).",
+            "title": "Sessions Revoked",
+            "type": "boolean"
+          },
+          "uid": {
+            "description": "Identificador del usuario en Firebase.",
+            "title": "Uid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid",
+          "disabled",
+          "sessions_revoked",
+          "known_user"
+        ],
+        "title": "StatusChanged",
+        "type": "object"
+      },
       "StixBundle": {
         "additionalProperties": false,
         "properties": {
@@ -6446,11 +6518,11 @@
                 "type": "null"
               }
             ],
-            "description": "Rol guardado en Hermes; mándalo como `expected_role` al cambiarlo. Nulo si nunca inició sesión. Valores: `reader`: Solo lectura; `analyst`: Lee, da feedback, lanza escaneos y exporta; `admin`: Además configura el sistema y administra usuarios.",
+            "description": "Rol guardado en Hermes; mándalo como `expected_role` al cambiarlo. Nulo si Hermes no tiene copia de la cuenta (nunca inició sesión ni se creó desde Hermes). Valores: `reader`: Solo lectura; `analyst`: Lee, da feedback, lanza escaneos y exporta; `admin`: Además configura el sistema y administra usuarios.",
             "title": "Role"
           },
           "signed_in": {
-            "description": "Si inició sesión alguna vez (tiene copia en Hermes).",
+            "description": "Si inició sesión alguna vez en Hermes. Una cuenta creada desde Hermes tiene rol guardado pero `signed_in` falso hasta que crea su contraseña y entra.",
             "title": "Signed In",
             "type": "boolean"
           },
@@ -6472,6 +6544,65 @@
           "last_login_at"
         ],
         "title": "UserAccount",
+        "type": "object"
+      },
+      "UserCreated": {
+        "properties": {
+          "email": {
+            "description": "Correo de la cuenta, como lo guardó Firebase (en minúsculas).",
+            "title": "Email",
+            "type": "string"
+          },
+          "password_email_sent": {
+            "description": "Si Firebase envió el correo para crear la contraseña; falso: la cuenta quedó creada, reenvía el correo con `POST /api/admin/users/{uid}/password-email`.",
+            "title": "Password Email Sent",
+            "type": "boolean"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role",
+            "description": "Rol de la cuenta nueva."
+          },
+          "uid": {
+            "description": "Identificador de la cuenta nueva en Firebase.",
+            "title": "Uid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid",
+          "email",
+          "role",
+          "password_email_sent"
+        ],
+        "title": "UserCreated",
+        "type": "object"
+      },
+      "UserCreation": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "email": "persona@example.com",
+            "role": "analyst"
+          }
+        ],
+        "properties": {
+          "email": {
+            "description": "Correo de la persona; será su usuario",
+            "maxLength": 254,
+            "pattern": "^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,63}$",
+            "title": "Email",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role",
+            "description": "Rol con el que se crea la cuenta."
+          }
+        },
+        "required": [
+          "email",
+          "role"
+        ],
+        "title": "UserCreation",
         "type": "object"
       },
       "VulnerabilityBand": {
@@ -7046,6 +7177,281 @@
         "tags": [
           "admin"
         ]
+      },
+      "post": {
+        "description": "Crea una cuenta de Firebase **sin contraseña**, con el correo sin verificar y el rol indicado, y su copia en Hermes (D-105). Firebase envía a la persona un correo con la plantilla de restablecimiento de contraseña y un enlace para crearla; Hermes nunca ve ni guarda la contraseña ni el enlace. `password_email_sent` falso: la cuenta quedó creada pero el correo no salió (reenvíalo con `POST /api/admin/users/{uid}/password-email`). 409 `email_exists` si el correo ya tiene cuenta; 422 `invalid_email` si Firebase no acepta el correo; 429 `too_many_emails` si el admin ya pidió demasiados correos en la última hora. Auditado (`user.create`). Solo `admin`.",
+        "operationId": "create_user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCreated"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "La solicitud no es válida."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing, invalid, expired or revoked token"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not an admin, or inactive user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "El recurso solicitado no existe."
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Método no permitido para esta ruta."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The e-mail already has an account (`email_exists`)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid body, or an e-mail Firebase refuses (`invalid_email`)"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many password e-mails this hour (`too_many_emails`)"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error interno del servidor."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Identity provider unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Crear usuario",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/users/{uid}/password-email": {
+      "post": {
+        "description": "Vuelve a pedir a Firebase el correo para crear (o cambiar) la contraseña: el enlace dura una hora, o el primer correo no salió. 404 si la cuenta no existe; 409 `user_disabled` si está desactivada y `no_email` si no tiene correo; 429 `too_many_emails`; 503 `email_unavailable` si Firebase no lo envió. Auditado. Solo `admin`.",
+        "operationId": "send_password_email",
+        "parameters": [
+          {
+            "description": "Identificador del usuario en Firebase.",
+            "in": "path",
+            "name": "uid",
+            "required": true,
+            "schema": {
+              "pattern": "^[^/\\x00-\\x1f\\x7f]{1,128}$",
+              "title": "Uid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordEmailSent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "La solicitud no es válida."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing, invalid, expired or revoked token"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not an admin, or inactive user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The uid does not exist in Firebase"
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Método no permitido para esta ruta."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The account is switched off (`user_disabled`) or has no e-mail (`no_email`)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid uid"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many password e-mails this hour (`too_many_emails`)"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error interno del servidor."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Identity provider unavailable, or the e-mail was not sent (`email_unavailable`)"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reenviar correo de contraseña",
+        "tags": [
+          "admin"
+        ]
       }
     },
     "/api/admin/users/{uid}/role": {
@@ -7193,6 +7599,156 @@
           }
         ],
         "summary": "Asignar rol",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/users/{uid}/status": {
+      "put": {
+        "description": "`disabled: true` desactiva la cuenta en Firebase y en Hermes y revoca sus sesiones; `false` la reactiva (sus sesiones de antes siguen revocadas: inicia sesión de nuevo). Nadie cambia el estado de su propia cuenta (409 `own_status`) ni desactiva al último administrador activo (409 `last_admin`). Auditado (`user.disable`, `user.enable`). Solo `admin`.",
+        "operationId": "set_user_status",
+        "parameters": [
+          {
+            "description": "Identificador del usuario en Firebase.",
+            "in": "path",
+            "name": "uid",
+            "required": true,
+            "schema": {
+              "pattern": "^[^/\\x00-\\x1f\\x7f]{1,128}$",
+              "title": "Uid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatusChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusChanged"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "La solicitud no es válida."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing, invalid, expired or revoked token"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not an admin, or inactive user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The uid does not exist in Firebase"
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Método no permitido para esta ruta."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Own account (`own_status`) or the last active admin (`last_admin`)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid uid or body"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Demasiadas solicitudes; intenta de nuevo más tarde."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error interno del servidor."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Identity provider unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Desactivar o reactivar usuario",
         "tags": [
           "admin"
         ]
@@ -16816,7 +17372,7 @@
       "name": "telemetry"
     },
     {
-      "description": "Administración. Gestión de roles de usuario.",
+      "description": "Administración. Gestión de usuarios: altas, roles y estado de las cuentas.",
       "name": "admin"
     },
     {

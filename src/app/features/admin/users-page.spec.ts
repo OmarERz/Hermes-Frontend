@@ -6,8 +6,8 @@ import type { CurrentUser } from '../../core/api/api-types';
 import { SessionService } from '../../core/auth/session.service';
 import { provideFakeSession } from '../../testing/fake-session';
 import { formatDateTime } from '../../shared/labels';
-import { userName, UsersPage } from './users.page';
-import { RoleAssigned, UserAccount, UsersService } from './users.service';
+import { isEmail, userName, UsersPage } from './users.page';
+import { RoleAssigned, UserAccount, UserCreated, UsersService } from './users.service';
 
 const ADMIN: UserAccount = {
   uid: 'admin-uid',
@@ -45,6 +45,26 @@ const NEWCOMER: UserAccount = {
   last_login_at: null,
 };
 
+/** Created from the app (D-105): a stored role, never signed in yet. */
+const INVITED: UserAccount = {
+  uid: 'invited-uid',
+  email: 'zoe@hermes.test',
+  display_name: null,
+  role: 'analyst',
+  claim_role: 'analyst',
+  effective_role: 'analyst',
+  active: true,
+  signed_in: false,
+  last_login_at: null,
+};
+
+const CREATED: UserCreated = {
+  uid: 'created-uid',
+  email: 'nueva@hermes.test',
+  role: 'analyst',
+  password_email_sent: true,
+};
+
 const ASSIGNED: RoleAssigned = {
   uid: READER.uid,
   role: 'analyst',
@@ -57,6 +77,13 @@ class FakeUsers {
     of({ items: [ADMIN, READER, NEWCOMER], nextCursor: 'n.s' }),
   );
   assignRole = vi.fn<UsersService['assignRole']>(() => of(ASSIGNED));
+  create = vi.fn<UsersService['create']>(() => of(CREATED));
+  sendPasswordEmail = vi.fn<UsersService['sendPasswordEmail']>((uid) =>
+    of({ uid, email: 'zoe@hermes.test' }),
+  );
+  setStatus = vi.fn<UsersService['setStatus']>((uid, disabled) =>
+    of({ uid, disabled, sessions_revoked: disabled, known_user: true }),
+  );
 }
 
 async function render(users = new FakeUsers()) {
@@ -142,7 +169,8 @@ describe('UsersPage', () => {
       'Sin claim',
       'Desactivada',
     ]);
-    expect(newcomer.querySelectorAll('.chip')[0].classList).toContain('bad');
+    expect(newcomer.querySelectorAll('app-chip')[0].getAttribute('data-tone')).toBe('danger');
+    expect(admin.querySelector('app-chip')?.getAttribute('data-tone')).toBe('accent');
   });
 
   it('never offers to change the own role', async () => {
@@ -320,5 +348,344 @@ describe('UsersPage', () => {
     users.list.mockReturnValue(of({ items: [], nextCursor: null }));
     const { element } = await render(users);
     expect(text(element.querySelector('app-async-state'))).toBe('No hay cuentas en Firebase.');
+  });
+
+  // --- accounts from the app (D-105) -----------------------------------------------------------------------------
+
+  function dialog(element: HTMLElement): HTMLElement | null {
+    return element.querySelector('dialog, [role="dialog"]');
+  }
+
+  function button(root: Element | null, label: string): HTMLButtonElement | undefined {
+    return Array.from(root?.querySelectorAll('button') ?? []).find((b) => text(b) === label) as
+      HTMLButtonElement | undefined;
+  }
+
+  async function openCreate(element: HTMLElement, settle: () => Promise<void>) {
+    button(element.querySelector('.inventory > header'), 'Agregar usuario')!.click();
+    await settle();
+    const form = dialog(element)!;
+    const email = form.querySelector('input[type="email"]') as HTMLInputElement;
+    const role = form.querySelector('select') as HTMLSelectElement;
+    const type = async (value: string) => {
+      email.value = value;
+      email.dispatchEvent(new Event('input'));
+      await settle();
+    };
+    return { form, email, role, type };
+  }
+
+  it('accepts only e-mails the backend accepts', () => {
+    expect(isEmail('eva@hermes.test')).toBe(true);
+    expect(isEmail("o'neil+hermes@sub.example.co")).toBe(true);
+    for (const bad of ['', 'eva', 'eva@', '@hermes.test', 'eva@hermes', 'e va@hermes.test']) {
+      expect(isEmail(bad)).toBe(false);
+    }
+    expect(isEmail(`${'a'.repeat(65)}@hermes.test`)).toBe(false);
+    expect(isEmail(`a@${'b'.repeat(250)}.com`)).toBe(false);
+  });
+
+  it('creates an account from the dialog and names the address that got the e-mail', async () => {
+    const { element, settle, users } = await render();
+    const { form, email, role, type } = await openCreate(element, settle);
+    expect(text(form.querySelector('h2'))).toBe('Agregar usuario');
+    expect(text(form)).toContain('Hermes nunca la ve ni la guarda.');
+    expect(role.value).toBe('reader');
+    const submit = button(form, 'Crear usuario')!;
+    expect(submit.disabled).toBe(true);
+
+    await type('no-es-correo');
+    email.dispatchEvent(new Event('blur'));
+    await settle();
+    expect(email.getAttribute('aria-invalid')).toBe('true');
+    expect(text(form)).toContain('Escribe un correo válido');
+    expect(submit.disabled).toBe(true);
+
+    await type('  Nueva@hermes.test ');
+    role.value = 'analyst';
+    role.dispatchEvent(new Event('change'));
+    await settle();
+    expect(email.getAttribute('aria-invalid')).toBe('false');
+    const listed = users.list.mock.calls.length;
+    submit.click();
+    await settle();
+    expect(users.create).toHaveBeenCalledWith('Nueva@hermes.test', 'analyst');
+    expect(dialog(element)).toBeNull();
+    expect(text(element.querySelector('.admin-notice[role="status"]'))).toBe(
+      'Se envió un correo a nueva@hermes.test para crear su contraseña.',
+    );
+    expect(users.list.mock.calls.length).toBe(listed + 1);
+  });
+
+  it('says when the account exists but the e-mail did not go out', async () => {
+    const users = new FakeUsers();
+    users.create.mockReturnValue(of({ ...CREATED, password_email_sent: false }));
+    const { element, settle } = await render(users);
+    const { form, type } = await openCreate(element, settle);
+    await type('nueva@hermes.test');
+    button(form, 'Crear usuario')!.click();
+    await settle();
+    expect(text(element.querySelector('.admin-notice[role="alert"]'))).toBe(
+      'Se creó la cuenta de nueva@hermes.test, pero no se pudo enviar el correo. Usa «Reenviar correo» en su fila.',
+    );
+  });
+
+  it('keeps the dialog open with the reason of a refusal, and closes it on demand', async () => {
+    const users = new FakeUsers();
+    users.create.mockReturnValue(
+      throwError(() => new ApiError(409, 'email_exists', 'Ya existe una cuenta con ese correo.')),
+    );
+    const { element, settle, page } = await render(users);
+    const { form, type } = await openCreate(element, settle);
+    await type('eva@hermes.test');
+    button(form, 'Crear usuario')!.click();
+    await settle();
+    expect(text(dialog(element)?.querySelector('[role="alert"]'))).toBe(
+      'Ya existe una cuenta con ese correo.',
+    );
+    button(dialog(element), 'Cancelar')!.click();
+    await settle();
+    expect(dialog(element)).toBeNull();
+    expect(page.createError()).toBeNull();
+  });
+
+  it('does not create twice nor close while creating', async () => {
+    const users = new FakeUsers();
+    const pending = new Subject<UserCreated>();
+    users.create.mockReturnValue(pending.asObservable());
+    const { page } = await render(users);
+    page.openCreate();
+    page.newUser.set({ email: 'eva@hermes.test', role: 'reader' });
+    page.create();
+    page.create();
+    page.closeCreate();
+    expect(users.create).toHaveBeenCalledTimes(1);
+    expect(page.newUser()).not.toBeNull();
+    pending.next(CREATED);
+    expect(page.newUser()).toBeNull();
+    page.create(); // nothing to create once the dialog is closed
+    page.setNewEmail({ target: { value: 'x@y.zz' } } as unknown as Event);
+    page.setNewRole({ target: { value: 'admin' } } as unknown as Event);
+    expect(page.newUser()).toBeNull();
+    expect(users.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a role that is not one of the three', async () => {
+    const { page } = await render();
+    page.openCreate();
+    page.setNewRole({ target: { value: 'superuser' } } as unknown as Event);
+    expect(page.newUser()?.role).toBe('reader');
+  });
+
+  it('switches another account off after a confirmation, never the own one', async () => {
+    const { element, settle, users } = await render();
+    const [own, reader, newcomer] = rows(element);
+    expect(text(own)).toContain('Es tu cuenta.');
+    expect(button(own, 'Desactivar')).toBeUndefined();
+    expect(button(newcomer, 'Reactivar')).toBeDefined();
+
+    button(reader, 'Desactivar')!.click();
+    await settle();
+    const confirm = dialog(element)!;
+    expect(text(confirm.querySelector('h2'))).toBe('Desactivar cuenta');
+    expect(text(confirm.querySelector('.status-change'))).toBe(
+      'Cuenta de luis@hermes.test : Activa → Desactivada',
+    );
+    expect(text(confirm)).toContain('Hermes cierra sus sesiones');
+    expect(confirm.querySelector('.save-button')?.classList).toContain('btn-danger');
+    expect(text(confirm.querySelector('.save-button'))).toBe('Desactivar');
+    expect(users.setStatus).not.toHaveBeenCalled();
+    const listed = users.list.mock.calls.length;
+    (confirm.querySelector('.save-button') as HTMLButtonElement).click();
+    await settle();
+    expect(users.setStatus).toHaveBeenCalledWith(READER.uid, true);
+    expect(dialog(element)).toBeNull();
+    expect(text(element.querySelector('.admin-notice[role="status"]'))).toBe(
+      'La cuenta de luis@hermes.test quedó desactivada y se cerraron sus sesiones.',
+    );
+    expect(users.list.mock.calls.length).toBe(listed + 1);
+  });
+
+  it('keeps the message of a failed switch-on as it comes', async () => {
+    const users = new FakeUsers();
+    users.setStatus.mockReturnValue(
+      throwError(() => new ApiError(503, 'auth_unavailable', 'No se pudo cambiar el estado.')),
+    );
+    const { element, settle } = await render(users);
+    button(rows(element)[2], 'Reactivar')!.click();
+    await settle();
+    (dialog(element)!.querySelector('.save-button') as HTMLButtonElement).click();
+    await settle();
+    expect(text(dialog(element)?.querySelector('[role="alert"]'))).toBe(
+      'No se pudo cambiar el estado.',
+    );
+  });
+
+  it('runs one account operation at a time', async () => {
+    const users = new FakeUsers();
+    users.list.mockReturnValue(of({ items: [ADMIN, READER, INVITED], nextCursor: null }));
+    const pending = new Subject<{ uid: string; email: string }>();
+    users.sendPasswordEmail.mockReturnValue(pending.asObservable());
+    const { element, settle, page } = await render(users);
+    button(rows(element)[2], 'Reenviar correo')!.click();
+    await settle();
+    expect(button(element.querySelector('.inventory > header'), 'Agregar usuario')!.disabled).toBe(
+      true,
+    );
+    expect(button(rows(element)[1], 'Desactivar')!.disabled).toBe(true);
+    page.openCreate();
+    page.askStatus(page.rows()[1]);
+    expect(page.newUser()).toBeNull();
+    expect(page.statusChange()).toBeNull();
+    pending.next({ uid: INVITED.uid, email: 'zoe@hermes.test' });
+    pending.complete();
+    await settle();
+    expect(button(element.querySelector('.inventory > header'), 'Agregar usuario')!.disabled).toBe(
+      false,
+    );
+  });
+
+  it('marks the e-mail field with the reason Firebase refused it', async () => {
+    const users = new FakeUsers();
+    users.create.mockReturnValue(
+      throwError(
+        () =>
+          new ApiError(422, 'invalid_email', 'Firebase no aceptó ese correo.', [
+            { field: 'body.email', issue: 'invalid_email' },
+          ]),
+      ),
+    );
+    const { element, settle } = await render(users);
+    const { form, email, type } = await openCreate(element, settle);
+    await type('raro@hermes.test');
+    button(form, 'Crear usuario')!.click();
+    await settle();
+    expect(email.getAttribute('aria-invalid')).toBe('true');
+    const hint = form.querySelector(`#${email.getAttribute('aria-describedby')}`);
+    expect(text(hint)).toBe('Firebase no aceptó ese correo.');
+    await type('otro@hermes.test'); // another address: the refusal no longer applies
+    expect(email.getAttribute('aria-invalid')).toBe('false');
+    expect(form.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('switches an account back on', async () => {
+    const { element, settle, users } = await render();
+    button(rows(element)[2], 'Reactivar')!.click();
+    await settle();
+    expect(text(dialog(element)?.querySelector('h2'))).toBe('Reactivar cuenta');
+    expect(text(dialog(element))).toContain('sus sesiones de antes siguen cerradas');
+    (dialog(element)!.querySelector('.save-button') as HTMLButtonElement).click();
+    await settle();
+    expect(users.setStatus).toHaveBeenCalledWith(NEWCOMER.uid, false);
+    expect(text(element.querySelector('.admin-notice'))).toBe(
+      'La cuenta de Eva está activa de nuevo: tendrá que iniciar sesión.',
+    );
+  });
+
+  it('explains a switch-off whose sessions could not be closed', async () => {
+    const users = new FakeUsers();
+    users.setStatus.mockReturnValue(
+      of({ uid: READER.uid, disabled: true, sessions_revoked: false, known_user: true }),
+    );
+    const { page, element, settle } = await render(users);
+    page.askStatus({ ...page.rows()[1] });
+    page.confirmStatus();
+    await settle();
+    expect(text(element.querySelector('.admin-notice'))).toContain('Firebase ya rechaza su acceso');
+  });
+
+  it('keeps the confirmation open on a failure and reads the list again when it is stale', async () => {
+    const users = new FakeUsers();
+    users.setStatus.mockReturnValueOnce(
+      throwError(() => new ApiError(503, 'auth_unavailable', 'No se pudo cambiar el estado.')),
+    );
+    users.setStatus.mockReturnValueOnce(
+      throwError(() => new ApiError(404, 'user_not_found', 'El usuario no existe en Firebase.')),
+    );
+    const { element, settle, page } = await render(users);
+    button(rows(element)[1], 'Desactivar')!.click();
+    await settle();
+    let listed = users.list.mock.calls.length;
+    (dialog(element)!.querySelector('.save-button') as HTMLButtonElement).click();
+    await settle();
+    // Hermes switches the account off before Firebase answers: the list is read again and the dialog says so.
+    expect(text(dialog(element)?.querySelector('[role="alert"]'))).toBe(
+      'No se pudo cambiar el estado. Puede que Hermes ya haya desactivado la cuenta: la lista se volvió a leer; inténtalo de nuevo para terminar.',
+    );
+    expect(users.list.mock.calls.length).toBe(listed + 1);
+    listed = users.list.mock.calls.length;
+    (dialog(element)!.querySelector('.save-button') as HTMLButtonElement).click();
+    await settle();
+    expect(dialog(element)).toBeNull();
+    expect(text(element.querySelector('.admin-notice[role="alert"]'))).toBe(
+      'El usuario no existe en Firebase.',
+    );
+    expect(users.list.mock.calls.length).toBe(listed + 1);
+    page.askStatus(page.rows()[0]); // the own row: never
+    page.confirmStatus(); // nothing waiting
+    expect(page.statusChange()).toBeNull();
+    expect(users.setStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not change the status twice nor close while saving', async () => {
+    const users = new FakeUsers();
+    const pending = new Subject<{
+      uid: string;
+      disabled: boolean;
+      sessions_revoked: boolean;
+      known_user: boolean;
+    }>();
+    users.setStatus.mockReturnValue(pending.asObservable());
+    const { page } = await render(users);
+    page.askStatus(page.rows()[1]);
+    page.confirmStatus();
+    page.confirmStatus();
+    page.cancelStatus();
+    expect(users.setStatus).toHaveBeenCalledTimes(1);
+    expect(page.statusChange()).not.toBeNull();
+    pending.next({ uid: READER.uid, disabled: true, sessions_revoked: true, known_user: true });
+    pending.complete();
+    expect(page.statusChange()).toBeNull();
+    page.askStatus(page.rows()[1]);
+    page.cancelStatus();
+    expect(page.statusChange()).toBeNull();
+  });
+
+  it('sends the password e-mail again to an account that never signed in', async () => {
+    const users = new FakeUsers();
+    users.list.mockReturnValue(of({ items: [ADMIN, READER, INVITED], nextCursor: null }));
+    const { element, settle } = await render(users);
+    const [, reader, invited] = rows(element);
+    expect(cells(invited)[2]).toBe('Analista'); // the role stored when it was created
+    expect(button(reader, 'Reenviar correo')).toBeUndefined();
+    button(invited, 'Reenviar correo')!.click();
+    await settle();
+    expect(users.sendPasswordEmail).toHaveBeenCalledWith(INVITED.uid);
+    expect(text(element.querySelector('.admin-notice[role="status"]'))).toBe(
+      'Se envió un correo a zoe@hermes.test para crear su contraseña.',
+    );
+  });
+
+  it('says why the password e-mail could not be sent, and sends one at a time', async () => {
+    const users = new FakeUsers();
+    users.list.mockReturnValue(of({ items: [ADMIN, INVITED], nextCursor: null }));
+    users.sendPasswordEmail.mockReturnValueOnce(
+      throwError(() => new ApiError(429, 'too_many_emails', 'Se enviaron demasiados correos.')),
+    );
+    const { element, settle, page } = await render(users);
+    button(rows(element)[1], 'Reenviar correo')!.click();
+    await settle();
+    expect(text(element.querySelector('.admin-notice[role="alert"]'))).toBe(
+      'Se enviaron demasiados correos.',
+    );
+    const pending = new Subject<{ uid: string; email: string }>();
+    users.sendPasswordEmail.mockReturnValue(pending.asObservable());
+    page.resend(page.rows()[1]);
+    page.resend(page.rows()[1]);
+    page.resend(page.rows()[0]); // an account that signed in is not offered the e-mail
+    expect(users.sendPasswordEmail).toHaveBeenCalledTimes(2);
+    pending.next({ uid: INVITED.uid, email: 'zoe@hermes.test' });
+    pending.complete();
+    expect(page.resending()).toBeNull();
   });
 });
