@@ -328,6 +328,7 @@ function inPage(options: InPageOptions): LayoutResult {
       const contentInset = (element: Element): number | null => {
         const own = box(element);
         let left = Infinity;
+        let right = -Infinity;
         const walker = document.createTreeWalker(
           element,
           NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
@@ -337,7 +338,7 @@ function inPage(options: InPageOptions): LayoutResult {
             const drawn =
               !(node instanceof SVGElement) &&
               !isIgnored(node) &&
-              paints(node) &&
+              fill(node) &&
               box(node).width >= 16 &&
               box(node).height >= 16;
             if (
@@ -346,26 +347,35 @@ function inPage(options: InPageOptions): LayoutResult {
             )
               continue;
             left = Math.min(left, box(node).left);
+            right = Math.max(right, box(node).right);
           } else if (node.textContent?.trim()) {
             const range = document.createRange();
             range.selectNodeContents(node);
-            for (const rect of range.getClientRects())
-              if (rect.width > 0) left = Math.min(left, rect.left + scrollX);
+            for (const rect of range.getClientRects()) {
+              if (rect.width <= 0) continue;
+              left = Math.min(left, rect.left + scrollX);
+              right = Math.max(right, rect.right + scrollX);
+            }
           }
         }
-        if (!Number.isFinite(left) || left - own.left > 0.25 * own.width) return null;
-        return left - own.left;
+        if (!Number.isFinite(left)) return null;
+        const inset = left - own.left;
+        const pad = px(style(element).paddingLeft) + border(element, 'Left');
+        // Centred content (an empty or error state) starts wherever its width puts it.
+        if (inset > 64 || (inset > pad + 4 && Math.abs(inset - (own.right - right)) <= 4))
+          return null;
+        return inset;
       };
 
       if (kinds.has('edge')) {
         for (const element of painted) {
           const own = box(element);
           // Divider shorter than the box it divides (a column rule that stops at the card's padding).
+          // Only a rule between the columns of a box: the divider is a direct child of the painted box it divides
+          // (a separator between counters inside a row of a card is not one).
           if (verticalDivider(element) && own.height >= 24) {
-            let container = element.parentElement;
-            while (container && container !== root && !paints(container))
-              container = container.parentElement;
-            if (container && container !== root) {
+            const container = element.parentElement;
+            if (container && container !== root && paints(container)) {
               const outer = box(container);
               const top = outer.top + border(container, 'Top');
               const bottom = outer.bottom - border(container, 'Bottom');
