@@ -110,9 +110,12 @@ async function choosePassword(address: string, password: string): Promise<void> 
   expect(reset.ok).toBe(true);
 }
 
-/** Signs in through the login screen in a fresh browser context (no saved session). */
+/**
+ * Signs in through the login screen in a fresh browser context. The runner gives every new context the test's
+ * options, the admin's saved session among them, so the context starts with an explicitly empty one.
+ */
 async function signIn(browser: Browser, address: string, password: string): Promise<Page> {
-  const context = await browser.newContext({ baseURL: process.env['E2E_BASE_URL'] });
+  const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
   const person = await context.newPage();
   await person.goto('/login');
   await person.getByLabel('Correo').fill(address);
