@@ -1286,6 +1286,11 @@ export interface components {
         /** AffectedAsset */
         AffectedAsset: {
             /**
+             * Certainty
+             * @description Certeza de esa coincidencia, como texto decimal (ESC-09): `1.0` para `nvd_cpe` y `kev`, `0.9` para `cna_affected`. Nula cuando `match_source` es nulo.
+             */
+            certainty?: ("1.0" | "0.9") | null;
+            /**
              * Ci Id
              * @description Id del CI en iTop.
              */
@@ -1333,6 +1338,11 @@ export interface components {
              * @description Enlace al activo en iTop.
              */
             itop_url: string;
+            /**
+             * Match Source
+             * @description Cómo se detectó el hallazgo `finding_id` (F18.9): `nvd_cpe` (rango de NVD), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org) o `cna_affected` (solo los rangos del CNA en CVE.org). Si el CI tiene varias instalaciones del producto, es la de la instalación con el estado más urgente, la misma de `finding_id` y `finding_status`. Nulo cuando `finding_id` es nulo (en una recomendación).
+             */
+            match_source?: ("nvd_cpe" | "kev" | "cna_affected") | null;
             /**
              * Name
              * @description Nombre del activo.
@@ -2612,6 +2622,8 @@ export interface components {
              * @description Categoría: la clase de la instalación en iTop. Nula si aún no se sincroniza o es una clase propia de la instancia de iTop.
              */
             category?: ("DBServer" | "Middleware" | "OtherSoftware" | "PCSoftware" | "WebServer") | null;
+            /** @description Nombres del CNA (CVE.org) del mapeo de su producto, los mismos de `cna` en `GET /api/inventory/software` (F18.9); nulo si el producto no tiene mapeo o su mapeo no los tiene. */
+            cna?: components["schemas"]["CnaNames"] | null;
             /**
              * Cpe
              * @description Identificador CPE 2.3 del software.
@@ -5008,6 +5020,11 @@ export interface components {
              */
             level: "critical" | "high" | "medium" | "low";
             /**
+             * Match Sources
+             * @description Cómo se detectaron sus hallazgos (F18.9), sin repetir y de la más a la menos segura: `nvd_cpe` (rango de NVD, certeza 1.0), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org, certeza 1.0) y `cna_affected` (solo los rangos del CNA en CVE.org, certeza 0.9). Cuenta los activos que hablan por el grupo (los vigentes, o todos si ya está corregido); en el detalle de un activo, solo la de ese activo.
+             */
+            match_sources?: ("nvd_cpe" | "kev" | "cna_affected")[];
+            /**
              * Owners
              * @description Responsables de los activos afectados.
              */
@@ -5083,6 +5100,11 @@ export interface components {
              * @enum {string}
              */
             level: "critical" | "high" | "medium" | "low";
+            /**
+             * Match Sources
+             * @description Cómo se detectaron sus hallazgos (F18.9), sin repetir y de la más a la menos segura: `nvd_cpe` (rango de NVD, certeza 1.0), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org, certeza 1.0) y `cna_affected` (solo los rangos del CNA en CVE.org, certeza 0.9). Cuenta los activos que hablan por el grupo (los vigentes, o todos si ya está corregido); en el detalle de un activo, solo la de ese activo.
+             */
+            match_sources?: ("nvd_cpe" | "kev" | "cna_affected")[];
             /**
              * Owners
              * @description Responsables de los activos afectados.
