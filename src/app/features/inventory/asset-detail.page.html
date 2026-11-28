@@ -156,6 +156,11 @@
                       @if (item.cpePart; as part) {
                         <small>{{ part }}</small>
                       }
+                      @if (item.cnaNames !== undefined) {
+                        <small class="cna-names">{{
+                          item.cnaNames ? 'CVE.org: ' + item.cnaNames : 'Sin nombres de CVE.org'
+                        }}</small>
+                      }
                     } @else {
                       <span class="muted">Sin CPE</span>
                       <small><a routerLink="/pendientes-inventario">Ver pendientes</a></small>

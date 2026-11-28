@@ -68,6 +68,83 @@ test.describe('vulnerabilities as reader', () => {
     await settle(page);
   });
 
+  test('shows the source the backend gives each finding of the detail (F18.9)', async ({
+    page,
+  }) => {
+    const detail = page.waitForResponse((response) =>
+      /^\/api\/vulnerabilities\/[0-9a-f-]+$/.test(new URL(response.url()).pathname),
+    );
+    await page.goto('/vulnerabilidades');
+    await page.getByRole('link', { name: 'CVE-2026-10001' }).click();
+    const body = (await (await detail).json()) as {
+      assets: { ci_id: string; match_source?: string | null; certainty?: string | null }[];
+    };
+    const labels: Record<string, string> = { nvd_cpe: 'NVD', kev: 'KEV', cna_affected: 'CVE.org' };
+    const table = page.getByRole('region', {
+      name: 'Activos afectados; desplazamiento horizontal',
+    });
+    for (const asset of body.assets) {
+      const row = table.getByRole('row').filter({ hasText: asset.ci_id });
+      // A backend before F18.9 leaves the source out: the row then shows none.
+      const chip = row.locator('app-chip[title]');
+      if (asset.match_source) {
+        await expect(chip).toHaveText(labels[asset.match_source]);
+        await expect(row).toContainText(`Certeza ${asset.certainty}`);
+      } else {
+        await expect(chip).toHaveCount(0);
+      }
+    }
+  });
+
+  test('names each source in a chip with its certainty and sums them up (F18.9)', async ({
+    page,
+  }) => {
+    // The demo findings all come from NVD: the detail is completed here with every source, which also runs the test
+    // against a backend before F18.9.
+    const sources = [
+      ['cna_affected', '0.9'],
+      ['nvd_cpe', '1.0'],
+      ['kev', '1.0'],
+    ];
+    await page.route(/\/api\/vulnerabilities\/[0-9a-f-]+$/, async (route) => {
+      const response = await route.fetch();
+      const body = (await response.json()) as { assets: { score: number }[] };
+      const assets = body.assets.map((asset, index) => ({
+        ...asset,
+        // Highest first: the one shown at the top is CVE.org, whatever the scores.
+        score: 100 - index,
+        match_source: sources[index % sources.length][0],
+        certainty: sources[index % sources.length][1],
+      }));
+      await route.fulfill({
+        response,
+        json: { ...body, assets, match_sources: ['nvd_cpe', 'cna_affected'] },
+      });
+    });
+    await page.goto('/vulnerabilidades');
+    await page.getByRole('link', { name: 'CVE-2026-10001' }).click();
+    const table = page.getByRole('region', {
+      name: 'Activos afectados; desplazamiento horizontal',
+    });
+    const first = table.getByRole('row').nth(1);
+    const chip = first.locator('app-chip[title]');
+    await expect(chip).toHaveText('CVE.org');
+    // The certainty is visible next to the chip, and the legend says what each source means (keyboard and touch).
+    await expect(first.getByText('Certeza 0.9', { exact: true })).toBeVisible();
+    await expect(page.locator('.sources-hint')).toContainText(
+      'CVE.org: solo los rangos del fabricante (CNA) en CVE.org',
+    );
+    await expect(chip).toHaveAttribute(
+      'title',
+      'Detectado por solo los rangos del fabricante (CNA) en CVE.org; certeza 0.9',
+    );
+    await expect(chip).toHaveAttribute('data-tone', 'warning');
+    await expect(page.locator('.facts > div').filter({ hasText: 'Fuentes' })).toContainText(
+      'NVD, CVE.org',
+    );
+    await settle(page);
+  });
+
   test('shows the demo tickets and the threat alerts', async ({ page }) => {
     await page.goto('/tickets');
     const tickets = page.getByRole('region', { name: 'Tickets; desplazamiento horizontal' });

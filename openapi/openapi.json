@@ -51,6 +51,22 @@
       "AffectedAsset": {
         "additionalProperties": false,
         "properties": {
+          "certainty": {
+            "anyOf": [
+              {
+                "enum": [
+                  "1.0",
+                  "0.9"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Certeza de esa coincidencia, como texto decimal (ESC-09): `1.0` para `nvd_cpe` y `kev`, `0.9` para `cna_affected`. Nula cuando `match_source` es nulo.",
+            "title": "Certainty"
+          },
           "ci_id": {
             "description": "Id del CI en iTop.",
             "title": "Ci Id",
@@ -128,6 +144,23 @@
             "description": "Enlace al activo en iTop.",
             "title": "Itop Url",
             "type": "string"
+          },
+          "match_source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "nvd_cpe",
+                  "kev",
+                  "cna_affected"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cómo se detectó el hallazgo `finding_id` (F18.9): `nvd_cpe` (rango de NVD), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org) o `cna_affected` (solo los rangos del CNA en CVE.org). Si el CI tiene varias instalaciones del producto, es la de la instalación con el estado más urgente, la misma de `finding_id` y `finding_status`. Nulo cuando `finding_id` es nulo (en una recomendación).",
+            "title": "Match Source"
           },
           "name": {
             "description": "Nombre del activo.",
@@ -2524,6 +2557,17 @@
             ],
             "description": "Categoría: la clase de la instalación en iTop. Nula si aún no se sincroniza o es una clase propia de la instancia de iTop.",
             "title": "Category"
+          },
+          "cna": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CnaNames"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Nombres del CNA (CVE.org) del mapeo de su producto, los mismos de `cna` en `GET /api/inventory/software` (F18.9); nulo si el producto no tiene mapeo o su mapeo no los tiene."
           },
           "cpe": {
             "anyOf": [
@@ -6785,6 +6829,19 @@
             "title": "Level",
             "type": "string"
           },
+          "match_sources": {
+            "description": "Cómo se detectaron sus hallazgos (F18.9), sin repetir y de la más a la menos segura: `nvd_cpe` (rango de NVD, certeza 1.0), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org, certeza 1.0) y `cna_affected` (solo los rangos del CNA en CVE.org, certeza 0.9). Cuenta todas las instalaciones vigentes de los activos que hablan por el grupo (los vigentes, o todos si ya está corregido); en el detalle de un activo, solo las de ese activo.",
+            "items": {
+              "enum": [
+                "nvd_cpe",
+                "kev",
+                "cna_affected"
+              ],
+              "type": "string"
+            },
+            "title": "Match Sources",
+            "type": "array"
+          },
           "owners": {
             "description": "Responsables de los activos afectados.",
             "items": {
@@ -6909,6 +6966,19 @@
             ],
             "title": "Level",
             "type": "string"
+          },
+          "match_sources": {
+            "description": "Cómo se detectaron sus hallazgos (F18.9), sin repetir y de la más a la menos segura: `nvd_cpe` (rango de NVD, certeza 1.0), `kev` (CVE de KEV de CISA que coincidió por los rangos del CNA en CVE.org, certeza 1.0) y `cna_affected` (solo los rangos del CNA en CVE.org, certeza 0.9). Cuenta todas las instalaciones vigentes de los activos que hablan por el grupo (los vigentes, o todos si ya está corregido); en el detalle de un activo, solo las de ese activo.",
+            "items": {
+              "enum": [
+                "nvd_cpe",
+                "kev",
+                "cna_affected"
+              ],
+              "type": "string"
+            },
+            "title": "Match Sources",
+            "type": "array"
           },
           "owners": {
             "description": "Responsables de los activos afectados.",

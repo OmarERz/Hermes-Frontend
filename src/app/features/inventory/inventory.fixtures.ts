@@ -146,6 +146,7 @@ export const INSTALLED_OPENSSL: InstalledSoftware = {
     end_date: '2026-12-31',
     perpetual: false,
   },
+  cna: null,
 };
 
 export const INSTALLED_KERNEL: InstalledSoftware = {
@@ -161,6 +162,7 @@ export const INSTALLED_KERNEL: InstalledSoftware = {
   status: null,
   description: null,
   licence: null,
+  cna: null,
 };
 
 export const DETAIL: AssetDetail = {
