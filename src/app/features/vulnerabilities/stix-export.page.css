@@ -1,19 +1,19 @@
 .export-panel {
   max-width: 720px;
-  margin-top: 15px;
+  margin-top: var(--space-4);
 }
 .export-panel h2 {
-  margin: 0 0 12px;
-  font-size: calc(17px + var(--font-size-increase, 0px));
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-xl);
 }
 form {
   display: grid;
-  gap: 14px;
+  gap: var(--space-4);
 }
 .scope-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   border: 0;
@@ -21,10 +21,10 @@ form {
 .scope-option {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border, #dddbe7);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 .scope-option.selected {
@@ -33,15 +33,15 @@ form {
 }
 .field {
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
   font-weight: 600;
 }
 .field select,
 .field input {
   min-height: 38px;
-  padding: 0 10px;
+  padding: 0 var(--space-3);
   border: 1px solid var(--border, #dddbe7);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
   color: var(--text-primary, #321044);
   font: inherit;
@@ -49,19 +49,19 @@ form {
 .date-range {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
 }
 .check {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .load-more {
   justify-self: start;
   min-height: 34px;
-  padding: 0 12px;
+  padding: 0 var(--space-3);
   border: 1px solid var(--border, #dddbe7);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
   color: var(--text-secondary, #675b70);
   font: inherit;

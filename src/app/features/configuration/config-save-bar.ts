@@ -125,9 +125,9 @@ import type { ConfigEditor } from './config-editor';
       color: var(--danger-text);
     }
     .save-hint {
-      margin: 6px 0 0;
+      margin: var(--space-2) 0 0;
       color: var(--text-muted);
-      font-size: calc(12px + var(--font-size-increase, 0px));
+      font-size: var(--text-sm);
       text-align: right;
     }
   `,

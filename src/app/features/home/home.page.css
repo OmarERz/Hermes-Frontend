@@ -41,7 +41,7 @@
 }
 .welcome-copy h2 {
   margin-top: var(--space-1);
-  font-size: clamp(var(--text-4xl), 3.15vw, 44px);
+  font-size: var(--text-display-sub);
 }
 .welcome-description {
   max-width: 620px;

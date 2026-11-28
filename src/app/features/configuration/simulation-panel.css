@@ -3,22 +3,22 @@
   min-width: 0;
 }
 .simulation-card h3 {
-  margin: 14px 0 6px;
-  font-size: calc(14px + var(--font-size-increase, 0px));
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: var(--text-md);
 }
 .sim-empty,
 .sim-effect {
   margin: 0;
   color: var(--text-secondary);
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
 }
 .sim-headline {
-  margin: 0 0 4px;
-  font-size: calc(15px + var(--font-size-increase, 0px));
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-lg);
 }
 .sim-headline strong {
   color: var(--accent);
-  font-size: calc(22px + var(--font-size-increase, 0px));
+  font-size: var(--text-2xl);
   font-variant-numeric: tabular-nums;
 }
 .sim-error {
@@ -27,29 +27,29 @@
 }
 .sim-stale,
 .sim-note {
-  margin: 0 0 10px;
-  padding: 9px 12px;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--warning-text);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--warning-bg);
   color: var(--text-primary);
-  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-size: var(--text-sm);
 }
 .sim-note {
-  margin: 12px 0 0;
+  margin: var(--space-3) 0 0;
 }
 .table-scroll {
   overflow-x: auto;
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 .level-matrix {
   width: 100%;
   border-collapse: collapse;
-  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
 .level-matrix caption {
-  margin-bottom: 6px;
+  margin-bottom: var(--space-2);
   color: var(--text-muted);
   text-align: left;
 }
@@ -72,7 +72,7 @@
 }
 .movers {
   margin: 0;
-  padding-left: 20px;
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  padding-left: var(--space-5);
+  font-size: var(--text-md);
   line-height: 1.6;
 }

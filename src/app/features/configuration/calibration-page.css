@@ -1,54 +1,54 @@
 .mode-note {
-  margin: 0 0 14px;
+  margin: 0 0 var(--space-4);
   color: var(--text-muted);
-  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-size: var(--text-sm);
   line-height: 1.45;
 }
 .proposals-notice {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-3);
   color: var(--success-text);
 }
 .proposals-problem {
-  margin: 0 0 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
   background: var(--danger-bg);
   color: var(--danger-text);
 }
 .proposal-list {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .proposal {
   display: grid;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--surface-raised);
 }
 .proposal[data-status='pending'] {
   border-color: var(--accent);
 }
 .proposal h3 {
-  font-size: calc(14px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
   line-height: 1.35;
 }
 .proposal-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--text-muted);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
 }
 .kind-chip,
 .status-chip {
-  padding: 2px 8px;
-  border-radius: 999px;
+  padding: var(--space-0-5) var(--space-2);
+  border-radius: var(--radius-full);
   font-weight: 700;
 }
 .kind-chip {
@@ -69,7 +69,7 @@
 }
 .evidence,
 .backtest {
-  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-size: var(--text-sm);
   line-height: 1.45;
 }
 .backtest {
@@ -81,7 +81,7 @@
 .changes-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: calc(12px + var(--font-size-increase, 0px));
+  font-size: var(--text-sm);
 }
 .changes-table th,
 .changes-table td {
@@ -101,7 +101,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .proposal-actions small {
   color: var(--text-muted);
@@ -110,8 +110,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 .proposals-pager svg {
   width: 16px;

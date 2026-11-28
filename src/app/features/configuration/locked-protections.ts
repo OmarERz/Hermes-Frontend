@@ -101,7 +101,7 @@ import { ConfigParameter, LOCKED_PROTECTIONS } from './config-model';
     }
     .locked-list svg {
       flex: none;
-      margin-top: 3px;
+      margin-top: var(--space-1);
       color: var(--warning-text) !important;
     }
   `,

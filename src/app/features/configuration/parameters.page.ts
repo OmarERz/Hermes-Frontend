@@ -128,7 +128,7 @@ interface ParameterGroup {
     .groups-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      gap: var(--space-4);
     }
     .field-list {
       display: grid;
@@ -136,7 +136,7 @@ interface ParameterGroup {
     }
     .block {
       display: block;
-      margin-top: 14px;
+      margin-top: var(--space-4);
     }
     @media (max-width: 900px) {
       .groups-grid {

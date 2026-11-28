@@ -56,25 +56,25 @@
 }
 .option-copy {
   display: grid;
-  gap: 2px;
+  gap: var(--space-0-5);
   min-width: 0;
 }
 .option-copy strong {
   color: var(--text-primary, #321044);
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
 }
 .option-copy small {
   color: var(--text-secondary, #72647c);
-  font-size: calc(11px + var(--font-size-increase, 0px));
+  font-size: var(--text-xs);
   line-height: 1.35;
 }
 .level-picker {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   color: var(--text-primary, #321044);
-  font-size: calc(13px + var(--font-size-increase, 0px));
+  font-size: var(--text-md);
   font-weight: 650;
 }
 .level-picker strong {
@@ -91,7 +91,7 @@
   width: 36px;
   height: 36px;
   border: 1px solid var(--border, #e4e3ee);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
   color: var(--accent, #ed079b);
   cursor: pointer;

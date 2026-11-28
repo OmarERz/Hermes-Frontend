@@ -2,12 +2,12 @@
   margin-bottom: 0;
 }
 .ticket-log > header {
-  gap: 12px;
+  gap: var(--space-3);
 }
 .ticket-id {
   display: block;
   color: var(--text-secondary, #62576c);
-  font-size: calc((10px) + var(--font-size-increase));
+  font-size: var(--text-2xs);
 }
 .ticket-filters {
   grid-template-columns: repeat(2, minmax(160px, 280px));
@@ -16,7 +16,7 @@
   .ticket-id {
     display: block;
     color: var(--text-secondary, #62576c);
-    font-size: calc((10px) + var(--font-size-increase));
+    font-size: var(--text-2xs);
   }
   .ticket-filters {
     grid-template-columns: 1fr;

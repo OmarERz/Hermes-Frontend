@@ -2,7 +2,7 @@
 .chip-list {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .numeric {
   font-variant-numeric: tabular-nums;
@@ -13,7 +13,7 @@
 }
 .cpe {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: calc(10px + var(--font-size-increase, 0px));
+  font-size: var(--text-2xs);
   overflow-wrap: anywhere;
 }
 /*

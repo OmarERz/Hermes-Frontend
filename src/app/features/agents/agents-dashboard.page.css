@@ -10,13 +10,13 @@
 .chart-select {
   min-height: 32px;
   margin-left: auto;
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid #d9d7e4;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
   color: var(--text-primary, #342044);
   font: inherit;
-  font-size: calc((12px) + var(--font-size-increase));
+  font-size: var(--text-sm);
   font-weight: 500;
 }
 
@@ -36,12 +36,12 @@
 .last-run {
   display: flex;
   align-items: flex-start;
-  gap: 7px;
-  margin-top: 16px;
-  padding-top: 12px;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
   border-top: 1px solid #e5e1eb;
   color: #554a60;
-  font-size: calc((12px) + var(--font-size-increase));
+  font-size: var(--text-sm);
   line-height: 1.4;
 }
 .last-run svg {
@@ -55,16 +55,16 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
   color: #554a60;
-  font-size: calc((13px) + var(--font-size-increase));
+  font-size: var(--text-md);
 }
 .budget strong {
   color: #351044;
 }
 .connections {
-  margin-top: 6px;
+  margin-top: var(--space-2);
 }
 .connections strong.failing {
   color: #985800;
@@ -74,9 +74,9 @@
   font-weight: 700;
 }
 .inline-retry {
-  padding: 2px 8px;
+  padding: var(--space-0-5) var(--space-2);
   border: 1px solid #e2d5e9;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised, #fff);
   color: #8d137c;
   font: inherit;
@@ -90,34 +90,34 @@
 }
 
 .agent-block + .agent-block {
-  margin-top: 14px;
-  padding-top: 2px;
+  margin-top: var(--space-4);
+  padding-top: var(--space-0-5);
 }
 .agent-summary h3 {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .fact-note {
   display: block;
-  margin-top: 2px;
+  margin-top: var(--space-0-5);
   color: #625871;
-  font-size: calc((11px) + var(--font-size-increase));
+  font-size: var(--text-xs);
   line-height: 1.3;
 }
 .agent-tokens {
-  margin-top: 8px;
+  margin-top: var(--space-2);
   color: #625871;
-  font-size: calc((11px) + var(--font-size-increase));
+  font-size: var(--text-xs);
 }
 
 .ticket-link {
   display: inline-block;
-  margin-top: 12px;
+  margin-top: var(--space-3);
   color: #a10f7d;
   font-weight: 700;
-  font-size: calc((13px) + var(--font-size-increase));
+  font-size: var(--text-md);
 }
 
 :host-context(.app-shell[data-theme='dark']) .chart-select,

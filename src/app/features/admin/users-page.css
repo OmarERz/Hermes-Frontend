@@ -18,11 +18,11 @@ table.users-table {
   font-size: var(--text-xs);
 }
 .own-chip {
-  margin-left: 6px;
+  margin-left: var(--space-2);
 }
 .own-note {
   color: var(--text-muted);
-  font-size: calc(11px + var(--font-size-increase));
+  font-size: var(--text-xs);
 }
 .role-select {
   position: relative;
@@ -31,13 +31,13 @@ table.users-table {
 }
 .role-select select {
   min-height: 32px;
-  padding: 0 28px 0 10px;
+  padding: 0 var(--space-8) 0 var(--space-3);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--surface-raised);
   color: var(--text-primary);
   font: inherit;
-  font-size: calc(11px + var(--font-size-increase));
+  font-size: var(--text-xs);
   font-weight: 650;
   appearance: none;
   cursor: pointer;
@@ -59,7 +59,7 @@ table.users-table {
 }
 .footnote {
   color: var(--text-muted);
-  font-size: calc(11px + var(--font-size-increase));
+  font-size: var(--text-xs);
 }
 .status-change {
   margin: 0;

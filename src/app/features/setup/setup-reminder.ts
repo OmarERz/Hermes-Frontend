@@ -49,7 +49,7 @@ import { SetupService } from './setup.service';
       display: grid;
       flex: none;
       place-items: center;
-      border-radius: 10px;
+      border-radius: var(--radius-md);
       background: var(--surface);
       color: var(--accent);
     }
@@ -61,7 +61,7 @@ import { SetupService } from './setup.service';
       flex: 1 1 260px;
       margin: 0;
       color: var(--text-secondary);
-      font-size: calc(13px + var(--font-size-increase));
+      font-size: var(--text-md);
       line-height: 1.45;
     }
     strong {
@@ -70,9 +70,9 @@ import { SetupService } from './setup.service';
     a {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: var(--space-1);
       color: var(--accent-text);
-      font-size: calc(13px + var(--font-size-increase));
+      font-size: var(--text-md);
       font-weight: 700;
       white-space: nowrap;
     }

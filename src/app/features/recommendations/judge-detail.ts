@@ -29,7 +29,7 @@ import { Component, input } from '@angular/core';
     }
     .judge-pending strong + p + strong {
       display: block;
-      margin-top: 8px;
+      margin-top: var(--space-2);
     }
   `,
   host: { '[attr.data-assessment-id]': 'assessmentId()' },

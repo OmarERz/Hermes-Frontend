@@ -10,7 +10,7 @@
 .level-list {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .band-row th {
   padding: var(--cell-pad-y) var(--cell-pad-x);
