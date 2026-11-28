@@ -30,6 +30,7 @@
         >
           <svg lucideRefreshCw aria-hidden="true"></svg> Actualizar
         </button>
+        <app-columns-toggle [(all)]="allColumns" controls="users-table" phoneCards />
         <button
           *appIfRole="manageRole"
           type="button"
@@ -57,13 +58,17 @@
         aria-label="Cuentas; desplazamiento horizontal"
         tabindex="0"
       >
-        <table class="users-table data-table sticky-first cards-mobile">
+        <table
+          id="users-table"
+          class="users-table data-table sticky-first cards-mobile"
+          [class.all-columns]="allColumns()"
+        >
           <thead>
             <tr>
               <th scope="col">Usuario</th>
               <th scope="col">Rol efectivo</th>
-              <th scope="col">Rol guardado</th>
-              <th scope="col">Rol del claim</th>
+              <th scope="col" class="col-from-lg">Rol guardado</th>
+              <th scope="col" class="col-from-lg">Rol del claim</th>
               <th scope="col">Cuenta</th>
               <th scope="col">Último acceso</th>
               <th scope="col" *appIfRole="manageRole">Cambiar rol</th>
@@ -87,8 +92,8 @@
                 <td data-label="Rol efectivo">
                   <app-chip [tone]="row.effectiveTone">{{ row.effectiveRole }}</app-chip>
                 </td>
-                <td data-label="Rol guardado">{{ row.storedRole }}</td>
-                <td data-label="Rol del claim">{{ row.claimRole }}</td>
+                <td class="col-from-lg" data-label="Rol guardado">{{ row.storedRole }}</td>
+                <td class="col-from-lg" data-label="Rol del claim">{{ row.claimRole }}</td>
                 <td data-label="Cuenta">
                   <app-chip [tone]="row.active ? 'success' : 'danger'">{{
                     row.active ? 'Activa' : 'Desactivada'

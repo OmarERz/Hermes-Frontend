@@ -18,6 +18,7 @@ import { ACTION_ROLES, ROLE_LABELS } from '../../core/auth/roles';
 import { SessionService } from '../../core/auth/session.service';
 import { AsyncStateComponent, ViewState } from '../../shared/async-state.component';
 import { Chip, ChipTone } from '../../shared/chip';
+import { ColumnsToggle } from '../../shared/columns-toggle';
 import { ConfirmChangesDialog } from '../../shared/confirm-changes-dialog';
 import { CursorPager } from '../../shared/cursor-pager';
 import { FormDialog } from '../../shared/form-dialog';
@@ -127,6 +128,7 @@ const PARTIAL_OFF =
     BannerPagina,
     AsyncStateComponent,
     Chip,
+    ColumnsToggle,
     ConfirmChangesDialog,
     FormDialog,
     IfRoleDirective,
@@ -168,6 +170,8 @@ export class UsersPage {
   /** Role change waiting for the admin's confirmation. */
   readonly change = signal<{ account: UserAccount; role: Role } | null>(null);
   readonly saving = signal(false);
+  /** «Todas las columnas»: the stored and claim roles show from a wide table, or with this (USU-2). */
+  readonly allColumns = signal(false);
   readonly changeError = signal<ApiError | null>(null);
   readonly changeRows = computed<ChangeRow[]>(() => {
     const requested = this.change();
