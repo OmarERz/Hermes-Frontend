@@ -98,7 +98,8 @@ describe('AssetDetailPage', () => {
       'OpenSSL',
       '3.0.7',
       'Crítica · 2',
-      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*',
+      // F15.9: the part of the CPE as a readable label under it.
+      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*Aplicación',
       'Activa',
       'Otro software',
       expect.stringMatching(/^Soporte OpenSSLLímite: 10 servidoresDel .+ al .+$/),

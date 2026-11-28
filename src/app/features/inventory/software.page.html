@@ -238,6 +238,12 @@
                           <wbr />
                         }
                       </code>
+                      @if (row.cpePart; as part) {
+                        <small>{{ part }}</small>
+                      }
+                      <small class="cna-names">{{
+                        row.cnaNames ? 'CVE.org: ' + row.cnaNames : 'Sin nombres de CVE.org'
+                      }}</small>
                     } @else {
                       <span class="muted">Sin CPE</span>
                     }

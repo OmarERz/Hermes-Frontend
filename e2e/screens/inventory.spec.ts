@@ -3,7 +3,8 @@ import { asRole, expect, expectScreen, test } from '../support/fixtures';
 // src/app/features/inventory/ (lane B · Inventario), against the backend's demo data (`make demo`): srv-pagos-01
 // (CI-1, Server, 16 vCPU and 64 GB, OpenSSL 3.0.7 with the licence «Soporte OpenSSL»), vm-intranet-02 (CI-2,
 // VirtualMachine, OpenSSL inactive) and srv-web-03 (CI-3, Server without owner, nginx and Redis). Read only, except
-// the analyst's CPE mapping, which saves nginx with the CPE it already has (f5:nginx), so the data stay the same.
+// the analyst's CPE mapping, which saves nginx with the CPE it already has (f5:nginx), and the CVE.org names of Redis,
+// which the same test removes again, so the data stay the same.
 test.describe('inventory as reader', () => {
   asRole('reader');
 
@@ -61,6 +62,10 @@ test.describe('inventory as reader', () => {
     await expect(openssl).toContainText('Activa');
     await expect(openssl).toContainText('Soporte OpenSSL');
     await expect(openssl).toContainText('cpe:2.3:a:openssl:openssl');
+    // F15.9: the part of the CPE as a readable label.
+    await expect(openssl.getByRole('cell').filter({ hasText: 'cpe:2.3:a:openssl' })).toContainText(
+      'Aplicación',
+    );
 
     const findings = page.getByRole('region', {
       name: 'Vulnerabilidades del activo; desplazamiento horizontal',
@@ -90,6 +95,10 @@ test.describe('inventory as reader', () => {
     await expect(openssl).toContainText('Inactiva: 1');
     await expect(openssl).toContainText('Soporte OpenSSL');
     await expect(openssl).toContainText('cpe:2.3:a:openssl:openssl');
+    // F15.9: the part of the CPE and the CVE.org names of the mapping (none in the demo data).
+    const opensslCpe = openssl.getByRole('cell').filter({ hasText: 'cpe:2.3:a:openssl' });
+    await expect(opensslCpe).toContainText('Aplicación');
+    await expect(opensslCpe).toContainText('Sin nombres de CVE.org');
     await expect(table.getByRole('row').filter({ hasText: 'nginx' })).toContainText('Baja');
     await expect(page.getByRole('article', { name: 'Instalaciones por estado' })).toContainText(
       /Inactiva\s*1/,
@@ -152,5 +161,61 @@ test.describe('inventory as analyst', () => {
     await expect(
       page.getByRole('status').filter({ hasText: 'CPE guardado para nginx' }),
     ).toBeVisible();
+  });
+
+  // F15.9: the CNA names of a mapping, on Redis (no other test maps it). The test removes them at the end, so the
+  // demo data stay the same.
+  test('saves the CVE.org names of a mapping and removes them', async ({ page }) => {
+    await page.goto('/software');
+    const open = async () => {
+      await page.getByRole('button', { name: 'Cambiar CPE de Redis' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Mapear CPE · Redis' });
+      await expect(dialog).toBeVisible();
+      return dialog;
+    };
+    const vendorOf = (dialog: Awaited<ReturnType<typeof open>>) =>
+      dialog.getByRole('textbox', { name: 'Fabricante (CNA)' });
+    const productOf = (dialog: Awaited<ReturnType<typeof open>>) =>
+      dialog.getByRole('textbox', { name: 'Producto (CNA)' });
+
+    let dialog = await open();
+    await expect(dialog.getByRole('group', { name: /Nombres en CVE\.org \(CNA\)/ })).toContainText(
+      'Sin ellos, Hermes no revisa esa fuente para este producto.',
+    );
+    await expect(vendorOf(dialog)).toHaveValue('');
+    // One name alone is refused before any request.
+    await vendorOf(dialog).fill('Redis');
+    await dialog.getByRole('button', { name: 'Guardar CPE' }).click();
+    await expect(dialog.getByText('Escribe también el producto')).toBeVisible();
+    await expect(productOf(dialog)).toHaveAttribute('aria-invalid', 'true');
+    await productOf(dialog).fill('Redis');
+    await dialog.getByRole('button', { name: 'Guardar CPE' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(
+      page.getByRole('status').filter({ hasText: 'y los nombres de CVE.org Redis · Redis' }),
+    ).toBeVisible();
+    const redis = page
+      .getByRole('region', { name: 'Catálogo de software; desplazamiento horizontal' })
+      .getByRole('row')
+      .filter({ hasText: 'Redis' });
+    await expect(redis).toContainText('CVE.org: Redis · Redis');
+
+    // The mapping keeps them: the dialog starts from them; emptying both removes them.
+    dialog = await open();
+    await expect(vendorOf(dialog)).toHaveValue('Redis');
+    await expect(productOf(dialog)).toHaveValue('Redis');
+    await vendorOf(dialog).fill('');
+    await productOf(dialog).fill('');
+    await dialog.getByRole('button', { name: 'Guardar CPE' }).click();
+    await expect(dialog).toHaveCount(0);
+    const notice = page.getByRole('status').filter({ hasText: 'CPE guardado para Redis' });
+    await expect(notice).toBeVisible();
+    await expect(notice).not.toContainText('CVE.org');
+    await expect(redis).toContainText('Sin nombres de CVE.org');
+
+    dialog = await open();
+    await expect(vendorOf(dialog)).toHaveValue('');
+    await dialog.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(dialog).toHaveCount(0);
   });
 });

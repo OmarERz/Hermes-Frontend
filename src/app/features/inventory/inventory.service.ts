@@ -16,6 +16,8 @@ export type InventoryPending = ApiSchema<'InventoryPending'>;
 export type PendingItem = ApiSchema<'InventoryItem'>;
 export type CpeCandidate = ApiSchema<'CpeCandidate'>;
 export type Mapping = ApiSchema<'Mapping'>;
+/** Vendor and product as the CNA writes them in CVE.org (ESC-05, F15.9). */
+export type CnaNames = ApiSchema<'CnaNames'>;
 
 /** Vulnerability groups per priority level. */
 export type LevelCounts = Record<Level, number>;
@@ -135,11 +137,14 @@ export class InventoryService {
     return this.api.get('/api/cpe/candidates', { query: { q } });
   }
 
-  /** Maps a software product (its UUID) to a CPE 2.3 name (ESC-05). */
-  setMapping(softwareId: string, cpe: string): Observable<Mapping> {
+  /**
+   * Maps a software product (its UUID) to a CPE 2.3 name (ESC-05) and, optionally, to the names its CNA uses in
+   * CVE.org: `cna` left out keeps the ones the mapping has, `null` removes them (F15.9).
+   */
+  setMapping(softwareId: string, cpe: string, cna?: CnaNames | null): Observable<Mapping> {
     return this.api.put('/api/mappings/{software}', {
       path: { software: softwareId },
-      body: { cpe },
+      body: cna === undefined ? { cpe } : { cpe, cna },
     });
   }
 }

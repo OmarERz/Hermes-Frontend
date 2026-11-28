@@ -153,6 +153,9 @@
                           <wbr />
                         }
                       </code>
+                      @if (item.cpePart; as part) {
+                        <small>{{ part }}</small>
+                      }
                     } @else {
                       <span class="muted">Sin CPE</span>
                       <small><a routerLink="/pendientes-inventario">Ver pendientes</a></small>

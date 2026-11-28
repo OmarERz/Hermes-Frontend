@@ -1,4 +1,6 @@
 import {
+  cnaLabel,
+  cpePartLabel,
   cpeParts,
   exposureLabel,
   formatDay,
@@ -65,6 +67,17 @@ describe('inventory labels', () => {
     expect(cpeParts('cpe:2.3:a:f5:nginx:*')).toEqual(['cpe:', '2.3:', 'a:', 'f5:', 'nginx:', '*']);
     expect(cpeParts(null)).toEqual([]);
     expect(cpeParts('')).toEqual([]);
+  });
+
+  it('names the part of a CPE and writes the CVE.org names vendor first (F15.9)', () => {
+    expect(cpePartLabel('cpe:2.3:a:f5:nginx:*')).toBe('Aplicación');
+    expect(cpePartLabel('cpe:2.3:o:linux:linux_kernel:*')).toBe('Sistema operativo');
+    expect(cpePartLabel('cpe:2.3:h:cisco:asa_5505:*')).toBe('Hardware');
+    expect(cpePartLabel('cpe:2.3:x:cisco:asa_5505:*')).toBeNull();
+    expect(cpePartLabel('cpe:/a:f5:nginx')).toBeNull();
+    expect(cpePartLabel(null)).toBeNull();
+    expect(cpePartLabel(undefined)).toBeNull();
+    expect(cnaLabel({ vendor: 'n/a', product: 'CPython' })).toBe('n/a · CPython');
   });
 
   it('builds distribution rows in a fixed order or from the largest count', () => {

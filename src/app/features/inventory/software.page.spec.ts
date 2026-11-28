@@ -70,6 +70,24 @@ function cells(element: HTMLElement): string[][] {
   );
 }
 
+/** The kernel once mapped as an operating system, with the names its CNA uses in CVE.org (F15.9). */
+const MAPPED_KERNEL = {
+  ...KERNEL,
+  name: 'Linux Kernel',
+  cpe: 'cpe:2.3:o:linux:linux_kernel:*:*:*:*:*:*:*:*',
+  has_cpe: true,
+  cna: { vendor: 'Linux', product: 'Linux' },
+};
+/** A hardware product (F15.9: the API keeps the `h` part). */
+const ROUTER = {
+  ...KERNEL,
+  id: '9a1f0f76-34b8-4b0e-9d0c-1f6a1e2b3c4d',
+  name: 'Cisco ASA 5505',
+  cpe: 'cpe:2.3:h:cisco:asa_5505:*:*:*:*:*:*:*:*',
+  has_cpe: true,
+  cna: null,
+};
+
 describe('SoftwarePage', () => {
   it('lists the catalogue with categories, versions, statuses, licences, CPE and findings', async () => {
     const service = new FakeService();
@@ -82,7 +100,7 @@ describe('SoftwarePage', () => {
       '3 3 activos',
       'Activa: 1Inactiva: 1Sin dato: 1',
       '1 de 3Soporte OpenSSL',
-      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*',
+      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*AplicaciónSin nombres de CVE.org',
       'Crítica2 abiertas',
       '',
     ]);
@@ -124,6 +142,25 @@ describe('SoftwarePage', () => {
     expect(element.querySelector('.pagination button.selected')?.textContent?.trim()).toBe('1');
     // Readers never get the mapping action.
     expect(element.querySelector('.row-action')).toBeNull();
+  });
+
+  it('shows the part of each CPE and the CVE.org names of its mapping (F15.9)', async () => {
+    const service = new FakeService();
+    service.listSoftware.mockReturnValue(
+      of({ items: [OPENSSL, MAPPED_KERNEL, ROUTER], nextCursor: null }),
+    );
+    const { element } = await render(service);
+    const [openssl, kernel, router] = cells(element).map((row) => row[6]);
+    expect(openssl).toBe(
+      'cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*AplicaciónSin nombres de CVE.org',
+    );
+    expect(kernel).toBe(
+      'cpe:2.3:o:linux:linux_kernel:*:*:*:*:*:*:*:*Sistema operativoCVE.org: Linux · Linux',
+    );
+    expect(router).toBe('cpe:2.3:h:cisco:asa_5505:*:*:*:*:*:*:*:*HardwareSin nombres de CVE.org');
+    expect(element.querySelector('tbody tr:nth-child(2) .cna-names')?.textContent).toBe(
+      'CVE.org: Linux · Linux',
+    );
   });
 
   it('shows the summary cards and the catalogue totals', async () => {
@@ -289,7 +326,7 @@ describe('SoftwarePage', () => {
     expect(buttons).toEqual(['Cambiar CPE', 'Mapear CPE']);
     (element.querySelectorAll('.row-action')[1] as HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(page.mapping()).toEqual({ id: KERNEL.id, name: KERNEL.name, cpe: null });
+    expect(page.mapping()).toEqual({ id: KERNEL.id, name: KERNEL.name, cpe: null, cna: null });
     const dialog = fixture.debugElement.query(
       (node) => node.componentInstance instanceof CpeMappingDialog,
     );
@@ -307,18 +344,25 @@ describe('SoftwarePage', () => {
     expect(service.catalogue).toHaveBeenCalledTimes(2);
     expect(service.listSoftware).toHaveBeenLastCalledWith(NO_FILTERS, null, 25);
 
-    page.openMapping(OPENSSL);
+    // The dialog starts from the CNA names of the mapping (F15.9).
+    page.openMapping({ ...OPENSSL, cna: { vendor: 'OpenSSL', product: 'OpenSSL' } });
     await fixture.whenStable();
-    (
-      fixture.debugElement.query((node) => node.componentInstance instanceof CpeMappingDialog)
-        .componentInstance as CpeMappingDialog
-    ).cancelled.emit();
+    const opened = fixture.debugElement.query(
+      (node) => node.componentInstance instanceof CpeMappingDialog,
+    ).componentInstance as CpeMappingDialog;
+    expect(opened.software().cna).toEqual({ vendor: 'OpenSSL', product: 'OpenSSL' });
+    expect(opened.cnaVendor()).toBe('OpenSSL');
+    opened.cancelled.emit();
     await fixture.whenStable();
     expect(page.mapping()).toBeNull();
   });
 
   it('exports the whole catalogue as CSV', async () => {
-    const { page } = await render();
+    const service = new FakeService();
+    service.catalogue.mockReturnValue(
+      of({ items: [OPENSSL, KERNEL, MAPPED_KERNEL], complete: true }),
+    );
+    const { page } = await render(service);
     const created = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:catalogue');
     const revoked = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
     const click = vi
@@ -330,6 +374,14 @@ describe('SoftwarePage', () => {
     expect(csv.split('\r\n')[0]).toContain('"Software","Categorías","Versiones"');
     expect(csv).toContain('"OpenSSL","Otro software; Servidor web","3.0.7","3","3","1","1","1"');
     expect(csv).toContain('"Amazon Linux 2023 kernel"');
+    // F15.9: the part of the CPE and the CVE.org names of the mapping, after the CPE.
+    expect(csv.split('\r\n')[0]).toContain(
+      '"CPE","Parte del CPE","Fabricante en CVE.org (CNA)","Producto en CVE.org (CNA)"',
+    );
+    expect(csv).toContain('"cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*","Aplicación","",""');
+    expect(csv).toContain(
+      '"cpe:2.3:o:linux:linux_kernel:*:*:*:*:*:*:*:*","Sistema operativo","Linux","Linux"',
+    );
     expect(click).toHaveBeenCalled();
     expect(revoked).toHaveBeenCalledWith('blob:catalogue');
     vi.restoreAllMocks();
