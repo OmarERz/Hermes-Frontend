@@ -90,6 +90,7 @@ app-chip {
 @media (max-width: 560px) {
   .before-after {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
     gap: var(--space-3);
     padding: var(--space-3);
   }

@@ -216,6 +216,10 @@
     box-shadow: none;
     white-space: normal;
   }
+  /* A figure reads under its label, not at the far edge of its half of the card. */
+  .app-shell .page-content .data-table.cards-mobile > tbody > tr > td.numeric {
+    text-align: start;
+  }
   .app-shell .page-content .data-table.cards-mobile.sticky-first > * > tr > :first-child {
     position: static;
     background: none;

@@ -157,7 +157,6 @@ export function kpiState(status: LoadStatus): KpiState {
       line-height: var(--leading-snug);
       text-wrap: pretty;
       overflow-wrap: anywhere;
-      hyphens: auto;
     }
     .kpi-label app-ayuda-tooltip {
       margin-left: var(--space-0-5);
