@@ -451,7 +451,10 @@ function inPage(options: InPageOptions): LayoutResult {
           (element) => rowContainer(element) && element !== root,
         );
         for (const container of containers) {
-          const kids = [...container.children].filter(card);
+          const kids = [...container.children]
+            .filter((kid) => laidOut.has(kid) || kid.tagName.includes('-'))
+            .map(visual)
+            .filter(card);
           if (kids.length < 2) continue;
           const rows: Element[][] = [];
           for (const kid of kids.sort((a, b) => box(a).top - box(b).top)) {

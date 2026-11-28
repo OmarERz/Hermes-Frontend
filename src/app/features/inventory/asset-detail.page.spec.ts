@@ -119,10 +119,17 @@ describe('AssetDetailPage', () => {
   });
 
   it('lists the vulnerability groups of the CI with a link to each one', async () => {
-    const { element } = await render();
+    const { fixture, element } = await render();
     const [row] = rowsOf(element, 'Vulnerabilidades del activo');
     expect(row?.slice(0, 5)).toEqual(['CVE-2026-10001', 'OpenSSL 3.0.7', 'Crítica', '92', 'Nuevo']);
     expect(row?.slice(6)).toEqual(['Sí', 'DEMO-1']);
+    // The CI's own dates and tickets: «Todas las columnas» shows them on a narrow table.
+    const toggle = element.querySelector<HTMLButtonElement>(
+      'button[aria-controls="asset-findings-table"]',
+    )!;
+    toggle.click();
+    await fixture.whenStable();
+    expect(element.querySelector('#asset-findings-table')?.classList).toContain('all-columns');
     expect(element.querySelector('a.row-link')?.getAttribute('href')).toBe(
       `/vulnerabilidades/${DETAIL.findings[0]!.group_id}`,
     );

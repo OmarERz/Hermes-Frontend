@@ -212,7 +212,7 @@
  * página», a select in a row) is the small shared control: the same border, fill and radius as .control, 32 px high,
  * and one drawn chevron (the native arrow is off). Its width stays the screen's.
  */
-.app-shell .page-content select:not(.control > select, [multiple], [size]) {
+.app-shell .page-content select:not(.control > select, [multiple], [size], :has(+ svg)) {
   appearance: none;
   min-height: 32px;
   box-sizing: border-box;
@@ -233,17 +233,21 @@
   text-overflow: ellipsis;
   cursor: pointer;
 }
-.app-shell[data-theme='light'] .page-content select:not(.control > select, [multiple], [size]) {
+.app-shell[data-theme='light']
+  .page-content
+  select:not(.control > select, [multiple], [size], :has(+ svg)) {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236c6179' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
-.app-shell .page-content select:not(.control > select, [multiple], [size]):hover:not(:disabled) {
+.app-shell
+  .page-content
+  select:not(.control > select, [multiple], [size], :has(+ svg)):hover:not(:disabled) {
   border-color: color-mix(in srgb, var(--accent-violet) 55%, var(--border));
 }
-.app-shell .page-content select:not(.control > select, [multiple], [size]):disabled {
+.app-shell .page-content select:not(.control > select, [multiple], [size], :has(+ svg)):disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-.app-shell .page-content select:not(.control > select, [multiple], [size]) option {
+.app-shell .page-content select:not(.control > select, [multiple], [size], :has(+ svg)) option {
   background: var(--surface);
   color: var(--text-primary);
 }
@@ -251,7 +255,7 @@
 .app-shell
   .page-content
   :is(form, app-config-field)
-  select:not(.control > select, [multiple], [size]) {
+  select:not(.control > select, [multiple], [size], :has(+ svg)) {
   min-height: var(--control-h);
   border-radius: var(--radius-md);
 }

@@ -77,6 +77,18 @@ test.describe('layout checks', () => {
     expect(rules(findings)).toEqual(['siblings:heights']);
   });
 
+  test('cards of different heights inside component hosts of one row', async ({ page }) => {
+    const findings = await render(
+      page,
+      `app-host { display: block; }
+       .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }`,
+      `<div class="app-shell"><aside></aside><main class="page-content"><div class="row">
+       <app-host><div class="card" style="height:100px">a</div></app-host>
+       <app-host><div class="card" style="height:200px">b</div></app-host></div></main></div>`,
+    );
+    expect(rules(findings)).toEqual(['siblings:heights']);
+  });
+
   test('a stacked card narrower than the one above', async ({ page }) => {
     const findings = await render(
       page,

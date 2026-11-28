@@ -74,12 +74,29 @@ export function waterfallRange(steps: WaterfallStep[]): { min: number; max: numb
 /**
  * Stacked-bar waterfall: an invisible base plus the visible part (violet totals, pink up, green down). Both series
  * stack every value whatever its sign (`stackStrategy: 'all'`), so a step that starts or ends below zero still
- * starts at its real base.
+ * starts at its real base. VDE-6 (F19.8): the step names are never turned; they wrap under their bar and, on phones
+ * (`horizontal`), the bars lie down with the names on their left, one per line.
  */
-export function waterfallChart(steps: WaterfallStep[]): EChartsCoreOption {
+export function waterfallChart(steps: WaterfallStep[], horizontal = false): EChartsCoreOption {
   const range = waterfallRange(steps);
+  const names = {
+    type: 'category',
+    data: steps.map((step) => step.label),
+    axisLabel: horizontal
+      ? { color: AXIS, interval: 0, fontSize: 12 }
+      : { color: AXIS, interval: 0, fontSize: 12, width: 84, overflow: 'break' },
+    axisTick: { show: false },
+    ...(horizontal ? { inverse: true } : {}),
+  };
+  const values = {
+    type: 'value',
+    min: range.min,
+    max: range.max,
+    splitLine: { lineStyle: { color: GRID } },
+    axisLabel: { color: AXIS },
+  };
   return {
-    grid: { left: 12, right: 12, top: 18, bottom: 8, containLabel: true },
+    grid: { left: 12, right: horizontal ? 28 : 12, top: 18, bottom: 8, containLabel: true },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
@@ -88,19 +105,8 @@ export function waterfallChart(steps: WaterfallStep[]): EChartsCoreOption {
         return step.total ? `${step.label}: ${step.value}` : `${step.label}: ${signed(step.value)}`;
       },
     },
-    xAxis: {
-      type: 'category',
-      data: steps.map((step) => step.label),
-      axisLabel: { color: AXIS, interval: 0, rotate: 20, fontSize: 12.67 },
-      axisTick: { show: false },
-    },
-    yAxis: {
-      type: 'value',
-      min: range.min,
-      max: range.max,
-      splitLine: { lineStyle: { color: GRID } },
-      axisLabel: { color: AXIS },
-    },
+    xAxis: horizontal ? values : names,
+    yAxis: horizontal ? names : values,
     series: [
       {
         type: 'bar',
@@ -114,10 +120,10 @@ export function waterfallChart(steps: WaterfallStep[]): EChartsCoreOption {
         type: 'bar',
         stack: 'waterfall',
         stackStrategy: 'all',
-        barMaxWidth: 42,
+        barMaxWidth: horizontal ? 22 : 42,
         label: {
           show: true,
-          position: 'top',
+          position: horizontal ? 'right' : 'top',
           formatter: (item: { dataIndex: number }) => {
             const step = steps[item.dataIndex];
             return step.total ? String(step.value) : signed(step.value);
@@ -127,7 +133,7 @@ export function waterfallChart(steps: WaterfallStep[]): EChartsCoreOption {
           value: Math.abs(step.to - step.from),
           itemStyle: {
             color: step.total ? VIOLET : step.value > 0 ? PINK : GREEN,
-            borderRadius: [5, 5, 0, 0],
+            borderRadius: horizontal ? [0, 5, 5, 0] : [5, 5, 0, 0],
           },
         })),
       },

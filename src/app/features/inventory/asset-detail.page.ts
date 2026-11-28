@@ -93,6 +93,11 @@ export class AssetDetailPage {
   readonly formatShortDateTime = formatShortDateTime;
   /** «Todas las columnas» of the installed software: state, category, licence and description (N-4). */
   readonly allSoftwareColumns = signal(false);
+  /**
+   * «Todas las columnas» of the findings: state, last seen, KEV and tickets of this CI (the CVE's page shows the
+   * group's figures, which may come from another CI).
+   */
+  readonly allFindingColumns = signal(false);
 
   readonly ciId = signal('');
   readonly detail = new AsyncState<AssetDetail>();

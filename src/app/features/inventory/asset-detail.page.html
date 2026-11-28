@@ -195,6 +195,12 @@
           <svg lucideShieldAlert aria-hidden="true"></svg>
           <h2 id="findings-title">Vulnerabilidades del activo</h2>
         </div>
+        <app-columns-toggle
+          [all]="allFindingColumns()"
+          (allChange)="allFindingColumns.set($event)"
+          controls="asset-findings-table"
+          phoneCards
+        />
         <span>{{ groupsLabel() }}</span>
       </header>
       @if (findings().length) {
@@ -206,7 +212,11 @@
           appScrollFade
           [appScrollFadeReveal]="false"
         >
-          <table class="data-table sticky-first cards-mobile">
+          <table
+            id="asset-findings-table"
+            class="data-table sticky-first cards-mobile"
+            [class.all-columns]="allFindingColumns()"
+          >
             <thead>
               <tr>
                 <th scope="col">CVE</th>

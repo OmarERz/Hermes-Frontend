@@ -1,7 +1,14 @@
 <header class="page-heading">
   <svg [lucideIcon]="icono" class="heading-icon" aria-hidden="true"></svg>
   <div class="heading-copy">
-    <h1>{{ titulo }}</h1>
+    @if (tituloResto === null) {
+      <h1>{{ titulo }}</h1>
+    } @else {
+      <h1>
+        <span class="title-code">{{ codigo }}</span
+        >{{ tituloResto }}
+      </h1>
+    }
     <p #description [id]="descriptionId" [class.folded]="!expanded()">{{ descripcion }}</p>
     @if (clipped() || expanded()) {
       <button
